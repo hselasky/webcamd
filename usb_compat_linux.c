@@ -23,8 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include <usb_global.h>
-
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
 	struct usb_driver *udrv;
