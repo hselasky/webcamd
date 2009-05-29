@@ -10,7 +10,8 @@ LINUXDIR=${.CURDIR}/linux
 .endif
 
 .PATH: \
-${CURDIR} \
+${.CURDIR} \
+${.CURDIR}/dummy \
 ${LINUXDIR}/drivers \
 ${LINUXDIR}/drivers/media \
 ${LINUXDIR}/drivers/media/common \
@@ -45,6 +46,7 @@ ${LINUXDIR}/drivers/media/video/gspca/stv06xx \
 ${LINUXDIR}/drivers/media/video/ivtv \
 ${LINUXDIR}/drivers/media/video/pwc \
 ${LINUXDIR}/drivers/media/video/ovcamchip \
+${LINUXDIR}/drivers/media/video/uvc \
 ${LINUXDIR}/drivers/media/video/zoran
 
 #
@@ -52,6 +54,7 @@ ${LINUXDIR}/drivers/media/video/zoran
 #
 
 SRCS+= usb_compat_linux.c
+SRCS+= linux_func.c
 
 #
 # Video4Linux specific files
@@ -66,51 +69,47 @@ SRCS+= v4l2-ioctl.c
 SRCS+= v4l2-subdev.c
 
 SRCS+= videobuf-core.c
-SRCS+= videobuf-dma-contig.c
-SRCS+= videobuf-dma-sg.c
 SRCS+= videobuf-dvb.c
+SRCS+= videobuf-dma-contig.c
+#SRCS+= videobuf-dma-sg.c
 SRCS+= videobuf-vmalloc.c
 
 #
 # GSPCA
 #
-SRCS+= gspca_main.c
-SRCS+= gspca_conex.c
-SRCS+= gspca_etoms.c
-SRCS+= gspca_finepix.c
-SRCS+= gspca_mars.c
-SRCS+= gspca_ov519.c
-SRCS+= gspca_ov534.c
-SRCS+= gspca_pac207.c
-SRCS+= gspca_pac7311.c
-SRCS+= gspca_sonixb.c
-SRCS+= gspca_sonixj.c
-SRCS+= gspca_spca500.c
-SRCS+= gspca_spca501.c
-SRCS+= gspca_spca505.c
-SRCS+= gspca_spca506.c
-SRCS+= gspca_spca508.c
-SRCS+= gspca_spca561.c
-SRCS+= gspca_sunplus.c
-SRCS+= gspca_stk014.c
-SRCS+= gspca_t613.c
-SRCS+= gspca_tv8532.c
-SRCS+= gspca_vc032x.c
-SRCS+= gspca_zc3xx.c
+SRCS+= gspca.c
+SRCS+= conex.c
+SRCS+= etoms.c
+SRCS+= finepix.c
+SRCS+= mars.c
+SRCS+= ov519.c
+SRCS+= ov534.c
+SRCS+= pac207.c
+SRCS+= pac7311.c
+SRCS+= sonixb.c
+SRCS+= sonixj.c
+SRCS+= spca500.c
+SRCS+= spca501.c
+SRCS+= spca505.c
+SRCS+= spca506.c
+SRCS+= spca508.c
+SRCS+= spca561.c
+SRCS+= sunplus.c
+SRCS+= stk014.c
+SRCS+= t613.c
+SRCS+= tv8532.c
+SRCS+= vc032x.c
+SRCS+= zc3xx.c
 
-SRCS+= gspca_stv06xx.c
 SRCS+= stv06xx.c
 SRCS+= stv06xx_vv6410.c
 SRCS+= stv06xx_hdcs.c
 SRCS+= stv06xx_pb0100.c
 
-SRCS+= gspca_m5602.c
 SRCS+= m5602_core.c
-SRCS+= m5602_ov9650.c
 SRCS+= m5602_mt9m111.c
 SRCS+= m5602_po1030.c
 SRCS+= m5602_s5k83a.c
-SRCS+= m5602_s5k4aa.c
 
 #
 # USB Video Class
@@ -118,11 +117,10 @@ SRCS+= m5602_s5k4aa.c
 SRCS+= uvc_driver.c
 SRCS+= uvc_queue.c
 SRCS+= uvc_v4l2.c
-SRCS+= uvc_video.c
 SRCS+= uvc_ctrl.c
 SRCS+= uvc_status.c
 SRCS+= uvc_isight.c
-SRCS+= uvcvideo.c
+SRCS+= uvc_video.c
 
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
 CFLAGS+= -I${LINUXDIR}
@@ -131,6 +129,8 @@ CFLAGS+= -I${.CURDIR}
 CFLAGS+= -I${.CURDIR}/dummy
 
 CFLAGS+= -include usb_global.h
+
+CFLAGS+= -O2 -Wall
 
 LDFLAGS+= -lusb -lpthread
 

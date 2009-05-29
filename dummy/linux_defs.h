@@ -40,7 +40,9 @@
 #define	__exit
 #define	__stringify(x)	#x
 #define	ERESTARTSYS     512
-#define	ENOIOCTLCMD     515
+#define	ENOIOCTLCMD     513
+#define	EMEDIUMTYPE	514
+#define	ENODATA		515
 #define	EXPORT_SYMBOL(...)
 #define	EXPORT_SYMBOL_GPL(...)
 #define	MODULE_AUTHOR(...)
@@ -48,8 +50,9 @@
 #define	MODULE_LICENSE(...)
 #define	MODULE_DEVICE_TABLE(...)
 #define	MODULE_PARM_DESC(...)
+#define	MODULE_VERSION(...)
 #define	THIS_MODULE (NULL)
-#define	module_param(name, type, perm) type param__##name
+#define	module_param(...)
 #define	info(...) do {} while (0)
 #define	printk(...) do {} while (0)
 #define	warn printk
@@ -57,10 +60,12 @@
 #define	err printk
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
+#define	vmalloc_user(pg) malloc((pg) * PAGE_SIZE)
+#define	vfree(ptr) free(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
-#define	msleep(ms) usleep((d) * 1000)
-#define	mdelay(ms) usleep((d) * 1000)
+#define	msleep(d) usleep((d) * 1000)
+#define	mdelay(d) usleep((d) * 1000)
 #define	__GFP_WAIT 0
 #define	__GFP_HIGH 0
 #define	__GFP_IO 0
@@ -102,6 +107,44 @@
 #define	module_init(...)
 #define	module_exit(...)
 #define	DEFAULT_POLLMASK POLLNVAL
+#define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
+#define	_IOC_NR(cmd) ((cmd) & 0xFF)
+#define	_IOC_DIR(cmd) ((cmd) & IOC_DIRMASK)
+#define	_IOC_NONE IOC_VOID
+#define	_IOC_READ IOC_OUT
+#define	_IOC_WRITE IOC_IN
+#define	__OLD_VIDIOC_
+#define	PAGE_SIZE 4096
+#define	PAGE_SHIFT 12
+#define	down_read(...) do { } while (0)
+#define	up_read(...) do { } while (0)
+#define	VM_WRITE 0x0001
+#define	VM_READ 0x0002
+#define	VM_SHARED 0x0004
+#define	VM_DONTEXPAND 0x0008
+#define	VM_FAULT_OOM 0x0010
+#define	VM_RESERVED 0x0020
+#define	VM_IO 0x0040
+#define	DMA_FROM_DEVICE 0x01
+#define	DMA_TO_DEVICE 0x02
+#define	module_param_named(...)
+#define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
+#define	BIT(n) (1UL << (n))
+#define	__KERNEL__
+#define	capable(...) 1
+#define	uninitialized_var(...) __VA_ARGS__
+#define	false 0
+#define	true 1
+#define	HZ 1000
+#define	jiffies get_jiffies_64()
+#define	unlikely(...) __VA_ARGS__
+#define	DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+#define	min(a,b) (((a) < (b)) ? (a) : (b))
+#define	max(a,b) (((a) > (b)) ? (a) : (b))
+#define	prefetch(x) (void)x
+#define	BUG(...) do {} while (0)
+#define	BUG_ON(...) do {} while (0)
+#define	WARN_ON(...) do {} while (0)
 
 typedef unsigned short umode_t;
 typedef signed char __s8;
@@ -123,12 +166,13 @@ typedef unsigned long long u64;
 typedef u64 dma_addr_t;
 typedef u64 dma64_addr_t;
 typedef u64 sector_t;
-typedef u64 blkcnt_t;
 typedef unsigned short __le16;
+typedef unsigned int __le32;
 typedef unsigned long kernel_ulong_t;
 typedef unsigned int uint;
 typedef long long loff_t;
 typedef unsigned int gfp_t;
 typedef uint32_t dev_t;
+typedef uint8_t bool;
 
 #endif					/* _LINUX_DEFS_H_ */

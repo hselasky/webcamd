@@ -51,8 +51,9 @@ static int usb_setup_endpoint(struct usb_device *dev, struct usb_host_endpoint *
  * FreeBSD USB interface
  *------------------------------------------------------------------------*/
 
-static LIST_HEAD(, usb_driver) usb_linux_driver_list =
-	LIST_HEAD_INITIALIZER(&usb_linux_driver_list);
+static struct {
+	struct usb_driver *lh_first;
+}	usb_linux_driver_list;
 
 /*------------------------------------------------------------------------*
  *	usb_linux_lookup_id

@@ -2,6 +2,19 @@
 #define	_LINUX_FUNC_H_
 
 uint16_t le16_to_cpu(uint16_t x);
+uint16_t cpu_to_le16(uint16_t x);
+uint32_t le32_to_cpu(uint32_t x);
+uint32_t cpu_to_le32(uint32_t x);
+uint16_t le16_to_cpup(uint16_t *p);
+uint16_t cpu_to_le16p(uint16_t *p);
+uint32_t le32_to_cpup(uint32_t *p);
+uint32_t cpu_to_le32p(uint32_t *p);
+
+void	put_unaligned_le32(uint32_t, void *);
+void	put_unaligned_le16(uint16_t, void *);
+uint32_t get_unaligned_le32(void *);
+uint16_t get_unaligned_le16(void *);
+
 void   *dev_get_drvdata(struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
 int	remap_pfn_range(struct vm_area_struct *, unsigned long addr, unsigned long pfn, unsigned long size, pgprot_t);
@@ -21,5 +34,7 @@ void	atomic_set(atomic_t *v, int i);
 int	atomic_read(const atomic_t *v);
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
+void   *dma_alloc_coherent(struct device *dev, uint32_t size, dma_addr_t *hdl, uint32_t flag);
+pgprot_t pgprot_noncached(pgprot_t);
 
 #endif					/* _LINUX_FUNC_H_ */

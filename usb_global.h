@@ -1,5 +1,5 @@
 #ifndef _USB_GLOBAL_H_
-#define _USB_GLOBAL_H_
+#define	_USB_GLOBAL_H_
 
 #include <sys/types.h>
 #include <sys/stdint.h>
@@ -8,6 +8,7 @@
 #include <sys/ioccom.h>
 #include <sys/fcntl.h>
 #include <sys/msg.h>
+#include <sys/time.h>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -38,6 +39,7 @@
 #include <drivers/media/dvb/dvb-core/demux.h>
 #include <drivers/media/dvb/dvb-core/dvb_demux.h>
 #include <drivers/media/dvb/dvb-core/dvb_net.h>
+
 #include <include/media/videobuf-dvb.h>
 #include <include/media/videobuf-vmalloc.h>
 
@@ -46,4 +48,6 @@
 
 #include <usb_compat_linux.h>
 
-#endif /* _USB_GLOBAL_H_ */
+#include <drivers/media/video/uvc/uvcvideo.h>
+
+#endif					/* _USB_GLOBAL_H_ */

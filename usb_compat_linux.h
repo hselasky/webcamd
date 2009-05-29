@@ -38,6 +38,9 @@ typedef void (usb_complete_t)(struct urb *);
 
 #define	USB_MAX_FULL_SPEED_ISOC_FRAMES (60 * 1)
 #define	USB_MAX_HIGH_SPEED_ISOC_FRAMES (60 * 8)
+#define	USB_SPEED_LOW LIBUSB20_SPEED_LOW
+#define	USB_SPEED_FULL LIBUSB20_SPEED_FULL
+#define	USB_SPEED_HIGH LIBUSB20_SPEED_HIGH
 
 /*
  * Linux compatible USB device drivers put their device information
@@ -58,6 +61,7 @@ struct usb_device_id {
 #define	USB_DEVICE_ID_MATCH_INT_CLASS		0x0080
 #define	USB_DEVICE_ID_MATCH_INT_SUBCLASS	0x0100
 #define	USB_DEVICE_ID_MATCH_INT_PROTOCOL	0x0200
+#define	USB_DEVICE_ID_MATCH_INT_INFO		0x0400
 
 	/* Used for product specific matches; the BCD range is inclusive */
 	uint16_t idVendor;
@@ -86,6 +90,13 @@ struct usb_device_id {
 	.match_flags = USB_DEVICE_ID_MATCH_DEVICE, .idVendor = (vend), \
 	.idProduct = (prod)
 
+#define	USB_INTERFACE_INFO(c,sb,i)			\
+	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS |	\
+		USB_DEVICE_ID_MATCH_INT_SUBCLASS,	\
+	.bInterfaceClass = (c),				\
+	.bInterfaceSubClass = (sb),			\
+	.driver_info = (i)
+
 /* The "usb_driver" structure holds the Linux USB device driver
  * callbacks, and a pointer to device ID's which this entry should
  * match against. Usually this entry is exposed to the USB emulation
@@ -106,11 +117,15 @@ struct usb_driver {
 	int     (*suspend) (struct usb_interface *intf, pm_message_t message);
 	int     (*resume) (struct usb_interface *intf);
 
+	int     (*reset_resume) (struct usb_interface *intf);
+
 	const struct usb_device_id *id_table;
 
 	void    (*shutdown) (struct usb_interface *intf);
 
 	LIST_ENTRY(usb_driver) linux_driver_list;
+
+	uint8_t	supports_autosuspend;
 };
 
 #define	USB_DRIVER_EXPORT(id,p_usb_drv) \
@@ -345,6 +360,8 @@ struct usb_host_interface {
 };
 
 struct usb_interface {
+	struct device dev;
+
 	/* array of alternate settings for this interface */
 	struct usb_host_interface *altsetting;
 	struct usb_host_interface *cur_altsetting;
@@ -358,6 +375,9 @@ struct usb_interface {
 };
 
 struct usb_device {
+	struct device dev;
+	struct device *bus;
+
 	struct usb_device_descriptor descriptor;
 	struct usb_host_endpoint ep0;
 
@@ -444,26 +464,15 @@ struct urb {
 int	usb_submit_urb(struct urb *urb, uint16_t mem_flags);
 int	usb_unlink_urb(struct urb *urb);
 int	usb_clear_halt(struct usb_device *dev, struct usb_host_endpoint *uhe);
-int 
-usb_control_msg(struct usb_device *dev, struct usb_host_endpoint *pipe,
-    uint8_t request, uint8_t requesttype, uint16_t value,
-    uint16_t index, void *data, uint16_t size, uint32_t timeout);
-int 
-usb_set_interface(struct usb_device *dev, uint8_t ifnum,
-    uint8_t alternate);
+int	usb_control_msg(struct usb_device *dev, struct usb_host_endpoint *pipe, uint8_t request, uint8_t requesttype, uint16_t value, uint16_t index, void *data, uint16_t size, uint32_t timeout);
+int	usb_set_interface(struct usb_device *dev, uint8_t ifnum, uint8_t alternate);
 
-struct usb_host_endpoint *
-usb_find_host_endpoint(struct usb_device *dev,
-    uint8_t type, uint8_t ep);
+struct usb_host_endpoint *usb_find_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep);
 struct urb *usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags);
-struct usb_host_interface *
-usb_altnum_to_altsetting(
-    const struct usb_interface *intf, uint8_t alt_index);
+struct usb_host_interface *usb_altnum_to_altsetting(const struct usb_interface *intf, uint8_t alt_index);
 struct usb_interface *usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no);
 
-void   *
-usb_buffer_alloc(struct usb_device *dev, uint32_t size,
-    uint16_t mem_flags, uint8_t *dma_addr);
+void   *usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, uint8_t *dma_addr);
 void   *usb_get_intfdata(struct usb_interface *intf);
 
 void	usb_buffer_free(struct usb_device *dev, uint32_t size, void *addr, uint8_t dma_addr);
@@ -481,5 +490,62 @@ int	usb_linux_resume(uint16_t device_index);
 
 #define	interface_to_usbdev(intf) (intf)->linux_udev
 #define	interface_to_bsddev(intf) (intf)->linux_udev->bsd_udev
+#define	usb_get_dev(dev) (dev)
+#define	usb_get_intf(intf) (intf)
+
+/* chapter 9 stuff, taken from "include/linux/usb/ch9.h" */
+
+#define	USB_DT_DEVICE                   0x01
+#define	USB_DT_CONFIG                   0x02
+#define	USB_DT_STRING                   0x03
+#define	USB_DT_INTERFACE                0x04
+#define	USB_DT_ENDPOINT                 0x05
+#define	USB_DT_DEVICE_QUALIFIER         0x06
+#define	USB_DT_OTHER_SPEED_CONFIG       0x07
+#define	USB_DT_INTERFACE_POWER          0x08
+#define	USB_DT_OTG                      0x09
+#define	USB_DT_DEBUG                    0x0a
+#define	USB_DT_INTERFACE_ASSOCIATION    0x0b
+#define	USB_DT_SECURITY                 0x0c
+#define	USB_DT_KEY                      0x0d
+#define	USB_DT_ENCRYPTION_TYPE          0x0e
+#define	USB_DT_BOS                      0x0f
+#define	USB_DT_DEVICE_CAPABILITY        0x10
+#define	USB_DT_WIRELESS_ENDPOINT_COMP   0x11
+#define	USB_DT_WIRE_ADAPTER             0x21
+#define	USB_DT_RPIPE                    0x22
+#define	USB_DT_CS_RADIO_CONTROL         0x23
+
+#define	USB_DT_CS_DEVICE                (USB_TYPE_CLASS | USB_DT_DEVICE)
+#define	USB_DT_CS_CONFIG                (USB_TYPE_CLASS | USB_DT_CONFIG)
+#define	USB_DT_CS_STRING                (USB_TYPE_CLASS | USB_DT_STRING)
+#define	USB_DT_CS_INTERFACE             (USB_TYPE_CLASS | USB_DT_INTERFACE)
+#define	USB_DT_CS_ENDPOINT              (USB_TYPE_CLASS | USB_DT_ENDPOINT)
+
+#define	USB_CLASS_PER_INTERFACE         0x00
+#define	USB_CLASS_AUDIO                 0x01
+#define	USB_CLASS_COMM                  0x02
+#define	USB_CLASS_HID                   0x03
+#define	USB_CLASS_PHYSICAL              0x05
+#define	USB_CLASS_STILL_IMAGE           0x06
+#define	USB_CLASS_PRINTER               0x07
+#define	USB_CLASS_MASS_STORAGE          0x08
+#define	USB_CLASS_HUB                   0x09
+#define	USB_CLASS_CDC_DATA              0x0a
+#define	USB_CLASS_CSCID                 0x0b
+#define	USB_CLASS_CONTENT_SEC           0x0d
+#define	USB_CLASS_VIDEO                 0x0e
+#define	USB_CLASS_WIRELESS_CONTROLLER   0xe0
+#define	USB_CLASS_MISC                  0xef
+#define	USB_CLASS_APP_SPEC              0xfe
+#define	USB_CLASS_VENDOR_SPEC           0xff
+
+struct usb_ctrlrequest {
+	__u8	bRequestType;
+	__u8	bRequest;
+	__le16	wValue;
+	__le16	wIndex;
+	__le16	wLength;
+} __packed;
 
 #endif					/* _USB_COMPAT_LINUX_H */

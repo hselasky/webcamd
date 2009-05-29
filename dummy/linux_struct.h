@@ -1,14 +1,18 @@
 #ifndef _LINUX_STRUCT_H_
 #define	_LINUX_STRUCT_H_
 
-struct poll_table_struct;
 struct vm_area_struct;
+struct vm_operations_struct;
 struct module;
 struct file;
 struct inode;
 struct class;
 struct device;
+struct device_driver;
 struct page;
+
+typedef struct poll_table_struct {
+}	poll_table;
 
 typedef struct {
 	volatile unsigned int counter;
@@ -65,6 +69,7 @@ typedef void device_release_t (struct device *);
 struct device {
 	int	minor;
 	device_release_t *release;
+	struct device_driver *driver;
 	struct device *parent;
 	void   *driver_data;
 	const struct file_operations *fops;
@@ -72,16 +77,37 @@ struct device {
 	struct class *class;
 	dev_t	devt;
 	char	name[64];
+	char	bus_name[32];
+	char	bus_id[32];
 };
 
-struct vm_area_struct {
-	unsigned long vm_start;
-	unsigned long vm_end;
+struct device_driver {
+	char	name[1];
 };
 
 typedef struct {
 	unsigned long pgprot;
 } pgprot_t;
+
+struct vm_fault {
+
+};
+
+struct vm_area_struct {
+	unsigned long vm_start;
+	unsigned long vm_end;
+	unsigned long vm_pgoff;
+	void   *vm_private_data;
+	const struct vm_operations_struct *vm_ops;
+	uint32_t vm_flags;
+	pgprot_t vm_page_prot;
+};
+
+struct vm_operations_struct {
+	void    (*open) (struct vm_area_struct *vma);
+	void    (*close) (struct vm_area_struct *vma);
+	int     (*fault) (struct vm_area_struct *vma, struct vm_fault *vmf);
+};
 
 typedef struct spinlock {
 } spinlock_t;
@@ -91,7 +117,7 @@ struct file_operations {
 	loff_t  (*llseek) (struct file *, loff_t, int);
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
-	unsigned int (*poll) (struct file *, struct poll_table_struct *);
+	unsigned int (*poll) (struct file *, poll_table *);
 	int     (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
 	long    (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
 	long    (*compat_ioctl) (struct file *, unsigned int, unsigned long);
@@ -132,12 +158,22 @@ typedef struct wait_queue_head {
 	/* TODO */
 } wait_queue_head_t;
 
-typedef struct poll_table {
-	/* TODO */
-}	poll_table;
-
 typedef struct timer_list {
-	/* TODO */
+	void    (*function) (unsigned long data);
+	uint64_t expires;
+	unsigned long data;
 } timer_list_t;
+
+typedef struct work_struct {
+
+} work_t;
+
+typedef struct delayed_work {
+	struct work_struct work;
+} delayed_work_t;
+
+typedef struct completion {
+
+} completion_t;
 
 #endif					/* _LINUX_STRUCT_H_ */
