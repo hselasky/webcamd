@@ -5,6 +5,7 @@
  * Stripped down version of the Linux defines
  */
 
+#define	__nop do {} while (0)
 #define	__user
 #define	__kernel
 #define	__safe
@@ -12,18 +13,17 @@
 #define	__nocast
 #define	__iomem
 #define	__must_check
-#define	__chk_user_ptr(x) do {} while (0)
-#define	__chk_io_ptr(x) do {} while (0)
+#define	__chk_user_ptr(x) __nop
+#define	__chk_io_ptr(x) __nop
 #define	__builtin_warning(x, ...) (1)
 #define	__acquires(x)
 #define	__releases(x)
-#define	__acquire(x) do {} while (0)
-#define	__release(x) do {} while (0)
+#define	__acquire(x) __nop
+#define	__release(x) __nop
 #define	__cond_lock(x,c) (c)
 #define	__pgprot(x)     ((pgprot_t){(x)})
-#define	SetPageReserved(...)   do {} while (0)
-#define	ClearPageReserved(...) do {} while (0)
-#define	spin_lock_init(lock) do {} while (0)
+#define	SetPageReserved(...)   __nop
+#define	ClearPageReserved(...) __nop
 #define	_PAGE_PRESENT   0
 #define	_PAGE_RW        0
 #define	_PAGE_USER      0
@@ -53,8 +53,11 @@
 #define	MODULE_VERSION(...)
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
-#define	info(...) do {} while (0)
-#define	printk(...) do {} while (0)
+#define	info(...) __nop
+#define	printk(...) __nop
+#define	pr_err(...) __nop
+#define	dev_dbg(...) __nop
+#define	dev_err(...) __nop
 #define	warn printk
 #define	dbg printk
 #define	err printk
@@ -96,7 +99,11 @@
 #define	EXIT_DEAD               32
 #define	TASK_NONINTERACTIVE     64
 #define	no_llseek	NULL
-#define	BITS_PER_LONG 32
+#define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
+#define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
+#define	BITS_PER_BYTE 8
+#define	BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
+#define	BIT(n) (1UL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 29)
 #define	BUS_ID_SIZE 32
@@ -107,6 +114,7 @@
 #define	module_init(...)
 #define	module_exit(...)
 #define	DEFAULT_POLLMASK POLLNVAL
+#define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
 #define	_IOC_NR(cmd) ((cmd) & 0xFF)
 #define	_IOC_DIR(cmd) ((cmd) & IOC_DIRMASK)
@@ -116,8 +124,8 @@
 #define	__OLD_VIDIOC_
 #define	PAGE_SIZE 4096
 #define	PAGE_SHIFT 12
-#define	down_read(...) do { } while (0)
-#define	up_read(...) do { } while (0)
+#define	down_read(...) __nop
+#define	up_read(...) __nop
 #define	VM_WRITE 0x0001
 #define	VM_READ 0x0002
 #define	VM_SHARED 0x0004
@@ -129,7 +137,6 @@
 #define	DMA_TO_DEVICE 0x02
 #define	module_param_named(...)
 #define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
-#define	BIT(n) (1UL << (n))
 #define	__KERNEL__
 #define	capable(...) 1
 #define	uninitialized_var(...) __VA_ARGS__
@@ -142,9 +149,18 @@
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
 #define	max(a,b) (((a) > (b)) ? (a) : (b))
 #define	prefetch(x) (void)x
-#define	BUG(...) do {} while (0)
-#define	BUG_ON(...) do {} while (0)
-#define	WARN_ON(...) do {} while (0)
+#define	BUG(...) __nop
+#define	BUG_ON(...) __nop
+#define	WARN_ON(...) __nop
+#define	mutex_init(...) __nop
+#define	mutex_lock(...) atomic_lock()
+#define	mutex_unlock(...) atomic_unlock()
+#define	mutex_lock_interruptible(...) (atomic_lock(),0)
+#define	spin_lock_init(lock) __nop
+#define	spin_lock_irqsave(l,f)  do { (f) = 1; atomic_lock(); } while (0)
+#define	spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
+#define	atomic_inc_return atomic_inc
+#define	atomic_dec_return atomic_dec
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

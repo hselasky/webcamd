@@ -906,7 +906,7 @@ usb_get_intfdata(struct usb_interface *intf)
 }
 
 /*------------------------------------------------------------------------*
- *	usb_linux_register
+ *	usb_register
  *
  * The following function is used by the "USB_DRIVER_EXPORT()" macro,
  * and is used to register a Linux USB driver, so that its
@@ -914,16 +914,18 @@ usb_get_intfdata(struct usb_interface *intf)
  * function is not part of the Linux USB API, and is for internal use
  * only.
  *------------------------------------------------------------------------*/
-void
-usb_linux_register(void *arg)
+int
+usb_register(struct usb_driver *drv)
 {
-	struct usb_driver *drv = arg;
-
+	atomic_lock();
 	LIST_INSERT_HEAD(&usb_linux_driver_list, drv, linux_driver_list);
+	atomic_unlock();
+
+	return (0);
 }
 
 /*------------------------------------------------------------------------*
- *	usb_linux_deregister
+ *	usb_deregister
  *
  * The following function is used by the "USB_DRIVER_EXPORT()" macro,
  * and is used to deregister a Linux USB driver. This function will
@@ -932,12 +934,14 @@ usb_linux_register(void *arg)
  * unloaded. This function is not part of the Linux USB API, and is
  * for internal use only.
  *------------------------------------------------------------------------*/
-void
-usb_linux_deregister(void *arg)
+int
+usb_deregister(struct usb_driver *drv)
 {
-	struct usb_driver *drv = arg;
-
+	atomic_lock();
 	LIST_REMOVE(drv, linux_driver_list);
+	atomic_unlock();
+
+	return (0);
 }
 
 /*------------------------------------------------------------------------*
@@ -1285,4 +1289,75 @@ setup_bulk:
 		}
 		goto tr_setup;
 	}
+}
+
+int
+usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd)
+{
+	return ((epd->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN);
+}
+
+int
+usb_endpoint_dir_out(const struct usb_endpoint_descriptor *epd)
+{
+	return ((epd->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_OUT);
+}
+
+void
+usb_fill_control_urb(struct urb *urb,
+    struct usb_device *dev,
+    struct usb_host_endpoint *pipe,
+    unsigned char *setup_packet,
+    void *transfer_buffer,
+    int buffer_length,
+    usb_complete_t complete_fn,
+    void *context)
+{
+	urb->dev = dev;
+	urb->pipe = pipe;
+	urb->setup_packet = setup_packet;
+	urb->transfer_buffer = transfer_buffer;
+	urb->transfer_buffer_length = buffer_length;
+	urb->complete = complete_fn;
+	urb->context = context;
+}
+
+void
+usb_fill_bulk_urb(struct urb *urb,
+    struct usb_device *dev,
+    struct usb_host_endpoint *pipe,
+    void *transfer_buffer,
+    int buffer_length,
+    usb_complete_t complete_fn,
+    void *context)
+{
+	urb->dev = dev;
+	urb->pipe = pipe;
+	urb->transfer_buffer = transfer_buffer;
+	urb->transfer_buffer_length = buffer_length;
+	urb->complete = complete_fn;
+	urb->context = context;
+}
+
+void
+usb_fill_int_urb(struct urb *urb,
+    struct usb_device *dev,
+    struct usb_host_endpoint *pipe,
+    void *transfer_buffer,
+    int buffer_length,
+    usb_complete_t complete_fn,
+    void *context,
+    int interval)
+{
+	urb->dev = dev;
+	urb->pipe = pipe;
+	urb->transfer_buffer = transfer_buffer;
+	urb->transfer_buffer_length = buffer_length;
+	urb->complete = complete_fn;
+	urb->context = context;
+	if (dev->speed == USB_SPEED_HIGH)
+		urb->interval = 1 << (interval - 1);
+	else
+		urb->interval = interval;
+	urb->start_frame = -1;
 }

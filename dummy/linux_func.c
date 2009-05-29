@@ -1,5 +1,3 @@
-#include <machine/atomic.h>
-
 uint16_t
 le16_to_cpu(uint16_t x)
 {
@@ -138,17 +136,117 @@ remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 int
 atomic_add(int i, atomic_t *v)
 {
-	return i + atomic_fetchadd_int(&v->counter, i);
+	atomic_lock();
+	v->counter += i;
+	i = v->counter;
+	atomic_unlock();
+
+	return (i);
+}
+
+int
+atomic_inc(atomic_t *v)
+{
+	int i;
+
+	atomic_lock();
+	v->counter++;
+	i = v->counter;
+	atomic_unlock();
+
+	return (i);
+}
+
+int
+atomic_dec(atomic_t *v)
+{
+	int i;
+
+	atomic_lock();
+	v->counter--;
+	i = v->counter;
+	atomic_unlock();
+
+	return (i);
 }
 
 void
 atomic_set(atomic_t *v, int i)
 {
+	atomic_lock();
 	v->counter = i;
+	atomic_unlock();
 }
 
 int
 atomic_read(const atomic_t *v)
 {
-	return v->counter;
+	int i;
+
+	atomic_lock();
+	i = v->counter;
+	atomic_unlock();
+	return (i);
+}
+
+int
+test_bit(int nr, const void *addr)
+{
+	const uint32_t *ptr = (const uint32_t *)addr;
+	int i;
+
+	atomic_lock();
+	i = (((1UL << (nr & 31)) & (ptr[nr >> 5])) != 0);
+	atomic_unlock();
+	return (i);
+}
+
+int
+test_and_set_bit(int nr, volatile unsigned long *addr)
+{
+	unsigned long mask = BIT_MASK(nr);
+	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
+	unsigned long old;
+
+	atomic_lock();
+	old = *p;
+	*p = old | mask;
+	atomic_unlock();
+	return (old & mask) != 0;
+}
+
+int
+test_and_clear_bit(int nr, volatile unsigned long *addr)
+{
+	unsigned long mask = BIT_MASK(nr);
+	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
+	unsigned long old;
+
+	atomic_lock();
+	old = *p;
+	*p = old & ~mask;
+	atomic_unlock();
+
+	return (old & mask) != 0;
+}
+
+void
+atomic_lock(void)
+{
+	/* TODO */
+}
+
+void
+atomic_unlock(void)
+{
+	/* TODO */
+}
+
+unsigned int
+hweight8(unsigned int w)
+{
+	unsigned int res = w - ((w >> 1) & 0x55);
+
+	res = (res & 0x33) + ((res >> 2) & 0x33);
+	return (res + (res >> 4)) & 0x0F;
 }

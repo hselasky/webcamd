@@ -128,10 +128,6 @@ struct usb_driver {
 	uint8_t	supports_autosuspend;
 };
 
-#define	USB_DRIVER_EXPORT(id,p_usb_drv) \
-  SYSINIT(id,SI_SUB_KLD,SI_ORDER_FIRST,usb_linux_register,p_usb_drv); \
-  SYSUNINIT(id,SI_SUB_KLD,SI_ORDER_ANY,usb_linux_deregister,p_usb_drv)
-
 /*
  * The following structure is the same as "usb_device_descriptor_t"
  * except that 16-bit values are "uint16_t" and not an array of "uint8_t".
@@ -480,8 +476,8 @@ void	usb_free_urb(struct urb *urb);
 void	usb_init_urb(struct urb *urb);
 void	usb_kill_urb(struct urb *urb);
 void	usb_set_intfdata(struct usb_interface *intf, void *data);
-void	usb_linux_register(void *arg);
-void	usb_linux_deregister(void *arg);
+int	usb_register(struct usb_driver *drv);
+int	usb_deregister(struct usb_driver *drv);
 
 int	usb_linux_probe(uint16_t device_index);
 int	usb_linux_detach(uint16_t device_index);
@@ -547,5 +543,11 @@ struct usb_ctrlrequest {
 	__le16	wIndex;
 	__le16	wLength;
 } __packed;
+
+int	usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd);
+int	usb_endpoint_dir_out(const struct usb_endpoint_descriptor *epd);
+void	usb_fill_control_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, unsigned char *setup_packet, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
+void	usb_fill_bulk_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
+void	usb_fill_int_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context, int interval);
 
 #endif					/* _USB_COMPAT_LINUX_H */

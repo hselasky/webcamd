@@ -29,12 +29,20 @@ void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsign
 uint64_t get_jiffies_64(void);
 int	jiffies_to_msecs(unsigned long);
 void	schedule(void);
+int	atomic_inc(atomic_t *v);
+int	atomic_dec(atomic_t *v);
 int	atomic_add(int i, atomic_t *v);
 void	atomic_set(atomic_t *v, int i);
 int	atomic_read(const atomic_t *v);
+int	test_bit(int nr, const void *addr);
+int	test_and_set_bit(int nr, volatile unsigned long *addr);
+int	test_and_clear_bit(int nr, volatile unsigned long *addr);
+void	atomic_lock(void);
+void	atomic_unlock(void);
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 void   *dma_alloc_coherent(struct device *dev, uint32_t size, dma_addr_t *hdl, uint32_t flag);
 pgprot_t pgprot_noncached(pgprot_t);
+unsigned int hweight8(unsigned int w);
 
 #endif					/* _LINUX_FUNC_H_ */
