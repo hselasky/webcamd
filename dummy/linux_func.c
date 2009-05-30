@@ -87,9 +87,9 @@ put_unaligned_le16(uint16_t val, void *_ptr)
 }
 
 uint32_t
-get_unaligned_le32(void *_ptr)
+get_unaligned_le32(const void *_ptr)
 {
-	uint8_t *ptr = _ptr;
+	const uint8_t *ptr = _ptr;
 	uint32_t val;
 
 	val = ptr[3];
@@ -103,9 +103,9 @@ get_unaligned_le32(void *_ptr)
 }
 
 uint16_t
-get_unaligned_le16(void *_ptr)
+get_unaligned_le16(const void *_ptr)
 {
-	uint8_t *ptr = _ptr;
+	const uint8_t *ptr = _ptr;
 	uint16_t val;
 
 	val = ptr[1];
@@ -231,6 +231,28 @@ test_and_clear_bit(int nr, volatile unsigned long *addr)
 }
 
 void
+set_bit(int nr, volatile unsigned long *addr)
+{
+	unsigned long mask = BIT_MASK(nr);
+	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
+
+	atomic_lock();
+	*p |= mask;
+	atomic_unlock();
+}
+
+void
+clear_bit(int nr, volatile unsigned long *addr)
+{
+	unsigned long mask = BIT_MASK(nr);
+	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
+
+	atomic_lock();
+	*p &= ~mask;
+	atomic_unlock();
+}
+
+void
 atomic_lock(void)
 {
 	/* TODO */
@@ -249,4 +271,64 @@ hweight8(unsigned int w)
 
 	res = (res & 0x33) + ((res >> 2) & 0x33);
 	return (res + (res >> 4)) & 0x0F;
+}
+
+unsigned long
+copy_to_user(void *to, const void *from, unsigned long n)
+{
+	memcpy(to, from, n);
+	return (0);
+}
+
+unsigned long
+copy_from_user(void *to, const void *from, unsigned long n)
+{
+	memcpy(to, from, n);
+	return (0);
+}
+
+struct cdev *
+cdev_alloc(void)
+{
+	struct cdev *cdev;
+
+	cdev = malloc(sizeof(*cdev));
+	if (cdev)
+		memset(cdev, 0, sizeof(*cdev));
+	return (cdev);
+}
+
+void
+cdev_del(struct cdev *cdev)
+{
+	free(cdev);
+}
+
+uint64_t
+get_jiffies_64(void)
+{
+	/* TODO */
+	return (0);
+}
+
+void
+kref_init(struct kref *kref)
+{
+	kref->refcount.counter = 0;
+}
+
+void
+kref_get(struct kref *kref)
+{
+	atomic_inc(&kref->refcount);
+}
+
+int
+kref_put(struct kref *kref, void (*release) (struct kref *kref))
+{
+	if (atomic_dec(&kref->refcount) == 0) {
+		release(kref);
+		return 1;
+	}
+	return 0;
 }

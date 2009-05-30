@@ -1303,6 +1303,30 @@ usb_endpoint_dir_out(const struct usb_endpoint_descriptor *epd)
 	return ((epd->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_OUT);
 }
 
+int
+usb_endpoint_xfer_bulk(const struct usb_endpoint_descriptor *epd)
+{
+	return ((epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == USB_ENDPOINT_XFER_BULK);
+}
+
+int
+usb_endpoint_xfer_control(const struct usb_endpoint_descriptor *epd)
+{
+	return ((epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == USB_ENDPOINT_XFER_CONTROL);
+}
+
+int
+usb_endpoint_xfer_int(const struct usb_endpoint_descriptor *epd)
+{
+	return ((epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == USB_ENDPOINT_XFER_INT);
+}
+
+int
+usb_endpoint_xfer_isoc(const struct usb_endpoint_descriptor *epd)
+{
+	return ((epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == USB_ENDPOINT_XFER_ISOC);
+}
+
 void
 usb_fill_control_urb(struct urb *urb,
     struct usb_device *dev,
@@ -1360,4 +1384,44 @@ usb_fill_int_urb(struct urb *urb,
 	else
 		urb->interval = interval;
 	urb->start_frame = -1;
+}
+
+struct usb_interface *
+usb_get_intf(struct usb_interface *intf)
+{
+	/* TODO */
+	return intf;
+}
+
+void
+usb_put_intf(struct usb_interface *intf)
+{
+	/* TODO */
+}
+
+struct usb_device *
+usb_get_dev(struct usb_device *intf)
+{
+	/* TODO */
+	return intf;
+}
+
+void
+usb_put_dev(struct usb_device *intf)
+{
+	/* TODO */
+}
+
+int
+usb_string(struct usb_device *dev, int index, char *buf, size_t size)
+{
+	if (size == 0)
+		return (0);
+
+	if (libusb20_dev_req_string_simple_sync(
+	    dev->bsd_udev, index, buf, size)) {
+		*buf = 0;
+		return (-EINVAL);
+	}
+	return (strlen(buf));
 }

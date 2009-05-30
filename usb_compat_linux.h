@@ -486,8 +486,6 @@ int	usb_linux_resume(uint16_t device_index);
 
 #define	interface_to_usbdev(intf) (intf)->linux_udev
 #define	interface_to_bsddev(intf) (intf)->linux_udev->bsd_udev
-#define	usb_get_dev(dev) (dev)
-#define	usb_get_intf(intf) (intf)
 
 /* chapter 9 stuff, taken from "include/linux/usb/ch9.h" */
 
@@ -546,8 +544,39 @@ struct usb_ctrlrequest {
 
 int	usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd);
 int	usb_endpoint_dir_out(const struct usb_endpoint_descriptor *epd);
+int	usb_endpoint_xfer_bulk(const struct usb_endpoint_descriptor *epd);
+int	usb_endpoint_xfer_control(const struct usb_endpoint_descriptor *epd);
+int	usb_endpoint_xfer_int(const struct usb_endpoint_descriptor *epd);
+int	usb_endpoint_xfer_isoc(const struct usb_endpoint_descriptor *epd);
 void	usb_fill_control_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, unsigned char *setup_packet, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
 void	usb_fill_bulk_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
 void	usb_fill_int_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context, int interval);
+struct usb_interface *usb_get_intf(struct usb_interface *intf);
+void	usb_put_intf(struct usb_interface *intf);
+struct usb_device *usb_get_dev(struct usb_device *intf);
+void	usb_put_dev(struct usb_device *intf);
+int	usb_string(struct usb_device *dev, int index, char *buf, size_t size);
+
+#define	usb_autopm_set_interface(...) 0
+#define	usb_autopm_get_interface(...) 0
+#define	usb_autopm_put_interface(...) __nop
+#define	usb_autopm_enable(...) __nop
+#define	usb_autopm_disable(...) __nop
+#define	usb_mark_last_busy(...) __nop
+#define	usb_driver_release_interface(...) __nop
+#define	usb_driver_claim_interface(...) 0
+
+#define	usb_endpoint_is_bulk_in(epd) \
+	(usb_endpoint_xfer_bulk(epd) && usb_endpoint_dir_in(epd))
+#define	usb_endpoint_is_bulk_out(epd) \
+	(usb_endpoint_xfer_bulk(epd) && usb_endpoint_dir_out(epd))
+#define	usb_endpoint_is_int_in(epd) \
+	(usb_endpoint_xfer_int(epd) && usb_endpoint_dir_in(epd))
+#define	usb_endpoint_is_int_out(epd) \
+	(usb_endpoint_xfer_int(epd) && usb_endpoint_dir_out(epd))
+#define	usb_endpoint_is_isoc_in(epd) \
+	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_in(epd))
+#define	usb_endpoint_is_isoc_out(epd) \
+	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_out(epd))
 
 #endif					/* _USB_COMPAT_LINUX_H */

@@ -63,7 +63,10 @@
 #define	err printk
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
-#define	vmalloc_user(pg) malloc((pg) * PAGE_SIZE)
+#define	vmalloc_user(s) malloc(s)
+#define	vmalloc_32(s) malloc(s)
+#define	vmalloc_to_page(...) NULL
+#define	vm_insert_page(...) 0		/* NOP */
 #define	vfree(ptr) free(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
@@ -144,6 +147,8 @@
 #define	true 1
 #define	HZ 1000
 #define	jiffies get_jiffies_64()
+#define	msecs_to_jiffies(x) (x)
+#define	jiffies_to_msecs(x) (x)
 #define	unlikely(...) __VA_ARGS__
 #define	DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
@@ -159,6 +164,8 @@
 #define	spin_lock_init(lock) __nop
 #define	spin_lock_irqsave(l,f)  do { (f) = 1; atomic_lock(); } while (0)
 #define	spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
+#define	spin_lock(...)  atomic_lock()
+#define	spin_unlock(...) atomic_unlock()
 #define	atomic_inc_return atomic_inc
 #define	atomic_dec_return atomic_dec
 
