@@ -50,6 +50,11 @@ ${LINUXDIR}/drivers/media/video/uvc \
 ${LINUXDIR}/drivers/media/video/zoran
 
 #
+# Start Section (must be first)
+#
+SRCS+= linux_start_section.c
+
+#
 # FreeBSD specific files
 #
 
@@ -137,7 +142,7 @@ CFLAGS+= -I${.CURDIR}/dummy
 
 CFLAGS+= -include usb_global.h
 
-CFLAGS+= -O2 -Wall
+CFLAGS+= -O2 -Wall -g
 
 LDFLAGS+= -lusb -lpthread
 

@@ -166,7 +166,7 @@ usb_linux_probe(uint16_t device_index)
 		if (libusb20_dev_get_mode(pdev) != LIBUSB20_MODE_HOST)
 			continue;
 
-		if (libusb20_dev_open(pdev, libusb20_dev_open(pdev, 4 * 16)))
+		if (libusb20_dev_open(pdev, 4 * 16))
 			continue;
 
 		pcfg = libusb20_dev_alloc_config(pdev,

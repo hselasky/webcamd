@@ -23,16 +23,38 @@
  * SUCH DAMAGE.
  */
 
-int
-linux_module_init_end(void)
+static int
+linux_module_init_start(void)
 {
 	return (0);
 }
 
-void
-linux_module_exit_end(void)
+static void
+linux_module_exit_start(void)
 {
 }
 
-module_init(linux_module_init_end);
-module_exit(linux_module_exit_end);
+module_init(linux_module_init_start);
+module_exit(linux_module_exit_start);
+
+void
+linux_init(void)
+{
+	module_init_t **t = &linux_module_init_start_p;
+	uint32_t i;
+
+	for (i = 0; t[i] != linux_module_init_end; i++) {
+		t[i] ();
+	}
+}
+
+void
+linux_exit(void)
+{
+	module_exit_t **t = &linux_module_exit_start_p;
+	uint32_t i;
+
+	for (i = 0; t[i] != linux_module_exit_end; i++) {
+		t[i] ();
+	}
+}

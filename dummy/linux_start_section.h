@@ -23,16 +23,7 @@
  * SUCH DAMAGE.
  */
 
-int
-linux_module_init_end(void)
-{
-	return (0);
-}
+#ifndef _LINUX_START_SECTION_H_
+#define	_LINUX_START_SECTION_H_
 
-void
-linux_module_exit_end(void)
-{
-}
-
-module_init(linux_module_init_end);
-module_exit(linux_module_exit_end);
+#endif					/* _LINUX_START_SECTION_H_ */

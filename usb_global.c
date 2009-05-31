@@ -23,11 +23,16 @@
  * SUCH DAMAGE.
  */
 
-int 
+int
 main()
 {
+	int err;
 
 	linux_init();
+
+	err = usb_linux_probe(0);
+	printf("Result: %d\n", err);
+
 
 	while (1) {
 		sleep(1);

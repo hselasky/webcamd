@@ -165,7 +165,4 @@ typedef struct inode {
 	dev_t	d_inode;
 } inode_t;
 
-typedef int (module_init_t)(void);
-typedef void (module_exit_t)(void);
-
 #endif					/* _LINUX_STRUCT_H_ */

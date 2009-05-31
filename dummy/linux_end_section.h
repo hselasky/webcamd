@@ -26,13 +26,16 @@
 #ifndef _LINUX_END_SECTION_H_
 #define	_LINUX_END_SECTION_H_
 
-#define	module_init(func) static module_init_t __attribute__((__section__("mod_inits"),__used__)) *func##_p = func;
-#define	module_exit(func) static module_exit_t __attribute__((__section__("mod_exits"),__used__)) *func##_p = func;
+typedef int (module_init_t)(void);
+typedef void (module_exit_t)(void);
 
-extern module_init_t *mod_inits[];
-extern module_exit_t *mod_exits[];
+#define	module_init(func) static module_init_t * __attribute__((__section__("linux_init_data"),__used__,__aligned__(1))) func##_p = func;
+#define	module_exit(func) static module_exit_t * __attribute__((__section__("linux_exit_data"),__used__,__aligned__(1))) func##_p = func;
 
 void	linux_init(void);
 void	linux_exit(void);
+
+int	linux_module_init_end(void);
+void	linux_module_exit_end(void);
 
 #endif					/* _LINUX_END_SECTION_H_ */
