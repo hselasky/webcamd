@@ -11,6 +11,7 @@
 #include <sys/fcntl.h>
 #include <sys/msg.h>
 #include <sys/time.h>
+#include <sys/resource.h>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #include <stdio.h>
 #include <poll.h>
 #include <string.h>
+#include <pthread.h>
 
 #include <libusb20.h>
 #include <libusb20_desc.h>
@@ -28,13 +30,14 @@
 #include <linux_struct.h>
 #include <linux_func.h>
 #include <linux_list.h>
-#include <linux_task.h>
 #include <linux_timer.h>
+#include <linux_task.h>
 #include <linux_thread.h>
 #include <linux_usb.h>
 
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
+#include <include/linux/dvb/dmx.h>
 
 #include <include/media/v4l2-chip-ident.h>
 #include <include/media/v4l2-common.h>
@@ -46,7 +49,7 @@
 #include <include/media/videobuf-core.h>
 #include <include/media/videobuf-dma-contig.h>
 #include <include/media/videobuf-dma-sg.h>
-#include <include/linux/dvb/dmx.h>
+
 #include <drivers/media/dvb/dvb-core/dmxdev.h>
 #include <drivers/media/dvb/dvb-core/demux.h>
 #include <drivers/media/dvb/dvb-core/dvb_demux.h>
