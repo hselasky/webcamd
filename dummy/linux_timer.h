@@ -37,5 +37,6 @@ void	add_timer(struct timer_list *timer);
 int	del_timer(struct timer_list *timer);
 int	timer_pending(const struct timer_list *timer);
 uint64_t get_jiffies_64(void);
+void	init_timer(struct timer_list *timer);
 
 #endif					/* _LINUX_TIMER_H_ */

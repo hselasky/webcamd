@@ -17,6 +17,7 @@ uint16_t get_unaligned_le16(const void *);
 
 void   *dev_get_drvdata(struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
+const char *dev_name(struct device *dev);
 int	remap_pfn_range(struct vm_area_struct *, unsigned long addr, unsigned long pfn, unsigned long size, pgprot_t);
 void	vfree(void *);
 void   *page_address(struct page *page);
@@ -41,8 +42,6 @@ pthread_mutex_t *atomic_get_lock();
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
-void   *dma_alloc_coherent(struct device *dev, uint32_t size, dma_addr_t *hdl, uint32_t flag);
-pgprot_t pgprot_noncached(pgprot_t);
 unsigned int hweight8(unsigned int w);
 unsigned long copy_to_user(void *to, const void *from, unsigned long n);
 unsigned long copy_from_user(void *to, const void *from, unsigned long n);
@@ -55,6 +54,7 @@ int	device_add(struct device *dev);
 void	device_del(struct device *dev);
 int	device_register(struct device *dev);
 void	device_unregister(struct device *dev);
+void	device_destroy(struct class *class, dev_t devt);
 void	module_put(struct module *module);
 int	try_module_get(struct module *module);
 void	module_get(struct module *module);
@@ -72,5 +72,10 @@ void   *vmalloc(size_t size);
 struct class *class_get(struct class *class);
 struct class *class_put(struct class *class);
 int	class_register(struct class *class);
+void	class_unregister(struct class *class);
+void	class_destroy(struct class *class);
+int	register_chrdev_region(dev_t from, unsigned count, const char *name);
+void	unregister_chrdev_region(dev_t from, unsigned count);
+int	remap_vmalloc_range(struct vm_area_struct *vma, void *addr, unsigned long pgoff);
 
 #endif					/* _LINUX_FUNC_H_ */

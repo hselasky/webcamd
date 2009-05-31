@@ -77,6 +77,7 @@ SRCS+= dvb_demux.c
 SRCS+= dmxdev.c
 SRCS+= dvbdev.c
 SRCS+= dvb_ringbuffer.c
+SRCS+= dvb_frontend.c
 SRCS+= videobuf-core.c
 SRCS+= videobuf-dvb.c
 SRCS+= videobuf-dma-contig.c

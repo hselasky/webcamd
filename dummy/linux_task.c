@@ -43,6 +43,7 @@ schedule_work(struct work_struct *work)
 		retval = 0;
 	}
 	atomic_unlock();
+	return (retval);
 }
 
 static void
@@ -68,7 +69,7 @@ schedule_delayed_work(struct delayed_work *work, unsigned long delay)
 	}
 
 	if (retval) {
-		work->timer.data = &work->work;
+		work->timer.data = (long)&work->work;
 		work->timer.expires = jiffies + delay;
 		work->timer.function = delayed_work_timer_fn;
 		add_timer(&work->timer);
@@ -93,7 +94,6 @@ INIT_DELAYED_WORK(struct delayed_work *work, work_func_t func)
 static void *
 work_exec(void *arg)
 {
-	int64_t delta;
 	struct work_struct *t;
 
 	setpriority(PRIO_PROCESS, 0, 5);

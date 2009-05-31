@@ -63,6 +63,8 @@
 #define	err printk
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
+#define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
+#define	dma_free_coherent(d,s,v,h) free(v)
 #define	vmalloc_user(s) malloc(s)
 #define	vmalloc_32(s) malloc(s)
 #define	vmalloc_to_page(...) NULL
@@ -71,6 +73,7 @@
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
 #define	msleep(d) usleep((d) * 1000)
+#define	msleep_interruptible(d) usleep((d) * 1000)
 #define	mdelay(d) usleep((d) * 1000)
 #define	__GFP_WAIT 0
 #define	__GFP_HIGH 0
@@ -184,6 +187,13 @@
 #define	mb() __asm volatile("":::"memory")
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
+#define	current NULL
+#define	dma_sync_single_for_cpu(...) __nop
+#define	pgprot_noncached(x) (x)
+#define	init_MUTEX(sem) __nop
+#define	up(x) atomic_unlock()
+#define	down(x) atomic_lock()
+#define	down_interruptible(x) (atomic_lock(),0)
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

@@ -109,6 +109,12 @@ get_jiffies_64(void)
 	return (i);
 }
 
+void
+init_timer(struct timer_list *timer)
+{
+	memset(timer, 0, sizeof(*timer));
+}
+
 static int
 timer_init(void)
 {

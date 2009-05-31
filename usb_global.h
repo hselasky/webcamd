@@ -37,7 +37,9 @@
 
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
+#include <include/linux/dvb/version.h>
 #include <include/linux/dvb/dmx.h>
+#include <include/linux/dvb/frontend.h>
 
 #include <include/media/v4l2-chip-ident.h>
 #include <include/media/v4l2-common.h>
@@ -54,6 +56,7 @@
 #include <drivers/media/dvb/dvb-core/demux.h>
 #include <drivers/media/dvb/dvb-core/dvb_demux.h>
 #include <drivers/media/dvb/dvb-core/dvb_net.h>
+#include <drivers/media/dvb/dvb-core/dvb_frontend.h>
 
 #include <include/media/videobuf-dvb.h>
 #include <include/media/videobuf-vmalloc.h>

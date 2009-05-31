@@ -129,6 +129,12 @@ dev_set_drvdata(struct device *dev, void *data)
 	dev->driver_data = data;
 }
 
+const char *
+dev_name(struct device *dev)
+{
+	return (dev->name);
+}
+
 int
 remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
     unsigned long pfn, unsigned long size, pgprot_t pgr)
@@ -393,6 +399,12 @@ device_unregister(struct device *dev)
 }
 
 void
+device_destroy(struct class *class, dev_t devt)
+{
+
+}
+
+void
 module_put(struct module *module)
 {
 
@@ -633,6 +645,33 @@ void
 class_unregister(struct class *class)
 {
 
+}
+
+void
+class_destroy(struct class *class)
+{
+	if ((class == NULL) || (IS_ERR(class)))
+		return;
+	class_unregister(class);
+}
+
+int
+register_chrdev_region(dev_t from, unsigned count, const char *name)
+{
+	return (0);
+}
+
+void
+unregister_chrdev_region(dev_t from, unsigned count)
+{
+	return;
+}
+
+int
+remap_vmalloc_range(struct vm_area_struct *vma,
+    void *addr, unsigned long pgoff)
+{
+	return (0);
 }
 
 static int

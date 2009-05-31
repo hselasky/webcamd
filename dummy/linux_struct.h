@@ -176,4 +176,8 @@ typedef struct inode {
 typedef int (module_init_t)(void);
 typedef void (module_exit_t)(void);
 
+struct semaphore {
+
+};
+
 #endif					/* _LINUX_STRUCT_H_ */
