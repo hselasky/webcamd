@@ -26,4 +26,98 @@
 #ifndef _LINUX_THREAD_H_
 #define	_LINUX_THREAD_H_
 
+typedef struct task_struct {
+
+} task_struct_t;
+
+typedef struct wait_queue_head {
+	pthread_cond_t cond;
+} wait_queue_head_t;
+
+typedef struct semaphore {
+	pthread_cond_t cond;
+	int32_t	value;
+} semaphore_t;
+
+typedef struct completion {
+	uint32_t done;
+	wait_queue_head_t wait;
+} completion_t;
+
+void	init_waitqueue_head(wait_queue_head_t *q);
+void	uninit_waitqueue_head(wait_queue_head_t *q);
+void	wake_up(wait_queue_head_t *q);
+void	wake_up_all(wait_queue_head_t *q);
+void	wake_up_nr(wait_queue_head_t *q, uint32_t nr);
+void	__wait_event(wait_queue_head_t *q);
+uint64_t __wait_event_timed(wait_queue_head_t *q, uint64_t timeout);
+
+#define	wake_up_interruptible(q)        wake_up(q)
+#define	wake_up_interruptible_nr(q, nr) wake_up_nr(q,nr)
+#define	wake_up_interruptible_all(q)    wake_up_all(q)
+#define	wake_up_interruptible_sync(q)   wake_up(q)
+
+#define	wait_event(wq, condition)		\
+do {						\
+	atomic_lock();				\
+	while (!(condition))			\
+		__wait_event(&(wq));		\
+	atomic_unlock();			\
+} while (0)
+
+#define	wait_event_interruptible(wq, condition)	\
+({						\
+	atomic_lock();				\
+	while (!(condition))			\
+		__wait_event(&(wq));		\
+	atomic_unlock();			\
+	0;					\
+})
+
+#define	wait_event_interruptible_timeout(wq, condition, timeout)        \
+({                                                                      \
+	uint64_t __ret = timeout;					\
+	atomic_lock();							\
+	while (!(condition))						\
+		__ret -= __wait_event_timed(&(wq), __ret);		\
+	atomic_unlock();						\
+	__ret;								\
+})
+
+#define	wait_event_timeout(wq, condition, timeout)		\
+({								\
+	uint64_t __ret = timeout;				\
+	atomic_lock();						\
+	while (!(condition))					\
+		__ret -= __wait_event_timed(&(wq), __ret);	\
+	atomic_unlock();					\
+	__ret;							\
+})
+
+void	sema_init(struct semaphore *, int32_t val);
+void	sema_uninit(struct semaphore *sem);
+
+void	up (struct semaphore *);
+void	down(struct semaphore *);
+void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
+
+#define	wait_for_completion_interruptible(x) wait_for_completion(x)
+#define	wait_for_completion_killable(x) wait_for_completion(x)
+
+void	init_completion(struct completion *x);
+void	uninit_completion(struct completion *x);
+void	wait_for_completion(struct completion *x);
+uint64_t wait_for_completion_timeout(struct completion *x, uint64_t timeout);
+void	complete(struct completion *x);
+void	schedule(void);
+
+typedef int (threadfn_t)(void *data);
+struct task_struct *kthread_run(threadfn_t *func, void *data, char *fmt,...);
+int	kthread_stop(struct task_struct *k);
+int	kthread_should_stop(void);
+
+int	try_to_freeze(void);
+int	freezing(struct task_struct *p);
+void	set_freezable(void);
+
 #endif					/* _LINUX_THREAD_H_ */

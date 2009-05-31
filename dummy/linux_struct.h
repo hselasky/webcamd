@@ -159,14 +159,6 @@ struct mutex {
 	/* TODO */
 };
 
-typedef struct wait_queue_head {
-	/* TODO */
-} wait_queue_head_t;
-
-typedef struct completion {
-
-} completion_t;
-
 #define	iminor(i) (i)->d_inode & 0xFF
 
 typedef struct inode {
@@ -175,9 +167,5 @@ typedef struct inode {
 
 typedef int (module_init_t)(void);
 typedef void (module_exit_t)(void);
-
-struct semaphore {
-
-};
 
 #endif					/* _LINUX_STRUCT_H_ */

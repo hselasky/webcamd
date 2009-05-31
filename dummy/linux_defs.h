@@ -190,10 +190,12 @@
 #define	current NULL
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
-#define	init_MUTEX(sem) __nop
-#define	up(x) atomic_unlock()
-#define	down(x) atomic_lock()
-#define	down_interruptible(x) (atomic_lock(),0)
+#define	init_MUTEX(s) sema_init(s,1)
+#define	init_MUTEX_LOCKED(s) sema_init(sem, 0)
+#define	down_interruptible(x) (down(x),0)
+#define	set_current_state(...) __nop
+#define	time_after(a,b) (((long)(b) - (long)(a)) < 0)
+#define	time_before(a,b) time_after(b,a)
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

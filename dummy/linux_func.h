@@ -54,6 +54,8 @@ int	device_add(struct device *dev);
 void	device_del(struct device *dev);
 int	device_register(struct device *dev);
 void	device_unregister(struct device *dev);
+struct device *device_create_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args);
+struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt,...);
 void	device_destroy(struct class *class, dev_t devt);
 void	module_put(struct module *module);
 int	try_module_get(struct module *module);
@@ -77,5 +79,7 @@ void	class_destroy(struct class *class);
 int	register_chrdev_region(dev_t from, unsigned count, const char *name);
 void	unregister_chrdev_region(dev_t from, unsigned count);
 int	remap_vmalloc_range(struct vm_area_struct *vma, void *addr, unsigned long pgoff);
+void	jiffies_to_timeval(uint64_t j, struct timeval *tv);
+int	do_gettimeofday(struct timeval *tp);
 
 #endif					/* _LINUX_FUNC_H_ */

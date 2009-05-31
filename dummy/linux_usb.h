@@ -468,7 +468,7 @@ struct urb *usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags);
 struct usb_host_interface *usb_altnum_to_altsetting(const struct usb_interface *intf, uint8_t alt_index);
 struct usb_interface *usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no);
 
-void   *usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, uint8_t *dma_addr);
+void   *usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, dma_addr_t *dma_addr);
 void   *usb_get_intfdata(struct usb_interface *intf);
 
 void	usb_buffer_free(struct usb_device *dev, uint32_t size, void *addr, uint8_t dma_addr);
@@ -579,5 +579,7 @@ int	usb_make_path(struct usb_device *dev, char *buf, size_t size);
 	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_in(epd))
 #define	usb_endpoint_is_isoc_out(epd) \
 	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_out(epd))
+
+int	usb_bulk_msg(struct usb_device *usb_dev, struct usb_host_endpoint *ep, void *data, int len, int *actual_length, int timeout);
 
 #endif					/* _LINUX_USB_H_ */

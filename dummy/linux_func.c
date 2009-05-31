@@ -359,7 +359,10 @@ get_device(struct device *dev)
 static void
 dev_release(struct kref *kref)
 {
-	/* TODO */
+	struct device *dev =
+	container_of(kref, struct device, refcount);
+
+	free(dev);
 }
 
 void
@@ -396,6 +399,51 @@ device_unregister(struct device *dev)
 {
 	device_del(dev);
 	put_device(dev);
+}
+
+struct device *
+device_create_vargs(struct class *class, struct device *parent,
+    dev_t devt, void *drvdata, const char *fmt, va_list args)
+{
+	struct device *dev = NULL;
+	int retval = -ENODEV;
+
+	if (class == NULL || IS_ERR(class))
+		goto error;
+
+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+	if (!dev) {
+		retval = -ENOMEM;
+		goto error;
+	}
+	dev->devt = devt;
+	dev->class = class;
+	dev->parent = parent;
+	dev_set_drvdata(dev, drvdata);
+
+	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
+	retval = device_register(dev);
+	if (retval)
+		goto error;
+
+	return dev;
+
+error:
+	put_device(dev);
+	return ERR_PTR(retval);
+}
+
+struct device *
+device_create(struct class *class, struct device *parent,
+    dev_t devt, void *drvdata, const char *fmt,...)
+{
+	va_list vargs;
+	struct device *dev;
+
+	va_start(vargs, fmt);
+	dev = device_create_vargs(class, parent, devt, drvdata, fmt, vargs);
+	va_end(vargs);
+	return dev;
 }
 
 void
@@ -672,6 +720,31 @@ remap_vmalloc_range(struct vm_area_struct *vma,
     void *addr, unsigned long pgoff)
 {
 	return (0);
+}
+
+void
+jiffies_to_timeval(uint64_t j, struct timeval *tv)
+{
+	tv->tv_usec = ((j % 1000ULL) * 1000ULL);
+	tv->tv_sec = j / 1000ULL;
+}
+
+int
+do_gettimeofday(struct timeval *tp)
+{
+	return (gettimeofday(tp, NULL));
+}
+
+void
+dvb_net_release(struct dvb_net *dvbnet)
+{
+}
+
+int
+dvb_net_init(struct dvb_adapter *adap, struct dvb_net *dvbnet, struct dmx_demux *dmx)
+{
+	/* not supported */
+	return 0;
 }
 
 static int

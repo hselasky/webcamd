@@ -891,8 +891,10 @@ usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no)
  *	usb_buffer_alloc
  *------------------------------------------------------------------------*/
 void   *
-usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, uint8_t *dma_addr)
+usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, dma_addr_t *dma_addr)
 {
+	if (dma_addr)
+		*dma_addr = 0;
 	return (malloc(size));
 }
 
@@ -1291,6 +1293,8 @@ setup_bulk:
 	}
 }
 
+/* The following functions directly derive from Linux: */
+
 int
 usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd)
 {
@@ -1438,4 +1442,70 @@ usb_make_path(struct usb_device *dev, char *buf, size_t size)
 
 	actual = snprintf(buf, size, "usb-/dev/usb-/dev/usb");
 	return (actual >= (int)size) ? -1 : actual;
+}
+
+struct api_context {
+	struct completion done;
+	int	status;
+};
+
+static void
+usb_api_blocking_completion(struct urb *urb)
+{
+	struct api_context *ctx = urb->context;
+
+	ctx->status = urb->status;
+	complete(&ctx->done);
+}
+
+static int
+usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
+{
+	struct api_context ctx;
+	uint64_t expire;
+	int retval;
+
+	init_completion(&ctx.done);
+	urb->context = &ctx;
+	urb->actual_length = 0;
+	retval = usb_submit_urb(urb, GFP_NOIO);
+	if (retval)
+		goto out;
+
+	expire = timeout ? msecs_to_jiffies(timeout) : (120 * HZ);
+	if (!wait_for_completion_timeout(&ctx.done, expire)) {
+		usb_kill_urb(urb);
+		retval = (ctx.status == -ENOENT ? -ETIMEDOUT : ctx.status);
+
+	} else
+		retval = ctx.status;
+out:
+	if (actual_length)
+		*actual_length = urb->actual_length;
+
+	usb_free_urb(urb);
+	uninit_completion(&ctx.done);
+	return retval;
+}
+
+int
+usb_bulk_msg(struct usb_device *usb_dev, struct usb_host_endpoint *ep,
+    void *data, int len, int *actual_length, int timeout)
+{
+	struct urb *urb;
+
+	urb = usb_alloc_urb(0, GFP_KERNEL);
+	if (!urb)
+		return -ENOMEM;
+	if ((ep->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
+	    USB_ENDPOINT_XFER_INT) {
+
+		usb_fill_int_urb(urb, usb_dev, ep, data, len,
+		    usb_api_blocking_completion, NULL,
+		    ep->desc.bInterval);
+	} else
+		usb_fill_bulk_urb(urb, usb_dev, ep, data, len,
+		    usb_api_blocking_completion, NULL);
+
+	return usb_start_wait_urb(urb, timeout, actual_length);
 }
