@@ -163,14 +163,6 @@ typedef struct wait_queue_head {
 	/* TODO */
 } wait_queue_head_t;
 
-typedef struct work_struct {
-
-} work_t;
-
-typedef struct delayed_work {
-	struct work_struct work;
-} delayed_work_t;
-
 typedef struct completion {
 
 } completion_t;

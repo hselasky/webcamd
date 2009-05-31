@@ -37,6 +37,7 @@ void	set_bit(int nr, volatile unsigned long *addr);
 void	clear_bit(int nr, volatile unsigned long *addr);
 void	atomic_lock(void);
 void	atomic_unlock(void);
+pthread_mutex_t *atomic_get_lock();
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);

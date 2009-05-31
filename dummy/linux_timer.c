@@ -23,9 +23,6 @@
  * SUCH DAMAGE.
  */
 
-#include <pthread.h>
-#include <sys/resource.h>
-
 static u64 jiffies64;			/* we use jiffies = milliseconds */
 
 TAILQ_HEAD(timer_head, timer_list);
@@ -120,6 +117,7 @@ timer_init(void)
 	if (pthread_create(&timer_thread, NULL, timer_exec, NULL)) {
 		printf("Failed creating timer process\n");
 	}
+	return (0);
 }
 
 module_init(timer_init);

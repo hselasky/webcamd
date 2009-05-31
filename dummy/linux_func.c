@@ -1,3 +1,6 @@
+
+static pthread_mutex_t atomic_mutex;
+
 uint16_t
 le16_to_cpu(uint16_t x)
 {
@@ -255,13 +258,19 @@ clear_bit(int nr, volatile unsigned long *addr)
 void
 atomic_lock(void)
 {
-	/* TODO */
+	pthread_mutex_lock(&atomic_mutex);
 }
 
 void
 atomic_unlock(void)
 {
-	/* TODO */
+	pthread_mutex_unlock(&atomic_mutex);
+}
+
+pthread_mutex_t *
+atomic_get_lock(void)
+{
+	return (&atomic_mutex);
 }
 
 unsigned int
@@ -625,3 +634,16 @@ class_unregister(struct class *class)
 {
 
 }
+
+static int
+func_init(void)
+{
+	pthread_mutexattr_t attr;
+
+	pthread_mutexattr_init(&attr);
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&atomic_mutex, &attr);
+	return (0);
+}
+
+module_init(func_init);

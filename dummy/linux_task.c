@@ -22,3 +22,108 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+TAILQ_HEAD(work_head, work_struct);
+
+static struct work_head work_head;
+static pthread_t work_thread;
+static pthread_cond_t work_cond;
+
+int
+schedule_work(struct work_struct *work)
+{
+	int retval;
+
+	atomic_lock();
+	if (work->entry.tqe_prev == NULL) {
+		TAILQ_INSERT_TAIL(&work_head, work, entry);
+		pthread_cond_signal(&work_cond);
+		retval = 1;
+	} else {
+		retval = 0;
+	}
+	atomic_unlock();
+}
+
+static void
+delayed_work_timer_fn(unsigned long __data)
+{
+	struct work_struct *work = (struct work_struct *)__data;
+
+	schedule_work(work);
+}
+
+int
+schedule_delayed_work(struct delayed_work *work, unsigned long delay)
+{
+	int retval;
+
+	if (delay == 0)
+		return (schedule_work(&work->work));
+
+	if (timer_pending(&work->timer)) {
+		retval = 0;
+	} else {
+		retval = 1;
+	}
+
+	if (retval) {
+		work->timer.data = &work->work;
+		work->timer.expires = jiffies + delay;
+		work->timer.function = delayed_work_timer_fn;
+		add_timer(&work->timer);
+	}
+	return (retval);
+}
+
+void
+INIT_WORK(struct work_struct *work, work_func_t func)
+{
+	memset(work, 0, sizeof(*work));
+	work->func = func;
+}
+
+void
+INIT_DELAYED_WORK(struct delayed_work *work, work_func_t func)
+{
+	memset(work, 0, sizeof(*work));
+	work->work.func = func;
+}
+
+static void *
+work_exec(void *arg)
+{
+	int64_t delta;
+	struct work_struct *t;
+
+	setpriority(PRIO_PROCESS, 0, 5);
+
+	atomic_lock();
+	while (1) {
+		t = TAILQ_FIRST(&work_head);
+		if (t != NULL) {
+			TAILQ_REMOVE(&work_head, t, entry);
+			t->entry.tqe_prev = NULL;
+			atomic_unlock();
+			t->func(t);
+			atomic_lock();
+		} else {
+			pthread_cond_wait(&work_cond, atomic_get_lock());
+		}
+	}
+	atomic_unlock();
+	return (NULL);
+}
+
+static int
+work_init(void)
+{
+	TAILQ_INIT(&work_head);
+
+	if (pthread_create(&work_thread, NULL, work_exec, NULL)) {
+		printf("Failed creating work process\n");
+	}
+	return (0);
+}
+
+module_init(work_init);
