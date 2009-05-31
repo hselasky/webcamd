@@ -116,8 +116,6 @@
 #define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
 #define	MKDEV(maj,min) (min)
 #define	dev_set_name(d, ...) snprintf((d)->name, sizeof((d)->name), __VA_ARGS__)
-#define	module_init(func) static module_init_t __attribute__((__section__("mod_inits"),__used__)) *func##_p = func;
-#define	module_exit(func) static module_exit_t __attribute__((__section__("mod_exits"),__used__)) *func##_p = func;
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)

@@ -35,6 +35,7 @@
 #include <linux_task.h>
 #include <linux_thread.h>
 #include <linux_usb.h>
+#include <linux_end_section.h>
 
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>

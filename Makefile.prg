@@ -53,6 +53,8 @@ ${LINUXDIR}/drivers/media/video/zoran
 # FreeBSD specific files
 #
 
+SRCS+= usb_global.c
+
 SRCS+= linux_defs.c
 SRCS+= linux_func.c
 SRCS+= linux_struct.c
@@ -121,6 +123,11 @@ SRCS+= uvc_ctrl.c
 SRCS+= uvc_status.c
 SRCS+= uvc_isight.c
 SRCS+= uvc_video.c
+
+#
+# End Section (must be last)
+#
+SRCS+= linux_end_section.c
 
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
 CFLAGS+= -I${LINUXDIR}
