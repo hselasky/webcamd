@@ -311,13 +311,6 @@ cdev_del(struct cdev *cdev)
 	free(cdev);
 }
 
-uint64_t
-get_jiffies_64(void)
-{
-	/* TODO */
-	return (0);
-}
-
 void
 kref_init(struct kref *kref)
 {
@@ -494,7 +487,7 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 void
 bitmap_zero(unsigned long *dst, int nbits)
 {
-	int len = nbits + ((-nbits) & (BITS_PER_LONG - 1));
+	int len = (nbits + ((-nbits) & (BITS_PER_LONG - 1))) / 8;
 
 	memset(dst, 0, len);
 }

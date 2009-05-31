@@ -24,7 +24,6 @@ unsigned long copy_to_user(void *to, const void *from, unsigned long n);
 unsigned long copy_from_user(void *to, const void *from, unsigned long n);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsigned long data);
-uint64_t get_jiffies_64(void);
 void	schedule(void);
 int	atomic_inc(atomic_t *v);
 int	atomic_dec(atomic_t *v);

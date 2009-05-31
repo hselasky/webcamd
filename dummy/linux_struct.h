@@ -163,12 +163,6 @@ typedef struct wait_queue_head {
 	/* TODO */
 } wait_queue_head_t;
 
-typedef struct timer_list {
-	void    (*function) (unsigned long data);
-	uint64_t expires;
-	unsigned long data;
-} timer_list_t;
-
 typedef struct work_struct {
 
 } work_t;
