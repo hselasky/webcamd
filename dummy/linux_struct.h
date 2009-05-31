@@ -3,6 +3,7 @@
 
 struct vm_area_struct;
 struct vm_operations_struct;
+struct kobj_uevent_env;
 struct module;
 struct file;
 struct inode;
@@ -57,6 +58,8 @@ struct device_attribute				\
 struct class {
 	const char *name;
 	const struct device_attribute *dev_attrs;
+	int     (*dev_uevent) (struct device *dev, struct kobj_uevent_env *env);
+	struct kref refcount;
 };
 
 struct cdev {
@@ -68,6 +71,7 @@ typedef void device_release_t (struct device *);
 
 struct device {
 	int	minor;
+	struct kref refcount;
 	device_release_t *release;
 	struct device_driver *driver;
 	struct device *parent;
@@ -130,11 +134,12 @@ struct file_operations {
 };
 
 struct dentry {
-	dev_t	d_inode;
+	struct inode *d_inode;
 };
 
 struct file {
 	void   *private_data;
+	const struct file_operations *f_op;
 	struct {
 		struct dentry *dentry;
 	}	f_path;
@@ -175,5 +180,14 @@ typedef struct delayed_work {
 typedef struct completion {
 
 } completion_t;
+
+#define	iminor(i) (i)->d_inode & 0xFF
+
+typedef struct inode {
+	dev_t	d_inode;
+} inode_t;
+
+typedef int (module_init_t)(void);
+typedef void (module_exit_t)(void);
 
 #endif					/* _LINUX_STRUCT_H_ */

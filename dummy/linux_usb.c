@@ -1389,27 +1389,32 @@ usb_fill_int_urb(struct urb *urb,
 struct usb_interface *
 usb_get_intf(struct usb_interface *intf)
 {
-	/* TODO */
+	if (intf)
+		get_device(&intf->dev);
 	return intf;
 }
 
 void
 usb_put_intf(struct usb_interface *intf)
 {
-	/* TODO */
+	if (intf)
+		put_device(&intf->dev);
 }
 
 struct usb_device *
-usb_get_dev(struct usb_device *intf)
+usb_get_dev(struct usb_device *dev)
 {
-	/* TODO */
-	return intf;
+	if (dev)
+		get_device(&dev->dev);
+
+	return dev;
 }
 
 void
-usb_put_dev(struct usb_device *intf)
+usb_put_dev(struct usb_device *dev)
 {
-	/* TODO */
+	if (dev)
+		put_device(&dev->dev);
 }
 
 int
@@ -1424,4 +1429,13 @@ usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 		return (-EINVAL);
 	}
 	return (strlen(buf));
+}
+
+int
+usb_make_path(struct usb_device *dev, char *buf, size_t size)
+{
+	int actual;
+
+	actual = snprintf(buf, size, "usb-/dev/usb-/dev/usb");
+	return (actual >= (int)size) ? -1 : actual;
 }

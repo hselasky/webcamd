@@ -1,6 +1,8 @@
 #ifndef _USB_GLOBAL_H_
 #define	_USB_GLOBAL_H_
 
+#define	ffs ffs_bsd
+
 #include <sys/types.h>
 #include <sys/stdint.h>
 #include <sys/queue.h>
@@ -15,11 +17,21 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <poll.h>
+#include <string.h>
+
+#include <libusb20.h>
+#include <libusb20_desc.h>
+
+#undef ffs
 
 #include <linux_defs.h>
 #include <linux_struct.h>
 #include <linux_func.h>
 #include <linux_list.h>
+#include <linux_task.h>
+#include <linux_timer.h>
+#include <linux_thread.h>
+#include <linux_usb.h>
 
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
@@ -42,11 +54,6 @@
 
 #include <include/media/videobuf-dvb.h>
 #include <include/media/videobuf-vmalloc.h>
-
-#include <libusb20.h>
-#include <libusb20_desc.h>
-
-#include <usb_compat_linux.h>
 
 #include <drivers/media/video/uvc/uvcvideo.h>
 

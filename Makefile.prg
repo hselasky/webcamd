@@ -53,8 +53,13 @@ ${LINUXDIR}/drivers/media/video/zoran
 # FreeBSD specific files
 #
 
-SRCS+= usb_compat_linux.c
+SRCS+= linux_defs.c
 SRCS+= linux_func.c
+SRCS+= linux_struct.c
+SRCS+= linux_task.c
+SRCS+= linux_thread.c
+SRCS+= linux_timer.c
+SRCS+= linux_usb.c
 
 #
 # Video4Linux specific files
@@ -68,6 +73,10 @@ SRCS+= v4l2-int-device.c
 SRCS+= v4l2-ioctl.c
 SRCS+= v4l2-subdev.c
 
+SRCS+= dvb_demux.c
+SRCS+= dmxdev.c
+SRCS+= dvbdev.c
+SRCS+= dvb_ringbuffer.c
 SRCS+= videobuf-core.c
 SRCS+= videobuf-dvb.c
 SRCS+= videobuf-dma-contig.c
@@ -100,16 +109,6 @@ SRCS+= t613.c
 SRCS+= tv8532.c
 SRCS+= vc032x.c
 SRCS+= zc3xx.c
-
-SRCS+= stv06xx.c
-SRCS+= stv06xx_vv6410.c
-SRCS+= stv06xx_hdcs.c
-SRCS+= stv06xx_pb0100.c
-
-SRCS+= m5602_core.c
-SRCS+= m5602_mt9m111.c
-SRCS+= m5602_po1030.c
-SRCS+= m5602_s5k83a.c
 
 #
 # USB Video Class

@@ -110,12 +110,11 @@
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 29)
 #define	BUS_ID_SIZE 32
-#define	DECLARE_BITMAP(n, max) uint8_t n[((max)+7)/8]
+#define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
 #define	MKDEV(maj,min) (min)
-#define	iminor(x) (x)
 #define	dev_set_name(d, ...) snprintf((d)->name, sizeof((d)->name), __VA_ARGS__)
-#define	module_init(...)
-#define	module_exit(...)
+#define	module_init(func) static module_init_t __attribute__((__section__("mod_inits"),__used__)) *func##_p = func;
+#define	module_exit(func) static module_exit_t __attribute__((__section__("mod_exits"),__used__)) *func##_p = func;
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
@@ -166,8 +165,25 @@
 #define	spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
 #define	spin_lock(...)  atomic_lock()
 #define	spin_unlock(...) atomic_unlock()
+#define	spin_lock_irq(...)  atomic_lock()
+#define	spin_unlock_irq(...) atomic_unlock()
 #define	atomic_inc_return atomic_inc
 #define	atomic_dec_return atomic_dec
+#define	IS_ERR_VALUE(x) ((x) >= (unsigned long)-(1<<14))
+#define	find_first_bit(addr, size) find_next_bit((addr), (size), 0)
+#define	find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
+#define	signal_pending(...) 0
+#define	down_write(...) __nop
+#define	down_read(...) __nop
+#define	up_write(...) __nop
+#define	up_read(...) __nop
+#define	DECLARE_RWSEM(x) int x
+#define	crc32(s, d, l) crc32_le(s, (unsigned char const *)d, l)
+#define	CRCPOLY_LE 0xedb88320
+#define	CRCPOLY_BE 0x04c11db7
+#define	mb() __asm volatile("":::"memory")
+#define	fops_get(x) (x)
+#define	fops_put(x) __nop
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

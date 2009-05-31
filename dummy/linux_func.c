@@ -298,6 +298,13 @@ cdev_alloc(void)
 	return (cdev);
 }
 
+int
+cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
+{
+	/* TODO */
+	return (0);
+}
+
 void
 cdev_del(struct cdev *cdev)
 {
@@ -331,4 +338,297 @@ kref_put(struct kref *kref, void (*release) (struct kref *kref))
 		return 1;
 	}
 	return 0;
+}
+
+struct device *
+get_device(struct device *dev)
+{
+	if (dev)
+		kref_get(&dev->refcount);
+	return (dev);
+}
+
+static void
+dev_release(struct kref *kref)
+{
+	/* TODO */
+}
+
+void
+put_device(struct device *dev)
+{
+	if (dev)
+		kref_put(&dev->refcount, &dev_release);
+}
+
+int
+device_add(struct device *dev)
+{
+	/* TODO */
+	printf("Added device %p\n", dev);
+
+	return (0);
+}
+
+void
+device_del(struct device *dev)
+{
+	/* TODO */
+	printf("Deleted device %p\n", dev);
+}
+
+int
+device_register(struct device *dev)
+{
+	return (device_add(dev));
+}
+
+void
+device_unregister(struct device *dev)
+{
+	device_del(dev);
+	put_device(dev);
+}
+
+void
+module_put(struct module *module)
+{
+
+}
+
+int
+try_module_get(struct module *module)
+{
+	return (0);
+}
+
+void
+module_get(struct module *module)
+{
+
+}
+
+void   *
+ERR_PTR(long error)
+{
+	return ((void *)error);
+}
+
+long
+PTR_ERR(const void *ptr)
+{
+	return ((long)ptr);
+}
+
+long
+IS_ERR(const void *ptr)
+{
+	return IS_ERR_VALUE((unsigned long)ptr);
+}
+
+long
+ffs(long x)
+{
+	return (~(x - 1) & x);
+}
+
+long
+ffz(long x)
+{
+	return ((x + 1) & ~x);
+}
+
+
+unsigned long
+find_next_bit(const unsigned long *addr, unsigned long size,
+    unsigned long offset)
+{
+	const unsigned long *p;
+
+	while (offset < size) {
+
+		p = addr + BIT_WORD(offset);
+
+		if (*p == 0) {
+			if (offset & (BITS_PER_LONG - 1))
+				offset += (-offset) & (BITS_PER_LONG - 1);
+			else
+				offset += BITS_PER_LONG;
+		} else {
+			if (*p & (1 << (offset & (BITS_PER_LONG - 1))))
+				break;
+			offset++;
+		}
+	}
+	if (offset > size)
+		offset = size;
+	return (offset);
+}
+
+unsigned long
+find_next_zero_bit(const unsigned long *addr, unsigned long size,
+    unsigned long offset)
+{
+	const unsigned long *p;
+
+	while (offset < size) {
+
+		p = addr + BIT_WORD(offset);
+
+		if (*p == (long)-1) {
+			if (offset & (BITS_PER_LONG - 1))
+				offset += (-offset) & (BITS_PER_LONG - 1);
+			else
+				offset += BITS_PER_LONG;
+		} else {
+			if (!((*p) & (1 << (offset & (BITS_PER_LONG - 1)))))
+				break;
+			offset++;
+		}
+	}
+	if (offset > size)
+		offset = size;
+	return (offset);
+}
+
+void
+bitmap_zero(unsigned long *dst, int nbits)
+{
+	int len = nbits + ((-nbits) & (BITS_PER_LONG - 1));
+
+	memset(dst, 0, len);
+}
+
+/*
+ * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
+ *
+ * Jan 23 2005  Matt Mackall <mpm@selenic.com>
+ */
+
+static void
+u32_swap(void *a, void *b, int size)
+{
+	u32 t = *(u32 *) a;
+
+	*(u32 *) a = *(u32 *) b;
+	*(u32 *) b = t;
+}
+
+static void
+generic_swap(void *a, void *b, int size)
+{
+	char t;
+
+	do {
+		t = *(char *)a;
+		*(char *)a++ = *(char *)b;
+		*(char *)b++ = t;
+	} while (--size > 0);
+}
+
+void
+sort(void *base, size_t num, size_t size,
+    int (*cmp) (const void *, const void *),
+    void (*swap) (void *, void *, int size))
+{
+	/* pre-scale counters for performance */
+	int i = (num / 2 - 1) * size, n = num * size, c, r;
+
+	if (!swap)
+		swap = (size == 4 ? u32_swap : generic_swap);
+
+	/* heapify */
+	for (; i >= 0; i -= size) {
+		for (r = i; r * 2 + size < n; r = c) {
+			c = r * 2 + size;
+			if (c < n - size && cmp(base + c, base + c + size) < 0)
+				c += size;
+			if (cmp(base + r, base + c) >= 0)
+				break;
+			swap(base + r, base + c, size);
+		}
+	}
+
+	/* sort */
+	for (i = n - size; i > 0; i -= size) {
+		swap(base, base + i, size);
+		for (r = 0; r * 2 + size < i; r = c) {
+			c = r * 2 + size;
+			if (c < i - size && cmp(base + c, base + c + size) < 0)
+				c += size;
+			if (cmp(base + r, base + c) >= 0)
+				break;
+			swap(base + r, base + c, size);
+		}
+	}
+}
+
+/* standard CRC computation */
+
+u32
+crc32_le(u32 crc, unsigned char const *p, size_t len)
+{
+	uint8_t i;
+
+	while (len--) {
+		crc ^= *p++;
+		for (i = 0; i != 8; i++)
+			crc = (crc >> 1) ^ ((crc & 1) ? CRCPOLY_LE : 0);
+	}
+	return crc;
+}
+
+u32
+crc32_be(u32 crc, unsigned char const *p, size_t len)
+{
+	uint8_t i;
+
+	while (len--) {
+		crc ^= *p++ << 24;
+		for (i = 0; i != 8; i++)
+			crc =
+			    (crc << 1) ^ ((crc & 0x80000000) ? CRCPOLY_BE : 0);
+	}
+	return crc;
+}
+
+void   *
+vmalloc(size_t size)
+{
+	return (malloc(size));
+}
+
+struct class *
+class_get(struct class *class)
+{
+	if (class)
+		kref_get(&class->refcount);
+	return (class);
+}
+
+static void
+class_release(struct kref *kref)
+{
+	/* TODO */
+
+}
+
+struct class *
+class_put(struct class *class)
+{
+	if (class)
+		kref_put(&class->refcount, class_release);
+	return (class);
+}
+
+int
+class_register(struct class *class)
+{
+	return (0);
+}
+
+void
+class_unregister(struct class *class)
+{
+
 }

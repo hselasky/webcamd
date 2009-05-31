@@ -1,7 +1,7 @@
 /* $FreeBSD: src/sys/dev/usb/usb_compat_linux.h,v 1.3 2009/05/21 01:05:21 thompsa Exp $ */
 /*-
  * Copyright (c) 2007 Luigi Rizzo - Universita` di Pisa. All rights reserved.
- * Copyright (c) 2007 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2007-2009 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,8 +25,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _USB_COMPAT_LINUX_H
-#define	_USB_COMPAT_LINUX_H
+#ifndef _LINUX_USB_H_
+#define	_LINUX_USB_H_
 
 struct usb_device;
 struct usb_interface;
@@ -556,6 +556,7 @@ void	usb_put_intf(struct usb_interface *intf);
 struct usb_device *usb_get_dev(struct usb_device *intf);
 void	usb_put_dev(struct usb_device *intf);
 int	usb_string(struct usb_device *dev, int index, char *buf, size_t size);
+int	usb_make_path(struct usb_device *dev, char *buf, size_t size);
 
 #define	usb_autopm_set_interface(...) 0
 #define	usb_autopm_get_interface(...) 0
@@ -579,4 +580,4 @@ int	usb_string(struct usb_device *dev, int index, char *buf, size_t size);
 #define	usb_endpoint_is_isoc_out(epd) \
 	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_out(epd))
 
-#endif					/* _USB_COMPAT_LINUX_H */
+#endif					/* _LINUX_USB_H_ */
