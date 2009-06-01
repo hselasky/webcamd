@@ -13,6 +13,7 @@ struct device;
 struct device_driver;
 struct page;
 struct cdev;
+struct mutex;
 
 #define	LINUX_VMA_MAX 16
 
@@ -156,11 +157,6 @@ struct tasklet_struct {
 	atomic_t count;
 	void    (*func) (unsigned long);
 	unsigned long data;
-};
-
-#define	DEFINE_MUTEX(n) struct mutex n = { };
-struct mutex {
-	/* TODO */
 };
 
 #define	iminor(i) (i)->d_inode & 0xFF

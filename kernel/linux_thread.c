@@ -23,25 +23,24 @@
  * SUCH DAMAGE.
  */
 
+static pthread_cond_t sema_cond;
+
 void
 init_waitqueue_head(wait_queue_head_t *q)
 {
 	memset(q, 0, sizeof(*q));
-	pthread_cond_init(&q->cond, NULL);
 }
 
 void
 uninit_waitqueue_head(wait_queue_head_t *q)
 {
-	/* FIXME: this function does not get called */
-	pthread_cond_destroy(&q->cond);
 }
 
 void
 wake_up(wait_queue_head_t *q)
 {
 	atomic_lock();
-	pthread_cond_signal(&q->cond);
+	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
 
@@ -49,7 +48,7 @@ void
 wake_up_all(wait_queue_head_t *q)
 {
 	atomic_lock();
-	pthread_cond_broadcast(&q->cond);
+	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
 
@@ -57,27 +56,20 @@ void
 wake_up_nr(wait_queue_head_t *q, uint32_t nr)
 {
 	atomic_lock();
-	pthread_cond_broadcast(&q->cond);
+	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
 
 void
 __wait_event(wait_queue_head_t *q)
 {
-	/* XXX wait with timeout ? */
-	pthread_cond_wait(&q->cond, atomic_get_lock());
+	pthread_cond_wait(&sema_cond, atomic_get_lock());
 }
 
-uint64_t
-__wait_event_timed(wait_queue_head_t *q, uint64_t timeout)
+void
+__wait_get_timeout(uint64_t timeout, struct timespec *ts)
 {
-	struct timespec ts[2];
-	uint64_t old_timeout;
-	int err;
-
 	timeout++;
-
-	old_timeout = timeout;
 
 	timeout = (1000000000ULL / HZ) * (uint64_t)timeout;
 
@@ -93,23 +85,28 @@ __wait_event_timed(wait_queue_head_t *q, uint64_t timeout)
 		ts[0].tv_sec++;
 		ts[0].tv_nsec -= 1000000000;
 	}
-	err = pthread_cond_timedwait(&q->cond, atomic_get_lock(), ts);
-	return ((err == ETIMEDOUT) ? old_timeout : ((old_timeout + 1) / 2));
+}
+
+int
+__wait_event_timed(wait_queue_head_t *q, struct timespec *ts)
+{
+	int err;
+
+	err = pthread_cond_timedwait(&sema_cond, atomic_get_lock(), ts);
+
+	return (err == ETIMEDOUT);
 }
 
 void
 sema_init(struct semaphore *sem, int32_t value)
 {
 	memset(sem, 0, sizeof(*sem));
-	pthread_cond_init(&sem->cond, NULL);
 	sem->value = value;
 }
 
 void
 sema_uninit(struct semaphore *sem)
 {
-	/* FIXME: this function does not get called */
-	pthread_cond_destroy(&sem->cond);
 }
 
 void
@@ -118,7 +115,7 @@ up(struct semaphore *sem)
 	atomic_lock();
 	sem->value++;
 	if (sem->value == 1)
-		pthread_cond_signal(&sem->cond);
+		pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
 
@@ -126,9 +123,8 @@ void
 down(struct semaphore *sem)
 {
 	atomic_lock();
-	while (sem->value <= 0) {
-		pthread_cond_wait(&sem->cond, atomic_get_lock());
-	}
+	while (sem->value <= 0)
+		pthread_cond_wait(&sema_cond, atomic_get_lock());
 	sem->value--;
 	atomic_unlock();
 }
@@ -169,13 +165,17 @@ uint64_t
 wait_for_completion_timeout(struct completion *x,
     uint64_t timeout)
 {
+	struct timespec ts[2];
 	uint64_t ret = timeout;
+
+	__wait_get_timeout(ret, ts);
 
 	atomic_lock();
 	while (x->done == 0) {
-		ret = __wait_event_timed(&x->wait, ret);
-		if (ret != timeout)
+		if (__wait_event_timed(&x->wait, ts)) {
+			ret = 0;
 			break;
+		}
 	}
 	x->done--;
 	atomic_unlock();
@@ -188,7 +188,7 @@ complete(struct completion *x)
 {
 	atomic_lock();
 	x->done++;
-	pthread_cond_signal(&x->wait.cond);
+	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
 
@@ -269,3 +269,19 @@ set_freezable(void)
 {
 
 }
+
+int
+thread_init(void)
+{
+	pthread_cond_init(&sema_cond, NULL);
+	return (0);
+}
+
+void
+thread_exit(void)
+{
+	pthread_cond_destroy(&sema_cond);
+}
+
+module_init(thread_init)
+module_exit(thread_exit)

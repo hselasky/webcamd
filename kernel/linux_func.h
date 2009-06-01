@@ -100,5 +100,6 @@ int	do_gettimeofday(struct timeval *tp);
 void	poll_initwait(struct poll_wqueues *pwq);
 void	poll_freewait(struct poll_wqueues *pwq);
 void	poll_schedule(struct poll_wqueues *pwq, int flag);
+void	bitmap_zero(unsigned long *dst, int nbits);
 
 #endif					/* _LINUX_FUNC_H_ */

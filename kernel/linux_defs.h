@@ -184,10 +184,6 @@
 #define	BUG(...) __nop
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
-#define	mutex_init(...) __nop
-#define	mutex_lock(...) atomic_lock()
-#define	mutex_unlock(...) atomic_unlock()
-#define	mutex_lock_interruptible(...) (atomic_lock(),0)
 #define	spin_lock_init(lock) __nop
 #define	spin_lock_irqsave(l,f)  do { (f) = 1; atomic_lock(); } while (0)
 #define	spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
@@ -215,9 +211,6 @@
 #define	current NULL
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
-#define	init_MUTEX(s) sema_init(s,1)
-#define	init_MUTEX_LOCKED(s) sema_init(sem, 0)
-#define	down_interruptible(x) (down(x),0)
 #define	set_current_state(...) __nop
 #define	time_after(a,b) (((long)(b) - (long)(a)) < 0)
 #define	time_before(a,b) time_after(b,a)

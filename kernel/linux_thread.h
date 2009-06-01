@@ -27,17 +27,19 @@
 #define	_LINUX_THREAD_H_
 
 typedef struct task_struct {
-
 } task_struct_t;
 
 typedef struct wait_queue_head {
-	pthread_cond_t cond;
 } wait_queue_head_t;
 
 typedef struct semaphore {
-	pthread_cond_t cond;
 	int32_t	value;
 } semaphore_t;
+
+#define	DEFINE_MUTEX(n) struct mutex n = { .sem.value = 1 };
+struct mutex {
+	struct semaphore sem;
+};
 
 typedef struct completion {
 	uint32_t done;
@@ -50,7 +52,8 @@ void	wake_up(wait_queue_head_t *q);
 void	wake_up_all(wait_queue_head_t *q);
 void	wake_up_nr(wait_queue_head_t *q, uint32_t nr);
 void	__wait_event(wait_queue_head_t *q);
-uint64_t __wait_event_timed(wait_queue_head_t *q, uint64_t timeout);
+int	__wait_event_timed(wait_queue_head_t *q, struct timespec *ts);
+void	__wait_get_timeout(uint64_t timeout, struct timespec *ts);
 
 #define	wake_up_interruptible(q)        wake_up(q)
 #define	wake_up_interruptible_nr(q, nr) wake_up_nr(q,nr)
@@ -74,25 +77,22 @@ do {						\
 	0;					\
 })
 
-#define	wait_event_interruptible_timeout(wq, condition, timeout)        \
-({                                                                      \
-	uint64_t __ret = timeout;					\
-	atomic_lock();							\
-	while (!(condition))						\
-		__ret -= __wait_event_timed(&(wq), __ret);		\
-	atomic_unlock();						\
-	__ret;								\
+#define	wait_event_timeout(wq, condition, timeout)	\
+({							\
+	struct timespec ts[2];				\
+	uint64_t __ret = timeout;			\
+	__wait_get_timeout(__ret, ts);			\
+	atomic_lock();					\
+	while (!(condition))				\
+	  if (__wait_event_timed(&(wq), ts)) {		\
+		__ret = 0;				\
+		break;					\
+	  }						\
+	atomic_unlock();				\
+	__ret;						\
 })
 
-#define	wait_event_timeout(wq, condition, timeout)		\
-({								\
-	uint64_t __ret = timeout;				\
-	atomic_lock();						\
-	while (!(condition))					\
-		__ret -= __wait_event_timed(&(wq), __ret);	\
-	atomic_unlock();					\
-	__ret;							\
-})
+#define	wait_event_interruptible_timeout(...) wait_event_timeout(__VA_ARGS__)
 
 void	sema_init(struct semaphore *, int32_t val);
 void	sema_uninit(struct semaphore *sem);
@@ -100,6 +100,16 @@ void	sema_uninit(struct semaphore *sem);
 void	up (struct semaphore *);
 void	down(struct semaphore *);
 void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
+
+#define	mutex_init(m) sema_init(&(m)->sem, 1)
+#define	mutex_destroy(m) sema_uninit(&(m)->sem)
+#define	mutex_lock(m) down(&(m)->sem)
+#define	mutex_unlock(m) up(&(m)->sem)
+#define	mutex_lock_interruptible(m) (down(&(m)->sem),0)
+
+#define	init_MUTEX(s) sema_init(s,1)
+#define	init_MUTEX_LOCKED(s) sema_init(s, 0)
+#define	down_interruptible(x) (down(x),0)
 
 #define	wait_for_completion_interruptible(x) wait_for_completion(x)
 #define	wait_for_completion_killable(x) wait_for_completion(x)

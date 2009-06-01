@@ -56,6 +56,7 @@ ${LINUXDIR}/drivers/media/video/zoran
 # Start Section (must be first)
 #
 SRCS+= linux_start_section.c
+SRCS+= linux_thread.c
 
 #
 # FreeBSD specific files
@@ -69,7 +70,6 @@ SRCS+= linux_file.c
 SRCS+= linux_input.c
 SRCS+= linux_struct.c
 SRCS+= linux_task.c
-SRCS+= linux_thread.c
 SRCS+= linux_timer.c
 SRCS+= linux_usb.c
 
