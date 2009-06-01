@@ -11,7 +11,7 @@ LINUXDIR=${.CURDIR}/linux
 
 .PATH: \
 ${.CURDIR} \
-${.CURDIR}/dummy \
+${.CURDIR}/kernel \
 ${LINUXDIR}/drivers \
 ${LINUXDIR}/drivers/media \
 ${LINUXDIR}/drivers/media/common \

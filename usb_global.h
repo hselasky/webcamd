@@ -27,17 +27,17 @@
 
 #undef ffs
 
-#include <linux_defs.h>
-#include <linux_struct.h>
-#include <linux_func.h>
-#include <linux_list.h>
-#include <linux_timer.h>
-#include <linux_task.h>
-#include <linux_thread.h>
-#include <linux_usb.h>
-#include <linux_start_section.h>
-#include <linux_end_section.h>
-#include <linux_input.h>
+#include <kernel/linux_defs.h>
+#include <kernel/linux_struct.h>
+#include <kernel/linux_func.h>
+#include <kernel/linux_list.h>
+#include <kernel/linux_timer.h>
+#include <kernel/linux_task.h>
+#include <kernel/linux_thread.h>
+#include <kernel/linux_usb.h>
+#include <kernel/linux_start_section.h>
+#include <kernel/linux_end_section.h>
+#include <kernel/linux_input.h>
 
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
