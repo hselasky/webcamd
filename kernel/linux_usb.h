@@ -480,6 +480,7 @@ int	usb_register(struct usb_driver *drv);
 int	usb_deregister(struct usb_driver *drv);
 
 struct cdev *usb_linux2cdev(uint16_t device_index);
+void	usb_linux_set_cdev(struct cdev *cdev);
 int	usb_linux_probe(uint16_t device_index);
 int	usb_linux_detach(uint16_t device_index);
 int	usb_linux_suspend(uint16_t device_index);

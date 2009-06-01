@@ -24,7 +24,7 @@
  */
 
 int
-main()
+_main()
 {
 	int err;
 

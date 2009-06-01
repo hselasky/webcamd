@@ -3,6 +3,7 @@
 
 struct vm_area_struct;
 struct vm_operations_struct;
+struct poll_table_page;
 struct kobj_uevent_env;
 struct module;
 struct file;
@@ -177,6 +178,12 @@ struct cdev {
 	struct file fixed_file;
 	struct vm_area_struct fixed_vma[LINUX_VMA_MAX];
 	uint8_t	is_opened;
+};
+
+struct poll_wqueues {
+	poll_table pt;
+	struct poll_table_page *table;
+	int	error;
 };
 
 #endif					/* _LINUX_STRUCT_H_ */

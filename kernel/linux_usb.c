@@ -28,10 +28,12 @@ struct usb_linux_softc {
 	struct usb_driver *udrv;
 	struct usb_device *p_dev;
 	struct usb_interface *ui;
+	struct cdev *c_dev;
 	pthread_t thread;
 };
 
 static struct usb_linux_softc uls[16];
+static uint16_t last_probe_index;
 
 /* prototypes */
 
@@ -165,9 +167,18 @@ struct cdev *
 usb_linux2cdev(uint16_t device_index)
 {
 	if ((device_index < ARRAY_SIZE(uls)) &&
-	    (uls[device_index].p_dev))
-		return (uls[device_index].p_dev->dev.cdev);
+	    (uls[device_index].p_dev)) {
+		return (uls[device_index].c_dev);
+	}
 	return (NULL);
+}
+
+void
+usb_linux_set_cdev(struct cdev *cdev)
+{
+	if (last_probe_index < ARRAY_SIZE(uls)) {
+		uls[last_probe_index].c_dev = cdev;
+	}
 }
 
 /*------------------------------------------------------------------------*
@@ -189,8 +200,10 @@ usb_linux_probe(uint16_t device_index)
 	uint8_t i;
 	uint16_t to = device_index;
 
-	if (device_index >= (sizeof(uls) / sizeof(uls[0])))
+	if (device_index >= ARRAY_SIZE(uls))
 		return (-ENOMEM);
+
+	last_probe_index = device_index;
 
 	pbe = libusb20_be_alloc_default();
 	if (pbe == NULL)
@@ -238,7 +251,7 @@ found:
 		libusb20_dev_free(pdev);
 		return (-ENOMEM);
 	}
-	ui = usb_ifnum_to_if(p_dev, i);
+	ui = p_dev->bsd_iface_start + i;
 	if (udrv->probe(ui, id)) {
 		free(pcfg);
 		libusb20_dev_free(pdev);
@@ -366,7 +379,7 @@ usb_submit_urb_sub(struct libusb20_transfer *xfer)
 		return;
 	if (libusb20_tr_pending(xfer))
 		return;
-	libusb20_tr_submit(xfer);
+	libusb20_tr_start(xfer);
 }
 
 int
@@ -382,9 +395,9 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	}
 	uhe = urb->pipe;
 
-	if (usb_setup_endpoint(urb->dev, uhe, 1))
+	if (usb_setup_endpoint(urb->dev, uhe, 1)) {
 		return (-EPIPE);
-
+	}
 	/*
 	 * Check that we have got a FreeBSD USB transfer that will dequeue
 	 * the URB structure and do the real transfer. If there are no USB
@@ -581,6 +594,7 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 		err = -EPIPE;
 	else
 		p_ui->cur_altsetting = p_ui->altsetting + alt_index;
+
 	return (err);
 }
 
@@ -802,9 +816,10 @@ usb_linux_create_usb_device(struct libusb20_device *udev,
 			else
 				id++;
 		}
+		p_ui++;
 	}
 done:
-	return (p_ud);
+	return p_ud;
 }
 
 /*------------------------------------------------------------------------*

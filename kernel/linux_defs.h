@@ -221,6 +221,8 @@
 #define	set_current_state(...) __nop
 #define	time_after(a,b) (((long)(b) - (long)(a)) < 0)
 #define	time_before(a,b) time_after(b,a)
+#define	__attribute_const__
+#define	noinline
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

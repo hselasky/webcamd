@@ -146,6 +146,8 @@ work_init(void)
 {
 	TAILQ_INIT(&work_head);
 
+	pthread_cond_init(&work_cond, NULL);
+
 	if (pthread_create(&work_thread, NULL, work_exec, NULL)) {
 		printf("Failed creating work process\n");
 	}

@@ -97,5 +97,8 @@ void	unregister_chrdev_region(dev_t from, unsigned count);
 int	remap_vmalloc_range(struct vm_area_struct *vma, void *addr, unsigned long pgoff);
 void	jiffies_to_timeval(uint64_t j, struct timeval *tv);
 int	do_gettimeofday(struct timeval *tp);
+void	poll_initwait(struct poll_wqueues *pwq);
+void	poll_freewait(struct poll_wqueues *pwq);
+void	poll_schedule(struct poll_wqueues *pwq, int flag);
 
 #endif					/* _LINUX_FUNC_H_ */

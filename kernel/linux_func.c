@@ -292,12 +292,14 @@ atomic_read(const atomic_t *v)
 int
 test_bit(int nr, const void *addr)
 {
-	const uint32_t *ptr = (const uint32_t *)addr;
+	unsigned long mask = BIT_MASK(nr);
+	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
 	int i;
 
 	atomic_lock();
-	i = (((1UL << (nr & 31)) & (ptr[nr >> 5])) != 0);
+	i = (*p & mask) ? 1 : 0;
 	atomic_unlock();
+
 	return (i);
 }
 
@@ -417,6 +419,11 @@ cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
 {
 	cdev->fixed_inode.d_inode = mm;
 	cdev->fixed_file.f_op = cdev->ops;
+
+	/* XXX hack */
+
+	usb_linux_set_cdev(cdev);
+
 	return (0);
 }
 
@@ -436,11 +443,14 @@ void
 kref_get(struct kref *kref)
 {
 	atomic_inc(&kref->refcount);
+	printf("KrefGet: %p = %u\n", kref, kref->refcount.counter);
 }
 
 int
 kref_put(struct kref *kref, void (*release) (struct kref *kref))
 {
+	printf("KrefPut: %p = %u\n", kref, kref->refcount.counter);
+
 	if (atomic_dec(&kref->refcount) == 0) {
 		release(kref);
 		return 1;
@@ -459,10 +469,14 @@ get_device(struct device *dev)
 static void
 dev_release(struct kref *kref)
 {
+#if 0
 	struct device *dev =
 	container_of(kref, struct device, refcount);
 
+	/* TODO */
+
 	free(dev);
+#endif
 }
 
 void
@@ -477,7 +491,7 @@ device_add(struct device *dev)
 {
 	/* TODO */
 	printf("Added device %p\n", dev);
-
+	get_device(dev);
 	return (0);
 }
 
@@ -486,6 +500,7 @@ device_del(struct device *dev)
 {
 	/* TODO */
 	printf("Deleted device %p\n", dev);
+	put_device(dev);
 }
 
 int
@@ -561,7 +576,7 @@ module_put(struct module *module)
 int
 try_module_get(struct module *module)
 {
-	return (0);
+	return (1);
 }
 
 void
@@ -847,6 +862,24 @@ dvb_net_init(struct dvb_adapter *adap, struct dvb_net *dvbnet, struct dmx_demux 
 {
 	/* not supported */
 	return 0;
+}
+
+void
+poll_initwait(struct poll_wqueues *pwq)
+{
+	memset(pwq, 0, sizeof(*pwq));
+}
+
+void
+poll_freewait(struct poll_wqueues *pwq)
+{
+
+}
+
+void
+poll_schedule(struct poll_wqueues *pwq, int flag)
+{
+
 }
 
 static int

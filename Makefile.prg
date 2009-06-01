@@ -12,6 +12,7 @@ LINUXDIR=${.CURDIR}/linux
 .PATH: \
 ${.CURDIR} \
 ${.CURDIR}/kernel \
+${.CURDIR}/pwcview \
 ${LINUXDIR}/drivers \
 ${LINUXDIR}/drivers/media \
 ${LINUXDIR}/drivers/media/common \
@@ -83,6 +84,7 @@ SRCS+= v4l2-device.c
 SRCS+= v4l2-int-device.c
 SRCS+= v4l2-ioctl.c
 SRCS+= v4l2-subdev.c
+SRCS+= v4l1-compat.c
 
 SRCS+= dvb_demux.c
 SRCS+= dmxdev.c
@@ -201,12 +203,20 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
 CFLAGS+= -I${LINUXDIR}
 
 CFLAGS+= -I${.CURDIR}
+CFLAGS+= -I${.CURDIR}/pwcview
 CFLAGS+= -I${.CURDIR}/dummy
+
+CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
 
 CFLAGS+= -include usb_global.h
 
 CFLAGS+= -O2 -Wall -g
 
+CFLAGS+= `/usr/local/bin/sdl-config --cflags`
+LDFLAGS+= `/usr/local/bin/sdl-config --libs` -ljpeg
+
 LDFLAGS+= -lusb -lpthread
+
+SRCS+= pwcview.c
 
 .include <bsd.prog.mk>
