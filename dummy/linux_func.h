@@ -2,16 +2,32 @@
 #define	_LINUX_FUNC_H_
 
 uint16_t le16_to_cpu(uint16_t x);
+uint16_t be16_to_cpu(uint16_t x);
+
 uint16_t cpu_to_le16(uint16_t x);
+uint16_t cpu_to_be16(uint16_t x);
+
 uint32_t le32_to_cpu(uint32_t x);
+uint32_t be32_to_cpu(uint32_t x);
+
 uint32_t cpu_to_le32(uint32_t x);
+uint32_t cpu_to_be32(uint32_t x);
+
 uint16_t le16_to_cpup(uint16_t *p);
+uint16_t be16_to_cpup(uint16_t *p);
+
 uint16_t cpu_to_le16p(uint16_t *p);
+uint16_t cpu_to_be16p(uint16_t *p);
+
 uint32_t le32_to_cpup(uint32_t *p);
+uint32_t be32_to_cpup(uint32_t *p);
+
 uint32_t cpu_to_le32p(uint32_t *p);
+uint32_t cpu_to_be32p(uint32_t *p);
 
 void	put_unaligned_le32(uint32_t, void *);
 void	put_unaligned_le16(uint16_t, void *);
+
 uint32_t get_unaligned_le32(const void *);
 uint16_t get_unaligned_le16(const void *);
 

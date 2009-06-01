@@ -9,12 +9,28 @@ le16_to_cpu(uint16_t x)
 	return (p[0] | (p[1] << 8));
 }
 
+uint16_t
+be16_to_cpu(uint16_t x)
+{
+	uint8_t *p = (uint8_t *)&x;
+
+	return (p[1] | (p[0] << 8));
+}
+
 uint32_t
 le32_to_cpu(uint32_t x)
 {
 	uint8_t *p = (uint8_t *)&x;
 
 	return (p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
+}
+
+uint32_t
+be32_to_cpu(uint32_t x)
+{
+	uint8_t *p = (uint8_t *)&x;
+
+	return (p[3] | (p[2] << 8) | (p[1] << 16) | (p[0] << 24));
 }
 
 uint16_t
@@ -24,6 +40,17 @@ cpu_to_le16(uint16_t x)
 
 	p[0] = x & 0xFF;
 	p[1] = x >> 8;
+
+	return (*(uint16_t *)p);
+}
+
+uint16_t
+cpu_to_be16(uint16_t x)
+{
+	uint8_t p[2];
+
+	p[1] = x & 0xFF;
+	p[0] = x >> 8;
 
 	return (*(uint16_t *)p);
 }
@@ -40,6 +67,32 @@ cpu_to_le32(uint32_t x)
 
 	return (*(uint32_t *)p);
 }
+
+uint32_t
+cpu_to_be32(uint32_t x)
+{
+	uint8_t p[4];
+
+	p[3] = x;
+	p[2] = x >> 8;
+	p[1] = x >> 16;
+	p[0] = x >> 24;
+
+	return (*(uint32_t *)p);
+}
+
+uint16_t
+be16_to_cpup(uint16_t *p)
+{
+	return be16_to_cpu(*p);
+}
+
+uint16_t
+cpu_to_be16p(uint16_t *p)
+{
+	return cpu_to_be16(*p);
+}
+
 
 uint16_t
 le16_to_cpup(uint16_t *p)
@@ -63,6 +116,18 @@ uint32_t
 cpu_to_le32p(uint32_t *p)
 {
 	return cpu_to_le32(*p);
+}
+
+uint32_t
+be32_to_cpup(uint32_t *p)
+{
+	return be32_to_cpu(*p);
+}
+
+uint32_t
+cpu_to_be32p(uint32_t *p)
+{
+	return cpu_to_be32(*p);
 }
 
 void

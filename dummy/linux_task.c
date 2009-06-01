@@ -115,6 +115,32 @@ work_exec(void *arg)
 	return (NULL);
 }
 
+int
+queue_work(struct workqueue_struct *wq, struct work_struct *work)
+{
+	return (schedule_work(work));
+}
+
+void
+destroy_workqueue(struct workqueue_struct *wq)
+{
+
+}
+
+struct workqueue_struct *
+create_workqueue(const char *name)
+{
+	/* TODO: we currently reuse the existing thread */
+	return ((struct workqueue_struct *)1);
+}
+
+struct workqueue_struct *
+create_singlethread_workqueue(const char *name)
+{
+	/* TODO: we currently reuse the existing thread */
+	return ((struct workqueue_struct *)1);
+}
+
 static int
 work_init(void)
 {

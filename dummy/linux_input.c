@@ -22,36 +22,3 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef _LINUX_TASK_H_
-#define	_LINUX_TASK_H_
-
-struct work_struct;
-struct workqueue_struct;
-
-typedef void (*work_func_t)(struct work_struct *work);
-
-typedef struct work_struct {
-	TAILQ_ENTRY(work_struct) entry;
-	work_func_t func;
-} work_t;
-
-typedef struct delayed_work {
-	struct work_struct work;
-	struct timer_list timer;
-} delayed_work_t;
-
-typedef struct execute_work {
-	struct work_struct work;
-} execute_work_t;
-
-void	INIT_WORK(struct work_struct *work, work_func_t func);
-void	INIT_DELAYED_WORK(struct delayed_work *work, work_func_t func);
-int	schedule_work(struct work_struct *work);
-int	schedule_delayed_work(struct delayed_work *work, unsigned long delay);
-void	destroy_workqueue(struct workqueue_struct *wq);
-int	queue_work(struct workqueue_struct *wq, struct work_struct *work);
-struct workqueue_struct *create_workqueue(const char *name);
-struct workqueue_struct *create_singlethread_workqueue(const char *name);
-
-#endif					/* _LINUX_TASK_H_ */

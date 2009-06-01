@@ -37,6 +37,7 @@
 #include <linux_usb.h>
 #include <linux_start_section.h>
 #include <linux_end_section.h>
+#include <linux_input.h>
 
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
@@ -61,9 +62,15 @@
 #include <drivers/media/dvb/dvb-core/dvb_net.h>
 #include <drivers/media/dvb/dvb-core/dvb_frontend.h>
 
+#include <drivers/media/dvb/frontends/dvb-pll.h>
+#include <drivers/media/dvb/frontends/af9013.h>
+
 #include <include/media/videobuf-dvb.h>
 #include <include/media/videobuf-vmalloc.h>
 
 #include <drivers/media/video/uvc/uvcvideo.h>
+
+#include <include/media/tuner.h>
+#include <include/media/msp3400.h>
 
 #endif					/* _USB_GLOBAL_H_ */

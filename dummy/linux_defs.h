@@ -51,6 +51,7 @@
 #define	MODULE_DEVICE_TABLE(...)
 #define	MODULE_PARM_DESC(...)
 #define	MODULE_VERSION(...)
+#define	MODULE_ALIAS(...)
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
 #define	info(...) __nop
@@ -65,6 +66,7 @@
 #define	kzalloc(s,opt) calloc(1, s)
 #define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
 #define	dma_free_coherent(d,s,v,h) free(v)
+#define	vmalloc_32_user(s) malloc(s)
 #define	vmalloc_user(s) malloc(s)
 #define	vmalloc_32(s) malloc(s)
 #define	vmalloc_to_page(...) NULL
@@ -217,6 +219,8 @@ typedef u64 dma64_addr_t;
 typedef u64 sector_t;
 typedef unsigned short __le16;
 typedef unsigned int __le32;
+typedef unsigned short __be16;
+typedef unsigned int __be32;
 typedef unsigned long kernel_ulong_t;
 typedef unsigned int uint;
 typedef long long loff_t;
