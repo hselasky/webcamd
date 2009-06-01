@@ -11,6 +11,9 @@ struct class;
 struct device;
 struct device_driver;
 struct page;
+struct cdev;
+
+#define	LINUX_VMA_MAX 16
 
 typedef struct poll_table_struct {
 }	poll_table;
@@ -18,6 +21,10 @@ typedef struct poll_table_struct {
 typedef struct {
 	volatile unsigned int counter;
 } atomic_t;
+
+struct module {
+
+};
 
 struct kref {
 	atomic_t refcount;
@@ -62,11 +69,6 @@ struct class {
 	struct kref refcount;
 };
 
-struct cdev {
-	const struct file_operations *ops;
-	struct module *owner;
-};
-
 typedef void device_release_t (struct device *);
 
 struct device {
@@ -105,6 +107,7 @@ struct vm_area_struct {
 	const struct vm_operations_struct *vm_ops;
 	uint32_t vm_flags;
 	pgprot_t vm_page_prot;
+	void   *vm_buffer_address;
 };
 
 struct vm_operations_struct {
@@ -164,5 +167,16 @@ struct mutex {
 typedef struct inode {
 	dev_t	d_inode;
 } inode_t;
+
+struct cdev {
+	const struct file_operations *ops;
+	struct module *owner;
+
+	struct dentry fixed_dentry;
+	struct inode fixed_inode;
+	struct file fixed_file;
+	struct vm_area_struct fixed_vma[LINUX_VMA_MAX];
+	uint8_t	is_opened;
+};
 
 #endif					/* _LINUX_STRUCT_H_ */

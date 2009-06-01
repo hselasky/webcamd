@@ -29,6 +29,7 @@
 
 #include <kernel/linux_defs.h>
 #include <kernel/linux_struct.h>
+#include <kernel/linux_file.h>
 #include <kernel/linux_func.h>
 #include <kernel/linux_list.h>
 #include <kernel/linux_timer.h>

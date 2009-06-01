@@ -241,6 +241,7 @@ int
 kthread_stop(struct task_struct *k)
 {
 	pthread_cancel((pthread_t)k);
+	pthread_join((pthread_t)k, NULL);
 	return (0);
 }
 

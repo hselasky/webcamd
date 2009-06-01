@@ -1,3 +1,29 @@
+/*-
+ * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+/* NOTE: Some functions in this file derives directly from the Linux kernel sources. */
 
 static pthread_mutex_t atomic_mutex;
 
@@ -373,15 +399,24 @@ cdev_alloc(void)
 	struct cdev *cdev;
 
 	cdev = malloc(sizeof(*cdev));
-	if (cdev)
-		memset(cdev, 0, sizeof(*cdev));
+	if (cdev == NULL)
+		goto done;
+
+	/* initialise cdev */
+	memset(cdev, 0, sizeof(*cdev));
+
+	cdev->fixed_dentry.d_inode = &cdev->fixed_inode;
+	cdev->fixed_file.f_path.dentry = &cdev->fixed_dentry;
+
+done:
 	return (cdev);
 }
 
 int
 cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
 {
-	/* TODO */
+	cdev->fixed_inode.d_inode = mm;
+	cdev->fixed_file.f_op = cdev->ops;
 	return (0);
 }
 
@@ -784,6 +819,8 @@ int
 remap_vmalloc_range(struct vm_area_struct *vma,
     void *addr, unsigned long pgoff)
 {
+	addr = (uint8_t *)addr + (pgoff << PAGE_SHIFT);
+	vma->vm_buffer_address = addr;
 	return (0);
 }
 

@@ -64,6 +64,7 @@ SRCS+= usb_global.c
 
 SRCS+= linux_defs.c
 SRCS+= linux_func.c
+SRCS+= linux_file.c
 SRCS+= linux_input.c
 SRCS+= linux_struct.c
 SRCS+= linux_task.c

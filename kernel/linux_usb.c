@@ -28,6 +28,7 @@ struct usb_linux_softc {
 	struct usb_driver *udrv;
 	struct usb_device *p_dev;
 	struct usb_interface *ui;
+	pthread_t thread;
 };
 
 static struct usb_linux_softc uls[16];
@@ -134,6 +135,41 @@ done:
 	return (NULL);
 }
 
+static void *
+usb_exec(void *arg)
+{
+	struct usb_linux_softc *sc = arg;
+	struct libusb20_device *dev = sc->p_dev->bsd_udev;
+
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+	while (1) {
+
+		pthread_testcancel();
+
+		if (libusb20_dev_process(dev) != 0) {
+			/* device detached */
+			break;
+		}
+		/* wait for USB event from kernel */
+		libusb20_dev_wait_process(dev, -1);
+	}
+
+	pthread_exit(NULL);
+
+	return (NULL);
+}
+
+struct cdev *
+usb_linux2cdev(uint16_t device_index)
+{
+	if ((device_index < ARRAY_SIZE(uls)) &&
+	    (uls[device_index].p_dev))
+		return (uls[device_index].p_dev->dev.cdev);
+	return (NULL);
+}
+
 /*------------------------------------------------------------------------*
  *	usb_linux_probe
  *
@@ -213,6 +249,11 @@ found:
 	uls[device_index].p_dev = p_dev;
 	uls[device_index].ui = ui;
 	uls[device_index].pcfg = pcfg;
+
+	if (pthread_create(&uls[device_index].thread, NULL,
+	    usb_exec, &uls[device_index])) {
+		printf("Failed creating USB process\n");
+	}
 	return (0);
 }
 
@@ -228,6 +269,9 @@ usb_linux_detach(uint16_t device_index)
 	struct usb_driver *udrv = uls[device_index].udrv;
 	struct usb_device *p_dev = uls[device_index].p_dev;
 	struct usb_interface *ui = uls[device_index].ui;
+
+	pthread_cancel(uls[device_index].thread);
+	pthread_join(uls[device_index].thread, NULL);
 
 	(udrv->disconnect) (ui);
 
