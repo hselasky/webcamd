@@ -831,6 +831,16 @@ unregister_chrdev_region(dev_t from, unsigned count)
 }
 
 int
+vm_insert_page(struct vm_area_struct *vma,
+    unsigned long start, struct page *page)
+{
+	/* assuming that pages are virtually contiguous */
+	if (start == vma->vm_start)
+		vma->vm_buffer_address = (void *)page;
+	return (0);
+}
+
+int
 remap_vmalloc_range(struct vm_area_struct *vma,
     void *addr, unsigned long pgoff)
 {

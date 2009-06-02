@@ -204,6 +204,12 @@ CFLAGS+= -I${LINUXDIR}
 
 CFLAGS+= -I${.CURDIR}
 CFLAGS+= -I${.CURDIR}/pwcview
+CFLAGS+= -I${.CURDIR}/libv4l/include
+CFLAGS+= -I${.CURDIR}/libv4l/libv4l1
+CFLAGS+= -I${.CURDIR}/libv4l/libv4l2
+CFLAGS+= -I${.CURDIR}/libv4l/libv4lconvert
+CFLAGS+= -I${.CURDIR}/libv4l/libv4lconvert/control
+CFLAGS+= -I${.CURDIR}/libv4l/libv4lconvert/processing
 CFLAGS+= -I${.CURDIR}/dummy
 
 CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
@@ -217,6 +223,17 @@ LDFLAGS+= `/usr/local/bin/sdl-config --libs` -ljpeg
 
 LDFLAGS+= -lusb -lpthread
 
+#
+# External dependencies
+#
+LDFLAGS+= ${.CURDIR}/libv4l/libv4lconvert/libv4lconvert.so
+LDFLAGS+= ${.CURDIR}/libv4l/libv4l2/libv4l2.so
+LDFLAGS+= ${.CURDIR}/libv4l/libv4l1/libv4l1.so
+
 SRCS+= pwcview.c
 
 .include <bsd.prog.mk>
+
+v4l:
+	gmake -C libv4l CFLAGS="-DCONFIG_SYS_WRAPPER" clean all install
+

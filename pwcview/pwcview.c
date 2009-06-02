@@ -39,6 +39,7 @@
 #endif
 #include "pwc-ioctl.h"
 #include "pixels.h"
+#include "../libv4l/include/libv4l1.h"
 
 const char *motioncmd;
 long cmdinterval = 60;
@@ -75,7 +76,7 @@ int framerate_handler(int fd, int dir, char *buf)
 	int fps;
 	struct video_window vw;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGWIN,&vw) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCGWIN,&vw) == -1) {
 		perror("Failed to get current framerate");
 		return -1;
 	}
@@ -85,9 +86,9 @@ int framerate_handler(int fd, int dir, char *buf)
 	if((dir == -1 && fps >= 9) ||(dir == 1 && fps <= 25)) {
 		fps += dir == -1 ? -5 : 5;
 		vw.flags = fps << PWC_FPS_SHIFT;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSWIN,&vw) == -1)
+		if(v4l1_ioctl(fd, VIDIOCSWIN,&vw) == -1)
 			fprintf(stderr,"Failed to set framerate to %d fps: %s\n",fps,strerror(errno));
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGWIN,&vw) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCGWIN,&vw) == -1) {
 			perror("Failed to get new framerate");
 			return -1;
 		}
@@ -101,16 +102,16 @@ int compression_handler(int fd, int dir, char *buf)
 {
 	int qual;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGCQUAL,&qual) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGCQUAL,&qual) == -1) {
 		perror("Failed to get current compression");
 		return -1;
 	}
 
 	if((dir == -1 && qual > 0) || (dir == 1 && qual < 3)) {
 		qual += dir == -1 ? -1 : 1;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSCQUAL,&qual) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSCQUAL,&qual) == -1)
 			perror("Failed to set compression");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGCQUAL,&qual) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGCQUAL,&qual) == -1) {
 			perror("Failed to get new compression");
 			return -1;
 		}
@@ -123,16 +124,16 @@ int brightness_handler(int fd, int dir, char *buf)
 {
 	struct video_picture pict;
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 		perror("Failed to get current brightness");
 		return -1;
 	}
 
 	if((dir == -1) || (dir == 1)) {
 		pict.brightness += dir == -1 ? -512 : 512;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSPICT,&pict) == -1)
+		if(v4l1_ioctl(fd, VIDIOCSPICT,&pict) == -1)
 			perror("Failed to set brightness");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 			perror("Failed to get new brightness");
 			return -1;
 		}
@@ -145,16 +146,16 @@ int contrast_handler(int fd, int dir, char *buf)
 {
 	struct video_picture pict;
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 		perror("Failed to get current contrast");
 		return -1;
 	}
 
 	if((dir == -1) || (dir == 1)) {
 		pict.contrast += dir == -1 ? -1024 : 1024;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSPICT,&pict) == -1)
+		if(v4l1_ioctl(fd, VIDIOCSPICT,&pict) == -1)
 			perror("Failed to set contrast");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 			perror("Failed to get new contrast");
 			return -1;
 		}
@@ -167,16 +168,16 @@ int saturation_handler(int fd, int dir, char *buf)
 {
 	struct video_picture pict;
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 		perror("Failed to get current saturation");
 		return -1;
 	}
 
 	if((dir == -1) || (dir == 1)) {
 		pict.colour += dir == -1 ? -327 : 327;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSPICT,&pict) == -1)
+		if(v4l1_ioctl(fd, VIDIOCSPICT,&pict) == -1)
 			perror("Failed to set saturation");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 			perror("Failed to get new saturation");
 			return -1;
 		}
@@ -189,16 +190,16 @@ int gamma_handler(int fd, int dir, char *buf)
 {
 	struct video_picture pict;
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 		perror("Failed to get current gamma");
 		return -1;
 	}
 
 	if((dir == -1) ||(dir == 1)) {
 		pict.whiteness += dir == -1 ? -2048 : 2048;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSPICT,&pict) == -1)
+		if(v4l1_ioctl(fd, VIDIOCSPICT,&pict) == -1)
 			perror("Failed to set gamma");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&pict) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCGPICT,&pict) == -1) {
 			perror("Failed to get new gamma");
 			return -1;
 		}
@@ -231,7 +232,7 @@ int agc_handler(int fd, int dir, char *buf)
 		snprintf(buf,80,"gain control: %d",agc >> 10);
 	}
 	
-	linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSAGC,&val);
+	v4l1_ioctl(fd, VIDIOCPWCSAGC,&val);
 	return 0;
 }
 
@@ -258,7 +259,7 @@ int shutter_handler(int fd, int dir, char *buf)
 		val = shutter;
 		snprintf(buf,80,"shutter speed: %d",shutter >> 8);
 	}
-	linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSSHUTTER,&val);
+	v4l1_ioctl(fd, VIDIOCPWCSSHUTTER,&val);
 	return 0;
 }
 
@@ -269,7 +270,7 @@ int whitebalance_handler(int fd, int dir, char *buf)
 	char *names[] = { "indoor", "outdoor", "fluorescent","manual","auto" };
 	int *val = NULL;
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGAWB,&wb) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGAWB,&wb) == -1) {
 		perror("Failed to get white balance");
 		return -1;
 	}
@@ -293,10 +294,10 @@ int whitebalance_handler(int fd, int dir, char *buf)
 			*val += 256;
 	}
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSAWB,&wb) == -1)
+	if(v4l1_ioctl(fd, VIDIOCPWCSAWB,&wb) == -1)
 		perror("Failed to set white balance");
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGAWB,&wb) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGAWB,&wb) == -1) {
 		perror("Failed to get white balance");
 		return -1;
 	}
@@ -312,16 +313,16 @@ int whitebalancespeed_handler(int fd, int dir, char *buf)
 {
 	struct pwc_wb_speed speed;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGAWBSPEED,&speed) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGAWBSPEED,&speed) == -1) {
 		perror("Failed to get current awb speed");
 		return -1;
 	}
 
 	if((dir == -1) || (dir == 1)) {
 		speed.control_speed += dir == -1 ? -2032 : 2032;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSAWBSPEED,&speed) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSAWBSPEED,&speed) == -1)
 			perror("Failed to set awb speed");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGAWBSPEED,&speed) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGAWBSPEED,&speed) == -1) {
 			perror("Failed to get new awb speed");
 			return -1;
 		}
@@ -334,16 +335,16 @@ int whitebalancedelay_handler(int fd, int dir, char *buf)
 {
 	struct pwc_wb_speed speed;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGAWBSPEED,&speed) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGAWBSPEED,&speed) == -1) {
 		perror("Failed to get current awb delay");
 		return -1;
 	}
 
 	if((dir == -1) || (dir == 1)) {
 		speed.control_delay += dir == -1 ? -1024 : 1024;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSAWBSPEED,&speed) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSAWBSPEED,&speed) == -1)
 			perror("Failed to set awb delay");
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGAWBSPEED,&speed) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGAWBSPEED,&speed) == -1) {
 			perror("Failed to get new awb delay");
 			return -1;
 		}
@@ -372,13 +373,13 @@ int contour_handler(int fd, int dir,char *buf)
 	else 
 		val = contour;
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSCONTOUR,&val) == -1)
+	if(v4l1_ioctl(fd, VIDIOCPWCSCONTOUR,&val) == -1)
 		perror("Failed to set contour");
 	
 	if(contourmode == 1)
 		snprintf(buf,80,"contour: auto");
 	else {
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGCONTOUR,&contour) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGCONTOUR,&contour) == -1) {
 			perror("Failed to get contour");
 			return -1;
 		}
@@ -391,17 +392,17 @@ int dynamicnoise_handler(int fd, int dir, char *buf)
 {
 	int dynnoise;
 	 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGDYNNOISE,&dynnoise) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGDYNNOISE,&dynnoise) == -1) {
 		perror("Failed to get current dynamic noise reduction mode");
 		return -1;
 	}
 	if(dir == 2) {
 		if(++dynnoise == 4)
 			dynnoise = 0;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSDYNNOISE,&dynnoise) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSDYNNOISE,&dynnoise) == -1)
 			perror("Failed to set dynamic noise reduction mode");
 		 
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGDYNNOISE,&dynnoise) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGDYNNOISE,&dynnoise) == -1) {
 			perror("Failed to get new dynamic noise reduction mode");
 			return -1;
 		 }
@@ -414,16 +415,16 @@ int backlight_handler(int fd, int dir, char *buf)
 {
 	int backlight;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGBACKLIGHT,&backlight) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGBACKLIGHT,&backlight) == -1) {
 		perror("Failed to get backlight mode");
 		return -1;
 	}
 	if(dir == 2) {
 		backlight = !backlight;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSBACKLIGHT,&backlight) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSBACKLIGHT,&backlight) == -1)
 			perror("Failed to set backlight mode");
 		
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGBACKLIGHT,&backlight) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGBACKLIGHT,&backlight) == -1) {
 			perror("Failed to get new backlight mode");
 			return -1;
 		}
@@ -436,16 +437,16 @@ int flicker_handler(int fd, int dir, char *buf)
 {
 	int flicker;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGFLICKER,&flicker) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGFLICKER,&flicker) == -1) {
 		perror("Failed to get flicker mode");
 		return -1;
 	}
 	if(dir == 2) {
 		flicker = !flicker;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSFLICKER,&flicker) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSFLICKER,&flicker) == -1)
 			perror("Failed to set flicker mode");
 		
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGFLICKER,&flicker) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGFLICKER,&flicker) == -1) {
 			perror("Failed to get new flicker mode");
 			return -1;
 		}
@@ -458,16 +459,16 @@ int colour_handler(int fd, int dir, char *buf)
 {
 	int colour;
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGCOLOUR,&colour) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCPWCGCOLOUR,&colour) == -1) {
 		perror("Failed to get colour mode");
 		return -1;
 	}
 	if(dir == 2) {
 		colour = !colour;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSCOLOUR,&colour) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSCOLOUR,&colour) == -1)
 			perror("Failed to set colour mode");
 		
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGCOLOUR,&colour) == -1) {
+		if(v4l1_ioctl(fd, VIDIOCPWCGCOLOUR,&colour) == -1) {
 			perror("Failed to get new colour mode");
 			return -1;
 		}
@@ -482,7 +483,7 @@ int saveuser_handler(int fd, int dir, char *buf)
 		snprintf(buf,80,"save user settings");
 	}
 	else if(dir == 2) {
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSUSER,NULL) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSUSER,NULL) == -1)
 			snprintf(buf,80,"Error: %s",strerror(errno));
 		else 
 			snprintf(buf,80,"User settings saved");
@@ -501,7 +502,7 @@ int restoreuser_handler(int fd, int dir, char *buf)
 		snprintf(buf,80,"restore user settings");
 	}
 	else if(dir == 2) {
-	  if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCRUSER,NULL) == -1)
+	  if(v4l1_ioctl(fd, VIDIOCPWCRUSER,NULL) == -1)
 			snprintf(buf,80,"Error: %s",strerror(errno));
 		else
 			snprintf(buf,80,"User settings restored");
@@ -518,7 +519,7 @@ int restorefactory_handler(int fd, int dir, char *buf)
 		snprintf(buf,80,"restore factory settings");
 	}
 	else if(dir == 2) {
-	  if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCFACTORY,NULL) == -1)
+	  if(v4l1_ioctl(fd, VIDIOCPWCFACTORY,NULL) == -1)
 			snprintf(buf,80,"Error: %s",strerror(errno));
 		else
 			snprintf(buf,80,"Factory settings restored");
@@ -532,12 +533,12 @@ int restorefactory_handler(int fd, int dir, char *buf)
 struct pwc_leds led;
 int ledon_handler(int fd, int dir, char *buf)
 {
-	linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGLED,&led);
+	v4l1_ioctl(fd, VIDIOCPWCGLED,&led);
 	if((dir == -1) || (dir == 1)) {
 		led.led_on += (dir == -1) ? -100 : 100;
 		if(led.led_on < 0)
 			led.led_on = 0;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSLED,&led) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSLED,&led) == -1)
 			perror("Failed to set leds");
 	}
 	snprintf(buf,80,"led on: %d", led.led_on);
@@ -546,12 +547,12 @@ int ledon_handler(int fd, int dir, char *buf)
 
 int ledoff_handler(int fd, int dir, char *buf)
 {
-	linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCGLED,&led);
+	v4l1_ioctl(fd, VIDIOCPWCGLED,&led);
 	if((dir == -1) || (dir == 1)) {
 		led.led_off += (dir == -1) ? -100 : 100;
 		if(led.led_off < 0)
 			led.led_off = 0;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCSLED,&led) == -1)
+		if(v4l1_ioctl(fd, VIDIOCPWCSLED,&led) == -1)
 			perror("Failed to set leds");
 	}
 	snprintf(buf,80,"led off: %d", led.led_off);
@@ -1218,7 +1219,7 @@ main(int argc, char **argv)
 	fd = 0;
 
 	if (usb_linux_probe(fd) ||
-	    linux_open(usb_linux2cdev(fd)) < 0) {
+	    (fd = v4l1_open("/dev/video0",0,0)) < 0) {
 		if(errno == EBUSY)
 			fprintf(stderr,"Failed to access webcam: Device in use\n");
 		else {
@@ -1236,17 +1237,17 @@ main(int argc, char **argv)
     	}
 	//fcntl(fd,F_SETFD,FD_CLOEXEC);
 
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCGPICT,&vp) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCGPICT,&vp) == -1) {
 		perror("Failed to get current picture info");
 		exit(1);
 	}
 	vp.palette = VIDEO_PALETTE_YUV420P;
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSPICT,&vp) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCSPICT,&vp) == -1) {
 		perror("Failed to set palette to YUV420P");
 		exit(1);
 	}
 	
-	if(linux_ioctl(usb_linux2cdev(fd),VIDIOCSWIN,&vw) == -1) {
+	if(v4l1_ioctl(fd, VIDIOCSWIN,&vw) == -1) {
 		fprintf(stderr,"Failed to set webcam to: %dx%d (%s) at %d fps (%s)\n",
 				vw.width,vw.height,sizes[i].name,fps,strerror(errno));
 		exit(1);
@@ -1259,7 +1260,7 @@ main(int argc, char **argv)
 	}
 	if(snapbtn) {
 		snapbtn = 0;
-		if(linux_ioctl(usb_linux2cdev(fd),VIDIOCPWCPROBE,&probe) != -1 &&
+		if(v4l1_ioctl(fd, VIDIOCPWCPROBE,&probe) != -1 &&
 		   probe.type >= 720 && probe.type <= 740)
 				snapbtn = 1;
 	}
@@ -1327,7 +1328,7 @@ main(int argc, char **argv)
 			timerid = SDL_AddTimer(interval,cbtimer,NULL);
 	}
 #endif
-	while (frozen || ((size = linux_read(usb_linux2cdev(fd),y,imgsize)) > 0) || (size == -1 && errno == EINTR)) {
+	while (frozen || ((size = v4l1_read(fd,y,imgsize)) > 0) || (size == -1 && errno == EINTR)) {
 		int snap = y[0] & 0x01;
 
 		if(!frozen && size != imgsize) {
@@ -1499,7 +1500,7 @@ main(int argc, char **argv)
 	if(size != 0)
 		perror("Error reading from webcam");
 
-	linux_close(usb_linux2cdev(fd));
+	v4l1_close(fd);
 	jpeg_destroy_compress(&cinfo);
 	return 0;
 }

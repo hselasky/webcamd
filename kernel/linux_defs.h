@@ -94,8 +94,7 @@
 #define	vmalloc_32_user(s) malloc(s)
 #define	vmalloc_user(s) malloc(s)
 #define	vmalloc_32(s) malloc(s)
-#define	vmalloc_to_page(...) NULL
-#define	vm_insert_page(...) 0		/* NOP */
+#define	vmalloc_to_page(x) ((struct page *)(x))	/* HACK */
 #define	vfree(ptr) free(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)

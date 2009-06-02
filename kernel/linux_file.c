@@ -92,9 +92,11 @@ linux_ioctl(struct cdev *cdev, unsigned int cmd, void *arg)
 		return (-EINVAL);
 
 	if (cdev->ops->unlocked_ioctl)
-		return (cdev->ops->unlocked_ioctl(&cdev->fixed_file, cmd, (long)arg));
+		return (cdev->ops->unlocked_ioctl(&cdev->fixed_file,
+				cmd, (long)arg));
 	else if (cdev->ops->ioctl)
-		return (cdev->ops->ioctl(&cdev->fixed_inode, &cdev->fixed_file, cmd, (long)arg));
+		return (cdev->ops->ioctl(&cdev->fixed_inode,
+			&cdev->fixed_file, cmd, (long)arg));
 	else
 		return (-EINVAL);
 }
@@ -146,26 +148,80 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 		return ((void *)-1);
 
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
-		if ((cdev->fixed_vma[i].vm_buffer_address != NULL) &&
-		    (cdev->fixed_vma[i].vm_buffer_address != (void *)-1))
+		if ((cdev->fixed_vma[i].vm_buffer_address == NULL) ||
+		    (cdev->fixed_vma[i].vm_buffer_address == (void *)-1))
 			break;
 	}
 
-	if (i == LINUX_VMA_MAX)
+	if (i == LINUX_VMA_MAX) {
 		return ((void *)-1);
+	}
 
 	/* fill in information */
 	cdev->fixed_vma[i].vm_start = (unsigned long)addr;
-	cdev->fixed_vma[i].vm_end = (unsigned long)(addr + offset);
+	cdev->fixed_vma[i].vm_end = (unsigned long)(addr + len);
 	cdev->fixed_vma[i].vm_pgoff = offset >> PAGE_SHIFT;
 	cdev->fixed_vma[i].vm_buffer_address = (void *)-1;
 
 	err = cdev->ops->mmap(&cdev->fixed_file, &cdev->fixed_vma[i]);
-	if (err)
+	if (err) {
+		errno = err;
 		return ((void *)-1);
+	}
 
 	if (cdev->fixed_vma[i].vm_ops)
 		cdev->fixed_vma[i].vm_ops->open(&cdev->fixed_vma[i]);
 
 	return (cdev->fixed_vma[i].vm_buffer_address);
+}
+
+/* wrappers for V4L */
+
+int
+v4lx_open_wrapper(const char *path, int oflag, int mode)
+{
+	int fd = 0;
+
+	if (linux_open(usb_linux2cdev(fd)) == 0)
+		errno = 0;
+	else
+		fd = -1;
+
+	return (fd);
+}
+
+int
+v4lx_close_wrapper(int fd)
+{
+	return (linux_close(usb_linux2cdev(fd)));
+}
+
+int
+v4lx_ioctl_wrapper(int fd, unsigned long cmd, void *arg)
+{
+	return (linux_ioctl(usb_linux2cdev(fd), cmd, arg));
+}
+
+int
+v4lx_read_wrapper(int fd, void *buf, size_t len)
+{
+	return (linux_read(usb_linux2cdev(fd), buf, len));
+}
+
+int
+v4lx_write_wrapper(int fd, void *buf, size_t len)
+{
+	return (linux_write(usb_linux2cdev(fd), buf, len));
+}
+
+void   *
+v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
+{
+	return (linux_mmap(usb_linux2cdev(fd), addr, len, offset));
+}
+
+int
+v4lx_munmap_wrapper(void *addr, size_t len)
+{
+	return (0);
 }

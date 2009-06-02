@@ -34,6 +34,7 @@ uint16_t get_unaligned_le16(const void *);
 void   *dev_get_drvdata(struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
 const char *dev_name(struct device *dev);
+int vm_insert_page(struct vm_area_struct *vma,   unsigned long start, struct page *page);
 int	remap_pfn_range(struct vm_area_struct *, unsigned long addr, unsigned long pfn, unsigned long size, pgprot_t);
 void	vfree(void *);
 void   *page_address(struct page *page);
