@@ -135,6 +135,5 @@ void	atomic_unlock(void);
 pthread_mutex_t *atomic_get_lock();
 
 int	thread_init(void);
-void	thread_uninit(void);
 
 #endif					/* _LINUX_THREAD_H_ */

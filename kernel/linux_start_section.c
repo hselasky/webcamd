@@ -62,6 +62,4 @@ linux_exit(void)
 		t->func();
 		t++;
 	}
-
-	thread_uninit();
 }
