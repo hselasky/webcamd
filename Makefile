@@ -10,7 +10,7 @@ all:
 	make -f Makefile.lib all install
 
 	gmake -C libv4l/v4l2-apps/libv4l \
-		CFLAGS="-DCONFIG_SYS_WRAPPER" \
+		CFLAGS="-DCONFIG_SYS_WRAPPER -I/usr/local/include/" \
 		LDFLAGS="-lv4lxdrivers" all install
 
 	make -C pwcview all install
