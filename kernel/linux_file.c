@@ -24,6 +24,7 @@
  */
 
 static uint8_t init_done;
+static uint8_t probe_done;
 
 int
 linux_open(struct cdev *cdev)
@@ -73,7 +74,8 @@ linux_close(struct cdev *cdev)
 		if ((cdev->fixed_vma[i].vm_buffer_address != NULL) &&
 		    (cdev->fixed_vma[i].vm_buffer_address != (void *)-1)) {
 
-			if (cdev->fixed_vma[i].vm_ops)
+			if (cdev->fixed_vma[i].vm_ops &&
+			    cdev->fixed_vma[i].vm_ops->close)
 				cdev->fixed_vma[i].vm_ops->close(&cdev->fixed_vma[i]);
 
 			cdev->fixed_vma[i].vm_buffer_address = NULL;
@@ -172,7 +174,8 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 		errno = -err;
 		return ((void *)-1);
 	}
-	if (cdev->fixed_vma[i].vm_ops)
+	if (cdev->fixed_vma[i].vm_ops &&
+	    cdev->fixed_vma[i].vm_ops->open)
 		cdev->fixed_vma[i].vm_ops->open(&cdev->fixed_vma[i]);
 
 	return (cdev->fixed_vma[i].vm_buffer_address);
@@ -187,16 +190,17 @@ v4lx_open_wrapper(const char *path, int oflag, int mode)
 	int err;
 
 	if (init_done == 0) {
-
 		linux_init();
-
-		init_done = 1;
 	}
-	if (usb_linux_probe(fd) != 0) {
+	init_done = 1;
+
+	if (probe_done == 0 && usb_linux_probe(fd) != 0) {
 		errno = ENODEV;
 		fd = -1;
 		goto done;
 	}
+	probe_done = 1;
+
 	err = linux_open(usb_linux2cdev(fd));
 	if (err < 0) {
 		errno = -err;
@@ -213,8 +217,10 @@ v4lx_close_wrapper(int fd)
 
 	err = linux_close(usb_linux2cdev(fd));
 
+#if 0
 	if (err == 0)
 		usb_linux_detach(fd);
+#endif
 
 	return (err);
 }
