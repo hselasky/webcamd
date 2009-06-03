@@ -74,4 +74,6 @@
 #include <include/media/tuner.h>
 #include <include/media/msp3400.h>
 
+#define PUBLIC_API __attribute__((visibility("default")))
+
 #endif					/* _USB_GLOBAL_H_ */
