@@ -373,6 +373,7 @@ struct usb_interface {
 struct usb_device {
 	struct device dev;
 	struct device *bus;
+	void   *parent;
 
 	struct usb_device_descriptor descriptor;
 	struct usb_host_endpoint ep0;
@@ -391,6 +392,8 @@ struct usb_device {
 	uint16_t devnum;
 
 	uint8_t	speed;			/* LIBUSB20_SPEED_XXX */
+
+	char	devpath[1];
 
 	void   *align[0];
 };

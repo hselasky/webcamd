@@ -235,5 +235,5 @@ SRCS+= pwcview.c
 .include <bsd.prog.mk>
 
 v4l:
-	gmake -C libv4l CFLAGS="-DCONFIG_SYS_WRAPPER" clean all install
+	gmake -C libv4l CFLAGS="-DCONFIG_SYS_WRAPPER -Ilinux/include" clean all install
 

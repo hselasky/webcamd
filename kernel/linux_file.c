@@ -93,10 +93,10 @@ linux_ioctl(struct cdev *cdev, unsigned int cmd, void *arg)
 
 	if (cdev->ops->unlocked_ioctl)
 		return (cdev->ops->unlocked_ioctl(&cdev->fixed_file,
-				cmd, (long)arg));
+		    cmd, (long)arg));
 	else if (cdev->ops->ioctl)
 		return (cdev->ops->ioctl(&cdev->fixed_inode,
-			&cdev->fixed_file, cmd, (long)arg));
+		    &cdev->fixed_file, cmd, (long)arg));
 	else
 		return (-EINVAL);
 }
@@ -156,6 +156,8 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 	if (i == LINUX_VMA_MAX) {
 		return ((void *)-1);
 	}
+	/* round length to nearest page size */
+	len = -(-len & -PAGE_SIZE);
 
 	/* fill in information */
 	cdev->fixed_vma[i].vm_start = (unsigned long)addr;
@@ -165,10 +167,9 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 
 	err = cdev->ops->mmap(&cdev->fixed_file, &cdev->fixed_vma[i]);
 	if (err) {
-		errno = err;
+		errno = -err;
 		return ((void *)-1);
 	}
-
 	if (cdev->fixed_vma[i].vm_ops)
 		cdev->fixed_vma[i].vm_ops->open(&cdev->fixed_vma[i]);
 

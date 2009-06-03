@@ -163,6 +163,18 @@ usb_exec(void *arg)
 	return (NULL);
 }
 
+static void
+usb_linux_create_event_thread(struct usb_device *dev)
+{
+	struct usb_linux_softc *sc = dev->parent;
+
+	/* start USB event thread again */
+	if (pthread_create(&sc->thread, NULL,
+	    usb_exec, sc)) {
+		printf("Failed creating USB process\n");
+	}
+}
+
 struct cdev *
 usb_linux2cdev(uint16_t device_index)
 {
@@ -179,6 +191,28 @@ usb_linux_set_cdev(struct cdev *cdev)
 	if (last_probe_index < ARRAY_SIZE(uls)) {
 		uls[last_probe_index].c_dev = cdev;
 	}
+}
+
+void
+usb_linux_detach_sub(uint16_t device_index)
+{
+	struct usb_device *p_dev = uls[device_index].p_dev;
+	struct usb_interface *ui = uls[device_index].ui;
+
+	/*
+	 * Make sure that we free all FreeBSD USB transfers belonging to
+	 * this Linux "usb_interface", hence they will most likely not be
+	 * needed any more.
+	 */
+	usb_linux_cleanup_interface(p_dev, ui);
+
+	libusb20_dev_close(p_dev->bsd_udev);
+
+	usb_linux_free_device(p_dev);
+
+	free(uls[device_index].pcfg);
+
+	memset(&uls[device_index], 0, sizeof(uls[0]));
 }
 
 /*------------------------------------------------------------------------*
@@ -252,20 +286,17 @@ found:
 		return (-ENOMEM);
 	}
 	ui = p_dev->bsd_iface_start + i;
-	if (udrv->probe(ui, id)) {
-		free(pcfg);
-		libusb20_dev_free(pdev);
-		usb_linux_free_device(p_dev);
-		return (ENXIO);
-	}
+
 	uls[device_index].udrv = udrv;
 	uls[device_index].p_dev = p_dev;
 	uls[device_index].ui = ui;
 	uls[device_index].pcfg = pcfg;
 
-	if (pthread_create(&uls[device_index].thread, NULL,
-	    usb_exec, &uls[device_index])) {
-		printf("Failed creating USB process\n");
+	usb_linux_create_event_thread(p_dev);
+
+	if (udrv->probe(ui, id)) {
+		usb_linux_detach_sub(device_index);
+		return (ENXIO);
 	}
 	return (0);
 }
@@ -280,28 +311,12 @@ int
 usb_linux_detach(uint16_t device_index)
 {
 	struct usb_driver *udrv = uls[device_index].udrv;
-	struct usb_device *p_dev = uls[device_index].p_dev;
 	struct usb_interface *ui = uls[device_index].ui;
-
-	pthread_cancel(uls[device_index].thread);
-	pthread_join(uls[device_index].thread, NULL);
 
 	(udrv->disconnect) (ui);
 
-	/*
-	 * Make sure that we free all FreeBSD USB transfers belonging to
-	 * this Linux "usb_interface", hence they will most likely not be
-	 * needed any more.
-	 */
-	usb_linux_cleanup_interface(p_dev, ui);
 
-	libusb20_dev_close(p_dev->bsd_udev);
-
-	usb_linux_free_device(p_dev);
-
-	free(uls[device_index].pcfg);
-
-	memset(&uls[device_index], 0, sizeof(uls[0]));
+	usb_linux_detach_sub(device_index);
 
 	return (0);
 }
@@ -595,6 +610,8 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 	else
 		p_ui->cur_altsetting = p_ui->altsetting + alt_index;
 
+	usb_linux_create_event_thread(dev);
+
 	return (err);
 }
 
@@ -818,6 +835,10 @@ usb_linux_create_usb_device(struct libusb20_device *udev,
 		}
 		p_ui++;
 	}
+
+	p_ud->parent = &uls[device_index];
+	get_device(&p_ud->dev);		/* make sure we don't get freed */
+
 done:
 	return p_ud;
 }
@@ -1106,6 +1127,7 @@ usb_linux_cleanup_interface(struct usb_device *dev, struct usb_interface *iface)
 	struct usb_host_interface *uhi_end;
 	struct usb_host_endpoint *uhe;
 	struct usb_host_endpoint *uhe_end;
+	struct usb_linux_softc *sc = dev->parent;
 	int err;
 
 	uhi = iface->altsetting;
@@ -1119,6 +1141,9 @@ usb_linux_cleanup_interface(struct usb_device *dev, struct usb_interface *iface)
 		}
 		uhi++;
 	}
+
+	pthread_cancel(sc->thread);
+	pthread_join(sc->thread, NULL);
 }
 
 /*------------------------------------------------------------------------*
