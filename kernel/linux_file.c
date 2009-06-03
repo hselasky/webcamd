@@ -23,6 +23,8 @@
  * SUCH DAMAGE.
  */
 
+static uint8_t init_done;
+
 int
 linux_open(struct cdev *cdev)
 {
@@ -178,50 +180,70 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 
 /* wrappers for V4L */
 
-int
+PUBLIC_API int
 v4lx_open_wrapper(const char *path, int oflag, int mode)
 {
 	int fd = 0;
+	int err;
 
-	if (linux_open(usb_linux2cdev(fd)) == 0)
-		errno = 0;
-	else
+	if (init_done == 0) {
+
+		linux_init();
+
+		init_done = 1;
+	}
+	if (usb_linux_probe(fd) != 0) {
+		errno = ENODEV;
 		fd = -1;
-
+		goto done;
+	}
+	err = linux_open(usb_linux2cdev(fd));
+	if (err < 0) {
+		errno = -err;
+		fd = -1;
+	}
+done:
 	return (fd);
 }
 
-int
+PUBLIC_API int
 v4lx_close_wrapper(int fd)
 {
-	return (linux_close(usb_linux2cdev(fd)));
+	int err;
+
+	err = linux_close(usb_linux2cdev(fd));
+
+	if (err == 0)
+		usb_linux_detach(fd);
+
+	return (err);
 }
 
-int
+PUBLIC_API int
 v4lx_ioctl_wrapper(int fd, unsigned long cmd, void *arg)
 {
 	return (linux_ioctl(usb_linux2cdev(fd), cmd, arg));
 }
 
-int
+PUBLIC_API int
 v4lx_read_wrapper(int fd, void *buf, size_t len)
 {
 	return (linux_read(usb_linux2cdev(fd), buf, len));
 }
 
-int
+PUBLIC_API int
 v4lx_write_wrapper(int fd, void *buf, size_t len)
 {
 	return (linux_write(usb_linux2cdev(fd), buf, len));
 }
 
-void   *
+PUBLIC_API void *
 v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 	return (linux_mmap(usb_linux2cdev(fd), addr, len, offset));
 }
 
-int
+PUBLIC_API int
 v4lx_munmap_wrapper(void *addr, size_t len)
 {
 	return (0);

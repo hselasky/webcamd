@@ -6,7 +6,7 @@ LIB=		v4lxdrivers
 MAN=
 SHLIB_MAJOR=    1
 SHLIB_MINOR=    0
-LINUXDIR=	${.CURDIR}/linux/libv4l/
+LINUXDIR=	${.CURDIR}/libv4l/linux
 MKLINT=		no
 NOGCCERROR=
 MLINKS=
@@ -213,6 +213,8 @@ CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
 CFLAGS+= -include usb_global.h
 
 CFLAGS+= -O2 -Wall
+
+CFLAGS+= -fvisibility=hidden
 
 LDFLAGS+= -lusb -lpthread
 

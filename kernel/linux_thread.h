@@ -130,4 +130,11 @@ int	try_to_freeze(void);
 int	freezing(struct task_struct *p);
 void	set_freezable(void);
 
+void	atomic_lock(void);
+void	atomic_unlock(void);
+pthread_mutex_t *atomic_get_lock();
+
+int	thread_init(void);
+void	thread_uninit(void);
+
 #endif					/* _LINUX_THREAD_H_ */

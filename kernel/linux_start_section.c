@@ -37,24 +37,31 @@ linux_module_exit_start(void)
 module_init(linux_module_init_start);
 module_exit(linux_module_exit_start);
 
+extern struct module_init_struct linux_init_mod;
+extern struct module_exit_struct linux_exit_mod;
+
 void
 linux_init(void)
 {
-	module_init_t **t = &linux_module_init_start_p;
-	uint32_t i;
+	struct module_init_struct *t = &linux_init_mod;
 
-	for (i = 0; t[i] != linux_module_init_end; i++) {
-		t[i] ();
+	thread_init();
+
+	while (t->magic == MODULE_MAGIC) {
+		t->func();
+		t++;
 	}
 }
 
 void
 linux_exit(void)
 {
-	module_exit_t **t = &linux_module_exit_start_p;
-	uint32_t i;
+	struct module_exit_struct *t = &linux_exit_mod;
 
-	for (i = 0; t[i] != linux_module_exit_end; i++) {
-		t[i] ();
+	while (t->magic == MODULE_MAGIC) {
+		t->func();
+		t++;
 	}
+
+	thread_uninit();
 }

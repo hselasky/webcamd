@@ -26,11 +26,26 @@
 #ifndef _LINUX_END_SECTION_H_
 #define	_LINUX_END_SECTION_H_
 
+#define	MODULE_MAGIC ((uint8_t *)0 + 0x123468AC)
+
 typedef int (module_init_t)(void);
 typedef void (module_exit_t)(void);
 
-#define	module_init(func) static module_init_t * __attribute__((__section__("linux_init_data"),__used__,__aligned__(1))) func##_p = func;
-#define	module_exit(func) static module_exit_t * __attribute__((__section__("linux_exit_data"),__used__,__aligned__(1))) func##_p = func;
+struct module_init_struct {
+	module_init_t *func;
+	uint8_t *magic;
+};
+
+struct module_exit_struct {
+	module_exit_t *func;
+	uint8_t *magic;
+};
+
+#define	module_init(func) static struct module_init_struct \
+  __attribute__((__section__("linux_init_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_MAGIC };
+
+#define	module_exit(func) static struct module_exit_struct \
+  __attribute__((__section__("linux_exit_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_MAGIC };
 
 void	linux_init(void);
 void	linux_exit(void);

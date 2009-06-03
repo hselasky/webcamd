@@ -25,8 +25,6 @@
 
 /* NOTE: Some functions in this file derives directly from the Linux kernel sources. */
 
-static pthread_mutex_t atomic_mutex;
-
 uint16_t
 le16_to_cpu(uint16_t x)
 {
@@ -352,24 +350,6 @@ clear_bit(int nr, volatile unsigned long *addr)
 	atomic_lock();
 	*p &= ~mask;
 	atomic_unlock();
-}
-
-void
-atomic_lock(void)
-{
-	pthread_mutex_lock(&atomic_mutex);
-}
-
-void
-atomic_unlock(void)
-{
-	pthread_mutex_unlock(&atomic_mutex);
-}
-
-pthread_mutex_t *
-atomic_get_lock(void)
-{
-	return (&atomic_mutex);
 }
 
 unsigned int
@@ -891,16 +871,3 @@ poll_schedule(struct poll_wqueues *pwq, int flag)
 {
 
 }
-
-static int
-func_init(void)
-{
-	pthread_mutexattr_t attr;
-
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutex_init(&atomic_mutex, &attr);
-	return (0);
-}
-
-module_init(func_init);

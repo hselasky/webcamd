@@ -24,6 +24,7 @@
  */
 
 static pthread_cond_t sema_cond;
+static pthread_mutex_t atomic_mutex;
 
 void
 init_waitqueue_head(wait_queue_head_t *q)
@@ -270,9 +271,33 @@ set_freezable(void)
 
 }
 
+void
+atomic_lock(void)
+{
+	pthread_mutex_lock(&atomic_mutex);
+}
+
+void
+atomic_unlock(void)
+{
+	pthread_mutex_unlock(&atomic_mutex);
+}
+
+pthread_mutex_t *
+atomic_get_lock(void)
+{
+	return (&atomic_mutex);
+}
+
 int
 thread_init(void)
 {
+	pthread_mutexattr_t attr;
+
+	pthread_mutexattr_init(&attr);
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&atomic_mutex, &attr);
+
 	pthread_cond_init(&sema_cond, NULL);
 	return (0);
 }
@@ -282,6 +307,3 @@ thread_exit(void)
 {
 	pthread_cond_destroy(&sema_cond);
 }
-
-module_init(thread_init)
-module_exit(thread_exit)

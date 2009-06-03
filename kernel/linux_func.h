@@ -53,9 +53,6 @@ int	test_and_set_bit(int nr, volatile unsigned long *addr);
 int	test_and_clear_bit(int nr, volatile unsigned long *addr);
 void	set_bit(int nr, volatile unsigned long *addr);
 void	clear_bit(int nr, volatile unsigned long *addr);
-void	atomic_lock(void);
-void	atomic_unlock(void);
-pthread_mutex_t *atomic_get_lock();
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
@@ -102,5 +99,6 @@ void	poll_initwait(struct poll_wqueues *pwq);
 void	poll_freewait(struct poll_wqueues *pwq);
 void	poll_schedule(struct poll_wqueues *pwq, int flag);
 void	bitmap_zero(unsigned long *dst, int nbits);
+int	func_init(void);
 
 #endif					/* _LINUX_FUNC_H_ */

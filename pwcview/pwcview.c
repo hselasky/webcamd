@@ -39,7 +39,9 @@
 #endif
 #include "pwc-ioctl.h"
 #include "pixels.h"
-#include "../libv4l/include/libv4l1.h"
+
+#include <libv4l1.h>
+#include <linux/videodev.h>
 
 const char *motioncmd;
 long cmdinterval = 60;
@@ -1214,12 +1216,9 @@ main(int argc, char **argv)
 	vw.flags = fps << PWC_FPS_SHIFT;
 	imgsize = (vw.width * vw.height * 3)/2;
 
-	linux_init();
-
 	fd = 0;
 
-	if (usb_linux_probe(fd) ||
-	    (fd = v4l1_open("/dev/video0",0,0)) < 0) {
+	if ((fd = v4l1_open("/dev/video0",O_RDWR,0)) < 0) {
 		if(errno == EBUSY)
 			fprintf(stderr,"Failed to access webcam: Device in use\n");
 		else {

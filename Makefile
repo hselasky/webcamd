@@ -1,5 +1,11 @@
 LINUXDIR=${.CURDIR}/libv4l/linux
 
+#
+# Usage:
+# make fetch
+# sudo make patch all install
+#
+
 all:
 	make -f Makefile.lib all install
 
@@ -26,7 +32,8 @@ fetch:
 
 	ln -s libv4l-* libv4l
 
-	sed -i \
+patch:
+	sed -i '' \
 	-e "s/__u64/uint64_t/g" \
 	-e "s/__u32/uint32_t/g" \
 	-e "s/__u16/uint16_t/g" \
@@ -35,8 +42,10 @@ fetch:
 	-e "s/__s32/int32_t/g" \
 	-e "s/__s16/int16_t/g" \
 	-e "s/__s8/int8_t/g" \
-	-e "linux.ioctl.h/sys\/ioctl.h/g" \
-	-e "linux.types.h/sys\/types.h/g" \
+	-e "s/linux.ioctl.h/sys\/ioctl.h/g" \
+	-e "s/linux.types.h/sys\/types.h/g" \
+	-e "s/linux.compiler.h/sys\/types.h/g" \
+	-e "s/__user//g" \
 	${LINUXDIR}/include/linux/videodev.h \
 	${LINUXDIR}/include/linux/videodev2.h
 
@@ -45,3 +54,6 @@ fetch:
 	cp -v 	${LINUXDIR}/include/linux/videodev.h \
 		${LINUXDIR}/include/linux/videodev2.h \
 		/usr/local/include/linux/
+
+install:
+	@echo "Done."
