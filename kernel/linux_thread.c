@@ -25,6 +25,25 @@
 
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
+static uint32_t atomic_recurse;
+
+static uint32_t
+atomic_drop(void)
+{
+	uint32_t drops = 0;
+	while (atomic_recurse > 1) {
+		atomic_unlock();
+		drops++;
+	}
+	return (drops);
+}
+
+static void
+atomic_pickup(uint32_t drops)
+{
+	while (drops--)
+		atomic_lock();
+}
 
 void
 init_waitqueue_head(wait_queue_head_t *q)
@@ -64,7 +83,10 @@ wake_up_nr(wait_queue_head_t *q, uint32_t nr)
 void
 __wait_event(wait_queue_head_t *q)
 {
+	uint32_t drops;
+	drops = atomic_drop();
 	pthread_cond_wait(&sema_cond, atomic_get_lock());
+	atomic_pickup(drops);
 }
 
 void
@@ -92,8 +114,11 @@ int
 __wait_event_timed(wait_queue_head_t *q, struct timespec *ts)
 {
 	int err;
+	uint32_t drops;
 
+	drops = atomic_drop();
 	err = pthread_cond_timedwait(&sema_cond, atomic_get_lock(), ts);
+	atomic_pickup(drops);
 
 	return (err == ETIMEDOUT);
 }
@@ -124,8 +149,12 @@ void
 down(struct semaphore *sem)
 {
 	atomic_lock();
-	while (sem->value <= 0)
+	while (sem->value <= 0) {
+		uint32_t drops;
+		drops = atomic_drop();
 		pthread_cond_wait(&sema_cond, atomic_get_lock());
+		atomic_pickup(drops);
+	}
 	sem->value--;
 	atomic_unlock();
 }
@@ -275,11 +304,13 @@ void
 atomic_lock(void)
 {
 	pthread_mutex_lock(&atomic_mutex);
+	atomic_recurse++;
 }
 
 void
 atomic_unlock(void)
 {
+	atomic_recurse--;
 	pthread_mutex_unlock(&atomic_mutex);
 }
 
