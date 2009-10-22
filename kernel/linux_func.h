@@ -1,6 +1,11 @@
 #ifndef _LINUX_FUNC_H_
 #define	_LINUX_FUNC_H_
 
+#define	device_create_file(...) 0
+#define	device_remove_file(...) __nop
+
+int	printk_nop(void);
+
 uint16_t le16_to_cpu(uint16_t x);
 uint16_t be16_to_cpu(uint16_t x);
 

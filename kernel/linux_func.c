@@ -25,6 +25,12 @@
 
 /* NOTE: Some functions in this file derives directly from the Linux kernel sources. */
 
+int
+printk_nop()
+{
+	return (1);
+}
+
 uint16_t
 le16_to_cpu(uint16_t x)
 {
@@ -817,6 +823,10 @@ vm_insert_page(struct vm_area_struct *vma,
 	/* assuming that pages are virtually contiguous */
 	if (start == vma->vm_start)
 		vma->vm_buffer_address = (void *)page;
+
+	/* set "vm_flags" */
+	vma->vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
+
 	return (0);
 }
 
@@ -826,6 +836,8 @@ remap_vmalloc_range(struct vm_area_struct *vma,
 {
 	addr = (uint8_t *)addr + (pgoff << PAGE_SHIFT);
 	vma->vm_buffer_address = addr;
+	/* set "vm_flags" */
+	vma->vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
 	return (0);
 }
 

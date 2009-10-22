@@ -90,12 +90,22 @@ struct usb_device_id {
 	.match_flags = USB_DEVICE_ID_MATCH_DEVICE, .idVendor = (vend), \
 	.idProduct = (prod)
 
-#define	USB_INTERFACE_INFO(c,sb,i)			\
+#define	USB_INTERFACE_INFO(c,sb,i)\
 	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS |	\
 		USB_DEVICE_ID_MATCH_INT_SUBCLASS,	\
 	.bInterfaceClass = (c),				\
 	.bInterfaceSubClass = (sb),			\
 	.driver_info = (i)
+
+#define	USB_DEVICE_AND_INTERFACE_INFO(vend, prod, a, b, c)\
+	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS |	\
+		USB_DEVICE_ID_MATCH_INT_SUBCLASS |	\
+		USB_DEVICE_ID_MATCH_INT_PROTOCOL,	\
+	.idVendor = (vend),				\
+	.idProduct = (prod),				\
+	.bInterfaceClass = (a),				\
+	.bInterfaceSubClass = (b),			\
+	.bInterfaceProtocol = (c)
 
 /* The "usb_driver" structure holds the Linux USB device driver
  * callbacks, and a pointer to device ID's which this entry should
@@ -572,6 +582,8 @@ int	usb_make_path(struct usb_device *dev, char *buf, size_t size);
 #define	usb_driver_release_interface(...) __nop
 #define	usb_driver_claim_interface(...) 0
 
+#define	usb_endpoint_num(epd) \
+	((epd)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK)
 #define	usb_endpoint_is_bulk_in(epd) \
 	(usb_endpoint_xfer_bulk(epd) && usb_endpoint_dir_in(epd))
 #define	usb_endpoint_is_bulk_out(epd) \

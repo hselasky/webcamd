@@ -57,7 +57,17 @@
 #define	PAGE_ALIGN(addr)        (((addr)+PAGE_SIZE-1)&(~(PAGE_SIZE - 1)))
 #define	PAGE_OFFSET	0
 #define	__pa(x)                 ((unsigned long)(x)-PAGE_OFFSET)
-#define	S_IRUGO		0
+#define	S_IRUSR 00400
+#define	S_IWUSR 00200
+#define	S_IXUSR 00100
+#define	S_IRGRP 00040
+#define	S_IWGRP 00020
+#define	S_IXGRP 00010
+#define	S_IROTH 00004
+#define	S_IWOTH 00002
+#define	S_IXOTH 00001
+#define	S_IRUGO (S_IRUSR|S_IRGRP|S_IROTH)
+#define	S_IWUGO (S_IWUSR|S_IWGRP|S_IWOTH)
 #define	offsetof(t, m) ((uint8_t *)&((t *)0)->m - (uint8_t *)0)
 #define	container_of(ptr, t, m) ((t *)((uint8_t *)(ptr) - offsetof(t, m)))
 #define	__devinitdata
@@ -80,7 +90,8 @@
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
 #define	info(...) __nop
-#define	printk(...) __nop
+#define	printk(...) printk_nop()
+#define	printk_ratelimit(...) prink_nop()
 #define	pr_err(...) __nop
 #define	dev_dbg(...) __nop
 #define	dev_err(...) __nop
@@ -180,9 +191,16 @@
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
 #define	max(a,b) (((a) > (b)) ? (a) : (b))
 #define	prefetch(x) (void)x
+#define	KERN_INFO ""
+#define	KERN_WARNING ""
+#define	KERN_ERR ""
+#define	KERN_DEBUG ""
+#define	KERN_CONT ""
 #define	BUG(...) __nop
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
+#define	lock_kernel(...) __nop
+#define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
 #define	spin_lock_irqsave(l,f)  do { (f) = 1; atomic_lock(); } while (0)
 #define	spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
