@@ -168,6 +168,7 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 	cdev->fixed_vma[i].vm_end = (unsigned long)(addr + len);
 	cdev->fixed_vma[i].vm_pgoff = offset >> PAGE_SHIFT;
 	cdev->fixed_vma[i].vm_buffer_address = (void *)-1;
+	cdev->fixed_vma[i].vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
 
 	err = cdev->ops->mmap(&cdev->fixed_file, &cdev->fixed_vma[i]);
 	if (err) {

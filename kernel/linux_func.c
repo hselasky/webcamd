@@ -824,9 +824,6 @@ vm_insert_page(struct vm_area_struct *vma,
 	if (start == vma->vm_start)
 		vma->vm_buffer_address = (void *)page;
 
-	/* set "vm_flags" */
-	vma->vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
-
 	return (0);
 }
 
@@ -836,8 +833,7 @@ remap_vmalloc_range(struct vm_area_struct *vma,
 {
 	addr = (uint8_t *)addr + (pgoff << PAGE_SHIFT);
 	vma->vm_buffer_address = addr;
-	/* set "vm_flags" */
-	vma->vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
+
 	return (0);
 }
 
