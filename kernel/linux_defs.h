@@ -91,7 +91,7 @@
 #define	module_param(...)
 #define	info(...) __nop
 #define	printk(...) printk_nop()
-#define	printk_ratelimit(...) prink_nop()
+#define	printk_ratelimit(...) printk_nop()
 #define	pr_err(...) __nop
 #define	dev_dbg(...) __nop
 #define	dev_err(...) __nop
