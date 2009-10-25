@@ -47,7 +47,7 @@ linux_init(void)
 
 	thread_init();
 
-	while (t->magic == MODULE_MAGIC) {
+	while (t->magic == MODULE_INIT_MAGIC) {
 		t->func();
 		t++;
 	}
@@ -58,7 +58,7 @@ linux_exit(void)
 {
 	struct module_exit_struct *t = &linux_exit_mod;
 
-	while (t->magic == MODULE_MAGIC) {
+	while (t->magic == MODULE_EXIT_MAGIC) {
 		t->func();
 		t++;
 	}
