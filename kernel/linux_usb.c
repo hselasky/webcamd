@@ -30,10 +30,11 @@ struct usb_linux_softc {
 	struct usb_interface *ui;
 	struct cdev *c_dev;
 	pthread_t thread;
+	int	fds [2];
 };
 
 static struct usb_linux_softc uls[16];
-static uint16_t last_probe_index;
+static struct usb_linux_softc *puls = NULL;
 
 /* prototypes */
 
@@ -44,7 +45,7 @@ static uint16_t usb_max_isoc_frames(struct usb_device *);
 static const struct usb_device_id *usb_linux_lookup_id(struct LIBUSB20_DEVICE_DESC_DECODED *pdd, struct LIBUSB20_INTERFACE_DESC_DECODED *pid, const struct usb_device_id *id);
 static void usb_linux_free_device(struct usb_device *dev);
 
-static struct usb_device *usb_linux_create_usb_device(struct libusb20_device *udev, struct libusb20_config *pcfg, uint16_t device_index);
+static struct usb_device *usb_linux_create_usb_device(struct usb_linux_softc *sc, struct libusb20_device *udev, struct libusb20_config *pcfg, uint16_t addr);
 static void usb_linux_cleanup_interface(struct usb_device *, struct usb_interface *);
 static void usb_linux_complete(struct libusb20_transfer *);
 static int usb_unlink_urb_sub(struct urb *, uint8_t);
@@ -175,29 +176,43 @@ usb_linux_create_event_thread(struct usb_device *dev)
 	}
 }
 
-struct cdev *
-usb_linux2cdev(uint16_t device_index)
+struct usb_linux_softc *
+usb_linux2usb(int fd)
 {
-	if ((device_index < ARRAY_SIZE(uls)) &&
-	    (uls[device_index].p_dev)) {
-		return (uls[device_index].c_dev);
+	uint8_t i;
+
+	for (i = 0;; i++) {
+		if (i == ARRAY_SIZE(uls))
+			return (NULL);
+		if (uls[i].fds[0] == fd)
+			break;
 	}
-	return (NULL);
+	return (uls + i);
+}
+
+struct cdev *
+usb_linux2cdev(int fd)
+{
+	struct usb_linux_softc *sc;
+
+	sc = usb_linux2usb(fd);
+	if (sc == NULL)
+		return (NULL);
+
+	return (sc->c_dev);
 }
 
 void
 usb_linux_set_cdev(struct cdev *cdev)
 {
-	if (last_probe_index < ARRAY_SIZE(uls)) {
-		uls[last_probe_index].c_dev = cdev;
-	}
+	puls->c_dev = cdev;
 }
 
 void
-usb_linux_detach_sub(uint16_t device_index)
+usb_linux_detach_sub(struct usb_linux_softc *sc)
 {
-	struct usb_device *p_dev = uls[device_index].p_dev;
-	struct usb_interface *ui = uls[device_index].ui;
+	struct usb_device *p_dev = sc->p_dev;
+	struct usb_interface *ui = sc->ui;
 
 	/*
 	 * Make sure that we free all FreeBSD USB transfers belonging to
@@ -210,9 +225,14 @@ usb_linux_detach_sub(uint16_t device_index)
 
 	usb_linux_free_device(p_dev);
 
-	free(uls[device_index].pcfg);
+	if (sc->fds[0] > -1)
+		close(sc->fds[0]);
+	if (sc->fds[1] > -1)
+		close(sc->fds[1]);
 
-	memset(&uls[device_index], 0, sizeof(uls[0]));
+	free(sc->pcfg);
+
+	memset(sc, 0, sizeof(*sc));
 }
 
 /*------------------------------------------------------------------------*
@@ -221,9 +241,10 @@ usb_linux_detach_sub(uint16_t device_index)
  * This function is the FreeBSD probe and attach callback.
  *------------------------------------------------------------------------*/
 int
-usb_linux_probe(uint16_t device_index)
+usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 {
 	const struct usb_device_id *id;
+	struct usb_linux_softc *sc;
 	struct libusb20_backend *pbe;
 	struct libusb20_device *pdev;
 	struct libusb20_config *pcfg = NULL;
@@ -232,12 +253,17 @@ usb_linux_probe(uint16_t device_index)
 	struct usb_device *p_dev;
 	struct usb_interface *ui;
 	uint8_t i;
-	uint16_t to = device_index;
 
-	if (device_index >= ARRAY_SIZE(uls))
-		return (-ENOMEM);
+	for (i = 0;; i++) {
+		if (i == ARRAY_SIZE(uls))
+			return (-ENOMEM);
+		if (uls[i].udrv == NULL)
+			break;
+	}
 
-	last_probe_index = device_index;
+	sc = uls + i;
+
+	puls = sc;			/* XXX */
 
 	pbe = libusb20_be_alloc_default();
 	if (pbe == NULL)
@@ -248,7 +274,10 @@ usb_linux_probe(uint16_t device_index)
 
 		if (libusb20_dev_get_mode(pdev) != LIBUSB20_MODE_HOST)
 			continue;
-
+		if (libusb20_dev_get_bus_number(pdev) != bus)
+			continue;
+		if (libusb20_dev_get_address(pdev) != addr)
+			continue;
 		if (libusb20_dev_open(pdev, 4 * 16))
 			continue;
 
@@ -263,7 +292,7 @@ usb_linux_probe(uint16_t device_index)
 				id = usb_linux_lookup_id(libusb20_dev_get_device_desc(pdev),
 				    &pifc->desc, udrv->id_table);
 				if (id != NULL) {
-					if (!to--) {
+					if (!index--) {
 						goto found;
 					}
 				}
@@ -279,7 +308,7 @@ found:
 	libusb20_be_dequeue_device(pbe, pdev);
 	libusb20_be_free(pbe);
 
-	p_dev = usb_linux_create_usb_device(pdev, pcfg, device_index);
+	p_dev = usb_linux_create_usb_device(sc, pdev, pcfg, addr);
 	if (p_dev == NULL) {
 		free(pcfg);
 		libusb20_dev_free(pdev);
@@ -287,18 +316,25 @@ found:
 	}
 	ui = p_dev->bsd_iface_start + i;
 
-	uls[device_index].udrv = udrv;
-	uls[device_index].p_dev = p_dev;
-	uls[device_index].ui = ui;
-	uls[device_index].pcfg = pcfg;
+	sc->udrv = udrv;
+	sc->p_dev = p_dev;
+	sc->ui = ui;
+	sc->pcfg = pcfg;
 
+	sc->fds[0] = -1;
+	sc->fds[1] = -1;
+
+	if (pipe(sc->fds) != 0) {
+		usb_linux_detach_sub(sc);
+		return (-ENOMEM);
+	}
 	usb_linux_create_event_thread(p_dev);
 
-	if (udrv->probe(ui, id)) {
-		usb_linux_detach_sub(device_index);
-		return (ENXIO);
+	if (udrv->probe(ui, id) != 0) {
+		usb_linux_detach_sub(sc);
+		return (-ENXIO);
 	}
-	return (0);
+	return (sc->fds[0]);
 }
 
 /*------------------------------------------------------------------------*
@@ -308,15 +344,15 @@ found:
  * FreeBSD USB stack through the "device_detach()" function.
  *------------------------------------------------------------------------*/
 int
-usb_linux_detach(uint16_t device_index)
+usb_linux_detach(int fd)
 {
-	struct usb_driver *udrv = uls[device_index].udrv;
-	struct usb_interface *ui = uls[device_index].ui;
+	struct usb_linux_softc *sc = usb_linux2usb(fd);
+	struct usb_driver *udrv = sc->udrv;
+	struct usb_interface *ui = sc->ui;
 
 	(udrv->disconnect) (ui);
 
-
-	usb_linux_detach_sub(device_index);
+	usb_linux_detach_sub(sc);
 
 	return (0);
 }
@@ -327,14 +363,14 @@ usb_linux_detach(uint16_t device_index)
  * This function is the FreeBSD suspend callback. Usually it does nothing.
  *------------------------------------------------------------------------*/
 int
-usb_linux_suspend(uint16_t device_index)
+usb_linux_suspend(int fd)
 {
-	struct usb_driver *udrv = uls[device_index].udrv;
-	struct usb_interface *ui = uls[device_index].ui;
-	int err;
+	struct usb_linux_softc *sc = usb_linux2usb(fd);
+	struct usb_driver *udrv = sc->udrv;
+	struct usb_interface *ui = sc->ui;
 
 	if (udrv->suspend) {
-		err = (udrv->suspend) (ui, 0);
+		(udrv->suspend) (ui, 0);
 	}
 	return (0);
 }
@@ -345,14 +381,14 @@ usb_linux_suspend(uint16_t device_index)
  * This function is the FreeBSD resume callback. Usually it does nothing.
  *------------------------------------------------------------------------*/
 int
-usb_linux_resume(uint16_t device_index)
+usb_linux_resume(int fd)
 {
-	struct usb_driver *udrv = uls[device_index].udrv;
-	struct usb_interface *ui = uls[device_index].ui;
-	int err;
+	struct usb_linux_softc *sc = usb_linux2usb(fd);
+	struct usb_driver *udrv = sc->udrv;
+	struct usb_interface *ui = sc->ui;
 
 	if (udrv->resume) {
-		err = (udrv->resume) (ui);
+		(udrv->resume) (ui);
 	}
 	return (0);
 }
@@ -728,8 +764,9 @@ failure:
  * is returned by this function.
  *------------------------------------------------------------------------*/
 static struct usb_device *
-usb_linux_create_usb_device(struct libusb20_device *udev,
-    struct libusb20_config *pcfg, uint16_t device_index)
+usb_linux_create_usb_device(struct usb_linux_softc *sc,
+    struct libusb20_device *udev, struct libusb20_config *pcfg,
+    uint16_t addr)
 {
 	struct libusb20_interface *id;
 	struct libusb20_interface *aid;
@@ -791,7 +828,7 @@ usb_linux_create_usb_device(struct libusb20_device *udev,
 	p_ud->bsd_iface_end = p_ui + iface_index;
 	p_ud->bsd_endpoint_start = p_uhe;
 	p_ud->bsd_endpoint_end = p_uhe + nedesc;
-	p_ud->devnum = device_index;
+	p_ud->devnum = addr;
 
 	libusb20_me_encode(&p_ud->descriptor, sizeof(p_ud->descriptor),
 	    libusb20_dev_get_device_desc(udev));
@@ -836,7 +873,7 @@ usb_linux_create_usb_device(struct libusb20_device *udev,
 		p_ui++;
 	}
 
-	p_ud->parent = &uls[device_index];
+	p_ud->parent = sc;
 	get_device(&p_ud->dev);		/* make sure we don't get freed */
 
 done:

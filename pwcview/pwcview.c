@@ -1218,7 +1218,7 @@ main(int argc, char **argv)
 
 	fd = 0;
 
-	if ((fd = v4l1_open("/dev/video0",O_RDWR,0)) < 0) {
+	if ((fd = v4l1_open(device,O_RDWR,0)) < 0) {
 		if(errno == EBUSY)
 			fprintf(stderr,"Failed to access webcam: Device in use\n");
 		else {

@@ -31,6 +31,7 @@
 struct usb_device;
 struct usb_interface;
 struct usb_driver;
+struct usb_linux_softc;
 struct urb;
 
 typedef void *pm_message_t;
@@ -87,7 +88,9 @@ struct usb_device_id {
 	(USB_DEVICE_ID_MATCH_VENDOR | USB_DEVICE_ID_MATCH_PRODUCT)
 
 #define	USB_DEVICE(vend,prod) \
-	.match_flags = USB_DEVICE_ID_MATCH_DEVICE, .idVendor = (vend), \
+	.match_flags = USB_DEVICE_ID_MATCH_VENDOR |	\
+		USB_DEVICE_ID_MATCH_PRODUCT,		\
+	.idVendor = (vend),				\
 	.idProduct = (prod)
 
 #define	USB_INTERFACE_INFO(c,sb,i)\
@@ -98,13 +101,15 @@ struct usb_device_id {
 	.driver_info = (i)
 
 #define	USB_DEVICE_AND_INTERFACE_INFO(vend, prod, a, b, c)\
-	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS |	\
-		USB_DEVICE_ID_MATCH_INT_SUBCLASS |	\
-		USB_DEVICE_ID_MATCH_INT_PROTOCOL,	\
-	.idVendor = (vend),				\
-	.idProduct = (prod),				\
-	.bInterfaceClass = (a),				\
-	.bInterfaceSubClass = (b),			\
+	.match_flags = USB_DEVICE_ID_MATCH_VENDOR |	  \
+		USB_DEVICE_ID_MATCH_PRODUCT |		  \
+		USB_DEVICE_ID_MATCH_INT_CLASS |		  \
+		USB_DEVICE_ID_MATCH_INT_SUBCLASS |	  \
+		USB_DEVICE_ID_MATCH_INT_PROTOCOL,	  \
+	.idVendor = (vend),				  \
+	.idProduct = (prod),				  \
+	.bInterfaceClass = (a),				  \
+	.bInterfaceSubClass = (b),			  \
 	.bInterfaceProtocol = (c)
 
 /* The "usb_driver" structure holds the Linux USB device driver
@@ -492,12 +497,13 @@ void	usb_set_intfdata(struct usb_interface *intf, void *data);
 int	usb_register(struct usb_driver *drv);
 int	usb_deregister(struct usb_driver *drv);
 
-struct cdev *usb_linux2cdev(uint16_t device_index);
+struct usb_linux_softc *usb_linux2usb(int fd);
+struct cdev *usb_linux2cdev(int fd);
 void	usb_linux_set_cdev(struct cdev *cdev);
-int	usb_linux_probe(uint16_t device_index);
-int	usb_linux_detach(uint16_t device_index);
-int	usb_linux_suspend(uint16_t device_index);
-int	usb_linux_resume(uint16_t device_index);
+int	usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index);
+int	usb_linux_detach(int fd);
+int	usb_linux_suspend(int fd);
+int	usb_linux_resume(int fd);
 
 #define	interface_to_usbdev(intf) (intf)->linux_udev
 #define	interface_to_bsddev(intf) (intf)->linux_udev->bsd_udev

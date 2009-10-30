@@ -24,7 +24,8 @@
  */
 
 static uint8_t init_done;
-static uint8_t probe_done;
+
+#include <sys/syscall.h>
 
 int
 linux_open(struct cdev *cdev)
@@ -187,26 +188,34 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 PUBLIC_API int
 v4lx_open_wrapper(const char *path, int oflag, int mode)
 {
-	int fd = 0;
+	int fd;
+	int bus;
+	int addr;
 	int err;
+	int index = 0;
 
 	if (init_done == 0) {
+		init_done = 1;
 		linux_init();
 	}
-	init_done = 1;
+	if ((strncmp(path, "/dev/v4l/", 9) == 0) &&
+	    (sscanf(path, "/dev/v4l/video%d.%d.%d",
+	    &bus, &addr, &index) >= 2)) {
 
-	if (probe_done == 0 && usb_linux_probe(fd) != 0) {
-		errno = ENODEV;
-		fd = -1;
-		goto done;
-	}
-	probe_done = 1;
+		fd = usb_linux_probe(bus, addr, index);
+		if (fd < 0)
+			goto done;
 
-	err = linux_open(usb_linux2cdev(fd));
-	if (err < 0) {
-		errno = -err;
-		fd = -1;
+		err = linux_open(usb_linux2cdev(fd));
+		if (err < 0) {
+			usb_linux_detach(fd);
+			errno = -err;
+			fd = -1;
+		}
+	} else {
+		fd = syscall(SYS_open, path, oflag, mode);
 	}
+
 done:
 	return (fd);
 }
@@ -214,40 +223,79 @@ done:
 PUBLIC_API int
 v4lx_close_wrapper(int fd)
 {
+	struct cdev *pc;
 	int err;
 
-	err = linux_close(usb_linux2cdev(fd));
-
-#if 0
-	if (err == 0)
+	pc = usb_linux2cdev(fd);
+	if (pc != NULL) {
+		err = linux_close(pc);
 		usb_linux_detach(fd);
-#endif
-
+	} else {
+		err = syscall(SYS_close, fd);
+	}
 	return (err);
 }
 
 PUBLIC_API int
 v4lx_ioctl_wrapper(int fd, unsigned long cmd, void *arg)
 {
-	return (linux_ioctl(usb_linux2cdev(fd), cmd, arg));
+	struct cdev *pc;
+	int err;
+
+	pc = usb_linux2cdev(fd);
+	if (pc != NULL) {
+		err = linux_ioctl(pc, cmd, arg);
+	} else {
+		err = syscall(SYS_ioctl, fd, cmd, arg);
+	}
+	return (err);
 }
 
 PUBLIC_API int
 v4lx_read_wrapper(int fd, void *buf, size_t len)
 {
-	return (linux_read(usb_linux2cdev(fd), buf, len));
+	struct cdev *pc;
+	int err;
+
+	pc = usb_linux2cdev(fd);
+	if (pc != NULL) {
+		err = linux_read(pc, buf, len);
+	} else {
+		err = syscall(SYS_read, fd, buf, len);
+	}
+	return (err);
 }
 
 PUBLIC_API int
 v4lx_write_wrapper(int fd, void *buf, size_t len)
 {
-	return (linux_write(usb_linux2cdev(fd), buf, len));
+	struct cdev *pc;
+	int err;
+
+	pc = usb_linux2cdev(fd);
+	if (pc != NULL) {
+		err = linux_write(pc, buf, len);
+	} else {
+		err = syscall(SYS_write, fd, buf, len);
+	}
+	return (err);
 }
+
+extern void *__sys_mmap(void *, __size_t, int, int, int, __off_t);
 
 PUBLIC_API void *
 v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
-	return (linux_mmap(usb_linux2cdev(fd), addr, len, offset));
+	struct cdev *pc;
+	void *retval;
+
+	pc = usb_linux2cdev(fd);
+	if (pc != NULL) {
+		retval = linux_mmap(pc, addr, len, offset);
+	} else {
+		retval = __sys_mmap(addr, len, prot, flags, fd, offset);
+	}
+	return (retval);
 }
 
 PUBLIC_API int

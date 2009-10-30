@@ -22,21 +22,3 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-int
-_main()
-{
-	int err;
-
-	linux_init();
-
-	err = usb_linux_probe(0);
-	printf("Result: %d\n", err);
-
-
-	while (1) {
-		sleep(1);
-	}
-
-	return (0);
-}
