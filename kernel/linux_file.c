@@ -281,8 +281,6 @@ v4lx_write_wrapper(int fd, void *buf, size_t len)
 	return (err);
 }
 
-extern void *__sys_mmap(void *, __size_t, int, int, int, __off_t);
-
 PUBLIC_API void *
 v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
@@ -293,7 +291,7 @@ v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t off
 	if (pc != NULL) {
 		retval = linux_mmap(pc, addr, len, offset);
 	} else {
-		retval = __sys_mmap(addr, len, prot, flags, fd, offset);
+		retval = (void *)(long)syscall(SYS_mmap, addr, len, prot, flags, fd, offset);
 	}
 	return (retval);
 }
