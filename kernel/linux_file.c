@@ -188,7 +188,7 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 PUBLIC_API int
 v4lx_open_wrapper(const char *path, int oflag, int mode)
 {
-	int fd;
+	int fd = -1;
 	int bus = 0;
 	int addr = 0;
 	int index = 0;
