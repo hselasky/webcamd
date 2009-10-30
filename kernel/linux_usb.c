@@ -25,6 +25,7 @@
 
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
+	struct libusb20_device *pdev;
 	struct usb_driver *udrv;
 	struct usb_device *p_dev;
 	struct usb_interface *ui;
@@ -112,10 +113,8 @@ usb_linux_lookup_id(
 			continue;
 		}
 		if ((pdd->bDeviceClass == 0xFF) &&
-		    !(id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) &&
-		    (id->match_flags & (USB_DEVICE_ID_MATCH_INT_CLASS |
-		    USB_DEVICE_ID_MATCH_INT_SUBCLASS |
-		    USB_DEVICE_ID_MATCH_INT_PROTOCOL))) {
+		    (!(id->match_flags & USB_DEVICE_ID_MATCH_VENDOR)) &&
+		    (id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO)) {
 			continue;
 		}
 		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
@@ -221,7 +220,7 @@ usb_linux_detach_sub(struct usb_linux_softc *sc)
 	 */
 	usb_linux_cleanup_interface(p_dev, ui);
 
-	libusb20_dev_close(p_dev->bsd_udev);
+	libusb20_dev_close(sc->pdev);
 
 	usb_linux_free_device(p_dev);
 
@@ -253,6 +252,7 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 	struct usb_device *p_dev;
 	struct usb_interface *ui;
 	uint8_t i;
+	uint8_t match_bus_addr;
 
 	for (i = 0;; i++) {
 		if (i == ARRAY_SIZE(uls))
@@ -265,7 +265,9 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 
 	puls = sc;			/* XXX */
 
-	if (addr == 0)
+	match_bus_addr = (addr != 0);
+
+	if (!match_bus_addr)
 		index = bus;
 
 	pbe = libusb20_be_alloc_default();
@@ -278,11 +280,13 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 		if (libusb20_dev_get_mode(pdev) != LIBUSB20_MODE_HOST)
 			continue;
 
-		if (addr != 0) {
+		if (match_bus_addr) {
 			if (libusb20_dev_get_bus_number(pdev) != bus)
 				continue;
 			if (libusb20_dev_get_address(pdev) != addr)
 				continue;
+		} else {
+			addr = libusb20_dev_get_address(pdev);
 		}
 		if (libusb20_dev_open(pdev, 4 * 16))
 			continue;
@@ -294,16 +298,36 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 
 		for (i = 0; i != pcfg->num_interface; i++) {
 			pifc = pcfg->interface + i;
+
+			/*
+			 * Skip the FreeBSD USB root HUBs due to false
+			 * detection by some V4L drivers.
+			 */
+			if (pifc->desc.bInterfaceClass == USB_CLASS_HUB)
+				continue;
+
 			LIST_FOREACH(udrv, &usb_linux_driver_list, linux_driver_list) {
 				id = usb_linux_lookup_id(libusb20_dev_get_device_desc(pdev),
 				    &pifc->desc, udrv->id_table);
 				if (id != NULL) {
-					if (!index--) {
+					if (!index--)
 						goto found;
+
+					/*
+					 * Allow for multiple webcams on the
+					 * same device
+					 */
+
+					if ((!match_bus_addr) &&
+					    (!(id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO))) {
+						goto next_dev;
 					}
+					/* Proceed with next interface */
+					break;
 				}
 			}
 		}
+next_dev:
 		free(pcfg);
 		libusb20_dev_close(pdev);
 	}
@@ -311,13 +335,10 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 	return (-ENXIO);
 
 found:
-	libusb20_be_dequeue_device(pbe, pdev);
-	libusb20_be_free(pbe);
-
 	p_dev = usb_linux_create_usb_device(sc, pdev, pcfg, addr);
 	if (p_dev == NULL) {
 		free(pcfg);
-		libusb20_dev_free(pdev);
+		libusb20_be_free(pbe);
 		return (-ENOMEM);
 	}
 	ui = p_dev->bsd_iface_start + i;
@@ -326,20 +347,26 @@ found:
 	sc->p_dev = p_dev;
 	sc->ui = ui;
 	sc->pcfg = pcfg;
+	sc->pdev = pdev;
 
 	sc->fds[0] = -1;
 	sc->fds[1] = -1;
 
-	if (pipe(sc->fds) != 0) {
-		usb_linux_detach_sub(sc);
-		return (-ENOMEM);
-	}
 	usb_linux_create_event_thread(p_dev);
 
+	if (pipe(sc->fds) != 0) {
+		usb_linux_detach_sub(sc);
+		libusb20_be_free(pbe);
+		return (-ENOMEM);
+	}
 	if (udrv->probe(ui, id) != 0) {
 		usb_linux_detach_sub(sc);
+		libusb20_be_free(pbe);
 		return (-ENXIO);
 	}
+	libusb20_be_dequeue_device(pbe, pdev);
+	libusb20_be_free(pbe);
+
 	return (sc->fds[0]);
 }
 
@@ -355,10 +382,13 @@ usb_linux_detach(int fd)
 	struct usb_linux_softc *sc = usb_linux2usb(fd);
 	struct usb_driver *udrv = sc->udrv;
 	struct usb_interface *ui = sc->ui;
+	struct libusb20_device *pdev = sc->pdev;
 
 	(udrv->disconnect) (ui);
 
 	usb_linux_detach_sub(sc);
+
+	libusb20_dev_free(pdev);
 
 	return (0);
 }

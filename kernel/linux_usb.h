@@ -62,7 +62,10 @@ struct usb_device_id {
 #define	USB_DEVICE_ID_MATCH_INT_CLASS		0x0080
 #define	USB_DEVICE_ID_MATCH_INT_SUBCLASS	0x0100
 #define	USB_DEVICE_ID_MATCH_INT_PROTOCOL	0x0200
-#define	USB_DEVICE_ID_MATCH_INT_INFO		0x0400
+#define	USB_DEVICE_ID_MATCH_INT_INFO \
+	(USB_DEVICE_ID_MATCH_INT_CLASS | \
+	 USB_DEVICE_ID_MATCH_INT_SUBCLASS | \
+	 USB_DEVICE_ID_MATCH_INT_PROTOCOL)
 
 	/* Used for product specific matches; the BCD range is inclusive */
 	uint16_t idVendor;
@@ -93,12 +96,13 @@ struct usb_device_id {
 	.idVendor = (vend),				\
 	.idProduct = (prod)
 
-#define	USB_INTERFACE_INFO(c,sb,i)\
+#define	USB_INTERFACE_INFO(a,b,c)\
 	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS |	\
-		USB_DEVICE_ID_MATCH_INT_SUBCLASS,	\
-	.bInterfaceClass = (c),				\
-	.bInterfaceSubClass = (sb),			\
-	.driver_info = (i)
+		USB_DEVICE_ID_MATCH_INT_SUBCLASS |	\
+		USB_DEVICE_ID_MATCH_INT_PROTOCOL,	\
+	.bInterfaceClass = (a),				\
+	.bInterfaceSubClass = (b),			\
+	.bInterfaceProtocol = (c)
 
 #define	USB_DEVICE_AND_INTERFACE_INFO(vend, prod, a, b, c)\
 	.match_flags = USB_DEVICE_ID_MATCH_VENDOR |	  \

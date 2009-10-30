@@ -198,9 +198,10 @@ v4lx_open_wrapper(const char *path, int oflag, int mode)
 		init_done = 1;
 		linux_init();
 	}
-	if ((strncmp(path, "/dev/v4l/", 9) == 0) &&
-	    (sscanf(path, "/dev/v4l/video%d.%d.%d",
-	    &bus, &addr, &index) >= 1)) {
+	if ((strncmp(path, "/dev/", 5) == 0) && (
+	    (sscanf(path, "/dev/video%d.%d.%d", &bus, &addr, &index) >= 1) ||
+	    (sscanf(path, "/dev/v4l/video%d.%d.%d", &bus, &addr, &index) >= 1)
+	    )) {
 
 		fd = usb_linux_probe(bus, addr, index);
 		if (fd < 0)
@@ -213,10 +214,10 @@ v4lx_open_wrapper(const char *path, int oflag, int mode)
 			fd = -1;
 		}
 	}
+done:
 	if (fd < 0)
 		fd = syscall(SYS_open, path, oflag, mode);
 
-done:
 	return (fd);
 }
 
