@@ -265,6 +265,9 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 
 	puls = sc;			/* XXX */
 
+	if (addr == 0)
+		index = bus;
+
 	pbe = libusb20_be_alloc_default();
 	if (pbe == NULL)
 		return (-ENXIO);
@@ -274,10 +277,13 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 
 		if (libusb20_dev_get_mode(pdev) != LIBUSB20_MODE_HOST)
 			continue;
-		if (libusb20_dev_get_bus_number(pdev) != bus)
-			continue;
-		if (libusb20_dev_get_address(pdev) != addr)
-			continue;
+
+		if (addr != 0) {
+			if (libusb20_dev_get_bus_number(pdev) != bus)
+				continue;
+			if (libusb20_dev_get_address(pdev) != addr)
+				continue;
+		}
 		if (libusb20_dev_open(pdev, 4 * 16))
 			continue;
 

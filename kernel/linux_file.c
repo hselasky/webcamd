@@ -189,10 +189,10 @@ PUBLIC_API int
 v4lx_open_wrapper(const char *path, int oflag, int mode)
 {
 	int fd;
-	int bus;
-	int addr;
-	int err;
+	int bus = 0;
+	int addr = 0;
 	int index = 0;
+	int err;
 
 	if (init_done == 0) {
 		init_done = 1;
@@ -200,7 +200,7 @@ v4lx_open_wrapper(const char *path, int oflag, int mode)
 	}
 	if ((strncmp(path, "/dev/v4l/", 9) == 0) &&
 	    (sscanf(path, "/dev/v4l/video%d.%d.%d",
-	    &bus, &addr, &index) >= 2)) {
+	    &bus, &addr, &index) >= 1)) {
 
 		fd = usb_linux_probe(bus, addr, index);
 		if (fd < 0)
@@ -212,9 +212,9 @@ v4lx_open_wrapper(const char *path, int oflag, int mode)
 			errno = -err;
 			fd = -1;
 		}
-	} else {
-		fd = syscall(SYS_open, path, oflag, mode);
 	}
+	if (fd < 0)
+		fd = syscall(SYS_open, path, oflag, mode);
 
 done:
 	return (fd);
