@@ -23,14 +23,18 @@ clean:
 	make -C pwcview clean
 
 fetch:
-	rm -v -r -f libv4l-* libv4l
+	rm -v -r -f v4l-dvb-* libv4l-* libv4l tip.tar.bz2
 
+#
+# Alternative location:
+# fetch http://linuxtv.org/hg/~hgoede/libv4l/archive/tip.tar.bz2
+#
 	[ -f tip.tar.bz2 ] || \
-		fetch http://linuxtv.org/hg/~hgoede/libv4l/archive/tip.tar.bz2
+		fetch http://linuxtv.org/hg/v4l-dvb/archive/tip.tar.bz2
 
 	tar -jxvf tip.tar.bz2
 
-	ln -s libv4l-* libv4l
+	ln -s v4l-dvb-* libv4l
 
 patch:
 	sed -i '' \
@@ -42,6 +46,12 @@ patch:
 	-e "s/__s32/int32_t/g" \
 	-e "s/__s16/int16_t/g" \
 	-e "s/__s8/int8_t/g" \
+	-e "s/__le64/uint64_t/g" \
+	-e "s/__be64/uint64_t/g" \
+	-e "s/__le32/uint32_t/g" \
+	-e "s/__be32/uint32_t/g" \
+	-e "s/__le16/uint16_t/g" \
+	-e "s/__be16/uint16_t/g" \
 	-e "s/linux.ioctl.h/sys\/ioctl.h/g" \
 	-e "s/linux.types.h/sys\/types.h/g" \
 	-e "s/linux.compiler.h/sys\/types.h/g" \

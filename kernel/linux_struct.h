@@ -136,6 +136,7 @@ struct file_operations {
 	int     (*release) (struct inode *, struct file *);
 	int     (*check_flags) (int);
 	int     (*dir_notify) (struct file *filp, unsigned long arg);
+	unsigned long (*get_unmapped_area) (struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 };
 
 struct dentry {

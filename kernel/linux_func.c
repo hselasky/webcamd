@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  */
 
-/* NOTE: Some functions in this file derives directly from the Linux kernel sources. */
+/* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
 
 int
 printk_nop()
@@ -291,6 +291,19 @@ atomic_read(const atomic_t *v)
 	i = v->counter;
 	atomic_unlock();
 	return (i);
+}
+
+int
+atomic_dec_and_test(atomic_t *v)
+{
+	int i;
+
+	atomic_lock();
+	v->counter--;
+	i = v->counter;
+	atomic_unlock();
+
+	return (i == 0);
 }
 
 int
@@ -878,4 +891,28 @@ void
 poll_schedule(struct poll_wqueues *pwq, int flag)
 {
 
+}
+
+int32_t
+div_round_closest_s32(int32_t rem, int32_t div)
+{
+	return ((rem + (div / 2)) / div);
+}
+
+uint32_t
+div_round_closest_u32(uint32_t rem, uint32_t div)
+{
+	return ((rem + (div / 2)) / div);
+}
+
+int64_t
+div_round_closest_s64(int64_t rem, int64_t div)
+{
+	return ((rem + (div / 2)) / div);
+}
+
+uint64_t
+div_round_closest_u64(uint64_t rem, uint64_t div)
+{
+	return ((rem + (div / 2)) / div);
 }

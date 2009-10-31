@@ -30,6 +30,15 @@
  * Stripped down version of the Linux defines
  */
 
+#define	DIV_ROUND_CLOSEST(rem, div) \
+((sizeof(typeof(div)) > 4) ?	    \
+ ((((typeof(div))-1) <= 0) ?	    \
+  div_round_closest_s64(rem,div) :  \
+  div_round_closest_u64(rem,div)) : \
+ ((((typeof(div))-1) <= 0) ?	    \
+  div_round_closest_s32(rem,div) :  \
+  div_round_closest_u32(rem,div)))
+
 #define	__nop do {} while (0)
 #define	__user
 #define	__kernel
@@ -87,6 +96,7 @@
 #define	MODULE_PARM_DESC(...)
 #define	MODULE_VERSION(...)
 #define	MODULE_ALIAS(...)
+#define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
 #define	info(...) __nop
@@ -233,6 +243,9 @@
 #define	time_before(a,b) time_after(b,a)
 #define	__attribute_const__
 #define	noinline
+#define	__cpu_to_le32(x) cpu_to_le32(x)
+#define	__ffs(x) ffs(x)
+#define	__fls(x) fls(x)
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

@@ -429,7 +429,7 @@ struct usb_iso_packet_descriptor {
 					 * packets are usually back to back) */
 	uint16_t length;		/* expected length */
 	uint16_t actual_length;
-	uint16_t status;
+	int16_t	status;			/* status */
 };
 
 /*
@@ -607,6 +607,9 @@ int	usb_make_path(struct usb_device *dev, char *buf, size_t size);
 #define	usb_endpoint_is_isoc_out(epd) \
 	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_out(epd))
 
-int	usb_bulk_msg(struct usb_device *usb_dev, struct usb_host_endpoint *ep, void *data, int len, int *actual_length, int timeout);
+int	usb_bulk_msg(struct usb_device *, struct usb_host_endpoint *, void *, int, int *, int);
+int	usb_match_device(struct usb_device *, const struct usb_device_id *);
+int	usb_match_one_id(struct usb_interface *, const struct usb_device_id *);
+const struct usb_device_id *usb_match_id(struct usb_interface *, const struct usb_device_id *);
 
 #endif					/* _LINUX_USB_H_ */

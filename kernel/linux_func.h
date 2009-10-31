@@ -53,6 +53,7 @@ int	atomic_dec(atomic_t *v);
 int	atomic_add(int i, atomic_t *v);
 void	atomic_set(atomic_t *v, int i);
 int	atomic_read(const atomic_t *v);
+int	atomic_dec_and_test(atomic_t *v);
 int	test_bit(int nr, const void *addr);
 int	test_and_set_bit(int nr, volatile unsigned long *addr);
 int	test_and_clear_bit(int nr, volatile unsigned long *addr);
@@ -104,6 +105,9 @@ void	poll_initwait(struct poll_wqueues *pwq);
 void	poll_freewait(struct poll_wqueues *pwq);
 void	poll_schedule(struct poll_wqueues *pwq, int flag);
 void	bitmap_zero(unsigned long *dst, int nbits);
-int	func_init(void);
+int32_t	div_round_closest_s32(int32_t rem, int32_t div);
+uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
+int64_t	div_round_closest_s64(int64_t rem, int64_t div);
+uint64_t div_round_closest_u64(uint64_t rem, uint64_t div);
 
 #endif					/* _LINUX_FUNC_H_ */

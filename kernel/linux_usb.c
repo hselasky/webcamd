@@ -1260,10 +1260,18 @@ usb_linux_isoc_callback(struct libusb20_transfer *xfer)
 		for (x = 0; x < urb->number_of_packets; x++) {
 			uipd = urb->iso_frame_desc + x;
 			actlen = libusb20_tr_get_length(xfer, x);
-			uipd->actual_length = actlen;
-			uipd->status = 0;
-			if (actlen < uipd->length)
+			if (uipd->length > actlen) {
 				is_short = 1;
+				if (urb->transfer_flags & URB_SHORT_NOT_OK) {
+					/* XXX should be EREMOTEIO */
+					uipd->status = -EPIPE;
+				} else {
+					uipd->status = 0;
+				}
+			} else {
+				uipd->status = 0;
+			}
+			uipd->actual_length = actlen;
 		}
 
 		actlen = libusb20_tr_get_actual_length(xfer);
@@ -1273,8 +1281,8 @@ usb_linux_isoc_callback(struct libusb20_transfer *xfer)
 		if (is_short) {
 			/* short transfer */
 			if (urb->transfer_flags & URB_SHORT_NOT_OK) {
-				urb->status = -EPIPE;	/* XXX should be
-							 * EREMOTEIO */
+				/* XXX should be EREMOTEIO */
+				urb->status = -EPIPE;
 			} else {
 				urb->status = 0;
 			}
@@ -1330,6 +1338,7 @@ tr_setup:
 		/* Set zero for "actual_length" */
 		for (x = 0; x < urb->number_of_packets; x++) {
 			urb->iso_frame_desc[x].actual_length = 0;
+			urb->iso_frame_desc[x].status = urb->status;
 		}
 
 		/* call callback */
@@ -1665,4 +1674,102 @@ usb_bulk_msg(struct usb_device *usb_dev, struct usb_host_endpoint *ep,
 		    usb_api_blocking_completion, NULL);
 
 	return usb_start_wait_urb(urb, timeout, actual_length);
+}
+
+/* Calling the usb_match_xxx() functions directly is deferred. */
+
+int
+usb_match_device(struct usb_device *dev, const struct usb_device_id *id)
+{
+	int flags = id->match_flags;
+
+	if ((flags & USB_DEVICE_ID_MATCH_VENDOR) &&
+	    (id->idVendor != le16_to_cpu(dev->descriptor.idVendor)))
+		goto no_match;
+
+	if ((flags & USB_DEVICE_ID_MATCH_PRODUCT) &&
+	    (id->idProduct != le16_to_cpu(dev->descriptor.idProduct)))
+		goto no_match;
+
+	if ((flags & USB_DEVICE_ID_MATCH_DEV_LO) &&
+	    (id->bcdDevice_lo > le16_to_cpu(dev->descriptor.bcdDevice)))
+		goto no_match;
+
+	if ((flags & USB_DEVICE_ID_MATCH_DEV_HI) &&
+	    (id->bcdDevice_hi < le16_to_cpu(dev->descriptor.bcdDevice)))
+		goto no_match;
+
+	if ((flags & USB_DEVICE_ID_MATCH_DEV_CLASS) &&
+	    (id->bDeviceClass != dev->descriptor.bDeviceClass))
+		goto no_match;
+
+	if ((flags & USB_DEVICE_ID_MATCH_DEV_SUBCLASS) &&
+	    (id->bDeviceSubClass != dev->descriptor.bDeviceSubClass))
+		goto no_match;
+
+	if ((flags & USB_DEVICE_ID_MATCH_DEV_PROTOCOL) &&
+	    (id->bDeviceProtocol != dev->descriptor.bDeviceProtocol))
+		goto no_match;
+
+	return (1);
+
+no_match:
+	return (0);
+}
+
+int
+usb_match_one_id(struct usb_interface *interface, const struct usb_device_id *id)
+{
+	struct usb_host_interface *intf;
+	struct usb_device *dev;
+
+	if (id == NULL)
+		goto no_match;
+
+	intf = interface->cur_altsetting;
+	dev = interface_to_usbdev(interface);
+
+	if (!usb_match_device(dev, id))
+		goto no_match;
+
+	if ((dev->descriptor.bDeviceClass == USB_CLASS_VENDOR_SPEC) &&
+	    (!(id->match_flags & USB_DEVICE_ID_MATCH_VENDOR)) &&
+	    (id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO))
+		goto no_match;
+
+	if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
+	    (id->bInterfaceClass != intf->desc.bInterfaceClass))
+		goto no_match;
+
+	if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_SUBCLASS) &&
+	    (id->bInterfaceSubClass != intf->desc.bInterfaceSubClass))
+		goto no_match;
+
+	if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_PROTOCOL) &&
+	    (id->bInterfaceProtocol != intf->desc.bInterfaceProtocol))
+		goto no_match;
+
+	return (1);
+
+no_match:
+	return (0);
+}
+
+const struct usb_device_id *
+usb_match_id(struct usb_interface *interface, const struct usb_device_id *id)
+{
+	if (id == NULL)
+		goto no_match;
+
+	for (; id->match_flags; id++) {
+		if (usb_match_one_id(interface, id))
+			return (id);
+	}
+
+	/* check for special case */
+	if (id->driver_info != 0)
+		return (id);
+
+no_match:
+	return (NULL);
 }
