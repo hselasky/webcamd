@@ -96,7 +96,7 @@ work_exec(void *arg)
 {
 	struct work_struct *t;
 
-	setpriority(PRIO_PROCESS, 0, 5);
+	pthread_set_kernel_prio();
 
 	atomic_lock();
 	while (1) {

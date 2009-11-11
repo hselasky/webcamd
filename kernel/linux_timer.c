@@ -75,7 +75,7 @@ timer_exec(void *arg)
 	int64_t delta;
 	struct timer_list *t;
 
-	setpriority(PRIO_PROCESS, 0, -20);
+	pthread_set_kernel_prio();
 
 	while (1) {
 		atomic_lock();

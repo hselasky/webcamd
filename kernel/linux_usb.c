@@ -147,6 +147,8 @@ usb_exec(void *arg)
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
+	pthread_set_kernel_prio();
+
 	sc->thread_started = 1;
 
 	while (1) {
