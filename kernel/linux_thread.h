@@ -46,6 +46,8 @@ typedef struct completion {
 	wait_queue_head_t wait;
 } completion_t;
 
+uint32_t atomic_drop(void);
+void	atomic_pickup(uint32_t);
 void	init_waitqueue_head(wait_queue_head_t *q);
 void	uninit_waitqueue_head(wait_queue_head_t *q);
 void	wake_up(wait_queue_head_t *q);

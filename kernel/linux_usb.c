@@ -32,6 +32,7 @@ struct usb_linux_softc {
 	struct cdev *c_dev;
 	pthread_t thread;
 	int	fds [2];
+	volatile int thread_started;
 };
 
 static struct usb_linux_softc uls[16];
@@ -146,10 +147,14 @@ usb_exec(void *arg)
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
+	sc->thread_started = 1;
+
 	while (1) {
 
+		/* check for cancel */
 		pthread_testcancel();
 
+		/* check for USB events */
 		if (libusb20_dev_process(dev) != 0) {
 			/* device detached */
 			break;
@@ -168,10 +173,15 @@ usb_linux_create_event_thread(struct usb_device *dev)
 {
 	struct usb_linux_softc *sc = dev->parent;
 
+	sc->thread_started = 0;
+
 	/* start USB event thread again */
 	if (pthread_create(&sc->thread, NULL,
 	    usb_exec, sc)) {
 		printf("Failed creating USB process\n");
+	} else {
+		while (sc->thread_started == 0)
+			pthread_yield();
 	}
 }
 
@@ -668,15 +678,30 @@ int
 usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 {
 	struct usb_interface *p_ui = usb_ifnum_to_if(dev, iface_no);
+	uint32_t drops;
 	int err;
 
 	if (p_ui == NULL)
 		return (-EINVAL);
 	if (alt_index >= p_ui->num_altsetting)
 		return (-EINVAL);
+
+	/* XXX hack to get rid of any locks */
+
+	atomic_lock();
+	drops = atomic_drop();
+	atomic_unlock();
+
 	usb_linux_cleanup_interface(dev, p_ui);
 	err = libusb20_dev_set_alt_index(dev->bsd_udev,
 	    p_ui->bsd_iface_index, alt_index);
+
+	/* XXX */
+
+	atomic_lock();
+	atomic_pickup(drops);
+	atomic_unlock();
+
 	if (err)
 		err = -EPIPE;
 	else
