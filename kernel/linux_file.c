@@ -215,9 +215,13 @@ v4lx_open_wrapper(const char *path, int oflag, int mode)
 		}
 	}
 done:
-	if (fd < 0)
+	if (fd < 0) {
 		fd = syscall(SYS_open, path, oflag, mode);
-
+		if (fd < 0) {
+			errno = EINVAL;
+			fd = -1;
+		}
+	}
 	return (fd);
 }
 
@@ -229,10 +233,16 @@ v4lx_close_wrapper(int fd)
 
 	pc = usb_linux2cdev(fd);
 	if (pc != NULL) {
-		err = linux_close(pc);
+		linux_close(pc);
 		usb_linux_detach(fd);
+		err = 0;
+		errno = 0;
 	} else {
 		err = syscall(SYS_close, fd);
+		if (err) {
+			errno = EINVAL;
+			err = -1;
+		}
 	}
 	return (err);
 }
@@ -246,8 +256,16 @@ v4lx_ioctl_wrapper(int fd, unsigned long cmd, void *arg)
 	pc = usb_linux2cdev(fd);
 	if (pc != NULL) {
 		err = linux_ioctl(pc, cmd, arg);
+		if (err) {
+			errno = -err;
+			return (-1);
+		}
 	} else {
 		err = syscall(SYS_ioctl, fd, cmd, arg);
+		if (err) {
+			errno = err;
+			return (-1);
+		}
 	}
 	return (err);
 }
@@ -264,6 +282,10 @@ v4lx_read_wrapper(int fd, void *buf, size_t len)
 	} else {
 		err = syscall(SYS_read, fd, buf, len);
 	}
+	if (err < 0) {
+		errno = EINVAL;
+		err = -1;
+	}
 	return (err);
 }
 
@@ -279,6 +301,10 @@ v4lx_write_wrapper(int fd, void *buf, size_t len)
 	} else {
 		err = syscall(SYS_write, fd, buf, len);
 	}
+	if (err < 0) {
+		errno = EINVAL;
+		err = -1;
+	}
 	return (err);
 }
 
@@ -289,6 +315,7 @@ v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t off
 	void *retval;
 
 	pc = usb_linux2cdev(fd);
+	errno = 0;
 	if (pc != NULL) {
 		retval = linux_mmap(pc, addr, len, offset);
 	} else {
@@ -300,5 +327,6 @@ v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t off
 PUBLIC_API int
 v4lx_munmap_wrapper(void *addr, size_t len)
 {
+	errno = 0;
 	return (0);
 }

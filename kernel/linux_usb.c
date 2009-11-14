@@ -371,6 +371,13 @@ found:
 		libusb20_be_free(pbe);
 		return (-ENOMEM);
 	}
+	/* XXX temporary hack to make poll() return */
+
+	if (write(sc->fds[1], "", 1) != 1) {
+		usb_linux_detach_sub(sc);
+		libusb20_be_free(pbe);
+		return (-EINVAL);
+	}
 	if (udrv->probe(ui, id) != 0) {
 		usb_linux_detach_sub(sc);
 		libusb20_be_free(pbe);
