@@ -99,6 +99,7 @@
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
+#define	module_param_call(...)
 #define	info(...) __nop
 #define	printk(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
@@ -236,6 +237,8 @@
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
 #define	current NULL
+#define	__devinitconst
+#define	__devinit
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
 #define	set_current_state(...) __nop
@@ -246,6 +249,9 @@
 #define	__cpu_to_le32(x) cpu_to_le32(x)
 #define	__ffs(x) ffs(x)
 #define	__fls(x) fls(x)
+#define	NSEC_PER_USEC	1000
+
+struct kernel_param;
 
 typedef unsigned short umode_t;
 typedef signed char __s8;

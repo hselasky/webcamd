@@ -930,3 +930,15 @@ pthread_set_kernel_prio(void)
 
 	pthread_setschedparam(pthread_self(), SCHED_FIFO, &parm);
 }
+
+void
+ktime_get_ts(struct timespec *ts)
+{
+	clock_gettime(CLOCK_MONOTONIC, ts);
+}
+
+void
+ktime_get_real_ts(struct timespec *ts)
+{
+	clock_gettime(CLOCK_REALTIME, ts);
+}

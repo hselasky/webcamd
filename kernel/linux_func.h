@@ -110,5 +110,7 @@ uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
 uint64_t div_round_closest_u64(uint64_t rem, uint64_t div);
 void	pthread_set_kernel_prio(void);
+void	ktime_get_ts(struct timespec *ts);
+void	ktime_get_real_ts(struct timespec *ts);
 
 #endif					/* _LINUX_FUNC_H_ */
