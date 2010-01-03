@@ -247,9 +247,8 @@
 #define	__attribute_const__
 #define	noinline
 #define	__cpu_to_le32(x) cpu_to_le32(x)
-#define	__ffs(x) ffs(x)
-#define	__fls(x) fls(x)
 #define	NSEC_PER_USEC	1000
+#define	simple_strtoul strtoul
 
 struct kernel_param;
 

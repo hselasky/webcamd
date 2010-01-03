@@ -604,18 +604,23 @@ IS_ERR(const void *ptr)
 	return IS_ERR_VALUE((unsigned long)ptr);
 }
 
-long
-ffs(long x)
+int
+__ffs(int x)
 {
 	return (~(x - 1) & x);
 }
 
-long
-ffz(long x)
+int
+__ffz(int x)
 {
 	return ((x + 1) & ~x);
 }
 
+int
+__fls(int x)
+{
+	return (fls(x));
+}
 
 unsigned long
 find_next_bit(const unsigned long *addr, unsigned long size,
