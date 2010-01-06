@@ -1,0 +1,11 @@
+--- uvc_status.c.orig	2010-01-03 21:21:21.000000000 +0100
++++ uvc_status.c	2010-01-03 21:22:04.000000000 +0100
+@@ -174,7 +174,7 @@ static void uvc_status_complete(struct u
+ int uvc_status_init(struct uvc_device *dev)
+ {
+ 	struct usb_host_endpoint *ep = dev->int_ep;
+-	unsigned int pipe;
++	unsigned long pipe;
+ 	int interval;
+ 
+ 	if (ep == NULL)
