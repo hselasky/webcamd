@@ -1,0 +1,11 @@
+--- libv4lcontrol.c.orig	2010-01-06 21:45:43.000000000 +0100
++++ libv4lcontrol.c	2010-01-06 21:45:55.000000000 +0100
+@@ -567,7 +567,7 @@
+   int i;
+   struct v4l2_queryctrl *ctrl = arg;
+   int retval;
+-  __u32 orig_id=ctrl->id;
++  uint32_t orig_id=ctrl->id;
+ 
+   /* if we have an exact match return it */
+   for (i = 0; i < V4LCONTROL_COUNT; i++)
