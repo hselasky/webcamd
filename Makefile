@@ -36,6 +36,8 @@ fetch:
 
 	ln -s v4l-dvb-* libv4l
 
+	cd patches && ./do_patch.sh
+
 patch:
 	sed -i '' \
 	-e "s/__u64/uint64_t/g" \
