@@ -1,0 +1,14 @@
+--- uvcvideo.h	2010-01-08 15:48:12.000000000 +0100
++++ uvcvideo.h	2010-01-08 15:56:22.000000000 +0100
+@@ -144,9 +144,9 @@
+ #define DRIVER_VERSION_NUMBER	KERNEL_VERSION(0, 1, 0)
+ 
+ /* Number of isochronous URBs. */
+-#define UVC_URBS		5
++#define UVC_URBS		2
+ /* Maximum number of packets per URB. */
+-#define UVC_MAX_PACKETS		32
++#define UVC_MAX_PACKETS		56
+ /* Maximum number of video buffers. */
+ #define UVC_MAX_VIDEO_BUFFERS	32
+ /* Maximum status buffer size in bytes of interrupt URB. */
