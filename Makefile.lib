@@ -65,8 +65,6 @@ SRCS+= linux_thread.c
 # FreeBSD specific files
 #
 
-SRCS+= usb_global.c
-
 SRCS+= linux_defs.c
 SRCS+= linux_func.c
 SRCS+= linux_file.c
