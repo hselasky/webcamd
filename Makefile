@@ -10,7 +10,7 @@ all:
 	make -f Makefile.prg all
 
 	gmake -C libv4l/v4l2-apps/libv4l \
-		CFLAGS="-I${LINUXDIR}/include/" \
+		CFLAGS="-I/usr/local/include/" \
 		LDFLAGS="" all
 
 	make -C ../video4bsd all
@@ -70,10 +70,12 @@ patch:
 		/usr/local/include/linux/
 
 install:
-	make -f Makefile.prg install
+#
+#	make -f Makefile.prg install
+#
 
 	gmake -C libv4l/v4l2-apps/libv4l \
-		CFLAGS="-I${LINUXDIR}/include/" \
+		CFLAGS="-I/usr/local/include/" \
 		LDFLAGS="" install
 
 	make -C pwcview all install
@@ -83,8 +85,8 @@ install:
 	@echo "#"
 	@echo "# Test commands:"
 	@echo "# kldload video4bsd"
-	@echo "# webcamd -d ugenX.Y -i 0 -v 0"
-	@echo "# pwcview"
+	@echo "# ./webcamd -d ugenX.Y -i 0 -v 0"
+	@echo "# ./pwcview/pwcview"
 	@echo "#"
 
 	@echo "Done."
