@@ -382,6 +382,7 @@ hweight8(unsigned int w)
 	return (res + (res >> 4)) & 0x0F;
 }
 
+#ifndef HAVE_WEBCAMD
 unsigned long
 copy_to_user(void *to, const void *from, unsigned long n)
 {
@@ -395,6 +396,7 @@ copy_from_user(void *to, const void *from, unsigned long n)
 	memcpy(to, from, n);
 	return (0);
 }
+#endif
 
 struct cdev *
 cdev_alloc(void)

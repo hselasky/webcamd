@@ -23,8 +23,6 @@
  * SUCH DAMAGE.
  */
 
-static uint8_t init_done;
-
 #include <sys/syscall.h>
 
 int
@@ -176,18 +174,23 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 		errno = -err;
 		return ((void *)-1);
 	}
+#if 0
 	if (cdev->fixed_vma[i].vm_ops &&
 	    cdev->fixed_vma[i].vm_ops->open)
 		cdev->fixed_vma[i].vm_ops->open(&cdev->fixed_vma[i]);
+#endif
 
 	return (cdev->fixed_vma[i].vm_buffer_address);
 }
 
 /* wrappers for V4L */
 
+#ifndef HAVE_WEBCAMD
+
 PUBLIC_API int
 v4lx_open_wrapper(const char *path, int oflag, int mode)
 {
+	static uint8_t init_done;
 	int fd = -1;
 	int bus = 0;
 	int addr = 0;
@@ -330,3 +333,5 @@ v4lx_munmap_wrapper(void *addr, size_t len)
 	errno = 0;
 	return (0);
 }
+
+#endif

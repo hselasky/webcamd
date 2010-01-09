@@ -114,4 +114,12 @@ void	pthread_set_kernel_prio(void);
 void	ktime_get_ts(struct timespec *ts);
 void	ktime_get_real_ts(struct timespec *ts);
 
+#ifdef HAVE_WEBCAMD
+void *malloc_vm(size_t);
+void free_vm(void *);
+#else
+#define malloc_vm(x) malloc(x)
+#define free_vm(x) free(x)
+#endif
+
 #endif					/* _LINUX_FUNC_H_ */

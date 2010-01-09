@@ -7,20 +7,22 @@ LINUXDIR=${.CURDIR}/libv4l/linux
 #
 
 all:
-	make -f Makefile.lib all install
+	make -f Makefile.prg all
 
 	gmake -C libv4l/v4l2-apps/libv4l \
-		CFLAGS="-DCONFIG_SYS_WRAPPER -I/usr/local/include/" \
-		LDFLAGS="-lv4lxdrivers" all install
+		CFLAGS="-I${LINUXDIR}/include/" \
+		LDFLAGS="" all
 
-	make -C pwcview all install
+	make -C ../video4bsd all
 
 clean:
-	make -f Makefile.lib clean
+	make -f Makefile.prg clean
 
 	gmake -C libv4l/v4l2-apps/libv4l clean
 
 	make -C pwcview clean
+
+	make -C ../video4bsd clean
 
 fetch:
 	rm -v -r -f v4l-dvb-* libv4l-* libv4l tip.tar.bz2
@@ -68,4 +70,21 @@ patch:
 		/usr/local/include/linux/
 
 install:
+	make -f Makefile.prg install
+
+	gmake -C libv4l/v4l2-apps/libv4l \
+		CFLAGS="-I${LINUXDIR}/include/" \
+		LDFLAGS="" install
+
+	make -C pwcview all install
+
+	make -C ../video4bsd install
+
+	@echo "#"
+	@echo "# Test commands:"
+	@echo "# kldload video4bsd"
+	@echo "# webcamd -d ugenX.Y -i 0 -v 0"
+	@echo "# pwcview"
+	@echo "#"
+
 	@echo "Done."

@@ -2,15 +2,12 @@
 # Makefile for USB webcam driver library
 #
 
-LIB=		v4lxdrivers
+PROG=		webcamd
 MAN=
-SHLIB_MAJOR=    1
-SHLIB_MINOR=    0
 LINUXDIR=	${.CURDIR}/libv4l/linux
 MKLINT=		no
 NOGCCERROR=
 MLINKS=
-INCS=
 
 .PATH: \
 ${.CURDIR} \
@@ -193,6 +190,8 @@ SRCS+= uvc_video.c
 #
 SRCS+= linux_end_section.c
 
+SRCS+= webcamd.c
+
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
 CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}
@@ -201,8 +200,9 @@ CFLAGS+= -I${.CURDIR}
 CFLAGS+= -I${.CURDIR}/dummy
 
 CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
+CFLAGS+= -DHAVE_WEBCAMD
 
-CFLAGS+= -include usb_global.h
+CFLAGS+= -include webcamd_global.h
 
 CFLAGS+= -O2 -Wall
 
@@ -210,4 +210,4 @@ CFLAGS+= -fvisibility=hidden
 
 LDFLAGS+= -lusb -lpthread
 
-.include <bsd.lib.mk>
+.include <bsd.prog.mk>
