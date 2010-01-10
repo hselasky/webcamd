@@ -325,8 +325,9 @@ malloc_vm(size_t size)
 
 	cmd.page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
 
+#ifdef V4B_DEBUG
 	printf("size = %d\n", (int)size);
-
+#endif
 	atomic_lock();
 	for (n = 0; n != V4B_ALLOC_UNIT_MAX; n++) {
 		if (vm_allocations[n].ptr != NULL)
@@ -334,18 +335,18 @@ malloc_vm(size_t size)
 
 		vm_allocations[n].ptr = (uint8_t *)1;	/* reserve */
 		atomic_unlock();
-
+#ifdef V4B_DEBUG
 		printf("alloc_nr = %d\n", n);
-
+#endif
 		cmd.alloc_nr = n;
 
 		error = ioctl(f_videodev, V4B_IOCTL_ALLOC_MEMORY, &cmd);
 		if (error) {
 			atomic_lock();
 			vm_allocations[n].ptr = NULL;
-
+#ifdef V4B_DEBUG
 			printf("Alloc failed %d\n", __LINE__);
-
+#endif
 			if (errno == EBUSY)
 				continue;
 
@@ -360,9 +361,9 @@ malloc_vm(size_t size)
 			ioctl(f_videodev, V4B_IOCTL_FREE_MEMORY, &cmd);
 			atomic_lock();
 			vm_allocations[n].ptr = NULL;
-
+#ifdef V4B_DEBUG
 			printf("Alloc failed %d\n", __LINE__);
-
+#endif
 			break;
 		}
 		vm_allocations[n].ptr = ptr;
