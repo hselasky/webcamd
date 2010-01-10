@@ -78,6 +78,14 @@ timer_exec(void *arg)
 	pthread_set_kernel_prio();
 
 	while (1) {
+
+		/*
+		 * XXX temporary workaround. Not sure if this is a
+		 * pthreads atomic problem or code problem. Make sure
+		 * no wait statements are stuck forever.
+		 */
+		wake_up_all(NULL);
+
 		atomic_lock();
 		jiffies64 += 8;		/* ms */
 restart:
