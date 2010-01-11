@@ -179,7 +179,13 @@ main(int argc, char **argv)
 			break;
 
 		case V4B_CMD_IOCTL:
+#ifdef V4B_DEBUG
+			printf("IOCTL 0x%08x, %p\n", cmd.arg, cmd.ptr);
+#endif
 			err = linux_ioctl(cdev, cmd.arg, cmd.ptr);
+#ifdef V4B_DEBUG
+			printf("IOCTL = %d\n", err);
+#endif
 			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
 				v4b_errx(1, "Cannot sync V4B command");
 			break;
