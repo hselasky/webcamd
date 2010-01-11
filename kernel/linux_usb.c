@@ -500,13 +500,7 @@ usb_submit_urb_sub(struct libusb20_transfer *xfer)
 {
 	if (xfer == NULL)
 		return;
-	atomic_lock();
-	if (libusb20_tr_pending(xfer)) {
-		atomic_unlock();
-		return;
-	}
 	libusb20_tr_start(xfer);
-	atomic_unlock();
 }
 
 int
@@ -542,8 +536,15 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 
 		urb->status = -EINPROGRESS;
 
-		usb_submit_urb_sub(uhe->bsd_xfer[0]);
-		usb_submit_urb_sub(uhe->bsd_xfer[1]);
+		/*
+		 * Check if this is a re-submit in context of a USB
+		 * callback. If that is the case, we should not start
+		 * any more USB transfers!
+		 */
+		if (urb->bsd_no_resubmit == 0) {
+			usb_submit_urb_sub(uhe->bsd_xfer[0]);
+			usb_submit_urb_sub(uhe->bsd_xfer[1]);
+		}
 		err = 0;
 	} else {
 		/* no pipes have been setup yet! */
@@ -1384,7 +1385,10 @@ usb_linux_isoc_callback(struct libusb20_transfer *xfer)
 		}
 
 		/* call callback */
+
+		urb->bsd_no_resubmit = 1;
 		usb_linux_complete(xfer);
+		urb->bsd_no_resubmit = 0;
 
 	case LIBUSB20_TRANSFER_START:
 tr_setup:
@@ -1412,7 +1416,18 @@ tr_setup:
 		}
 
 		libusb20_tr_set_priv_sc1(xfer, urb);
-		libusb20_tr_set_timeout(xfer, urb->timeout);
+		if (urb->timeout == 0) {
+			/* Sometimes we are late putting stuff into
+			 * the schedule and the transfer never
+			 * completes leading to a hang
+			 * situation. Always have a timeout for
+			 * isochronous transfers so that we can
+			 * recover.
+			 */
+			libusb20_tr_set_timeout(xfer, 250);
+		} else {
+			libusb20_tr_set_timeout(xfer, urb->timeout);
+		}
 		libusb20_tr_set_total_frames(xfer, urb->number_of_packets);
 		libusb20_tr_submit(xfer);
 		break;
@@ -1420,6 +1435,8 @@ tr_setup:
 	default:			/* Error */
 		if (status == LIBUSB20_TRANSFER_CANCELLED) {
 			urb->status = -ECONNRESET;
+		} else if (status == LIBUSB20_TRANSFER_TIMED_OUT) {
+			urb->status = 0;	/* pretend we are successful */
 		} else {
 			urb->status = -EPIPE;	/* stalled */
 		}
