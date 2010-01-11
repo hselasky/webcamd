@@ -23,6 +23,8 @@
  * SUCH DAMAGE.
  */
 
+#include <signal.h>
+
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
 	struct libusb20_device *pdev;
@@ -33,6 +35,7 @@ struct usb_linux_softc {
 	pthread_t thread;
 	int	fds [2];
 	volatile int thread_started;
+	volatile int thread_stopping;
 };
 
 static struct usb_linux_softc uls[16];
@@ -138,32 +141,45 @@ done:
 	return (NULL);
 }
 
+static void
+usb_exec_hup(int dummy)
+{
+
+}
+
 static void *
 usb_exec(void *arg)
 {
 	struct usb_linux_softc *sc = arg;
 	struct libusb20_device *dev = sc->p_dev->bsd_udev;
-
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	int err;
 
 	pthread_set_kernel_prio();
+
+	signal(SIGHUP, usb_exec_hup);
 
 	sc->thread_started = 1;
 
 	while (1) {
 
-		/* check for cancel */
-		pthread_testcancel();
+		atomic_lock();
+		err = libusb20_dev_process(dev);
+		atomic_unlock();
 
 		/* check for USB events */
-		if (libusb20_dev_process(dev) != 0) {
+		if (err != 0) {
 			/* device detached */
 			break;
 		}
 		/* wait for USB event from kernel */
 		libusb20_dev_wait_process(dev, -1);
+
+		if (sc->thread_stopping) {
+			break;
+		}
 	}
+
+	sc->thread_started = 0;
 
 	pthread_exit(NULL);
 
@@ -176,6 +192,7 @@ usb_linux_create_event_thread(struct usb_device *dev)
 	struct usb_linux_softc *sc = dev->parent;
 
 	sc->thread_started = 0;
+	sc->thread_stopping = 0;
 
 	/* start USB event thread again */
 	if (pthread_create(&sc->thread, NULL,
@@ -483,15 +500,20 @@ usb_submit_urb_sub(struct libusb20_transfer *xfer)
 {
 	if (xfer == NULL)
 		return;
-	if (libusb20_tr_pending(xfer))
+	atomic_lock();
+	if (libusb20_tr_pending(xfer)) {
+		atomic_unlock();
 		return;
+	}
 	libusb20_tr_start(xfer);
+	atomic_unlock();
 }
 
 int
 usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 {
 	struct usb_host_endpoint *uhe;
+	int err;
 
 	if (urb == NULL) {
 		return (-EINVAL);
@@ -501,7 +523,10 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	}
 	uhe = urb->pipe;
 
-	if (usb_setup_endpoint(urb->dev, uhe, 1)) {
+	atomic_lock();
+	err = usb_setup_endpoint(urb->dev, uhe, 1);
+	if (err) {
+		atomic_unlock();
 		return (-EPIPE);
 	}
 	/*
@@ -519,12 +544,14 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 
 		usb_submit_urb_sub(uhe->bsd_xfer[0]);
 		usb_submit_urb_sub(uhe->bsd_xfer[1]);
-		return (0);
+		err = 0;
 	} else {
 		/* no pipes have been setup yet! */
 		urb->status = -EINVAL;
-		return (-EINVAL);
+		err = -EINVAL;
 	}
+	atomic_unlock();
+	return (err);
 }
 
 /*------------------------------------------------------------------------*
@@ -536,7 +563,11 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 int
 usb_unlink_urb(struct urb *urb)
 {
-	return (usb_unlink_urb_sub(urb, 0));
+	int err;
+	atomic_lock();
+	err = usb_unlink_urb_sub(urb, 0);
+	atomic_unlock();
+	return (err);
 }
 
 static void
@@ -605,10 +636,15 @@ usb_unlink_urb_sub(struct urb *urb, uint8_t drain)
 int
 usb_clear_halt(struct usb_device *dev, struct usb_host_endpoint *uhe)
 {
+	int err;
+
 	if (uhe == NULL)
 		return (-EINVAL);
 
-	if (usb_setup_endpoint(dev, uhe, 1))
+	atomic_lock();
+	err = usb_setup_endpoint(dev, uhe, 1);
+	atomic_unlock();
+	if (err)
 		return (-EPIPE);
 
 	libusb20_tr_clear_stall_sync(uhe->bsd_xfer[0]);
@@ -732,7 +768,7 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
  * a non-zero dummy, hence this function will base the maximum buffer
  * size on "wMaxPacketSize".
  *------------------------------------------------------------------------*/
-int
+static int
 usb_setup_endpoint(struct usb_device *dev,
     struct usb_host_endpoint *uhe, uint8_t do_setup)
 {
@@ -1152,6 +1188,7 @@ usb_linux_free_device(struct usb_device *dev)
 	struct usb_host_endpoint *uhe_end;
 	int err;
 
+	atomic_lock();
 	uhe = dev->bsd_endpoint_start;
 	uhe_end = dev->bsd_endpoint_end;
 	while (uhe != uhe_end) {
@@ -1159,6 +1196,8 @@ usb_linux_free_device(struct usb_device *dev)
 		uhe++;
 	}
 	err = usb_setup_endpoint(dev, &dev->ep0, 0);
+	atomic_unlock();
+
 	free(dev);
 }
 
@@ -1210,9 +1249,9 @@ usb_init_urb(struct urb *urb)
 void
 usb_kill_urb(struct urb *urb)
 {
-	if (usb_unlink_urb_sub(urb, 1)) {
-		/* ignore */
-	}
+	atomic_lock();
+	usb_unlink_urb_sub(urb, 1);
+	atomic_unlock();
 }
 
 /*------------------------------------------------------------------------*
@@ -1241,8 +1280,10 @@ usb_linux_cleanup_interface(struct usb_device *dev, struct usb_interface *iface)
 	struct usb_host_endpoint *uhe;
 	struct usb_host_endpoint *uhe_end;
 	struct usb_linux_softc *sc = dev->parent;
+	uint32_t drops;
 	int err;
 
+	atomic_lock();
 	uhi = iface->altsetting;
 	uhi_end = iface->altsetting + iface->num_altsetting;
 	while (uhi != uhi_end) {
@@ -1255,8 +1296,19 @@ usb_linux_cleanup_interface(struct usb_device *dev, struct usb_interface *iface)
 		uhi++;
 	}
 
-	pthread_cancel(sc->thread);
-	pthread_join(sc->thread, NULL);
+	drops = atomic_drop();
+	atomic_unlock();
+
+	sc->thread_stopping = 1;
+
+	while (sc->thread_started != 0) {
+		pthread_kill(sc->thread, SIGHUP);
+		pthread_yield();
+	}
+
+	atomic_lock();
+	atomic_pickup(drops);
+	atomic_unlock();
 }
 
 /*------------------------------------------------------------------------*
