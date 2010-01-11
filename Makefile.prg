@@ -4,7 +4,7 @@
 
 PROG=		webcamd
 MAN=
-LINUXDIR=	${.CURDIR}/libv4l/linux
+LINUXDIR=	${.CURDIR}/v4l-dvb/linux
 MKLINT=		no
 NOGCCERROR=
 MLINKS=

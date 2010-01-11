@@ -1,4 +1,4 @@
-LINUXDIR=${.CURDIR}/libv4l/linux
+LINUXDIR=${.CURDIR}/v4l-dvb/linux
 
 #
 # Usage:
@@ -25,18 +25,23 @@ clean:
 	make -C ../video4bsd clean
 
 fetch:
-	rm -v -r -f v4l-dvb-* libv4l-* libv4l tip.tar.bz2
+	rm -v -r -f v4l-dvb-* libv4l-* libv4l v4l-dvb tip0.tar.bz2 tip1.tar.bz2
 
-#
-# Alternative location:
-# fetch http://linuxtv.org/hg/~hgoede/libv4l/archive/tip.tar.bz2
-#
-	[ -f tip.tar.bz2 ] || \
-		fetch http://linuxtv.org/hg/v4l-dvb/archive/tip.tar.bz2
+# Only need LibV4L from here:
 
-	tar -jxvf tip.tar.bz2
+	[ -f tip0.tar.bz2 ] || \
+		fetch -o tip0.tar.bz2 http://linuxtv.org/hg/~hgoede/libv4l/archive/tip.tar.bz2
 
-	ln -s v4l-dvb-* libv4l
+# Only need Video4Linux from here:
+
+	[ -f tip1.tar.bz2 ] || \
+		fetch -o tip1.tar.bz2 http://linuxtv.org/hg/v4l-dvb/archive/tip.tar.bz2
+
+	tar -jxvf tip0.tar.bz2
+	tar -jxvf tip1.tar.bz2
+
+	ln -s v4l-dvb-* v4l-dvb
+	ln -s libv4l-* libv4l
 
 	cd patches && ./do_patch.sh
 
