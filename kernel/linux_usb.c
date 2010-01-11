@@ -969,6 +969,7 @@ usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags)
 
 	urb = malloc(size);
 	if (urb) {
+		memset(urb, 0, size);
 		urb->number_of_packets = iso_packets;
 	}
 	return (urb);
@@ -1080,9 +1081,14 @@ usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no)
 void   *
 usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, dma_addr_t *dma_addr)
 {
+	void *ptr;
+
 	if (dma_addr)
 		*dma_addr = 0;
-	return (malloc(size));
+	ptr = malloc(size);
+	if (ptr)
+		memset(ptr, 0, size);
+	return (ptr);
 }
 
 /*------------------------------------------------------------------------*
