@@ -322,7 +322,7 @@ v4lx_mmap_wrapper(void *addr, size_t len, int prot, int flags, int fd, off_t off
 	if (pc != NULL) {
 		retval = linux_mmap(pc, addr, len, offset);
 	} else {
-		retval = (void *)(long)syscall(SYS_mmap, addr, len, prot, flags, fd, offset);
+		retval = (void *)(long)__syscall(SYS_mmap, addr, len, prot, flags, fd, offset);
 	}
 	return (retval);
 }
