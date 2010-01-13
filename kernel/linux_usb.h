@@ -171,6 +171,22 @@ struct usb_device_descriptor {
 } __packed;
 
 /*
+ * The following structure is the same as "usb_config_descriptor_t"
+ * except that 16-bit values are "uint16_t" and not an array of "uint8_t".
+ * It is used by Linux USB device drivers.
+ */
+struct usb_config_descriptor {
+	uint8_t	bLength;
+	uint8_t	bDescriptorType;
+	uint16_t wTotalLength;
+	uint8_t	bNumInterfaces;
+	uint8_t	bConfigurationValue;
+	uint8_t	iConfiguration;
+	uint8_t	bmAttributes;
+	uint8_t	bMaxPower;		/* max current in 2 mA units */
+} __packed;
+
+/*
  * The following structure is the same as
  * "usb_interface_descriptor_t". It is used by
  * Linux USB device drivers.
@@ -389,12 +405,18 @@ struct usb_interface {
 	void   *align[0];
 };
 
+struct usb_config {
+	struct usb_config_descriptor desc;
+};
+
 struct usb_device {
 	struct device dev;
 	struct device *bus;
 	void   *parent;
+	struct usb_config *config;
 
 	struct usb_device_descriptor descriptor;
+	struct usb_config bsd_config;
 	struct usb_host_endpoint ep0;
 
 	struct libusb20_device *bsd_udev;
@@ -473,7 +495,7 @@ struct urb {
 	uint8_t	setup_dma;		/* (in) not used on FreeBSD */
 	uint8_t	transfer_dma;		/* (in) not used on FreeBSD */
 	uint8_t	bsd_isread;
-	uint8_t bsd_no_resubmit;
+	uint8_t	bsd_no_resubmit;
 
 	struct usb_iso_packet_descriptor iso_frame_desc[];	/* (in) ISO ONLY */
 };

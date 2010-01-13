@@ -565,6 +565,7 @@ int
 usb_unlink_urb(struct urb *urb)
 {
 	int err;
+
 	atomic_lock();
 	err = usb_unlink_urb_sub(urb, 0);
 	atomic_unlock();
@@ -936,9 +937,13 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ud->bsd_endpoint_start = p_uhe;
 	p_ud->bsd_endpoint_end = p_uhe + nedesc;
 	p_ud->devnum = addr;
+	p_ud->config = &p_ud->bsd_config;
 
 	libusb20_me_encode(&p_ud->descriptor, sizeof(p_ud->descriptor),
 	    libusb20_dev_get_device_desc(udev));
+
+	libusb20_me_encode(&p_ud->bsd_config.desc,
+	    sizeof(p_ud->bsd_config.desc), &pcfg->desc);
 
 	for (i = 0; i != pcfg->num_interface; i++) {
 		id = pcfg->interface + i;
@@ -1417,12 +1422,11 @@ tr_setup:
 
 		libusb20_tr_set_priv_sc1(xfer, urb);
 		if (urb->timeout == 0) {
-			/* Sometimes we are late putting stuff into
-			 * the schedule and the transfer never
-			 * completes leading to a hang
-			 * situation. Always have a timeout for
-			 * isochronous transfers so that we can
-			 * recover.
+			/*
+			 * Sometimes we are late putting stuff into the
+			 * schedule and the transfer never completes leading
+			 * to a hang situation. Always have a timeout for
+			 * isochronous transfers so that we can recover.
 			 */
 			libusb20_tr_set_timeout(xfer, 250);
 		} else {
@@ -1436,7 +1440,7 @@ tr_setup:
 		if (status == LIBUSB20_TRANSFER_CANCELLED) {
 			urb->status = -ECONNRESET;
 		} else if (status == LIBUSB20_TRANSFER_TIMED_OUT) {
-			urb->status = 0;	/* pretend we are successful */
+			urb->status = 0;/* pretend we are successful */
 		} else {
 			urb->status = -EPIPE;	/* stalled */
 		}
