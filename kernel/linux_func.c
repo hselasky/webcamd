@@ -950,3 +950,27 @@ ktime_get_real_ts(struct timespec *ts)
 {
 	clock_gettime(CLOCK_REALTIME, ts);
 }
+
+void
+msleep(uint32_t ms)
+{
+	uint32_t drops;
+
+	atomic_lock();
+	drops = atomic_drop();
+	atomic_unlock();
+
+	usleep(ms * 1000);
+
+	atomic_lock();
+	atomic_pickup(drops);
+	atomic_unlock();
+}
+
+uint32_t
+msleep_interruptible(uint32_t ms)
+{
+	msleep(ms);
+	return (0);
+}
+

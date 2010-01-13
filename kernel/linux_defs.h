@@ -120,8 +120,6 @@
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
-#define	msleep(d) usleep((d) * 1000)
-#define	msleep_interruptible(d) usleep((d) * 1000)
 #define	mdelay(d) usleep((d) * 1000)
 #define	__GFP_WAIT 0
 #define	__GFP_HIGH 0

@@ -178,6 +178,7 @@ struct usb_device_descriptor {
 struct usb_config_descriptor {
 	uint8_t	bLength;
 	uint8_t	bDescriptorType;
+
 	uint16_t wTotalLength;
 	uint8_t	bNumInterfaces;
 	uint8_t	bConfigurationValue;
