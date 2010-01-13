@@ -114,7 +114,7 @@ void	pthread_set_kernel_prio(void);
 void	ktime_get_ts(struct timespec *ts);
 void	ktime_get_real_ts(struct timespec *ts);
 void	msleep(uint32_t ms);
-uint32_t	msleep_interruptible(uint32_t ms);
+uint32_t msleep_interruptible(uint32_t ms);
 
 #ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);
