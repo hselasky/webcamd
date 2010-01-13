@@ -1434,6 +1434,16 @@ tr_setup:
 		}
 		libusb20_tr_set_total_frames(xfer, urb->number_of_packets);
 		libusb20_tr_submit(xfer);
+
+		/* get other transfer */
+		if (xfer == uhe->bsd_xfer[0])
+			xfer = uhe->bsd_xfer[1];
+		else
+			xfer = uhe->bsd_xfer[0];
+
+		/* start the other transfer, if not already started */
+		if (xfer != NULL)
+			libusb20_tr_start(xfer);
 		break;
 
 	default:			/* Error */
@@ -1455,7 +1465,9 @@ tr_setup:
 		}
 
 		/* call callback */
+		urb->bsd_no_resubmit = 1;
 		usb_linux_complete(xfer);
+		urb->bsd_no_resubmit = 0;
 
 		if (status == LIBUSB20_TRANSFER_CANCELLED) {
 			/* we need to return in this case */
@@ -1513,7 +1525,9 @@ usb_linux_non_isoc_callback(struct libusb20_transfer *xfer)
 		}
 
 		/* call callback */
+		urb->bsd_no_resubmit = 1;
 		usb_linux_complete(xfer);
+		urb->bsd_no_resubmit = 0;
 
 	case LIBUSB20_TRANSFER_START:
 tr_setup:
@@ -1562,7 +1576,9 @@ setup_bulk:
 		urb->actual_length = 0;
 
 		/* call callback */
+		urb->bsd_no_resubmit = 1;
 		usb_linux_complete(xfer);
+		urb->bsd_no_resubmit = 0;
 
 		if (status == LIBUSB20_TRANSFER_CANCELLED) {
 			/* we need to return in this case */

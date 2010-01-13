@@ -360,7 +360,7 @@ malloc_vm(size_t size)
 		}
 		ptr = mmap(NULL, cmd.page_count * PAGE_SIZE,
 		    PROT_READ | PROT_WRITE,
-		    MAP_SHARED, f_videodev, V4B_ALLOC_PAGES_MAX * 
+		    MAP_SHARED, f_videodev, V4B_ALLOC_PAGES_MAX *
 		    PAGE_SIZE * n);
 
 		if (ptr == MAP_FAILED) {

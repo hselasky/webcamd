@@ -95,6 +95,6 @@
 #include <include/media/tuner.h>
 #include <include/media/msp3400.h>
 
-#define PUBLIC_API __attribute__((visibility("default")))
+#define	PUBLIC_API __attribute__((visibility("default")))
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */
