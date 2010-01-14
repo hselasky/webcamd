@@ -24,8 +24,11 @@
  */
 
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/rtprio.h>
 
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "../video4bsd/video4bsd.h"
 
@@ -74,6 +77,7 @@ int
 main(int argc, char **argv)
 {
 	static struct v4b_command cmd;
+	struct rtprio prio_arg = { RTP_PRIO_REALTIME, 16 };
 	void *mm_ptr;
 	const char *ptr;
 	struct cdev *cdev;
@@ -138,6 +142,9 @@ main(int argc, char **argv)
 	cdev = usb_linux2cdev(f_usb);
 	if (cdev == NULL)
 		v4b_errx(1, "Cannot find USB character device");
+
+	if (rtprio(RTP_SET, getpid(), &prio_arg))
+		printf("Cannot set realtime priority\n");
 
 	while (1) {
 		if (ioctl(f_videodev, V4B_IOCTL_GET_COMMAND, &cmd) != 0)
