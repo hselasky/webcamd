@@ -1,5 +1,5 @@
 #
-# Makefile for webcamd
+# Makefile for Webcam Daemon
 #
 VERSION=	0.1.0
 PROG=		webcamd
@@ -253,6 +253,20 @@ fetch:
 	tar -jxvf tip1.tar.bz2
 
 	ln -s v4l-dvb-* v4l-dvb
+
+package: fetch
+
+	tar -jcvf temp.tar.bz2 Makefile *.[ch] dummy kernel/*.[ch] patches/do_patches.sh patches/*.diff v4l-dvb v4l-dvb-*
+
+	rm -rf webcamd-${VERSION}
+
+	mkdir webcamd-${VERSION}
+
+	tar -jxcf temp.tar.bz2 -C webcamd-${VERSION}
+
+	rm -rf temp.tar.bz2
+
+	tar -jcvf webcamd-${VERSION}.tar.bz2 webcamd-${VERSION}
 
 help:
 	@echo "#"
