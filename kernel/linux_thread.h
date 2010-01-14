@@ -135,6 +135,8 @@ void	set_freezable(void);
 void	atomic_lock(void);
 void	atomic_unlock(void);
 pthread_mutex_t *atomic_get_lock();
+void	atomic_pre_sleep(void);
+void	atomic_post_sleep(void);
 
 int	thread_init(void);
 

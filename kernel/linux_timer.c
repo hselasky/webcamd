@@ -25,10 +25,14 @@
 
 static u64 jiffies64;			/* we use jiffies = milliseconds */
 
+#include <signal.h>
+
 TAILQ_HEAD(timer_head, timer_list);
 
 static struct timer_head timer_head;
 static pthread_t timer_thread;
+static int timer_thread_started;
+static int timer_needed;
 
 int
 timer_pending(const struct timer_list *timer)
@@ -69,18 +73,36 @@ del_timer(struct timer_list *timer)
 	return (retval);
 }
 
+static void
+timer_exec_hup(int dummy)
+{
+
+}
+
 static void *
 timer_exec(void *arg)
 {
 	int64_t delta;
 	struct timer_list *t;
+	uint32_t ms_delay = 0;
 
 	pthread_set_kernel_prio();
+
+	signal(SIGHUP, timer_exec_hup);
+
+	timer_thread_started = 1;
 
 	while (1) {
 
 		atomic_lock();
-		jiffies64 += 8;		/* ms */
+
+		jiffies64 += ms_delay;	/* ms */
+
+		if (TAILQ_FIRST(&timer_head) || timer_needed)
+			ms_delay = 20;
+		else
+			ms_delay = 1000;/* relax it */
+
 restart:
 		TAILQ_FOREACH(t, &timer_head, entry) {
 			delta = t->expires - jiffies64;
@@ -94,7 +116,7 @@ restart:
 			}
 		}
 		atomic_unlock();
-		usleep(8000);
+		usleep(ms_delay * 1000);
 	}
 	return (NULL);
 }
@@ -123,8 +145,22 @@ timer_init(void)
 
 	if (pthread_create(&timer_thread, NULL, timer_exec, NULL)) {
 		printf("Failed creating timer process\n");
+	} else {
+		while (timer_thread_started == 0)
+			pthread_yield();
 	}
 	return (0);
+}
+
+void
+need_timer(int flag)
+{
+	atomic_lock();
+	timer_needed = flag;
+	atomic_unlock();
+
+	if (timer_thread != NULL)
+		pthread_kill(timer_thread, SIGHUP);
 }
 
 module_init(timer_init);

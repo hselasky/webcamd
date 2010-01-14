@@ -447,14 +447,17 @@ void
 kref_get(struct kref *kref)
 {
 	atomic_inc(&kref->refcount);
+#ifndef HAVE_WEBCAMD
 	printf("KrefGet: %p = %u\n", kref, kref->refcount.counter);
+#endif
 }
 
 int
 kref_put(struct kref *kref, void (*release) (struct kref *kref))
 {
+#ifndef HAVE_WEBCAMD
 	printf("KrefPut: %p = %u\n", kref, kref->refcount.counter);
-
+#endif
 	if (atomic_dec(&kref->refcount) == 0) {
 		release(kref);
 		return 1;
@@ -494,7 +497,9 @@ int
 device_add(struct device *dev)
 {
 	/* TODO */
+#ifndef HAVE_WEBCAMD
 	printf("Added device %p\n", dev);
+#endif
 	get_device(dev);
 	return (0);
 }
@@ -503,7 +508,9 @@ void
 device_del(struct device *dev)
 {
 	/* TODO */
+#ifndef HAVE_WEBCAMD
 	printf("Deleted device %p\n", dev);
+#endif
 	put_device(dev);
 }
 

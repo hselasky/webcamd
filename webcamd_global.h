@@ -63,6 +63,8 @@
 #include <kernel/linux_end_section.h>
 #include <kernel/linux_input.h>
 
+#define	HAVE_LINUX_INTEGER_TYPES
+
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
 #include <include/linux/dvb/version.h>

@@ -36,11 +36,16 @@ static int f_videodev = -1;
 static int u_videodev = -1;
 static int f_usb = -1;
 static int local_user = 0;
+static int do_fork = 0;
 
 struct vm_allocation {
 	uint8_t *ptr;
 	uint32_t size;
 };
+
+#if 0
+#define	V4B_DEBUG
+#endif
 
 static struct vm_allocation vm_allocations[V4B_ALLOC_UNIT_MAX];
 
@@ -62,7 +67,14 @@ open_video4bsd(int unit)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: webcamd -d [ugen]<unit>.<addr> -i 0 -v -1\n");
+	fprintf(stderr,
+	    "usage: webcamd -d [ugen]<unit>.<addr> -i 0 -v -1 -B\n"
+	    "	-d <USB device>\n"
+	    "	-i <interface number>\n"
+	    "	-v <video device number>\n"
+	    "	-B Run in background\n"
+	    "	-h Print help\n"
+	);
 	exit(1);
 }
 
@@ -77,7 +89,7 @@ int
 main(int argc, char **argv)
 {
 	static struct v4b_command cmd;
-	struct rtprio prio_arg = { RTP_PRIO_REALTIME, 16 };
+	struct rtprio prio_arg = {RTP_PRIO_REALTIME, 16};
 	void *mm_ptr;
 	const char *ptr;
 	struct cdev *cdev;
@@ -89,7 +101,7 @@ main(int argc, char **argv)
 	uint32_t size;
 	uint32_t delta;
 
-	while ((opt = getopt(argc, argv, "d:i:v:h")) != -1) {
+	while ((opt = getopt(argc, argv, "Bd:i:v:h")) != -1) {
 		switch (opt) {
 		case 'd':
 			ptr = optarg;
@@ -111,6 +123,11 @@ main(int argc, char **argv)
 		case 'v':
 			u_videodev = atoi(optarg);
 			break;
+
+		case 'B':
+			do_fork = 1;
+			break;
+
 		default:
 			usage();
 			break;
@@ -120,15 +137,21 @@ main(int argc, char **argv)
 	if (u_videodev < 0) {
 		for (u_videodev = 0;; u_videodev++) {
 			if (u_videodev == V4B_DEVICES_MAX)
-				v4b_errx(1, "Cannot open /dev/video_daemonX");
+				v4b_errx(1, "Cannot open /dev/video_daemonX. "
+				    "Did you kldload video4bsd?");
 			if (open_video4bsd(u_videodev) >= 0)
 				break;
 		}
 	} else {
 		if (open_video4bsd(u_videodev) < 0)
-			v4b_errx(1, "Cannot open /dev/video_daemonX");
+			v4b_errx(1, "Cannot open /dev/video_daemonX. "
+			    "Did you kldload video4bsd?");
 	}
 
+	if (do_fork) {
+		if (fork() != 0)
+			return (0);
+	}
 	linux_init();
 
 #ifdef V4B_DEBUG
@@ -157,14 +180,22 @@ main(int argc, char **argv)
 			/* make sure we are closed before open */
 			err = linux_close(cdev);
 
+			need_timer(1);
+
 			/* try to open the device */
 			err = linux_open(cdev);
+
+			need_timer(err == 0);
+
 			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
 				v4b_errx(1, "Cannot sync V4B command");
 			break;
 		case V4B_CMD_CLOSE:
 			/* close device */
 			err = linux_close(cdev);
+
+			need_timer(0);
+
 			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
 				v4b_errx(1, "Cannot sync V4B command");
 			break;
@@ -416,8 +447,11 @@ free_vm(void *ptr)
 
 		munmap(ptr, vm_allocations[n].size);
 
-		ioctl(f_videodev, V4B_IOCTL_FREE_MEMORY, &cmd);
-
+		if (ioctl(f_videodev, V4B_IOCTL_FREE_MEMORY, &cmd) != 0) {
+#ifdef V4B_DEBUG
+			printf("Free failed %d\n", __LINE__);
+#endif
+		}
 		atomic_lock();
 
 		vm_allocations[n].ptr = NULL;

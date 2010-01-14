@@ -169,6 +169,10 @@ usb_exec(void *arg)
 		/* check for USB events */
 		if (err != 0) {
 			/* device detached */
+#ifdef HAVE_WEBCAMD
+			if (!sc->thread_stopping)
+				exit(0);
+#endif
 			break;
 		}
 		/* wait for USB event from kernel */
@@ -986,6 +990,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	}
 
 	p_ud->parent = sc;
+
 	get_device(&p_ud->dev);		/* make sure we don't get freed */
 
 done:
@@ -1305,9 +1310,8 @@ usb_linux_cleanup_interface(struct usb_device *dev, struct usb_interface *iface)
 	drops = atomic_drop();
 	atomic_unlock();
 
-	sc->thread_stopping = 1;
-
 	while (sc->thread_started != 0) {
+		sc->thread_stopping = 1;
 		pthread_kill(sc->thread, SIGHUP);
 		pthread_yield();
 	}

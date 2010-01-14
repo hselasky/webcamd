@@ -108,7 +108,9 @@ work_exec(void *arg)
 			t->func(t);
 			atomic_lock();
 		} else {
+			atomic_pre_sleep();
 			pthread_cond_wait(&work_cond, atomic_get_lock());
+			atomic_post_sleep();
 		}
 	}
 	atomic_unlock();

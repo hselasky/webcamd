@@ -25,7 +25,19 @@
 
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
-static uint32_t atomic_recurse;
+static volatile uint32_t atomic_recurse;
+
+void
+atomic_pre_sleep(void)
+{
+	atomic_recurse--;
+}
+
+void
+atomic_post_sleep(void)
+{
+	atomic_recurse++;
+}
 
 uint32_t
 atomic_drop(void)
@@ -87,7 +99,9 @@ __wait_event(wait_queue_head_t *q)
 	uint32_t drops;
 
 	drops = atomic_drop();
+	atomic_pre_sleep();
 	pthread_cond_wait(&sema_cond, atomic_get_lock());
+	atomic_post_sleep();
 	atomic_pickup(drops);
 }
 
@@ -155,7 +169,9 @@ down(struct semaphore *sem)
 		uint32_t drops;
 
 		drops = atomic_drop();
+		atomic_pre_sleep();
 		pthread_cond_wait(&sema_cond, atomic_get_lock());
+		atomic_post_sleep();
 		atomic_pickup(drops);
 	}
 	sem->value--;

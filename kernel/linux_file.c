@@ -74,8 +74,9 @@ linux_close(struct cdev *cdev)
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
 		if (cdev->fixed_vma[i].vm_buffer_address == NULL)
 			continue;
-		if (cdev->fixed_vma[i].vm_buffer_address != MAP_FAILED)
+		if (cdev->fixed_vma[i].vm_buffer_address == MAP_FAILED)
 			continue;
+
 		if (cdev->fixed_vma[i].vm_ops &&
 		    cdev->fixed_vma[i].vm_ops->close)
 			cdev->fixed_vma[i].vm_ops->close(&cdev->fixed_vma[i]);

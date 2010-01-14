@@ -2,6 +2,7 @@
 # Makefile for USB webcam driver library
 #
 
+VERSION=0.1.0
 PROG=		webcamd
 MAN=
 LINUXDIR=	${.CURDIR}/v4l-dvb/linux
