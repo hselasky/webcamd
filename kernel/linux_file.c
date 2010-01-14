@@ -23,6 +23,7 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/mman.h>
 #include <sys/syscall.h>
 
 int
@@ -69,17 +70,18 @@ linux_close(struct cdev *cdev)
 	if (!busy)
 		return (0);
 
+	/* release all memory mapped regions */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
-		if ((cdev->fixed_vma[i].vm_buffer_address != NULL) &&
-		    (cdev->fixed_vma[i].vm_buffer_address != (void *)-1)) {
+		if (cdev->fixed_vma[i].vm_buffer_address == NULL)
+			continue;
+		if (cdev->fixed_vma[i].vm_buffer_address != MAP_FAILED)
+			continue;
+		if (cdev->fixed_vma[i].vm_ops &&
+		    cdev->fixed_vma[i].vm_ops->close)
+			cdev->fixed_vma[i].vm_ops->close(&cdev->fixed_vma[i]);
 
-			if (cdev->fixed_vma[i].vm_ops &&
-			    cdev->fixed_vma[i].vm_ops->close)
-				cdev->fixed_vma[i].vm_ops->close(&cdev->fixed_vma[i]);
-
-			cdev->fixed_vma[i].vm_buffer_address = NULL;
-			cdev->fixed_vma[i].vm_ops = NULL;
-		}
+		cdev->fixed_vma[i].vm_buffer_address = NULL;
+		cdev->fixed_vma[i].vm_ops = NULL;
 	}
 
 	return ((cdev->ops->release) (&cdev->fixed_inode, &cdev->fixed_file));
@@ -145,41 +147,61 @@ linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset)
 	uint32_t i;
 
 	if (cdev == NULL)
-		return ((void *)-1);
+		return (MAP_FAILED);
 
 	if (cdev->is_opened == 0)
-		return ((void *)-1);
+		return (MAP_FAILED);
 
+	/* sanity checks */
+	if (len == 0)
+		return (MAP_FAILED);
+
+	if (offset & (PAGE_SIZE - 1))
+		return (MAP_FAILED);
+
+	/* round up length */
+	if (len & (PAGE_SIZE - 1)) {
+		len += PAGE_SIZE;
+		len &= ~(PAGE_SIZE - 1);
+	}
+	/* check if the entry is already mapped */
+	for (i = 0; i != LINUX_VMA_MAX; i++) {
+		if ((cdev->fixed_vma[i].vm_end -
+		    cdev->fixed_vma[i].vm_start) != len)
+			continue;
+		if (cdev->fixed_vma[i].vm_pgoff != (offset >> PAGE_SHIFT))
+			continue;
+		if (cdev->fixed_vma[i].vm_buffer_address == NULL)
+			continue;
+		if (cdev->fixed_vma[i].vm_buffer_address == MAP_FAILED)
+			continue;
+
+		return (cdev->fixed_vma[i].vm_buffer_address);
+	}
+
+	/* create new entry */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
 		if ((cdev->fixed_vma[i].vm_buffer_address == NULL) ||
-		    (cdev->fixed_vma[i].vm_buffer_address == (void *)-1))
+		    (cdev->fixed_vma[i].vm_buffer_address == MAP_FAILED))
 			break;
 	}
 
 	if (i == LINUX_VMA_MAX) {
-		return ((void *)-1);
+		return (MAP_FAILED);
 	}
-	/* round length to nearest page size */
-	len = -(-len & -PAGE_SIZE);
-
 	/* fill in information */
 	cdev->fixed_vma[i].vm_start = (unsigned long)addr;
 	cdev->fixed_vma[i].vm_end = (unsigned long)(addr + len);
-	cdev->fixed_vma[i].vm_pgoff = offset >> PAGE_SHIFT;
-	cdev->fixed_vma[i].vm_buffer_address = (void *)-1;
+	cdev->fixed_vma[i].vm_pgoff = (offset >> PAGE_SHIFT);
+	cdev->fixed_vma[i].vm_buffer_address = MAP_FAILED;
 	cdev->fixed_vma[i].vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
 
 	err = cdev->ops->mmap(&cdev->fixed_file, &cdev->fixed_vma[i]);
 	if (err) {
+		cdev->fixed_vma[i].vm_buffer_address = MAP_FAILED;
 		errno = -err;
-		return ((void *)-1);
+		return (MAP_FAILED);
 	}
-#if 0
-	if (cdev->fixed_vma[i].vm_ops &&
-	    cdev->fixed_vma[i].vm_ops->open)
-		cdev->fixed_vma[i].vm_ops->open(&cdev->fixed_vma[i]);
-#endif
-
 	return (cdev->fixed_vma[i].vm_buffer_address);
 }
 

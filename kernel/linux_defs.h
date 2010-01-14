@@ -171,8 +171,6 @@
 #define	_IOC_READ IOC_OUT
 #define	_IOC_WRITE IOC_IN
 #define	__OLD_VIDIOC_
-#define	PAGE_SIZE 4096
-#define	PAGE_SHIFT 12
 #define	down_read(...) __nop
 #define	up_read(...) __nop
 #define	VM_WRITE 0x0001

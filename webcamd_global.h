@@ -26,6 +26,8 @@
 #ifndef _WEBCAMD_GLOBAL_H_
 #define	_WEBCAMD_GLOBAL_H_
 
+#include <machine/param.h>
+
 #include <sys/types.h>
 #include <sys/stdint.h>
 #include <sys/queue.h>

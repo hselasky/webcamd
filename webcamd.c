@@ -33,7 +33,6 @@ static int f_videodev = -1;
 static int u_videodev = -1;
 static int f_usb = -1;
 static int local_user = 0;
-static void *mm_ptr = MAP_FAILED;
 
 struct vm_allocation {
 	uint8_t *ptr;
@@ -43,7 +42,7 @@ struct vm_allocation {
 static struct vm_allocation vm_allocations[V4B_ALLOC_UNIT_MAX];
 
 static void set_mmap(void *);
-static void find_mmap_size(struct cdev *cdev, uint32_t offset, uint32_t *psize, uint32_t *delta);
+static void *find_mmap_size(struct cdev *cdev, uint32_t offset, uint32_t *psize, uint32_t *delta);
 
 static int
 open_video4bsd(int unit)
@@ -75,6 +74,7 @@ int
 main(int argc, char **argv)
 {
 	static struct v4b_command cmd;
+	void *mm_ptr;
 	const char *ptr;
 	struct cdev *cdev;
 	int unit = 0;
@@ -193,11 +193,8 @@ main(int argc, char **argv)
 		case V4B_CMD_MMAP:
 
 			/* XXX V4L hack */
-			find_mmap_size(cdev, cmd.arg, &size, &delta);
+			mm_ptr = find_mmap_size(cdev, cmd.arg, &size, &delta);
 			if (size != 0) {
-				if (delta == 0) {
-					mm_ptr = linux_mmap(cdev, NULL, size, cmd.arg);
-				}
 				if (mm_ptr == MAP_FAILED) {
 					err = EINVAL;
 				} else {
@@ -257,11 +254,12 @@ copy_from_user(void *to, const void *from, unsigned long n)
 	return (0);
 }
 
-static void
+static void *
 find_mmap_size(struct cdev *cdev, uint32_t offset,
     uint32_t *psize, uint32_t *delta)
 {
 	struct v4l2_buffer buf = {0, 0, 0};
+	void *ptr;
 	int err;
 	int i;
 
@@ -277,16 +275,22 @@ find_mmap_size(struct cdev *cdev, uint32_t offset,
 		if (err) {
 			*psize = 0;
 			*delta = 0;
+			ptr = MAP_FAILED;
 			break;
 		}
-		if ((offset >= buf.m.offset) && (offset <= (buf.m.offset + buf.length - 1))) {
+		if ((offset >= buf.m.offset) &&
+		    (offset <= (buf.m.offset + buf.length - 1))) {
 			*psize = buf.length;
 			*delta = offset - buf.m.offset;
+			ptr = linux_mmap(cdev, NULL,
+			    buf.length, buf.m.offset);
 			break;
 		}
 	}
 
 	local_user = 0;
+
+	return (ptr);
 }
 
 static void
@@ -311,7 +315,11 @@ set_mmap(void *ptr)
 			cmd.page_count = (ptr - ptr_min) / PAGE_SIZE;
 
 			atomic_unlock();
-			ioctl(f_videodev, V4B_IOCTL_MAP_MEMORY, &cmd);
+			if (ioctl(f_videodev, V4B_IOCTL_MAP_MEMORY, &cmd) != 0) {
+#ifdef V4B_DEBUG
+				printf("Mapping memory failed\n");
+#endif
+			}
 			return;
 		}
 	}

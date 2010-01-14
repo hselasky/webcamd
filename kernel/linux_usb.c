@@ -1444,6 +1444,7 @@ tr_setup:
 		/* start the other transfer, if not already started */
 		if (xfer != NULL)
 			libusb20_tr_start(xfer);
+
 		break;
 
 	default:			/* Error */
