@@ -30,7 +30,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "../video4bsd/video4bsd.h"
+#include <video4bsd.h>
 
 static int f_videodev = -1;
 static int u_videodev = -1;
