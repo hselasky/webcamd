@@ -26,6 +26,7 @@
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
+static volatile uint32_t atomic_schedule_count;
 
 void
 atomic_pre_sleep(void)
@@ -195,13 +196,13 @@ __wait_event_timed(wait_queue_head_t *q, struct timespec *ts)
 void
 add_wait_queue(wait_queue_head_t *qh, wait_queue_t *wq)
 {
-	/* NOP */
+	atomic_schedule_count++;
 }
 
 void
 remove_wait_queue(wait_queue_head_t *qh, wait_queue_t *wq)
 {
-	/* NOP */
+	atomic_schedule_count--;
 }
 
 void
@@ -211,11 +212,16 @@ schedule(void)
 
 	atomic_lock();
 	drops = atomic_drop();
-	atomic_pre_sleep();
 
-	pthread_cond_wait(&sema_cond, atomic_get_lock());
-
-	atomic_post_sleep();
+	if (atomic_schedule_count == 0) {
+		atomic_unlock();
+		usleep(4000);
+		atomic_lock();
+	} else {
+		atomic_pre_sleep();
+		pthread_cond_wait(&sema_cond, atomic_get_lock());
+		atomic_post_sleep();
+	}
 	atomic_pickup(drops);
 	atomic_unlock();
 }

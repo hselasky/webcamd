@@ -138,7 +138,6 @@ void	uninit_completion(struct completion *x);
 void	wait_for_completion(struct completion *x);
 uint64_t wait_for_completion_timeout(struct completion *x, uint64_t timeout);
 void	complete(struct completion *x);
-void	schedule(void);
 
 typedef int (threadfn_t)(void *data);
 struct task_struct *kthread_run(threadfn_t *func, void *data, char *fmt,...);
