@@ -247,7 +247,7 @@ CFLAGS+= -fvisibility=hidden
 CFLAGS+= -I${.CURDIR}/../video4bsd
 .endif
 
-LDFLAGS+= -lusb -lpthread
+LDFLAGS+= -lusb -lpthread -lutil
 
 .include <bsd.prog.mk>
 

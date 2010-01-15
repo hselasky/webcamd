@@ -119,6 +119,7 @@ uint32_t msleep_interruptible(uint32_t ms);
 #ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);
 void	free_vm(void *);
+int	pidfile_create(int bus, int addr, int index);
 
 #else
 #define	malloc_vm(x) malloc(x)

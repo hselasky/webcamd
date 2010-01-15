@@ -26,9 +26,13 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/rtprio.h>
+#include <sys/param.h>
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
+
+#include <libutil.h>
 
 #include <video4bsd.h>
 
@@ -37,6 +41,7 @@ static int u_videodev = -1;
 static int f_usb = -1;
 static int local_user = 0;
 static int do_fork = 0;
+static struct pidfh *local_pid = NULL;
 
 struct vm_allocation {
 	uint8_t *ptr;
@@ -85,6 +90,32 @@ v4b_errx(int code, const char *str)
 	exit(code);
 }
 
+static void
+v4b_exit(void)
+{
+	if (local_pid != NULL) {
+		pidfile_remove(local_pid);
+		local_pid = NULL;
+	}
+}
+
+int
+pidfile_create(int bus, int addr, int index)
+{
+	char buf[64];
+
+	snprintf(buf, sizeof(buf), "/var/run/webcamd."
+	    "%d.%d.%d.pid", bus, addr, index);
+
+	local_pid = pidfile_open(buf, 0600, NULL);
+	if (local_pid == NULL) {
+		return (EEXIST);
+	} else {
+		pidfile_write(local_pid);
+	}
+	return (0);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -100,6 +131,8 @@ main(int argc, char **argv)
 	int err;
 	uint32_t size;
 	uint32_t delta;
+
+	atexit(&v4b_exit);
 
 	while ((opt = getopt(argc, argv, "Bd:i:v:h")) != -1) {
 		switch (opt) {
@@ -149,6 +182,8 @@ main(int argc, char **argv)
 	}
 
 	if (do_fork) {
+		if (daemon(0, 0) == -1)
+			v4b_errx(1, "Cannot daemonize");
 		if (fork() != 0)
 			return (0);
 	}

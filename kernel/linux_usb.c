@@ -286,6 +286,7 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 	struct usb_interface *ui;
 	uint8_t i;
 	uint8_t match_bus_addr;
+	uint8_t index_copy;
 
 	for (i = 0;; i++) {
 		if (i == ARRAY_SIZE(uls))
@@ -302,6 +303,8 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 
 	if (!match_bus_addr)
 		index = bus;
+
+	index_copy = index;
 
 	pbe = libusb20_be_alloc_default();
 	if (pbe == NULL)
@@ -368,6 +371,17 @@ next_dev:
 	return (-ENXIO);
 
 found:
+#ifdef HAVE_WEBCAMD
+	if (pidfile_create(libusb20_dev_get_bus_number(pdev),
+	    libusb20_dev_get_address(pdev), index_copy)) {
+		fprintf(stderr, "Webcamd is already running for "
+		    "ugen%d.%d.%d\n",
+		    libusb20_dev_get_bus_number(pdev),
+		    libusb20_dev_get_address(pdev),
+		    index_copy);
+		exit(1);
+	}
+#endif
 	p_dev = usb_linux_create_usb_device(sc, pdev, pcfg, addr);
 	if (p_dev == NULL) {
 		free(pcfg);
