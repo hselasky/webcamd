@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OPT=-N
+OPT='-N -s'
 
 #
 # driver patches - mostly to improve usability

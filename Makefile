@@ -30,6 +30,7 @@
 VERSION=	0.1.0
 PROG=		webcamd
 MAN=
+BINDIR=		%%PREFIX%%/sbin
 LINUXDIR=	${.CURDIR}/v4l-dvb/linux
 MKLINT=		no
 NOGCCERROR=
