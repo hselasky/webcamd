@@ -24,6 +24,7 @@
  */
 
 #include <signal.h>
+#include <sys/filio.h>
 
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
@@ -168,9 +169,11 @@ usb_exec(void *arg)
 
 		/* check for USB events */
 		if (err != 0) {
-			/* device detached */
+			/* check if device is detached */
 #ifdef HAVE_WEBCAMD
-			if (!sc->thread_stopping)
+			err = 1;
+			err = ioctl(libusb20_dev_get_fd(dev), FIONBIO, &err);
+			if (err != 0)
 				exit(0);
 #endif
 			break;
