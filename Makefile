@@ -235,6 +235,10 @@ CFLAGS+= -O2 -Wall
 
 CFLAGS+= -fvisibility=hidden
 
+.if exists(${.CURDIR}/../video4bsd/video4bsd.h)
+CFLAGS+= -I${.CURDIR}/../video4bsd
+.endif
+
 LDFLAGS+= -lusb -lpthread
 
 .include <bsd.prog.mk>
