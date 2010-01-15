@@ -97,15 +97,22 @@
 #define	MODULE_VERSION(...)
 #define	MODULE_ALIAS(...)
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
+#define	MODULE_SUPPORTED_DEVICE(...)
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
 #define	module_param_call(...)
+#define	module_param_array(...)
 #define	info(...) __nop
 #define	printk(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	pr_err(...) __nop
+#define	pr_info(...) __nop
+#define	pr_dbg(...) __nop
+#define	pr_warn(...) __nop
 #define	dev_dbg(...) __nop
 #define	dev_err(...) __nop
+#define	dev_info(...) __nop
+#define	dev_warn(...) __nop
 #define	warn printk
 #define	dbg printk
 #define	err printk
@@ -117,6 +124,7 @@
 #define	vmalloc_user(s) malloc_vm(s)
 #define	vmalloc_32(s) malloc_vm(s)
 #define	vmalloc_to_page(x) ((struct page *)(x))	/* HACK */
+#define	vmalloc_to_pfn(x) ((unsigned long)(x))	/* HACK */
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
@@ -245,6 +253,9 @@
 #define	__cpu_to_le32(x) cpu_to_le32(x)
 #define	NSEC_PER_USEC	1000
 #define	simple_strtoul strtoul
+#define	simple_strtol strtol
+#define	ETIME ETIMEDOUT
+#define	ENOSR ENOBUFS
 
 struct kernel_param;
 

@@ -233,13 +233,6 @@ dev_name(struct device *dev)
 }
 
 int
-remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
-    unsigned long pfn, unsigned long size, pgprot_t pgr)
-{
-	return -EINVAL;
-}
-
-int
 atomic_add(int i, atomic_t *v)
 {
 	atomic_lock();
@@ -844,6 +837,17 @@ void
 unregister_chrdev_region(dev_t from, unsigned count)
 {
 	return;
+}
+
+int
+remap_pfn_range(struct vm_area_struct *vma, unsigned long start,
+    unsigned long page, unsigned long size, int prot)
+{
+	/* assuming that pages are virtually contiguous */
+	if (start == vma->vm_start)
+		vma->vm_buffer_address = (void *)page;
+
+	return (0);
 }
 
 int

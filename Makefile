@@ -152,7 +152,15 @@ SRCS+= pvrusb2-devattr.c
 #
 # PWC
 #
-#SRCS+= pwc-if.c
+SRCS+= pwc-ctrl.c
+SRCS+= pwc-dec1.c
+SRCS+= pwc-dec23.c
+SRCS+= pwc-if.c
+SRCS+= pwc-kiara.c
+SRCS+= pwc-misc.c
+SRCS+= pwc-timon.c
+SRCS+= pwc-uncompress.c
+SRCS+= pwc-v4l.c
 
 #
 # Various
@@ -166,10 +174,11 @@ SRCS+= pvrusb2-devattr.c
 #SRCS+= sn9c102_core.c
 SRCS+= stk-webcam.c
 SRCS+= stk-sensor.c
-#SRCS+= ibmcam.c
-#SRCS+= konicawc.c
-#SRCS+= quickcam_messenger.c
-#SRCS+= ultracam.c
+SRCS+= ibmcam.c
+SRCS+= konicawc.c
+SRCS+= quickcam_messenger.c
+SRCS+= usbvideo.c
+SRCS+= ultracam.c
 #SRCS+= vicam.c
 #SRCS+= w9968cf.c
 #SRCS+= zr364xx.c
@@ -198,8 +207,7 @@ SRCS+= stk-sensor.c
 #
 # Radio
 #
-#SRCS+= radio-mr800.c
-#SRCS+= radio-si470x.c
+SRCS+= radio-mr800.c
 
 #
 # USB Video Class
@@ -231,7 +239,7 @@ CFLAGS+= -DHAVE_WEBCAMD
 
 CFLAGS+= -include webcamd_global.h
 
-CFLAGS+= -O2 -Wall
+CFLAGS+= -O2 -Wall -Wno-pointer-sign
 
 CFLAGS+= -fvisibility=hidden
 

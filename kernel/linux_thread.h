@@ -29,7 +29,12 @@
 typedef struct task_struct {
 } task_struct_t;
 
+typedef struct wait_queue {
+} wait_queue_t;
+
 typedef struct wait_queue_head {
+	int	sleep_ref;
+	int	sleep_count;
 } wait_queue_head_t;
 
 typedef struct semaphore {
@@ -50,12 +55,21 @@ uint32_t atomic_drop(void);
 void	atomic_pickup(uint32_t);
 void	init_waitqueue_head(wait_queue_head_t *q);
 void	uninit_waitqueue_head(wait_queue_head_t *q);
+void	interruptible_sleep_on(wait_queue_head_t *q);
+uint64_t interruptible_sleep_on_timeout(wait_queue_head_t *q, uint64_t timeout);
+int	waitqueue_active(wait_queue_head_t *q);
+void	wake_up_interruptible(wait_queue_head_t *q);
+
 void	wake_up(wait_queue_head_t *q);
 void	wake_up_all(wait_queue_head_t *q);
 void	wake_up_nr(wait_queue_head_t *q, uint32_t nr);
 void	__wait_event(wait_queue_head_t *q);
 int	__wait_event_timed(wait_queue_head_t *q, struct timespec *ts);
 void	__wait_get_timeout(uint64_t timeout, struct timespec *ts);
+
+void	add_wait_queue(wait_queue_head_t *, wait_queue_t *);
+void	remove_wait_queue(wait_queue_head_t *, wait_queue_t *);
+void	schedule(void);
 
 #define	wake_up_interruptible(q)        wake_up(q)
 #define	wake_up_interruptible_nr(q, nr) wake_up_nr(q,nr)
@@ -95,6 +109,9 @@ do {						\
 })
 
 #define	wait_event_interruptible_timeout(...) wait_event_timeout(__VA_ARGS__)
+
+#define	DECLARE_WAITQUEUE(name, thread) \
+	wait_queue_t name = { }
 
 void	sema_init(struct semaphore *, int32_t val);
 void	sema_uninit(struct semaphore *sem);

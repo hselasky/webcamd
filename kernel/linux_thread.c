@@ -70,9 +70,46 @@ uninit_waitqueue_head(wait_queue_head_t *q)
 }
 
 void
+interruptible_sleep_on(wait_queue_head_t *q)
+{
+	int ref;
+
+	atomic_lock();
+	ref = q->sleep_ref;
+	atomic_unlock();
+
+	wait_event(*q, (q->sleep_ref != ref));
+}
+
+uint64_t
+interruptible_sleep_on_timeout(wait_queue_head_t *q, uint64_t timeout)
+{
+	int ref;
+
+	atomic_lock();
+	ref = q->sleep_ref;
+	atomic_unlock();
+
+	timeout = wait_event_timeout(*q, (q->sleep_ref != ref), timeout);
+	return (timeout);
+}
+
+int
+waitqueue_active(wait_queue_head_t *q)
+{
+	int count;
+
+	atomic_lock();
+	count = q->sleep_count;
+	atomic_unlock();
+	return (count != 0);
+}
+
+void
 wake_up(wait_queue_head_t *q)
 {
 	atomic_lock();
+	q->sleep_ref++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
@@ -81,6 +118,7 @@ void
 wake_up_all(wait_queue_head_t *q)
 {
 	atomic_lock();
+	q->sleep_ref++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
@@ -89,6 +127,7 @@ void
 wake_up_nr(wait_queue_head_t *q, uint32_t nr)
 {
 	atomic_lock();
+	q->sleep_ref++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 }
@@ -100,7 +139,13 @@ __wait_event(wait_queue_head_t *q)
 
 	drops = atomic_drop();
 	atomic_pre_sleep();
+
+	q->sleep_count++;
+
 	pthread_cond_wait(&sema_cond, atomic_get_lock());
+
+	q->sleep_count--;
+
 	atomic_post_sleep();
 	atomic_pickup(drops);
 }
@@ -133,10 +178,46 @@ __wait_event_timed(wait_queue_head_t *q, struct timespec *ts)
 	uint32_t drops;
 
 	drops = atomic_drop();
+	atomic_pre_sleep();
+
+	q->sleep_count++;
+
 	err = pthread_cond_timedwait(&sema_cond, atomic_get_lock(), ts);
+
+	q->sleep_count--;
+
+	atomic_post_sleep();
 	atomic_pickup(drops);
 
 	return (err == ETIMEDOUT);
+}
+
+void
+add_wait_queue(wait_queue_head_t *qh, wait_queue_t *wq)
+{
+	/* NOP */
+}
+
+void
+remove_wait_queue(wait_queue_head_t *qh, wait_queue_t *wq)
+{
+	/* NOP */
+}
+
+void
+schedule(void)
+{
+	uint32_t drops;
+
+	atomic_lock();
+	drops = atomic_drop();
+	atomic_pre_sleep();
+
+	pthread_cond_wait(&sema_cond, atomic_get_lock());
+
+	atomic_post_sleep();
+	atomic_pickup(drops);
+	atomic_unlock();
 }
 
 void
@@ -239,12 +320,6 @@ complete(struct completion *x)
 	x->done++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
-}
-
-void
-schedule(void)
-{
-	usleep(1);
 }
 
 struct funcdata {

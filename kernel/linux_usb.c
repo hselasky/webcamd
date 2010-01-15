@@ -942,6 +942,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ud->bsd_endpoint_end = p_uhe + nedesc;
 	p_ud->devnum = addr;
 	p_ud->config = &p_ud->bsd_config;
+	p_ud->actconfig = &p_ud->bsd_config;
 
 	libusb20_me_encode(&p_ud->descriptor, sizeof(p_ud->descriptor),
 	    libusb20_dev_get_device_desc(udev));

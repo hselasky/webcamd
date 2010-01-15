@@ -96,6 +96,16 @@ struct usb_device_id {
 	.idVendor = (vend),				\
 	.idProduct = (prod)
 
+#define	USB_DEVICE_VER(vend,prod,lo_ver,hi_ver)		\
+	.match_flags = USB_DEVICE_ID_MATCH_VENDOR |	\
+		USB_DEVICE_ID_MATCH_PRODUCT |		\
+		USB_DEVICE_ID_MATCH_DEV_LO |		\
+		USB_DEVICE_ID_MATCH_DEV_HI,		\
+	.idVendor = (vend),				\
+	.idProduct = (prod),				\
+	.bcdDevice_lo = (lo_ver),			\
+	.bcdDevice_hi = (hi_ver)
+
 #define	USB_INTERFACE_INFO(a,b,c)\
 	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS |	\
 		USB_DEVICE_ID_MATCH_INT_SUBCLASS |	\
@@ -415,6 +425,7 @@ struct usb_device {
 	struct device *bus;
 	void   *parent;
 	struct usb_config *config;
+	struct usb_config *actconfig;
 
 	struct usb_device_descriptor descriptor;
 	struct usb_config bsd_config;
