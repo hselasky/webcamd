@@ -111,6 +111,10 @@ pidfile_create(int bus, int addr, int index)
 	if (local_pid == NULL) {
 		return (EEXIST);
 	} else {
+		if (do_fork) {
+			if (daemon(0, 0) != 0)
+				v4b_errx(1, "Cannot daemonize");
+		}
 		pidfile_write(local_pid);
 	}
 	return (0);
@@ -181,12 +185,6 @@ main(int argc, char **argv)
 			    "Did you kldload video4bsd?");
 	}
 
-	if (do_fork) {
-		if (daemon(0, 0) == -1)
-			v4b_errx(1, "Cannot daemonize");
-		if (fork() != 0)
-			return (0);
-	}
 	linux_init();
 
 #ifdef V4B_DEBUG
