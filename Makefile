@@ -27,7 +27,7 @@
 #
 # Makefile for Webcam Daemon
 #
-VERSION=	0.1.0
+VERSION=	0.1.1
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
