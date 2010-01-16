@@ -280,6 +280,8 @@ patch:
 		${LINUXDIR}/include/linux/videodev2.h \
 		/usr/local/include/linux/
 
+	cd patches ; ./do_patch.sh
+
 fetch:
 	rm -v -r -f v4l-dvb-* libv4l-* libv4l v4l-dvb tip0.tar.bz2 tip1.tar.bz2
 
