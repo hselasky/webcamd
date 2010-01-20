@@ -203,8 +203,12 @@ main(int argc, char **argv)
 		printf("Cannot set realtime priority\n");
 
 	while (1) {
+
 		if (ioctl(f_videodev, V4B_IOCTL_GET_COMMAND, &cmd) != 0)
 			v4b_errx(1, "Cannot get next V4B command");
+
+		linux_clear_signal();
+
 #ifdef V4B_DEBUG
 		printf("Received command %d 0x%08x\n", cmd.command, (uint32_t)cmd.arg);
 #endif
@@ -223,6 +227,7 @@ main(int argc, char **argv)
 			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
 				v4b_errx(1, "Cannot sync V4B command");
 			break;
+
 		case V4B_CMD_CLOSE:
 			/* close device */
 			err = linux_close(cdev);
@@ -493,4 +498,21 @@ free_vm(void *ptr)
 		break;
 	}
 	atomic_unlock();
+}
+
+void
+check_signal(void)
+{
+	int has_signal = 0;
+
+	if (f_videodev < 0)
+		return;
+
+	if (ioctl(f_videodev, V4B_IOCTL_GET_SIGNAL, &has_signal) != 0) {
+#ifdef V4B_DEBUG
+		printf("Get signal failed\n");
+#endif
+	}
+	if (has_signal)
+		linux_set_signal();
 }

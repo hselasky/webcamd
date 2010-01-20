@@ -83,6 +83,11 @@ static void *
 timer_exec(void *arg)
 {
 	int64_t delta;
+
+#ifdef HAVE_WEBCAMD
+	uint64_t last_check = 0;
+
+#endif
 	struct timer_list *t;
 	uint32_t ms_delay = 0;
 
@@ -96,6 +101,16 @@ timer_exec(void *arg)
 
 		atomic_lock();
 
+#ifdef HAVE_WEBCAMD
+		delta = jiffies64 - last_check;
+
+		if ((delta >= 1000) || (delta < 0)) {
+
+			last_check = jiffies64;
+
+			check_signal();
+		}
+#endif
 		jiffies64 += ms_delay;	/* ms */
 
 		if (TAILQ_FIRST(&timer_head) || timer_needed)
@@ -115,7 +130,9 @@ restart:
 				goto restart;
 			}
 		}
+
 		atomic_unlock();
+
 		usleep(ms_delay * 1000);
 	}
 	return (NULL);

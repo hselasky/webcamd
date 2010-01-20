@@ -86,29 +86,54 @@ do {						\
 
 #define	wait_event_interruptible(wq, condition)	\
 ({						\
+	int __ret = 0;				\
 	atomic_lock();				\
-	while (!(condition))			\
-		__wait_event(&(wq));		\
+	while (!(condition)) {			\
+	  if (linux_signal_pending) {		\
+		__ret = -ERESTARTSYS;		\
+		break;				\
+	  }					\
+	  __wait_event(&(wq));			\
+	}					\
 	atomic_unlock();			\
-	0;					\
+	__ret;					\
 })
 
 #define	wait_event_timeout(wq, condition, timeout)	\
 ({							\
 	struct timespec ts[2];				\
-	uint64_t __ret = timeout;			\
+	long __ret = timeout;				\
 	__wait_get_timeout(__ret, ts);			\
 	atomic_lock();					\
-	while (!(condition))				\
+	while (!(condition)) {				\
 	  if (__wait_event_timed(&(wq), ts)) {		\
 		__ret = 0;				\
 		break;					\
 	  }						\
+	}						\
 	atomic_unlock();				\
 	__ret;						\
 })
 
-#define	wait_event_interruptible_timeout(...) wait_event_timeout(__VA_ARGS__)
+#define	wait_event_interruptible_timeout(wq, condition, timeout) \
+({							\
+	struct timespec ts[2];				\
+	long __ret = timeout;				\
+	__wait_get_timeout(__ret, ts);			\
+	atomic_lock();					\
+	while (!(condition)) {				\
+	  if (linux_signal_pending) {			\
+		__ret = -ERESTARTSYS;			\
+		break;					\
+	  }						\
+	  if (__wait_event_timed(&(wq), ts)) {		\
+		__ret = 0;				\
+		break;					\
+	  }						\
+	}						\
+	atomic_unlock();				\
+	__ret;						\
+})
 
 #define	DECLARE_WAITQUEUE(name, thread) \
 	wait_queue_t name = { }
@@ -155,5 +180,10 @@ void	atomic_pre_sleep(void);
 void	atomic_post_sleep(void);
 
 int	thread_init(void);
+
+void	linux_set_signal(void);
+void	linux_clear_signal(void);
+
+extern int linux_signal_pending;
 
 #endif					/* _LINUX_THREAD_H_ */

@@ -26,6 +26,7 @@
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
+int	linux_signal_pending;
 
 void
 atomic_pre_sleep(void)
@@ -431,4 +432,21 @@ void
 thread_exit(void)
 {
 	pthread_cond_destroy(&sema_cond);
+}
+
+void
+linux_set_signal(void)
+{
+	atomic_lock();
+	linux_signal_pending = 1;
+	pthread_cond_broadcast(&sema_cond);
+	atomic_unlock();
+}
+
+void
+linux_clear_signal(void)
+{
+	atomic_lock();
+	linux_signal_pending = 0;
+	atomic_unlock();
 }

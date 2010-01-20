@@ -27,7 +27,7 @@
 #
 # Makefile for Webcam Daemon
 #
-VERSION=	0.1.1
+VERSION=	0.1.4
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -247,6 +247,10 @@ CFLAGS+= -fvisibility=hidden
 CFLAGS+= -I${.CURDIR}/../video4bsd
 .endif
 
+.if exists(%%PREFIX%%/include/video4bsd.h)
+CFLAGS+= -I%%PREFIX%%/include
+.endif
+
 LDFLAGS+= -lusb -lpthread -lutil
 
 .include <bsd.prog.mk>
@@ -295,7 +299,7 @@ fetch:
 
 	ln -s v4l-dvb-* v4l-dvb
 
-package:
+package: clean
 
 	tar -jcvf temp.tar.bz2 --exclude="*.txt" --exclude=".svn" \
 		--exclude="Documentation" --exclude="v4l2-apps" \
