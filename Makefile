@@ -172,6 +172,7 @@ SRCS+= pwc-v4l.c
 #SRCS+= s2255drv.c
 #SRCS+= se401.c
 #SRCS+= sn9c102_core.c
+SRCS+= sn9c20x.c
 SRCS+= stk-webcam.c
 SRCS+= stk-sensor.c
 SRCS+= ibmcam.c
