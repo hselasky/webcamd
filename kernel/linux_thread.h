@@ -27,6 +27,7 @@
 #define	_LINUX_THREAD_H_
 
 typedef struct task_struct {
+	const char *comm;
 } task_struct_t;
 
 typedef struct wait_queue {
@@ -36,6 +37,9 @@ typedef struct wait_queue_head {
 	int	sleep_ref;
 	int	sleep_count;
 } wait_queue_head_t;
+
+#define	DECLARE_WAIT_QUEUE_HEAD(name) \
+	struct wait_queue_head name = { 0, 0 }
 
 typedef struct semaphore {
 	int32_t	value;
@@ -69,6 +73,7 @@ void	__wait_get_timeout(uint64_t timeout, struct timespec *ts);
 
 void	add_wait_queue(wait_queue_head_t *, wait_queue_t *);
 void	remove_wait_queue(wait_queue_head_t *, wait_queue_t *);
+int	schedule_timeout(long timeout);
 void	schedule(void);
 
 #define	wake_up_interruptible(q)        wake_up(q)
@@ -83,6 +88,9 @@ do {						\
 		__wait_event(&(wq));		\
 	atomic_unlock();			\
 } while (0)
+
+#define	wait_event_interruptible_exclusive(wq,condition) \
+	wait_event_interruptible(wq,condition)
 
 #define	wait_event_interruptible(wq, condition)	\
 ({						\
@@ -143,6 +151,7 @@ void	sema_uninit(struct semaphore *sem);
 
 void	up (struct semaphore *);
 void	down(struct semaphore *);
+int	down_read_trylock(struct semaphore *sem);
 void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
 
 #define	mutex_init(m) sema_init(&(m)->sem, 1)
@@ -155,16 +164,23 @@ void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
 #define	init_MUTEX_LOCKED(s) sema_init(s, 0)
 #define	down_interruptible(x) (down(x),0)
 
-#define	wait_for_completion_interruptible(x) wait_for_completion(x)
-#define	wait_for_completion_killable(x) wait_for_completion(x)
+#define	wait_for_completion_killable(x) wait_for_completion_interruptible(x)
 
 void	init_completion(struct completion *x);
 void	uninit_completion(struct completion *x);
 void	wait_for_completion(struct completion *x);
+int	wait_for_completion_interruptible(struct completion *x);
 uint64_t wait_for_completion_timeout(struct completion *x, uint64_t timeout);
+
+#define	complete_all(x)	complete(x)
 void	complete(struct completion *x);
 
+void	wake_up_process(struct task_struct *task);
+
+#define	current (&linux_task)
+
 typedef int (threadfn_t)(void *data);
+struct task_struct *kthread_create(threadfn_t *func, void *data, char *fmt,...);
 struct task_struct *kthread_run(threadfn_t *func, void *data, char *fmt,...);
 int	kthread_stop(struct task_struct *k);
 int	kthread_should_stop(void);
@@ -185,5 +201,6 @@ void	linux_set_signal(void);
 void	linux_clear_signal(void);
 
 extern int linux_signal_pending;
+extern struct task_struct linux_task;
 
 #endif					/* _LINUX_THREAD_H_ */

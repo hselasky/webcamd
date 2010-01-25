@@ -32,17 +32,23 @@ struct usb_device;
 struct usb_interface;
 struct usb_driver;
 struct usb_linux_softc;
+struct usb_device_id;
 struct urb;
 
 typedef void *pm_message_t;
 typedef void (usb_complete_t)(struct urb *);
 
+#define	USB_LINUX_IFACE_MAX 32
+
 #define	USB_MAX_FULL_SPEED_ISOC_FRAMES (60 * 1)
 #define	USB_MAX_HIGH_SPEED_ISOC_FRAMES (60 * 8)
+
+#define	USB_SPEED_UNKNOWN 255		/* XXX */
 #define	USB_SPEED_LOW LIBUSB20_SPEED_LOW
 #define	USB_SPEED_FULL LIBUSB20_SPEED_FULL
 #define	USB_SPEED_HIGH LIBUSB20_SPEED_HIGH
 
+#if 1
 /*
  * Linux compatible USB device drivers put their device information
  * into the "usb_device_id" structure using the "USB_DEVICE()" macro.
@@ -86,6 +92,13 @@ struct usb_device_id {
 	/* Hook for driver specific information */
 	unsigned long driver_info;
 };
+
+#else
+#define	USB_DEVICE_ID_MATCH_INT_INFO \
+	(USB_DEVICE_ID_MATCH_INT_CLASS | \
+	 USB_DEVICE_ID_MATCH_INT_SUBCLASS | \
+	 USB_DEVICE_ID_MATCH_INT_PROTOCOL)
+#endif
 
 #define	USB_DEVICE_ID_MATCH_DEVICE \
 	(USB_DEVICE_ID_MATCH_VENDOR | USB_DEVICE_ID_MATCH_PRODUCT)
@@ -418,6 +431,7 @@ struct usb_interface {
 
 struct usb_config {
 	struct usb_config_descriptor desc;
+	struct usb_interface *interface[USB_LINUX_IFACE_MAX];
 };
 
 struct usb_device {
@@ -646,5 +660,6 @@ int	usb_bulk_msg(struct usb_device *, struct usb_host_endpoint *, void *, int, i
 int	usb_match_device(struct usb_device *, const struct usb_device_id *);
 int	usb_match_one_id(struct usb_interface *, const struct usb_device_id *);
 const struct usb_device_id *usb_match_id(struct usb_interface *, const struct usb_device_id *);
+int	usb_reset_configuration(struct usb_device *dev);
 
 #endif					/* _LINUX_USB_H_ */

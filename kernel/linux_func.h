@@ -36,7 +36,7 @@ void	put_unaligned_le16(uint16_t, void *);
 uint32_t get_unaligned_le32(const void *);
 uint16_t get_unaligned_le16(const void *);
 
-void   *dev_get_drvdata(struct device *dev);
+void   *dev_get_drvdata(const struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
 const char *dev_name(struct device *dev);
 int	vm_insert_page(struct vm_area_struct *vma, unsigned long start, struct page *page);
@@ -45,6 +45,7 @@ void	vfree(void *);
 void   *page_address(struct page *page);
 unsigned long copy_to_user(void *to, const void *from, unsigned long n);
 unsigned long copy_from_user(void *to, const void *from, unsigned long n);
+unsigned long clear_user(void *to, unsigned long n);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsigned long data);
 void	schedule(void);
@@ -92,6 +93,8 @@ void	sort(void *base, size_t num, size_t size, int (*cmp) (const void *, const v
 u32	crc32_le(u32 crc, unsigned char const *p, size_t len);
 u32	crc32_be(u32 crc, unsigned char const *p, size_t len);
 void   *vmalloc(size_t size);
+long	__get_free_page(int);
+void	free_page(long);
 struct class *class_get(struct class *class);
 struct class *class_put(struct class *class);
 int	class_register(struct class *class);
@@ -115,6 +118,12 @@ void	ktime_get_ts(struct timespec *ts);
 void	ktime_get_real_ts(struct timespec *ts);
 void	msleep(uint32_t ms);
 uint32_t msleep_interruptible(uint32_t ms);
+void	request_module(const char *ptr);
+int	device_can_wakeup(struct device *dev);
+void	device_init_wakeup(struct device *dev, int flags);
+int	dmi_check_system(const struct dmi_system_id *list);
+void	swab16s(uint16_t *ptr);
+
 
 #ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);

@@ -1,0 +1,11 @@
+--- stv0680.c	2010-01-25 18:04:15.000000000 +0100
++++ stv0680.c	2010-01-25 22:17:31.000000000 +0100
+@@ -53,7 +53,7 @@
+ {
+ 	int ret = -1;
+ 	u8 req_type = 0;
+-	unsigned int pipe = 0;
++	unsigned long pipe = 0;
+ 
+ 	switch (set) {
+ 	case 0: /*  0xc1  */

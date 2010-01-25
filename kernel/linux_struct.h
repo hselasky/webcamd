@@ -14,6 +14,8 @@ struct device_driver;
 struct page;
 struct cdev;
 struct mutex;
+struct device_type;
+struct dmi_system_id;
 
 #define	LINUX_VMA_MAX 16
 
@@ -24,7 +26,15 @@ typedef struct {
 	volatile unsigned int counter;
 } atomic_t;
 
+struct rcu_head {
+
+};
+
 struct module {
+
+};
+
+struct kobject {
 
 };
 
@@ -75,6 +85,7 @@ typedef void device_release_t (struct device *);
 
 struct device {
 	int	minor;
+	struct kobject kobj;
 	struct kref refcount;
 	device_release_t *release;
 	struct device_driver *driver;
@@ -90,12 +101,11 @@ struct device {
 };
 
 struct device_driver {
-	char	name[1];
+	char	name[32];
+	struct module *owner;
 };
 
-typedef struct {
-	unsigned long pgprot;
-} pgprot_t;
+typedef unsigned long pgprot_t;
 
 struct vm_fault {
 

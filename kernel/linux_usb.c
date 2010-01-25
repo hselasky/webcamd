@@ -911,6 +911,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	uint8_t i;
 	uint8_t j;
 	uint8_t k;
+	uint8_t num_config_iface;
 
 	/*
 	 * We do two passes. One pass for computing necessary memory size
@@ -919,8 +920,11 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	nedesc = 0;
 	iface_index = 0;
 	niface_total = 0;
+	num_config_iface = pcfg->num_interface;
+	if (num_config_iface > USB_LINUX_IFACE_MAX)
+		num_config_iface = USB_LINUX_IFACE_MAX;
 
-	for (i = 0; i != pcfg->num_interface; i++) {
+	for (i = 0; i != num_config_iface; i++) {
 		id = pcfg->interface + i;
 		iface_index++;
 		niface_total++;
@@ -967,8 +971,13 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	libusb20_me_encode(&p_ud->bsd_config.desc,
 	    sizeof(p_ud->bsd_config.desc), &pcfg->desc);
 
-	for (i = 0; i != pcfg->num_interface; i++) {
+	/* make sure number of interfaces value is correct */
+	p_ud->bsd_config.desc.bNumInterfaces = num_config_iface;
+
+	for (i = 0; i != num_config_iface; i++) {
 		id = pcfg->interface + i;
+
+		p_ud->bsd_config.interface[i] = p_ui;
 
 		p_ui->altsetting = p_uhi;
 		p_ui->cur_altsetting = p_uhi;
@@ -1924,4 +1933,10 @@ usb_match_id(struct usb_interface *interface, const struct usb_device_id *id)
 
 no_match:
 	return (NULL);
+}
+
+int
+usb_reset_configuration(struct usb_device *dev)
+{
+	return (-EINVAL);		/* not implemented */
 }

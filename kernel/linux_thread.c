@@ -28,6 +28,10 @@ static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
 int	linux_signal_pending;
 
+struct task_struct linux_task = {
+	.comm = "V4B",
+};
+
 void
 atomic_pre_sleep(void)
 {
@@ -205,6 +209,13 @@ remove_wait_queue(wait_queue_head_t *qh, wait_queue_t *wq)
 	/* NOP */
 }
 
+int
+schedule_timeout(long timeout)
+{
+	usleep(1000 * timeout);
+	return (0);
+}
+
 void
 schedule(void)
 {
@@ -243,6 +254,22 @@ up(struct semaphore *sem)
 	atomic_unlock();
 }
 
+int
+down_read_trylock(struct semaphore *sem)
+{
+	int ret;
+
+	atomic_lock();
+	if (sem->value > 0) {
+		down(sem);
+		ret = 1;		/* success */
+	} else {
+		ret = 0;		/* congested */
+	}
+	atomic_unlock();
+	return (0);
+}
+
 void
 down(struct semaphore *sem)
 {
@@ -279,6 +306,26 @@ void
 uninit_completion(struct completion *x)
 {
 	uninit_waitqueue_head(&x->wait);
+}
+
+int
+wait_for_completion_interruptible(struct completion *x)
+{
+	int ret = 0;
+
+	atomic_lock();
+	while (x->done == 0) {
+		if (linux_signal_pending) {
+			ret = -ERESTARTSYS;
+			break;
+		}
+		__wait_event(&x->wait);
+	}
+	if (ret == 0)
+		x->done--;
+	atomic_unlock();
+
+	return (ret);
 }
 
 void
@@ -341,6 +388,19 @@ kthread_wrapper(void *arg)
 	fd.func(fd.data);
 
 	pthread_exit(NULL);
+}
+
+void
+wake_up_process(struct task_struct *task)
+{
+	/* Not implemented */
+}
+
+struct task_struct *
+kthread_create(threadfn_t *func, void *data, char *fmt,...)
+{
+	/* Assume that "wake_up_process()" is called immediately */
+	return (kthread_run(func, data, ""));
 }
 
 struct task_struct *

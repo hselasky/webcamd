@@ -1,0 +1,20 @@
+--- zr364xx.c	2010-01-25 18:04:15.000000000 +0100
++++ zr364xx.c	2010-01-25 22:04:25.000000000 +0100
+@@ -1063,7 +1063,7 @@
+ {
+ 	struct zr364xx_pipeinfo *pipe_info;
+ 	struct zr364xx_camera *cam;
+-	int pipe;
++	unsigned long pipe;
+ 
+ 	pipe_info = purb->context;
+ 	_DBG("%s %p, status %d\n", __func__, purb, purb->status);
+@@ -1126,7 +1126,7 @@
+ 
+ static int zr364xx_start_readpipe(struct zr364xx_camera *cam)
+ {
+-	int pipe;
++	unsigned long pipe;
+ 	int retval;
+ 	struct zr364xx_pipeinfo *pipe_info = cam->pipe;
+ 	pipe = usb_rcvbulkpipe(cam->udev, cam->read_endpoint);

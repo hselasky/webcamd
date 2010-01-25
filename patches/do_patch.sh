@@ -11,4 +11,6 @@ patch $OPT ../v4l-dvb/linux/drivers/media/video/uvc/uvc_video.c uvc_video.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/video/uvc/uvcvideo.h uvcvideo.h.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/video/stk-webcam.h stk-webcam.h.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/video/gspca/gspca.c gspca.c.diff
+patch $OPT ../v4l-dvb/linux/drivers/media/video/gspca/stv0680.c stv0680.c.diff
+patch $OPT ../v4l-dvb/linux/drivers/media/video/zr364xx.c zr364xx.c.diff
 

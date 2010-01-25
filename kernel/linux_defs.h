@@ -55,7 +55,7 @@
 #define	__acquire(x) __nop
 #define	__release(x) __nop
 #define	__cond_lock(x,c) (c)
-#define	__pgprot(x)     ((pgprot_t){(x)})
+#define	__pgprot(x)     ((pgprot_t)(x))
 #define	SetPageReserved(...)   __nop
 #define	ClearPageReserved(...) __nop
 #define	_PAGE_PRESENT   0
@@ -102,14 +102,17 @@
 #define	module_param(...)
 #define	module_param_call(...)
 #define	module_param_array(...)
+#define	module_param_string(...)
 #define	info(...) __nop
 #define	printk(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	pr_err(...) __nop
 #define	pr_info(...) __nop
 #define	pr_dbg(...) __nop
+#define	pr_debug(...) __nop
 #define	pr_warn(...) __nop
 #define	dev_dbg(...) __nop
+#define	dev_debug(...) __nop
 #define	dev_err(...) __nop
 #define	dev_info(...) __nop
 #define	dev_warn(...) __nop
@@ -162,7 +165,9 @@
 #define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
 #define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #define	BITS_PER_BYTE 8
+#ifndef BITS_PER_LONG
 #define	BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
+#endif
 #define	BIT(n) (1UL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 29)
@@ -201,6 +206,7 @@
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)
 #define	jiffies_to_msecs(x) (x)
+#define	likely(...) __VA_ARGS__
 #define	unlikely(...) __VA_ARGS__
 #define	DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
@@ -233,14 +239,13 @@
 #define	down_read(...) __nop
 #define	up_write(...) __nop
 #define	up_read(...) __nop
-#define	DECLARE_RWSEM(x) int x
+#define	DECLARE_RWSEM(x) struct semaphore x
 #define	crc32(s, d, l) crc32_le(s, (unsigned char const *)d, l)
 #define	CRCPOLY_LE 0xedb88320
 #define	CRCPOLY_BE 0x04c11db7
 #define	mb() __asm volatile("":::"memory")
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
-#define	current NULL
 #define	__devinitconst
 #define	__devinit
 #define	dma_sync_single_for_cpu(...) __nop
@@ -256,6 +261,10 @@
 #define	simple_strtol strtol
 #define	ETIME ETIMEDOUT
 #define	ENOSR ENOBUFS
+#define	I2C_NAME_SIZE 20
+#define	__SPIN_LOCK_UNLOCKED(...) {}
+#define	in_interrupt() 0
+#define	wmb() __nop
 
 struct kernel_param;
 
@@ -283,7 +292,6 @@ typedef unsigned short __le16;
 typedef unsigned int __le32;
 typedef unsigned short __be16;
 typedef unsigned int __be32;
-typedef unsigned long kernel_ulong_t;
 typedef unsigned int uint;
 typedef long long loff_t;
 typedef unsigned int gfp_t;

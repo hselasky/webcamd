@@ -27,7 +27,7 @@
 #
 # Makefile for Webcam Daemon
 #
-VERSION=	0.1.4
+VERSION=	0.1.5
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -35,6 +35,7 @@ LINUXDIR=	${.CURDIR}/v4l-dvb/linux
 MKLINT=		no
 NOGCCERROR=
 MLINKS=
+BITS_PER_LONG!=${CC} ${.CURDIR}/tests/long_size_test.c && ./a.out
 
 .PATH: \
 ${.CURDIR} \
@@ -69,14 +70,17 @@ ${LINUXDIR}/drivers/media/video/cx88 \
 ${LINUXDIR}/drivers/media/video/em28xx \
 ${LINUXDIR}/drivers/media/video/et61x251 \
 ${LINUXDIR}/drivers/media/video/gspca \
+${LINUXDIR}/drivers/media/video/gspca/gl860 \
 ${LINUXDIR}/drivers/media/video/gspca/m5602 \
 ${LINUXDIR}/drivers/media/video/gspca/stv06xx \
 ${LINUXDIR}/drivers/media/video/ivtv \
-${LINUXDIR}/drivers/media/video/pwc \
-${LINUXDIR}/drivers/media/video/pvrusb2 \
 ${LINUXDIR}/drivers/media/video/ovcamchip \
+${LINUXDIR}/drivers/media/video/pvrusb2 \
+${LINUXDIR}/drivers/media/video/pwc \
+${LINUXDIR}/drivers/media/video/sn9c102 \
 ${LINUXDIR}/drivers/media/video/usbvideo \
 ${LINUXDIR}/drivers/media/video/uvc \
+${LINUXDIR}/drivers/media/video/zc0301 \
 ${LINUXDIR}/drivers/media/video/zoran
 
 #
@@ -99,6 +103,13 @@ SRCS+= linux_timer.c
 SRCS+= linux_usb.c
 
 #
+# I2C specific files
+#
+#
+#SRCS+= linux_i2c.c
+#
+
+#
 # Video4Linux specific files
 #
 
@@ -111,18 +122,36 @@ SRCS+= v4l2-ioctl.c
 SRCS+= v4l1-compat.c
 
 #
-# GSPCA
+# GSPCA based Webcams
 #
-SRCS+= gspca.c
+
+SRCS+= benq.c
 SRCS+= conex.c
 SRCS+= etoms.c
 SRCS+= finepix.c
+SRCS+= gl860.c
+SRCS+= gl860-mi1320.c
+SRCS+= gl860-mi2020.c
+SRCS+= gl860-ov2640.c
+SRCS+= gl860-ov9655.c
+SRCS+= gspca.c
+SRCS+= jeilinj.c
+#SRCS+= m5602_core.c
+#SRCS+= m5602_mt9m111.c
+#SRCS+= m5602_ov7660.c
+#SRCS+= m5602_ov9650.c
+#SRCS+= m5602_po1030.c
+#SRCS+= m5602_s5k4aa.c
+#SRCS+= m5602_s5k83a.c
 SRCS+= mars.c
 SRCS+= mr97310a.c
 SRCS+= ov519.c
 SRCS+= ov534.c
+SRCS+= ov534_9.c
 SRCS+= pac207.c
+SRCS+= pac7302.c
 SRCS+= pac7311.c
+SRCS+= sn9c20x.c
 SRCS+= sonixb.c
 SRCS+= sonixj.c
 SRCS+= spca500.c
@@ -132,26 +161,24 @@ SRCS+= spca506.c
 SRCS+= spca508.c
 SRCS+= spca561.c
 SRCS+= sq905.c
+SRCS+= sq905c.c
 SRCS+= stk014.c
-SRCS+= sunplus.c
-SRCS+= t613.c
-SRCS+= tv8532.c
-SRCS+= vc032x.c
-SRCS+= zc3xx.c
+SRCS+= stv0680.c
 SRCS+= stv06xx.c
 SRCS+= stv06xx_hdcs.c
 SRCS+= stv06xx_pb0100.c
 SRCS+= stv06xx_st6422.c
 SRCS+= stv06xx_vv6410.c
+SRCS+= sunplus.c
+SRCS+= t613.c
+SRCS+= tv8532.c
+SRCS+= vc032x.c
+SRCS+= zc3xx.c
 
 #
-# PVR
+# PWC based webcams
 #
-SRCS+= pvrusb2-devattr.c
 
-#
-# PWC
-#
 SRCS+= pwc-ctrl.c
 SRCS+= pwc-dec1.c
 SRCS+= pwc-dec23.c
@@ -163,16 +190,66 @@ SRCS+= pwc-uncompress.c
 SRCS+= pwc-v4l.c
 
 #
-# Various
+# sn9c102 based webcams
+#
+
+SRCS+= sn9c102_core.c
+SRCS+= sn9c102_hv7131d.c
+SRCS+= sn9c102_hv7131r.c
+SRCS+= sn9c102_mi0343.c
+SRCS+= sn9c102_mi0360.c
+SRCS+= sn9c102_mt9v111.c
+SRCS+= sn9c102_ov7630.c
+SRCS+= sn9c102_ov7660.c
+SRCS+= sn9c102_pas106b.c
+SRCS+= sn9c102_pas202bcb.c
+SRCS+= sn9c102_tas5110c1b.c
+SRCS+= sn9c102_tas5110d.c
+SRCS+= sn9c102_tas5130d1b.c
+
+#
+# zc0301 based webcams
+#
+
+SRCS+= zc0301_core.c
+SRCS+= zc0301_pas202bcb.c
+SRCS+= zc0301_pb0330.c
+
+#
+# cpia2 based webcams
+#
+
+#SRCS+= cpia2_core.c
+#SRCS+= cpia2_usb.c
+#SRCS+= cpia2_v4l.c
+
+#
+# et61x251 based webcams
+#
+
+SRCS+= et61x251_core.c
+SRCS+= et61x251_tas5130d1b.c
+
+#
+# em28xx
+#
+#SRCS+= em28xx-audio.c
+#SRCS+= em28xx-cards.c
+#SRCS+= em28xx-core.c
+#SRCS+= em28xx-dvb.c
+#SRCS+= em28xx-i2c.c
+#SRCS+= em28xx-input.c
+#SRCS+= em28xx-vbi.c
+#SRCS+= em28xx-video.c
+
+#
+# Various webcams
 #
 #SRCS+= au0828-cards.c
-#SRCS+= cpia2_usb.c
-#SRCS+= em28xx-cards.c
-#SRCS+= et61x251_core.c
 #SRCS+= s2255drv.c
-#SRCS+= se401.c
-#SRCS+= sn9c102_core.c
-SRCS+= sn9c20x.c
+SRCS+= stv680.c
+SRCS+= ov511.c
+SRCS+= se401.c
 SRCS+= stk-webcam.c
 SRCS+= stk-sensor.c
 SRCS+= ibmcam.c
@@ -182,7 +259,9 @@ SRCS+= usbvideo.c
 SRCS+= ultracam.c
 #SRCS+= vicam.c
 #SRCS+= w9968cf.c
-#SRCS+= zr364xx.c
+SRCS+= zr364xx.c
+SRCS+= videobuf-core.c
+SRCS+= videobuf-vmalloc.c
 
 #
 # DVB
@@ -228,14 +307,19 @@ SRCS+= linux_end_section.c
 
 SRCS+= webcamd.c
 
+CFLAGS+= -DBITS_PER_LONG=${BITS_PER_LONG}
+
+CFLAGS+= -I${.CURDIR}/dummy
+
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
+CFLAGS+= -I${LINUXDIR}/drivers/media/common/tuners/
 CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}
 
 CFLAGS+= -I${.CURDIR}
-CFLAGS+= -I${.CURDIR}/dummy
 
 CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
+#CFLAGS+= -DCONFIG_I2C
 CFLAGS+= -DHAVE_WEBCAMD
 
 CFLAGS+= -include webcamd_global.h
@@ -288,7 +372,8 @@ patch:
 	cd patches ; ./do_patch.sh
 
 fetch:
-	rm -v -r -f v4l-dvb-* libv4l-* libv4l v4l-dvb tip0.tar.bz2 tip1.tar.bz2
+	rm -v -r -f v4l-dvb-* libv4l-* linux-* libv4l v4l-dvb \
+		tip0.tar.bz2 tip1.tar.bz2 tip2.tar.bz2
 
 #
 # Fetch latest Video4Linux:
@@ -296,13 +381,23 @@ fetch:
 	[ -f tip1.tar.bz2 ] || \
 		fetch -o tip1.tar.bz2 http://linuxtv.org/hg/v4l-dvb/archive/tip.tar.bz2
 
-	tar -jxvf tip1.tar.bz2
+#
+# Fetch latest Linux kernel:
+#
+#
+#	[ -f tip2.tar.bz2 ] || \
+#		fetch -o tip2.tar.bz2 http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.32.6.tar.bz2
+
+	@echo "Extracting Files ... Please wait"
+
+	tar -jxf tip1.tar.bz2
 
 	ln -s v4l-dvb-* v4l-dvb
 
 package: clean
 
-	tar -jcvf temp.tar.bz2 --exclude="*.txt" --exclude=".svn" \
+	tar -jcvf temp.tar.bz2 --include="media" --include="include" \
+		--exclude="*.txt" --exclude=".svn" \
 		--exclude="Documentation" --exclude="v4l2-apps" \
 		Makefile *.[ch] dummy kernel/*.[ch] \
 		patches/do_patch.sh patches/*.diff \

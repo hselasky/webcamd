@@ -215,7 +215,7 @@ get_unaligned_le16(const void *_ptr)
 }
 
 void   *
-dev_get_drvdata(struct device *dev)
+dev_get_drvdata(const struct device *dev)
 {
 	return (dev->driver_data);
 }
@@ -784,6 +784,18 @@ vmalloc(size_t size)
 	return (malloc(size));
 }
 
+long
+__get_free_page(int flags)
+{
+	return ((long)malloc(PAGE_SIZE));
+}
+
+void
+free_page(long ptr)
+{
+	free((void *)ptr);
+}
+
 struct class *
 class_get(struct class *class)
 {
@@ -983,4 +995,46 @@ msleep_interruptible(uint32_t ms)
 {
 	msleep(ms);
 	return (0);
+}
+
+void
+request_module(const char *ptr)
+{
+}
+
+int
+device_can_wakeup(struct device *dev)
+{
+	return (-EINVAL);
+}
+
+void
+device_init_wakeup(struct device *dev, int flags)
+{
+}
+
+int
+dmi_check_system(const struct dmi_system_id *list)
+{
+	return (0);
+}
+
+unsigned long
+clear_user(void *to, unsigned long size)
+{
+	static uint8_t buf[PAGE_SIZE];
+
+	if (size > PAGE_SIZE)
+		return (size);
+
+	return (copy_to_user(to, buf, size));
+}
+
+void
+swab16s(uint16_t *ptr)
+{
+	uint16_t temp;
+
+	temp = *ptr;
+	*ptr = (temp >> 8) | (temp << 8);
 }
