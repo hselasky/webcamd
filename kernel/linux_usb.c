@@ -59,6 +59,7 @@ static void usb_linux_cleanup_interface(struct usb_device *, struct usb_interfac
 static void usb_linux_complete(struct libusb20_transfer *);
 static int usb_unlink_urb_sub(struct urb *, uint8_t);
 static int usb_setup_endpoint(struct usb_device *dev, struct usb_host_endpoint *uhe, uint8_t do_setup);
+static struct usb_host_endpoint *usb_find_host_endpoint(struct usb_device *dev, unsigned int pipe);
 
 /*------------------------------------------------------------------------*
  * FreeBSD USB interface
@@ -536,12 +537,13 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	if (urb == NULL) {
 		return (-EINVAL);
 	}
-	if (urb->pipe == NULL) {
+	atomic_lock();
+
+	uhe = usb_find_host_endpoint(urb->dev, urb->pipe);
+	if (uhe == NULL) {
+		atomic_unlock();
 		return (-EINVAL);
 	}
-	uhe = urb->pipe;
-
-	atomic_lock();
 	err = usb_setup_endpoint(urb->dev, uhe, 1);
 	if (err) {
 		atomic_unlock();
@@ -618,11 +620,10 @@ usb_unlink_urb_sub(struct urb *urb, uint8_t drain)
 	if (urb == NULL) {
 		return (-EINVAL);
 	}
-	if (urb->pipe == NULL) {
+	uhe = usb_find_host_endpoint(urb->dev, urb->pipe);
+	if (uhe == NULL) {
 		return (-EINVAL);
 	}
-	uhe = urb->pipe;
-
 	if (urb->bsd_urb_list.tqe_prev) {
 
 		/* not started yet, just remove it from the queue */
@@ -660,14 +661,17 @@ usb_unlink_urb_sub(struct urb *urb, uint8_t drain)
  * Until the stall is cleared, no data can be transferred.
  *------------------------------------------------------------------------*/
 int
-usb_clear_halt(struct usb_device *dev, struct usb_host_endpoint *uhe)
+usb_clear_halt(struct usb_device *dev, unsigned int pipe)
 {
+	struct usb_host_endpoint *uhe;
 	int err;
 
-	if (uhe == NULL)
-		return (-EINVAL);
-
 	atomic_lock();
+	uhe = usb_find_host_endpoint(dev, pipe);
+	if (uhe == NULL) {
+		atomic_unlock();
+		return (-EINVAL);
+	}
 	err = usb_setup_endpoint(dev, uhe, 1);
 	atomic_unlock();
 	if (err)
@@ -693,12 +697,13 @@ usb_clear_halt(struct usb_device *dev, struct usb_host_endpoint *uhe)
  * > 0: Acutal length
  *------------------------------------------------------------------------*/
 int
-usb_control_msg(struct usb_device *dev, struct usb_host_endpoint *uhe,
+usb_control_msg(struct usb_device *dev, unsigned int pipe,
     uint8_t request, uint8_t requesttype,
     uint16_t value, uint16_t wIndex, void *data,
     uint16_t size, uint32_t timeout)
 {
 	struct LIBUSB20_CONTROL_SETUP_DECODED req;
+	struct usb_host_endpoint *uhe;
 	int err;
 	uint16_t actlen;
 	uint8_t type;
@@ -711,6 +716,10 @@ usb_control_msg(struct usb_device *dev, struct usb_host_endpoint *uhe,
 	req.wValue = value;
 	req.wIndex = wIndex;
 	req.wLength = size;
+
+	atomic_lock();
+	uhe = usb_find_host_endpoint(dev, pipe);
+	atomic_unlock();
 
 	if (uhe == NULL) {
 		return (-EINVAL);
@@ -1052,6 +1061,13 @@ usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags)
 	return (urb);
 }
 
+unsigned int
+usb_create_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep)
+{
+	return ((type << 30) | ((ep & 0xFF) << 15) |
+	    ((dev->devnum & 0x7F) << 8));
+}
+
 /*------------------------------------------------------------------------*
  *	usb_find_host_endpoint
  *
@@ -1060,8 +1076,8 @@ usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags)
  * value. If no match is found, NULL is returned. This function is not
  * part of the Linux USB API and is only used internally.
  *------------------------------------------------------------------------*/
-struct usb_host_endpoint *
-usb_find_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep)
+static struct usb_host_endpoint *
+usb_find_host_endpoint(struct usb_device *dev, unsigned int pipe)
 {
 	struct usb_host_endpoint *uhe;
 	struct usb_host_endpoint *uhe_end;
@@ -1070,6 +1086,8 @@ usb_find_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep)
 	uint8_t ea;
 	uint8_t at;
 	uint8_t mask;
+	uint8_t type = (pipe >> 30) & 3;
+	uint8_t ep = (pipe >> 15) & 255;
 
 	if (dev == NULL) {
 		return (NULL);
@@ -1106,7 +1124,8 @@ usb_find_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep)
 		}
 	}
 
-	if ((type == USB_ENDPOINT_XFER_CONTROL) && ((ep & USB_ENDPOINT_NUMBER_MASK) == 0)) {
+	if ((type == USB_ENDPOINT_XFER_CONTROL) &&
+	    ((ep & USB_ENDPOINT_NUMBER_MASK) == 0)) {
 		return (&dev->ep0);
 	}
 	return (NULL);
@@ -1315,7 +1334,8 @@ usb_set_intfdata(struct usb_interface *intf, void *data)
  * associated with a Linux USB interface. It is for internal use only.
  *------------------------------------------------------------------------*/
 static void
-usb_linux_cleanup_interface(struct usb_device *dev, struct usb_interface *iface)
+usb_linux_cleanup_interface(struct usb_device *dev,
+    struct usb_interface *iface)
 {
 	struct usb_host_interface *uhi;
 	struct usb_host_interface *uhi_end;
@@ -1665,7 +1685,7 @@ usb_endpoint_xfer_isoc(const struct usb_endpoint_descriptor *epd)
 void
 usb_fill_control_urb(struct urb *urb,
     struct usb_device *dev,
-    struct usb_host_endpoint *pipe,
+    unsigned int pipe,
     unsigned char *setup_packet,
     void *transfer_buffer,
     int buffer_length,
@@ -1684,7 +1704,7 @@ usb_fill_control_urb(struct urb *urb,
 void
 usb_fill_bulk_urb(struct urb *urb,
     struct usb_device *dev,
-    struct usb_host_endpoint *pipe,
+    unsigned int pipe,
     void *transfer_buffer,
     int buffer_length,
     usb_complete_t complete_fn,
@@ -1701,7 +1721,7 @@ usb_fill_bulk_urb(struct urb *urb,
 void
 usb_fill_int_urb(struct urb *urb,
     struct usb_device *dev,
-    struct usb_host_endpoint *pipe,
+    unsigned int pipe,
     void *transfer_buffer,
     int buffer_length,
     usb_complete_t complete_fn,
@@ -1816,29 +1836,28 @@ out:
 
 	usb_free_urb(urb);
 	uninit_completion(&ctx.done);
-	return retval;
+	return (retval);
 }
 
 int
-usb_bulk_msg(struct usb_device *usb_dev, struct usb_host_endpoint *ep,
+usb_bulk_msg(struct usb_device *usb_dev, unsigned int pipe,
     void *data, int len, int *actual_length, int timeout)
 {
 	struct urb *urb;
 
 	urb = usb_alloc_urb(0, GFP_KERNEL);
 	if (!urb)
-		return -ENOMEM;
-	if ((ep->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
-	    USB_ENDPOINT_XFER_INT) {
+		return (-ENOMEM);
 
-		usb_fill_int_urb(urb, usb_dev, ep, data, len,
-		    usb_api_blocking_completion, NULL,
-		    ep->desc.bInterval);
-	} else
-		usb_fill_bulk_urb(urb, usb_dev, ep, data, len,
+	if (usb_pipetype(pipe) == PIPE_INTERRUPT) {
+		usb_fill_int_urb(urb, usb_dev, pipe, data, len,
+		    usb_api_blocking_completion, NULL, 0);
+	} else {
+		usb_fill_bulk_urb(urb, usb_dev, pipe, data, len,
 		    usb_api_blocking_completion, NULL);
+	}
 
-	return usb_start_wait_urb(urb, timeout, actual_length);
+	return (usb_start_wait_urb(urb, timeout, actual_length));
 }
 
 /* Calling the usb_match_xxx() functions directly is deferred. */
@@ -1965,9 +1984,9 @@ usb_reset_device(struct usb_device *dev)
 }
 
 uint8_t
-usb_pipetype(struct usb_host_endpoint *uhe)
+usb_pipetype(unsigned int pipe)
 {
-	return (uhe->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK);
+	return ((pipe >> 30) & 3);
 }
 
 void

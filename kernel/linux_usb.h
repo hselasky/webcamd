@@ -356,28 +356,28 @@ struct usb_endpoint_descriptor {
  * is a pointer to "struct usb_device".
  */
 #define	usb_sndctrlpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_CONTROL, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_CONTROL, (endpoint) | USB_DIR_OUT)
 
 #define	usb_rcvctrlpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_CONTROL, (endpoint) | USB_DIR_IN)
+  usb_create_host_endpoint(dev, PIPE_CONTROL, (endpoint) | USB_DIR_IN)
 
 #define	usb_sndisocpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) | USB_DIR_OUT)
 
 #define	usb_rcvisocpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) | USB_DIR_IN)
+  usb_create_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) | USB_DIR_IN)
 
 #define	usb_sndbulkpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_BULK, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_BULK, (endpoint) | USB_DIR_OUT)
 
 #define	usb_rcvbulkpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_BULK, (endpoint) | USB_DIR_IN)
+  usb_create_host_endpoint(dev, PIPE_BULK, (endpoint) | USB_DIR_IN)
 
 #define	usb_sndintpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_OUT)
 
 #define	usb_rcvintpipe(dev,endpoint) \
-  usb_find_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_IN)
+  usb_create_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_IN)
 
 /* The following four structures makes up a tree, where we have the
  * leaf structure, "usb_host_endpoint", first, and the root structure,
@@ -494,7 +494,7 @@ struct urb {
 	TAILQ_ENTRY(urb) bsd_urb_list;
 
 	struct usb_device *dev;		/* (in) pointer to associated device */
-	struct usb_host_endpoint *pipe;	/* (in) pipe pointer */
+	unsigned int pipe;		/* (in) pipe */
 	uint8_t *setup_packet;		/* (in) setup packet (control only) */
 	uint8_t *bsd_data_ptr;
 	void   *transfer_buffer;	/* (in) associated data buffer */
@@ -534,11 +534,11 @@ struct urb {
 
 int	usb_submit_urb(struct urb *urb, uint16_t mem_flags);
 int	usb_unlink_urb(struct urb *urb);
-int	usb_clear_halt(struct usb_device *dev, struct usb_host_endpoint *uhe);
-int	usb_control_msg(struct usb_device *dev, struct usb_host_endpoint *pipe, uint8_t request, uint8_t requesttype, uint16_t value, uint16_t index, void *data, uint16_t size, uint32_t timeout);
+int	usb_clear_halt(struct usb_device *dev, unsigned int);
+int	usb_control_msg(struct usb_device *dev, unsigned int, uint8_t request, uint8_t requesttype, uint16_t value, uint16_t index, void *data, uint16_t size, uint32_t timeout);
 int	usb_set_interface(struct usb_device *dev, uint8_t ifnum, uint8_t alternate);
 
-struct usb_host_endpoint *usb_find_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep);
+unsigned int usb_create_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep);
 struct urb *usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags);
 struct usb_host_interface *usb_altnum_to_altsetting(const struct usb_interface *intf, uint8_t alt_index);
 struct usb_interface *usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no);
@@ -626,9 +626,9 @@ int	usb_endpoint_xfer_bulk(const struct usb_endpoint_descriptor *epd);
 int	usb_endpoint_xfer_control(const struct usb_endpoint_descriptor *epd);
 int	usb_endpoint_xfer_int(const struct usb_endpoint_descriptor *epd);
 int	usb_endpoint_xfer_isoc(const struct usb_endpoint_descriptor *epd);
-void	usb_fill_control_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, unsigned char *setup_packet, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
-void	usb_fill_bulk_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
-void	usb_fill_int_urb(struct urb *urb, struct usb_device *dev, struct usb_host_endpoint *pipe, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context, int interval);
+void	usb_fill_control_urb(struct urb *, struct usb_device *, unsigned int, unsigned char *setup_packet, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
+void	usb_fill_bulk_urb(struct urb *, struct usb_device *, unsigned int, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context);
+void	usb_fill_int_urb(struct urb *, struct usb_device *, unsigned int, void *transfer_buffer, int buffer_length, usb_complete_t complete_fn, void *context, int interval);
 struct usb_interface *usb_get_intf(struct usb_interface *intf);
 void	usb_put_intf(struct usb_interface *intf);
 struct usb_device *usb_get_dev(struct usb_device *intf);
@@ -660,7 +660,7 @@ int	usb_make_path(struct usb_device *dev, char *buf, size_t size);
 #define	usb_endpoint_is_isoc_out(epd) \
 	(usb_endpoint_xfer_isoc(epd) && usb_endpoint_dir_out(epd))
 
-int	usb_bulk_msg(struct usb_device *, struct usb_host_endpoint *, void *, int, int *, int);
+int	usb_bulk_msg(struct usb_device *, unsigned int, void *, int, int *, int);
 int	usb_match_device(struct usb_device *, const struct usb_device_id *);
 int	usb_match_one_id(struct usb_interface *, const struct usb_device_id *);
 const struct usb_device_id *usb_match_id(struct usb_interface *, const struct usb_device_id *);
@@ -668,8 +668,7 @@ int	usb_reset_configuration(struct usb_device *dev);
 int	usb_lock_device_for_reset(struct usb_device *udev, const struct usb_interface *iface);
 void	usb_unlock_device(struct usb_device *udev);
 int	usb_reset_device(struct usb_device *dev);
-uint8_t	usb_pipetype(struct usb_host_endpoint *);
+uint8_t	usb_pipetype(unsigned int);
 void	usb_to_input_id(const struct usb_device *dev, struct input_id *id);
-
 
 #endif					/* _LINUX_USB_H_ */
