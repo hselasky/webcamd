@@ -36,6 +36,12 @@ typedef struct work_struct {
 	work_func_t func;
 } work_t;
 
+struct tasklet_struct {
+	struct work_struct work;	/* must be first */
+	void    (*func) (unsigned long);
+	unsigned long data;
+};
+
 typedef struct delayed_work {
 	struct work_struct work;
 	struct timer_list timer;
@@ -53,5 +59,11 @@ void	destroy_workqueue(struct workqueue_struct *wq);
 int	queue_work(struct workqueue_struct *wq, struct work_struct *work);
 struct workqueue_struct *create_workqueue(const char *name);
 struct workqueue_struct *create_singlethread_workqueue(const char *name);
+void	flush_workqueue(struct workqueue_struct *wq);
+void	flush_scheduled_work(void);
+void	cancel_rearming_delayed_work(struct delayed_work *work);
+void	tasklet_schedule(struct tasklet_struct *t);
+void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsigned long data);
+void	tasklet_kill(struct tasklet_struct *t);
 
 #endif					/* _LINUX_TASK_H_ */

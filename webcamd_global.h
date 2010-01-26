@@ -40,7 +40,9 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#define	sync(...) bsd_sync(__VA_ARGS__)
 #include <unistd.h>
+#undef sync
 #include <stdio.h>
 #include <poll.h>
 #include <string.h>
@@ -62,6 +64,7 @@
 #include <kernel/linux_start_section.h>
 #include <kernel/linux_end_section.h>
 #include <kernel/linux_input.h>
+#include <kernel/linux_firmware.h>
 
 #define	HAVE_LINUX_INTEGER_TYPES
 

@@ -16,6 +16,9 @@ struct cdev;
 struct mutex;
 struct device_type;
 struct dmi_system_id;
+struct input_device_id;
+struct pci_dev;
+struct tasklet_struct;
 
 #define	LINUX_VMA_MAX 16
 
@@ -48,6 +51,11 @@ struct attribute {
 	mode_t	mode;
 };
 
+struct attribute_group {
+	const char *name;
+	struct attribute **attrs;
+};
+
 struct class_attribute {
 	struct attribute attr;
 	ssize_t (*show) (struct class *, char *buf);
@@ -77,7 +85,10 @@ struct device_attribute				\
 struct class {
 	const char *name;
 	const struct device_attribute *dev_attrs;
-	int     (*dev_uevent) (struct device *dev, struct kobj_uevent_env *env);
+	int     (*dev_uevent) (struct device *, struct kobj_uevent_env *);
+	void    (*class_release) (struct class *);
+	void    (*dev_release) (struct device *);
+
 	struct kref refcount;
 };
 
@@ -85,6 +96,7 @@ typedef void device_release_t (struct device *);
 
 struct device {
 	int	minor;
+	int	busnum;
 	struct kobject kobj;
 	struct kref refcount;
 	device_release_t *release;
@@ -160,14 +172,6 @@ struct file {
 		struct dentry *dentry;
 	}	f_path;
 	int	f_flags;
-};
-
-struct tasklet_struct {
-	struct tasklet_struct *next;
-	unsigned long state;
-	atomic_t count;
-	void    (*func) (unsigned long);
-	unsigned long data;
 };
 
 #define	iminor(i) (i)->d_inode & 0xFF

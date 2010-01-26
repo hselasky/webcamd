@@ -101,13 +101,8 @@ SRCS+= linux_struct.c
 SRCS+= linux_task.c
 SRCS+= linux_timer.c
 SRCS+= linux_usb.c
-
-#
-# I2C specific files
-#
-#
-#SRCS+= linux_i2c.c
-#
+SRCS+= linux_firmware.c
+SRCS+= linux_i2c.c
 
 #
 # Video4Linux specific files
@@ -120,6 +115,20 @@ SRCS+= v4l2-device.c
 SRCS+= v4l2-int-device.c
 SRCS+= v4l2-ioctl.c
 SRCS+= v4l1-compat.c
+
+#
+# DVB specific files
+#
+
+SRCS+= dmxdev.c
+SRCS+= dvb_ca_en50221.c
+SRCS+= dvb_demux.c
+SRCS+= dvb_filter.c
+SRCS+= dvb_frontend.c
+SRCS+= dvb_math.c
+#SRCS+= dvb_net.c
+SRCS+= dvb_ringbuffer.c
+SRCS+= dvbdev.c
 
 #
 # GSPCA based Webcams
@@ -136,13 +145,13 @@ SRCS+= gl860-ov2640.c
 SRCS+= gl860-ov9655.c
 SRCS+= gspca.c
 SRCS+= jeilinj.c
-#SRCS+= m5602_core.c
-#SRCS+= m5602_mt9m111.c
-#SRCS+= m5602_ov7660.c
-#SRCS+= m5602_ov9650.c
-#SRCS+= m5602_po1030.c
-#SRCS+= m5602_s5k4aa.c
-#SRCS+= m5602_s5k83a.c
+SRCS+= m5602_core.c
+SRCS+= m5602_mt9m111.c
+SRCS+= m5602_ov7660.c
+SRCS+= m5602_ov9650.c
+SRCS+= m5602_po1030.c
+SRCS+= m5602_s5k4aa.c
+SRCS+= m5602_s5k83a.c
 SRCS+= mars.c
 SRCS+= mr97310a.c
 SRCS+= ov519.c
@@ -219,9 +228,9 @@ SRCS+= zc0301_pb0330.c
 # cpia2 based webcams
 #
 
-#SRCS+= cpia2_core.c
-#SRCS+= cpia2_usb.c
-#SRCS+= cpia2_v4l.c
+SRCS+= cpia2_core.c
+SRCS+= cpia2_usb.c
+SRCS+= cpia2_v4l.c
 
 #
 # et61x251 based webcams
@@ -233,6 +242,7 @@ SRCS+= et61x251_tas5130d1b.c
 #
 # em28xx
 #
+
 #SRCS+= em28xx-audio.c
 #SRCS+= em28xx-cards.c
 #SRCS+= em28xx-core.c
@@ -241,6 +251,111 @@ SRCS+= et61x251_tas5130d1b.c
 #SRCS+= em28xx-input.c
 #SRCS+= em28xx-vbi.c
 #SRCS+= em28xx-video.c
+
+#
+# pvrusb2
+#
+
+SRCS+= pvrusb2-audio.c
+SRCS+= pvrusb2-context.c
+SRCS+= pvrusb2-cs53l32a.c
+SRCS+= pvrusb2-ctrl.c
+SRCS+= pvrusb2-cx2584x-v4l.c
+SRCS+= pvrusb2-debugifc.c
+SRCS+= pvrusb2-devattr.c
+SRCS+= pvrusb2-dvb.c
+SRCS+= pvrusb2-eeprom.c
+SRCS+= pvrusb2-encoder.c
+SRCS+= pvrusb2-hdw.c
+SRCS+= pvrusb2-i2c-core.c
+SRCS+= pvrusb2-io.c
+SRCS+= pvrusb2-ioread.c
+SRCS+= pvrusb2-main.c
+SRCS+= pvrusb2-std.c
+SRCS+= pvrusb2-sysfs.c
+SRCS+= pvrusb2-v4l2.c
+SRCS+= pvrusb2-video-v4l.c
+SRCS+= pvrusb2-wm8775.c
+SRCS+= cx2341x.c
+SRCS+= tveeprom.c
+
+#
+# DVB USB
+#
+
+SRCS+= a800.c
+SRCS+= af9005-fe.c
+SRCS+= af9005-remote.c
+SRCS+= af9005.c
+SRCS+= af9015.c
+SRCS+= anysee.c
+SRCS+= au6610.c
+SRCS+= ce6230.c
+SRCS+= cinergyT2-core.c
+SRCS+= cinergyT2-fe.c
+SRCS+= cxusb.c
+SRCS+= dib0700_core.c
+SRCS+= dib0700_devices.c
+SRCS+= dib3000mc.c
+SRCS+= dibx000_common.c
+SRCS+= dibusb-common.c
+SRCS+= dibusb-mb.c
+SRCS+= dibusb-mc.c
+SRCS+= digitv.c
+SRCS+= dtt200u-fe.c
+SRCS+= dtt200u.c
+SRCS+= dtv5100.c
+SRCS+= dvb-usb-dvb.c
+SRCS+= dvb-usb-firmware.c
+SRCS+= dvb-usb-i2c.c
+SRCS+= dvb-usb-init.c
+SRCS+= dvb-usb-remote.c
+SRCS+= dvb-usb-urb.c
+SRCS+= dw2102.c
+SRCS+= ec168.c
+SRCS+= friio-fe.c
+SRCS+= friio.c
+SRCS+= gl861.c
+SRCS+= gp8psk-fe.c
+SRCS+= gp8psk.c
+SRCS+= m920x.c
+SRCS+= nova-t-usb2.c
+SRCS+= opera1.c
+SRCS+= ttusb2.c
+SRCS+= umt-010.c
+SRCS+= usb-urb.c
+SRCS+= vp702x-fe.c
+SRCS+= vp702x.c
+SRCS+= vp7045-fe.c
+SRCS+= vp7045.c
+
+#
+# Siano DVB USB
+#
+
+# SRCS+= smsusb.c
+
+#
+# TT DVB USB
+#
+
+SRCS+= dvb-ttusb-budget.c
+SRCS+= ttusb_dec.c
+SRCS+= ttusbdecfe.c
+
+#
+# B2C2 DVB USB
+#
+
+SRCS+= flexcop-dma.c
+SRCS+= flexcop-eeprom.c
+SRCS+= flexcop-fe-tuner.c
+SRCS+= flexcop-hw-filter.c
+SRCS+= flexcop-i2c.c
+SRCS+= flexcop-misc.c
+SRCS+= flexcop-sram.c
+SRCS+= flexcop-usb.c
+SRCS+= flexcop.c
 
 #
 # Various webcams
@@ -258,31 +373,10 @@ SRCS+= quickcam_messenger.c
 SRCS+= usbvideo.c
 SRCS+= ultracam.c
 #SRCS+= vicam.c
-#SRCS+= w9968cf.c
+SRCS+= w9968cf.c
 SRCS+= zr364xx.c
 SRCS+= videobuf-core.c
 SRCS+= videobuf-vmalloc.c
-
-#
-# DVB
-#
-#SRCS+= af9005.c
-#SRCS+= af9015.c
-#SRCS+= anysee.c
-#SRCS+= au6610.c
-#SRCS+= cinergyT2-core.c
-#SRCS+= dib0700_devices.c
-#SRCS+= dtt200u.c
-#SRCS+= dtv5100.c
-#SRCS+= dw2102.c
-#SRCS+= gl861.c
-#SRCS+= gp8psk.c
-#SRCS+= nova-t-usb2.c
-#SRCS+= opera1.c
-#SRCS+= vp702x.c
-#SRCS+= smsusb.c
-#SRCS+= dvb-ttusb-budget.c
-#SRCS+= ttusb_dec.c
 
 #
 # Radio
@@ -310,16 +404,21 @@ SRCS+= webcamd.c
 CFLAGS+= -DBITS_PER_LONG=${BITS_PER_LONG}
 
 CFLAGS+= -I${.CURDIR}/dummy
+CFLAGS+= -I${.CURDIR}/headers
 
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
-CFLAGS+= -I${LINUXDIR}/drivers/media/common/tuners/
+CFLAGS+= -I${LINUXDIR}/drivers/media/common/tuners
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/dvb-core
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/frontends
 CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}
 
 CFLAGS+= -I${.CURDIR}
 
 CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
-#CFLAGS+= -DCONFIG_I2C
+CFLAGS+= -DCONFIG_DVB_DIB3000MC
+CFLAGS+= -DCONFIG_VIDEO_PVRUSB2_DVB
+CFLAGS+= -DCONFIG_I2C
 CFLAGS+= -DHAVE_WEBCAMD
 
 CFLAGS+= -include webcamd_global.h

@@ -49,7 +49,8 @@ schedule_work(struct work_struct *work)
 static void
 delayed_work_timer_fn(unsigned long __data)
 {
-	struct work_struct *work = (struct work_struct *)__data;
+	struct work_struct *work =
+	(struct work_struct *)__data;
 
 	schedule_work(work);
 }
@@ -124,6 +125,31 @@ queue_work(struct workqueue_struct *wq, struct work_struct *work)
 }
 
 void
+flush_workqueue(struct workqueue_struct *wq)
+{
+
+}
+
+void
+cancel_rearming_delayed_work(struct delayed_work *_work)
+{
+	struct work_struct *work = &_work->work;
+
+	atomic_lock();
+	if (work->entry.tqe_prev != NULL) {
+		TAILQ_REMOVE(&work_head, work, entry);
+		work->entry.tqe_prev = NULL;
+	}
+	atomic_unlock();
+}
+
+void
+flush_scheduled_work(void)
+{
+	usleep(100000);
+}
+
+void
 destroy_workqueue(struct workqueue_struct *wq)
 {
 
@@ -157,3 +183,38 @@ work_init(void)
 }
 
 module_init(work_init);
+
+static void
+tasklet_wrapper_callback(struct work_struct *work)
+{
+	struct tasklet_struct *task =
+	(struct tasklet_struct *)work;
+
+	(task->func) (task->data);
+}
+
+void
+tasklet_schedule(struct tasklet_struct *t)
+{
+	schedule_work(&t->work);
+}
+
+void
+	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long),
+    	unsigned long data){
+	INIT_WORK(&t->work, tasklet_wrapper_callback);
+
+	t->func = func;
+	t->data = data;
+}
+
+void
+tasklet_kill(struct tasklet_struct *t)
+{
+	atomic_lock();
+	if (t->work.entry.tqe_prev != NULL) {
+		TAILQ_REMOVE(&work_head, &t->work, entry);
+		t->work.entry.tqe_prev = NULL;
+	}
+	atomic_unlock();
+}

@@ -87,6 +87,8 @@
 #define	ENOIOCTLCMD     513
 #define	EMEDIUMTYPE	514
 #define	ENODATA		515
+#define	symbol_request(x) x
+#define	symbol_put(x) __nop
 #define	EXPORT_SYMBOL(...)
 #define	EXPORT_SYMBOL_GPL(...)
 #define	MODULE_AUTHOR(...)
@@ -128,6 +130,7 @@
 #define	vmalloc_32(s) malloc_vm(s)
 #define	vmalloc_to_page(x) ((struct page *)(x))	/* HACK */
 #define	vmalloc_to_pfn(x) ((unsigned long)(x))	/* HACK */
+#define	page_address(x) ((void *)(x))	/* HACK */
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
@@ -168,6 +171,7 @@
 #ifndef BITS_PER_LONG
 #define	BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
 #endif
+#define	BITS_TO_LONGS(n) (((n) + BITS_PER_LONG - 1) / BITS_PER_LONG)
 #define	BIT(n) (1UL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 29)
@@ -252,7 +256,9 @@
 #define	pgprot_noncached(x) (x)
 #define	set_current_state(...) __nop
 #define	time_after(a,b) (((long)(b) - (long)(a)) < 0)
+#define	time_after_eq(a,b) (((long)(b) - (long)(a)) <= 0)
 #define	time_before(a,b) time_after(b,a)
+#define	time_before_eq(a,b) time_after_eq(b,a)
 #define	__attribute_const__
 #define	noinline
 #define	__cpu_to_le32(x) cpu_to_le32(x)
@@ -261,10 +267,24 @@
 #define	simple_strtol strtol
 #define	ETIME ETIMEDOUT
 #define	ENOSR ENOBUFS
+#define	ENOTSUPP ENOTSUP
+#define	EREMOTEIO EIO
 #define	I2C_NAME_SIZE 20
 #define	__SPIN_LOCK_UNLOCKED(...) {}
 #define	in_interrupt() 0
 #define	wmb() __nop
+#define	min_t(cast,x,y) ((((cast)(x)) < ((cast)(y))) ? (cast)(x) : (cast)(y))
+#define	max_t(cast,x,y) ((((cast)(x)) > ((cast)(y))) ? (cast)(x) : (cast)(y))
+
+#if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
+#if (BYTE_ORDER == LITTLE_ENDIAN)
+#define	__LITTLE_ENDIAN
+#elif BYTE_ORDER == BIG_ENDIAN
+#define	__BIG_ENDIAN
+#else
+#error "Unknown byte order"
+#endif
+#endif
 
 struct kernel_param;
 

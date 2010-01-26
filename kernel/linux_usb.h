@@ -33,6 +33,7 @@ struct usb_interface;
 struct usb_driver;
 struct usb_linux_softc;
 struct usb_device_id;
+struct input_id;
 struct urb;
 
 typedef void *pm_message_t;
@@ -48,7 +49,10 @@ typedef void (usb_complete_t)(struct urb *);
 #define	USB_SPEED_FULL LIBUSB20_SPEED_FULL
 #define	USB_SPEED_HIGH LIBUSB20_SPEED_HIGH
 
-#if 1
+#define	USB_CTRL_GET_TIMEOUT    5000	/* ms */
+#define	USB_CTRL_SET_TIMEOUT    5000	/* ms */
+
+#if 0
 /*
  * Linux compatible USB device drivers put their device information
  * into the "usb_device_id" structure using the "USB_DEVICE()" macro.
@@ -661,5 +665,11 @@ int	usb_match_device(struct usb_device *, const struct usb_device_id *);
 int	usb_match_one_id(struct usb_interface *, const struct usb_device_id *);
 const struct usb_device_id *usb_match_id(struct usb_interface *, const struct usb_device_id *);
 int	usb_reset_configuration(struct usb_device *dev);
+int	usb_lock_device_for_reset(struct usb_device *udev, const struct usb_interface *iface);
+void	usb_unlock_device(struct usb_device *udev);
+int	usb_reset_device(struct usb_device *dev);
+uint8_t	usb_pipetype(struct usb_host_endpoint *);
+void	usb_to_input_id(const struct usb_device *dev, struct input_id *id);
+
 
 #endif					/* _LINUX_USB_H_ */

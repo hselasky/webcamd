@@ -27,6 +27,10 @@
 
 #include <sched.h>
 
+#include <sys/endian.h>
+
+#include <linux/input.h>
+
 int
 printk_nop()
 {
@@ -487,6 +491,20 @@ put_device(struct device *dev)
 }
 
 int
+device_move(struct device *dev, struct device *new_parent)
+{
+	if (dev->parent != NULL)
+		put_device(dev->parent);
+
+	dev->parent = new_parent;
+
+	if (dev->parent != NULL)
+		get_device(dev->parent);
+
+	return (0);
+}
+
+int
 device_add(struct device *dev)
 {
 	/* TODO */
@@ -779,6 +797,18 @@ crc32_be(u32 crc, unsigned char const *p, size_t len)
 }
 
 void   *
+kcalloc(size_t n, size_t size, int flags)
+{
+	void *ptr;
+
+	ptr = malloc(size * n);
+	if (ptr != NULL)
+		memset(ptr, 0, size * n);
+
+	return (ptr);
+}
+
+void   *
 vmalloc(size_t size)
 {
 	return (malloc(size));
@@ -974,6 +1004,45 @@ ktime_get_real_ts(struct timespec *ts)
 	clock_gettime(CLOCK_REALTIME, ts);
 }
 
+struct timespec
+current_kernel_time(void)
+{
+	struct timespec ts;
+
+	ktime_get_real_ts(&ts);
+	return (ts);
+}
+
+int64_t
+timespec_to_ns(const struct timespec *ts)
+{
+	return ((ts->tv_sec * 1000000000L) + ts->tv_nsec);
+}
+
+struct timespec
+timespec_add(struct timespec vvp, struct timespec uvp)
+{
+	vvp.tv_sec += uvp.tv_sec;
+	vvp.tv_nsec += uvp.tv_nsec;
+	if (vvp.tv_nsec >= 1000000000L) {
+		vvp.tv_sec++;
+		vvp.tv_nsec -= 1000000000L;
+	}
+	return (vvp);
+}
+
+struct timespec
+timespec_sub(struct timespec vvp, struct timespec uvp)
+{
+	vvp.tv_sec -= uvp.tv_sec;
+	vvp.tv_nsec -= uvp.tv_nsec;
+	if (vvp.tv_nsec < 0) {
+		vvp.tv_sec--;
+		vvp.tv_nsec += 1000000000L;
+	}
+	return (vvp);
+}
+
 void
 msleep(uint32_t ms)
 {
@@ -1033,8 +1102,123 @@ clear_user(void *to, unsigned long size)
 void
 swab16s(uint16_t *ptr)
 {
-	uint16_t temp;
+	*ptr = bswap16(*ptr);
+}
 
-	temp = *ptr;
-	*ptr = (temp >> 8) | (temp << 8);
+uint16_t
+swab16(uint16_t temp)
+{
+	return (bswap16(temp));
+}
+
+void
+swab32s(uint32_t *ptr)
+{
+	*ptr = bswap32(*ptr);
+}
+
+uint32_t
+swab32(uint32_t temp)
+{
+	return (bswap32(temp));
+}
+
+int
+scnprintf(char *buf, size_t size, const char *fmt,...)
+{
+	va_list args;
+	int retval;
+
+	va_start(args, fmt);
+	retval = vsnprintf(buf, size, fmt, args);
+	va_end(args);
+
+	return ((retval >= size) ? (size - 1) : retval);
+}
+
+uint64_t
+div64_u64(uint64_t rem, uint64_t div)
+{
+	return (rem / div);
+}
+
+uint32_t
+do_div(uint64_t *rem, uint32_t div)
+{
+	uint64_t val = *rem;
+
+	*rem = val / div;
+
+	return (val % div);
+}
+
+int
+sysfs_create_group(struct kobject *kobj,
+    const struct attribute_group *grp)
+{
+	return (0);
+}
+
+void
+sysfs_remove_group(struct kobject *kobj,
+    const struct attribute_group *grp)
+{
+}
+
+void
+input_event(struct input_dev *dev,
+    unsigned int type, unsigned int code, int value)
+{
+	printf("Input event: %d.%d.%d\n", type, code, value);
+}
+
+int
+input_register_device(struct input_dev *dev)
+{
+	return (0);			/* XXX */
+}
+
+void
+input_unregister_device(struct input_dev *dev)
+{
+
+}
+
+struct input_dev *
+input_allocate_device(void)
+{
+	struct input_dev *dev;
+
+	dev = malloc(sizeof(*dev));
+	if (dev) {
+		memset(dev, 0, sizeof(*dev));
+	}
+	return (dev);
+}
+
+void
+input_free_device(struct input_dev *dev)
+{
+	free(dev);
+}
+
+void   *
+pci_alloc_consistent(struct pci_dev *hwdev, size_t size,
+    dma_addr_t *dma_addr)
+{
+	void *ptr;
+
+	if (dma_addr)
+		*dma_addr = 0;
+	ptr = malloc(size);
+	if (ptr)
+		memset(ptr, 0, size);
+	return (ptr);
+}
+
+void
+pci_free_consistent(struct pci_dev *hwdev, size_t size,
+    void *vaddr, dma_addr_t dma_handle)
+{
+	free(vaddr);
 }

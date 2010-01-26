@@ -49,7 +49,6 @@ static int
 i2c_register_adapter(struct i2c_adapter *adap)
 {
 	int res;
-	int dummy;
 
 	mutex_init(&adap->bus_lock);
 	if (adap->timeout == 0)
@@ -97,4 +96,39 @@ i2c_new_probed_device(struct i2c_adapter *adapt,
 void
 i2c_unregister_device(struct i2c_client *client)
 {
+}
+
+int
+i2c_master_send(struct i2c_client *client, const char *buf, int count)
+{
+	int ret;
+	struct i2c_adapter *adap = client->adapter;
+	struct i2c_msg msg;
+
+	msg.addr = client->addr;
+	msg.flags = client->flags & I2C_M_TEN;
+	msg.len = count;
+	msg.buf = (char *)buf;
+
+	ret = i2c_transfer(adap, &msg, 1);
+
+	return ((ret == 1) ? count : ret);
+}
+
+int
+i2c_master_recv(struct i2c_client *client, char *buf, int count)
+{
+	struct i2c_adapter *adap = client->adapter;
+	struct i2c_msg msg;
+	int ret;
+
+	msg.addr = client->addr;
+	msg.flags = client->flags & I2C_M_TEN;
+	msg.flags |= I2C_M_RD;
+	msg.len = count;
+	msg.buf = buf;
+
+	ret = i2c_transfer(adap, &msg, 1);
+
+	return ((ret == 1) ? count : ret);
 }

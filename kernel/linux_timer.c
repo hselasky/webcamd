@@ -73,6 +73,12 @@ del_timer(struct timer_list *timer)
 	return (retval);
 }
 
+int
+del_timer_sync(struct timer_list *timer)
+{
+	return (del_timer(timer));
+}
+
 static void
 timer_exec_hup(int dummy)
 {

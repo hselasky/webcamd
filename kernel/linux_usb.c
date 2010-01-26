@@ -24,7 +24,10 @@
  */
 
 #include <signal.h>
+
 #include <sys/filio.h>
+
+#include <linux/input.h>
 
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
@@ -1153,7 +1156,8 @@ usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no)
  *	usb_buffer_alloc
  *------------------------------------------------------------------------*/
 void   *
-usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, dma_addr_t *dma_addr)
+usb_buffer_alloc(struct usb_device *dev, uint32_t size,
+    uint16_t mem_flags, dma_addr_t *dma_addr)
 {
 	void *ptr;
 
@@ -1939,4 +1943,38 @@ int
 usb_reset_configuration(struct usb_device *dev)
 {
 	return (-EINVAL);		/* not implemented */
+}
+
+int
+usb_lock_device_for_reset(struct usb_device *udev,
+    const struct usb_interface *iface)
+{
+	return (0);
+}
+
+void
+usb_unlock_device(struct usb_device *udev)
+{
+
+}
+
+int
+usb_reset_device(struct usb_device *dev)
+{
+	return (0);
+}
+
+uint8_t
+usb_pipetype(struct usb_host_endpoint *uhe)
+{
+	return (uhe->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK);
+}
+
+void
+usb_to_input_id(const struct usb_device *dev, struct input_id *id)
+{
+	id->bustype = BUS_USB;
+	id->vendor = le16_to_cpu(dev->descriptor.idVendor);
+	id->product = le16_to_cpu(dev->descriptor.idProduct);
+	id->version = le16_to_cpu(dev->descriptor.bcdDevice);
 }

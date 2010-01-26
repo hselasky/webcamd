@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2010 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,23 +23,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _LINUX_TIMER_H_
-#define	_LINUX_TIMER_H_
+int
+request_firmware(const struct firmware **fw, const char *name,
+    struct device *device)
+{
+	printf("Requesting firmware '%s' (not found)\n", name);
+	return (-EINVAL);
+}
 
-typedef struct timer_list {
-	TAILQ_ENTRY(timer_list) entry;
-	void    (*function) (unsigned long data);
-	uint64_t expires;
-	unsigned long data;
-} timer_list_t;
-
-void	add_timer(struct timer_list *timer);
-int	del_timer(struct timer_list *timer);
-int	del_timer_sync(struct timer_list *timer);
-int	timer_pending(const struct timer_list *timer);
-uint64_t get_jiffies_64(void);
-void	init_timer(struct timer_list *timer);
-void	need_timer(int flag);
-void	check_signal(void);
-
-#endif					/* _LINUX_TIMER_H_ */
+void
+release_firmware(const struct firmware *fw)
+{
+	/* TODO */
+}

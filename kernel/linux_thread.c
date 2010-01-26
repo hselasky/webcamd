@@ -216,6 +216,13 @@ schedule_timeout(long timeout)
 	return (0);
 }
 
+int
+schedule_timeout_interruptible(long timeout)
+{
+	usleep(1000 * timeout);
+	return (0);
+}
+
 void
 schedule(void)
 {

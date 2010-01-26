@@ -73,7 +73,8 @@ void	__wait_get_timeout(uint64_t timeout, struct timespec *ts);
 
 void	add_wait_queue(wait_queue_head_t *, wait_queue_t *);
 void	remove_wait_queue(wait_queue_head_t *, wait_queue_t *);
-int	schedule_timeout(long timeout);
+int	schedule_timeout(long);
+int	schedule_timeout_interruptible(long);
 void	schedule(void);
 
 #define	wake_up_interruptible(q)        wake_up(q)
