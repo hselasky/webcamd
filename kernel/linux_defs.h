@@ -87,7 +87,7 @@
 #define	ENOIOCTLCMD     513
 #define	EMEDIUMTYPE	514
 #define	ENODATA		515
-#define	symbol_request(x) x
+#define	symbol_request(x) (&(x))
 #define	symbol_put(x) __nop
 #define	EXPORT_SYMBOL(...)
 #define	EXPORT_SYMBOL_GPL(...)
