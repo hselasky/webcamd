@@ -33,6 +33,8 @@ typedef struct task_struct {
 typedef struct wait_queue {
 } wait_queue_t;
 
+#define	DEFINE_WAIT(name) wait_queue_t name = {}
+
 typedef struct wait_queue_head {
 	int	sleep_ref;
 	int	sleep_count;
@@ -200,6 +202,9 @@ int	thread_init(void);
 
 void	linux_set_signal(void);
 void	linux_clear_signal(void);
+
+void	prepare_to_wait(wait_queue_head_t *, wait_queue_t *, int);
+void	finish_wait(wait_queue_head_t *, wait_queue_t *);
 
 extern int linux_signal_pending;
 extern struct task_struct linux_task;

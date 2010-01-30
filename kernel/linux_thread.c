@@ -517,3 +517,15 @@ linux_clear_signal(void)
 	linux_signal_pending = 0;
 	atomic_unlock();
 }
+
+void
+prepare_to_wait(wait_queue_head_t *qh, wait_queue_t *wait, int flag)
+{
+
+}
+
+void
+finish_wait(wait_queue_head_t *qh, wait_queue_t *wait)
+{
+
+}

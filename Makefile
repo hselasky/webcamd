@@ -333,7 +333,12 @@ SRCS+= vp7045.c
 # Siano DVB USB
 #
 
-# SRCS+= smsusb.c
+SRCS+= sms-cards.c
+SRCS+= smscoreapi.c
+SRCS+= smsdvb.c
+SRCS+= smsendian.c
+SRCS+= smsir.c
+SRCS+= smsusb.c
 
 #
 # TT DVB USB

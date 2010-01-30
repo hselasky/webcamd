@@ -64,6 +64,8 @@
 #define	_PAGE_ACCESSED  0
 #define	PAGE_SHARED 0
 #define	PAGE_ALIGN(addr)        (((addr)+PAGE_SIZE-1)&(~(PAGE_SIZE - 1)))
+#undef ALIGN
+#define	ALIGN(x,a)		(((x)+(a)-1)&(~((a)-1)))
 #define	PAGE_OFFSET	0
 #define	__pa(x)                 ((unsigned long)(x)-PAGE_OFFSET)
 #define	S_IRUSR 00400

@@ -444,6 +444,8 @@ struct usb_device {
 	void   *parent;
 	struct usb_config *config;
 	struct usb_config *actconfig;
+	struct usb_host_endpoint *ep_in[16];
+	struct usb_host_endpoint *ep_out[16];
 
 	struct usb_device_descriptor descriptor;
 	struct usb_config bsd_config;

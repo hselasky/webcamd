@@ -274,6 +274,27 @@ usb_linux_detach_sub(struct usb_linux_softc *sc)
 	memset(sc, 0, sizeof(*sc));
 }
 
+static void
+usb_linux_fill_ep_info(struct usb_device *udev,
+    struct usb_host_interface *uhi)
+{
+	struct usb_host_endpoint *uhe_end;
+	struct usb_host_endpoint *uhe;
+	uint8_t ea;
+
+	uhe_end = uhi->endpoint + uhi->desc.bNumEndpoints;
+
+	for (uhe = uhi->endpoint; uhe != uhe_end; uhe++) {
+
+		ea = uhe->desc.bEndpointAddress;
+
+		if (ea & USB_ENDPOINT_DIR_MASK)
+			udev->ep_in[ea & 15] = uhe;
+		else
+			udev->ep_out[ea & 15] = uhe;
+	}
+}
+
 /*------------------------------------------------------------------------*
  *	usb_linux_probe
  *
@@ -782,10 +803,13 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 	atomic_pickup(drops);
 	atomic_unlock();
 
-	if (err)
+	if (err) {
 		err = -EPIPE;
-	else
+	} else {
 		p_ui->cur_altsetting = p_ui->altsetting + alt_index;
+
+		usb_linux_fill_ep_info(dev, p_ui->cur_altsetting);
+	}
 
 	usb_linux_create_event_thread(dev);
 
@@ -1025,6 +1049,9 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 			else
 				id++;
 		}
+
+		usb_linux_fill_ep_info(p_ud, p_ui->cur_altsetting);
+
 		p_ui++;
 	}
 
