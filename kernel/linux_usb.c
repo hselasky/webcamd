@@ -249,12 +249,10 @@ usb_linux2cdev(int fd)
 void
 usb_linux_set_cdev(struct cdev *cdev)
 {
-	if (puls == NULL) {
-		if (cdev->fixed_inode.d_inode == MKDEV(DVB_MAJOR, 0))
-			dvb_dev = cdev;
-	} else {
+	if (cdev->fixed_inode.d_inode == MKDEV(DVB_MAJOR, 0))
+		dvb_dev = cdev;
+	else if (puls != NULL)
 		puls->c_dev = cdev;
-	}
 }
 
 void
