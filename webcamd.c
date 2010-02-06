@@ -43,6 +43,8 @@ static int local_user = 0;
 static int do_fork = 0;
 static struct pidfh *local_pid = NULL;
 
+char	global_fw_prefix[128];
+
 struct vm_allocation {
 	uint8_t *ptr;
 	uint32_t size;
@@ -78,6 +80,7 @@ usage(void)
 	    "	-i <interface number>\n"
 	    "	-v <video device number>\n"
 	    "	-B Run in background\n"
+	    "	-f <firmware path>\n"
 	    "	-h Print help\n"
 	);
 	exit(1);
@@ -138,7 +141,7 @@ main(int argc, char **argv)
 
 	atexit(&v4b_exit);
 
-	while ((opt = getopt(argc, argv, "Bd:i:v:h")) != -1) {
+	while ((opt = getopt(argc, argv, "Bd:f:i:v:h")) != -1) {
 		switch (opt) {
 		case 'd':
 			ptr = optarg;
@@ -163,6 +166,11 @@ main(int argc, char **argv)
 
 		case 'B':
 			do_fork = 1;
+			break;
+
+		case 'f':
+			strlcpy(global_fw_prefix, optarg,
+			    sizeof(global_fw_prefix));
 			break;
 
 		default:

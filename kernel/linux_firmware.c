@@ -23,16 +23,72 @@
  * SUCH DAMAGE.
  */
 
+extern char global_fw_prefix[];
+
+#define	FW_DECONST(ptr) \
+	((void *)((const uint8_t *)(ptr) - (const uint8_t *)(0)))
+
 int
-request_firmware(const struct firmware **fw, const char *name,
+request_firmware(const struct firmware **ppfw, const char *name,
     struct device *device)
 {
-	printf("Requesting firmware '%s' (not found)\n", name);
-	return (-EINVAL);
+	struct firmware *fw;
+	size_t size;
+	char path[256];
+	int f;
+
+	*ppfw = NULL;
+
+	fw = malloc(sizeof(*fw));
+
+	memset(fw, 0, sizeof(*fw));
+
+	if (fw == NULL) {
+		return (-ENOMEM);
+	}
+	snprintf(path, sizeof(path), "%s/%s", global_fw_prefix, name);
+
+	f = open(path, O_RDONLY);
+
+	printf("Loading firmware at '%s', f=%d\n", path, f);
+
+	if (f < 0) {
+		free(fw);
+		return (-EINVAL);
+	}
+	size = lseek(f, 0, SEEK_END);
+
+	lseek(f, 0, SEEK_SET);
+
+	fw->size = size;
+	fw->data = malloc(size);
+
+	if (fw->data == NULL) {
+		free(fw);
+		close(f);
+		return (-ENOMEM);
+	}
+	if (read(f, FW_DECONST(fw->data), fw->size) != fw->size) {
+		free(FW_DECONST(fw->data));
+		free(fw);
+		close(f);
+		return (-EINVAL);
+	}
+	close(f);
+
+	*ppfw = fw;
+
+	return (0);
 }
 
 void
 release_firmware(const struct firmware *fw)
 {
-	/* TODO */
+	if (fw == NULL)
+		return;
+
+	if (fw->data != NULL)
+		free(FW_DECONST(fw->data));
+
+	free(FW_DECONST(fw));
 }
