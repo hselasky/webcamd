@@ -44,6 +44,7 @@ struct usb_linux_softc {
 
 static struct usb_linux_softc uls[16];
 static struct usb_linux_softc *puls = NULL;
+static struct cdev *dvb_dev = NULL;
 
 /* prototypes */
 
@@ -235,16 +236,25 @@ usb_linux2cdev(int fd)
 	struct usb_linux_softc *sc;
 
 	sc = usb_linux2usb(fd);
+
 	if (sc == NULL)
 		return (NULL);
 
-	return (sc->c_dev);
+	if (sc->c_dev != NULL)
+		return (sc->c_dev);
+
+	return (dvb_dev);
 }
 
 void
 usb_linux_set_cdev(struct cdev *cdev)
 {
-	puls->c_dev = cdev;
+	if (puls == NULL) {
+		if (cdev->fixed_inode.d_inode == MKDEV(DVB_MAJOR, 0))
+			dvb_dev = cdev;
+	} else {
+		puls->c_dev = cdev;
+	}
 }
 
 void

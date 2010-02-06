@@ -136,6 +136,9 @@ int	sysfs_create_group(struct kobject *kobj, const struct attribute_group *grp);
 void	sysfs_remove_group(struct kobject *kobj, const struct attribute_group *grp);
 void   *pci_alloc_consistent(struct pci_dev *hwdev, size_t size, dma_addr_t *dma_addr);
 void	pci_free_consistent(struct pci_dev *hwdev, size_t size, void *vaddr, dma_addr_t dma_handle);
+int	add_uevent_var(struct kobj_uevent_env *env, const char *format,...);
+struct class *class_create(struct module *owner, const char *name);
+void	cdev_init(struct cdev *cdev, const struct file_operations *fops);
 
 #ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);

@@ -42,6 +42,8 @@ struct module_exit_struct {
 	uint8_t *magic;
 };
 
+#define	subsys_initcall(f) module_init(f)
+
 #define	module_init(func) static struct module_init_struct \
   __attribute__((__section__("linux_init_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_INIT_MAGIC };
 

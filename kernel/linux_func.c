@@ -1222,3 +1222,34 @@ pci_free_consistent(struct pci_dev *hwdev, size_t size,
 {
 	free(vaddr);
 }
+
+int
+add_uevent_var(struct kobj_uevent_env *env, const char *format,...)
+{
+	return (0);
+}
+
+struct class *
+class_create(struct module *owner, const char *name)
+{
+	struct class *class;
+
+	class = malloc(sizeof(*class));
+
+	if (class == NULL)
+		return (NULL);
+
+	memset(class, 0, sizeof(class));
+
+	class->name = name;
+
+	return (class);
+}
+
+void
+cdev_init(struct cdev *cdev, const struct file_operations *fops)
+{
+	memset(cdev, 0, sizeof(*cdev));
+
+	cdev->ops = fops;
+}
