@@ -991,7 +991,19 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ud->product = "";
 	p_ud->manufacturer = "";
 	p_ud->serial = "";
-	p_ud->speed = libusb20_dev_get_speed(udev);
+
+	switch (libusb20_dev_get_speed(udev)) {
+	case LIBUSB20_SPEED_LOW:
+		p_ud->speed = USB_SPEED_LOW;
+		break;
+	case LIBUSB20_SPEED_FULL:
+		p_ud->speed = USB_SPEED_FULL;
+		break;
+	default:
+		p_ud->speed = USB_SPEED_HIGH;
+		break;
+	}
+
 	p_ud->bsd_udev = udev;
 	p_ud->bsd_iface_start = p_ui;
 	p_ud->bsd_iface_end = p_ui + iface_index;
