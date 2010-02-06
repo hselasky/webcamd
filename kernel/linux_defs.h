@@ -108,6 +108,7 @@
 #define	module_param_array(...)
 #define	module_param_string(...)
 #define	info(...) __nop
+#define	print_hex_dump_bytes(...) printk_nop()
 #define	printk(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	pr_err(...) __nop

@@ -102,6 +102,8 @@
 #include <include/media/tuner.h>
 #include <include/media/msp3400.h>
 
+#include <headers/linux/input.h>
+
 #define	PUBLIC_API __attribute__((visibility("default")))
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */
