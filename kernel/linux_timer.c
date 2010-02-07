@@ -179,10 +179,17 @@ void
 need_timer(int flag)
 {
 	atomic_lock();
-	timer_needed = flag;
+	if (flag) {
+		timer_needed++;
+
+		if (timer_needed > 1)
+			flag = 0;
+	} else {
+		timer_needed--;
+	}
 	atomic_unlock();
 
-	if (timer_thread != NULL)
+	if (flag && (timer_thread != NULL))
 		pthread_kill(timer_thread, SIGHUP);
 }
 

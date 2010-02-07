@@ -120,9 +120,6 @@ work_video4bsd(void *arg)
 		f_usb = usb_linux_probe(u_unit, u_addr, u_index);
 		if (f_usb < 0)
 			v4b_errx(1, "Cannot find USB device");
-
-		printf("Attached ugen%d.%d.%d to Video4BSD unit %d\n",
-		    u_unit, u_addr, u_index, u_videodev);
 	}
 	while (1) {
 
@@ -144,7 +141,8 @@ work_video4bsd(void *arg)
 			/* try to open the device */
 			err = linux_open(dev->f_v4b);
 
-			need_timer(err == 0);
+			if (err)
+				need_timer(0);
 
 			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
 				v4b_errx(1, "Cannot sync V4B command");
@@ -154,13 +152,15 @@ work_video4bsd(void *arg)
 			/* close device */
 			err = linux_close(dev->f_v4b);
 
-			need_timer(0);
+			if (err == 0)
+				need_timer(0);
 
 			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
 				v4b_errx(1, "Cannot sync V4B command");
 			break;
 
 		case V4B_CMD_READ:
+			/* read from device */
 			err = linux_read(dev->f_v4b, cmd.ptr, cmd.arg);
 			if (err >= 0)
 				err = 0;
@@ -169,6 +169,7 @@ work_video4bsd(void *arg)
 			break;
 
 		case V4B_CMD_WRITE:
+			/* write to device */
 			err = linux_write(dev->f_v4b, cmd.ptr, cmd.arg);
 			if (err >= 0)
 				err = 0;
@@ -301,6 +302,10 @@ pidfile_create(int bus, int addr, int index)
 		}
 		pidfile_write(local_pid);
 	}
+
+	printf("Attached ugen%d.%d[%d] to Video4BSD unit %d\n",
+	    bus, addr, index, u_videodev);
+
 	return (0);
 }
 
