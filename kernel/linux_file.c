@@ -34,7 +34,6 @@ linux_open(int f_v4b)
 	uint8_t busy;
 
 	if (cdev == NULL) {
-		errno = EINVAL;
 		return (-1);
 	}
 	sub = &cdev->sub[f_v4b];
@@ -45,8 +44,10 @@ linux_open(int f_v4b)
 	atomic_unlock();
 
 	if (busy) {
-		errno = EBUSY;
 		return (-1);
+	}
+	if (cdev->ops->open == NULL) {
+		return (0);
 	}
 	if ((errno = -cdev->ops->open(&sub->fixed_inode, &sub->fixed_file))) {
 		atomic_lock();
@@ -92,6 +93,9 @@ linux_close(int f_v4b)
 		sub->fixed_vma[i].vm_buffer_address = NULL;
 		sub->fixed_vma[i].vm_ops = NULL;
 	}
+
+	if (cdev->ops->release == NULL)
+		return (0);
 
 	return ((cdev->ops->release) (&sub->fixed_inode, &sub->fixed_file));
 }
@@ -225,7 +229,6 @@ linux_mmap(int f_v4b, uint8_t *addr, size_t len, off_t offset)
 	err = cdev->ops->mmap(&sub->fixed_file, &sub->fixed_vma[i]);
 	if (err) {
 		sub->fixed_vma[i].vm_buffer_address = MAP_FAILED;
-		errno = -err;
 		return (MAP_FAILED);
 	}
 	return (sub->fixed_vma[i].vm_buffer_address);
