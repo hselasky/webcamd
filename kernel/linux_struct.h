@@ -174,21 +174,40 @@ struct file {
 	int	f_flags;
 };
 
-#define	iminor(i) (i)->d_inode & 0xFF
+#define	iminor(i) ((i)->d_inode & 0xFFFFUL)
 
 typedef struct inode {
 	dev_t	d_inode;
 } inode_t;
 
-struct cdev {
-	const struct file_operations *ops;
-	struct module *owner;
+enum {
+	F_V4B_VIDEO,
+	F_V4B_DVB_AUDIO,
+	F_V4B_DVB_CA,
+	F_V4B_DVB_DEMUX,
+	F_V4B_DVB_DVR,
+	F_V4B_DVB_FRONTEND,
+	F_V4B_DVB_OSD,
+	F_V4B_DVB_SEC,
+	F_V4B_DVB_VIDEO,
+	F_V4B_MAX,
+};
 
+struct cdev_sub {
 	struct dentry fixed_dentry;
 	struct inode fixed_inode;
 	struct file fixed_file;
 	struct vm_area_struct fixed_vma[LINUX_VMA_MAX];
 	uint8_t	is_opened;
+};
+
+struct cdev {
+	const struct file_operations *ops;
+	struct module *owner;
+	struct cdev_sub sub[F_V4B_MAX];
+	dev_t	mm_start;
+	dev_t	mm_end;
+	uint8_t	is_alloced;
 };
 
 struct poll_wqueues {

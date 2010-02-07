@@ -35,16 +35,12 @@ struct usb_linux_softc {
 	struct usb_driver *udrv;
 	struct usb_device *p_dev;
 	struct usb_interface *ui;
-	struct cdev *c_dev;
 	pthread_t thread;
-	int	fds [2];
 	volatile int thread_started;
 	volatile int thread_stopping;
 };
 
 static struct usb_linux_softc uls[16];
-static struct usb_linux_softc *puls = NULL;
-static struct cdev *dvb_dev = NULL;
 
 /* prototypes */
 
@@ -219,40 +215,7 @@ usb_linux_create_event_thread(struct usb_device *dev)
 struct usb_linux_softc *
 usb_linux2usb(int fd)
 {
-	uint8_t i;
-
-	for (i = 0;; i++) {
-		if (i == ARRAY_SIZE(uls))
-			return (NULL);
-		if (uls[i].fds[0] == fd)
-			break;
-	}
-	return (uls + i);
-}
-
-struct cdev *
-usb_linux2cdev(int fd)
-{
-	struct usb_linux_softc *sc;
-
-	sc = usb_linux2usb(fd);
-
-	if (sc == NULL)
-		return (NULL);
-
-	if (sc->c_dev != NULL)
-		return (sc->c_dev);
-
-	return (dvb_dev);
-}
-
-void
-usb_linux_set_cdev(struct cdev *cdev)
-{
-	if (cdev->fixed_inode.d_inode == MKDEV(DVB_MAJOR, 0))
-		dvb_dev = cdev;
-	else if (puls != NULL)
-		puls->c_dev = cdev;
+	return (uls + fd);
 }
 
 void
@@ -271,11 +234,6 @@ usb_linux_detach_sub(struct usb_linux_softc *sc)
 	libusb20_dev_close(sc->pdev);
 
 	usb_linux_free_device(p_dev);
-
-	if (sc->fds[0] > -1)
-		close(sc->fds[0]);
-	if (sc->fds[1] > -1)
-		close(sc->fds[1]);
 
 	free(sc->pcfg);
 
@@ -323,6 +281,7 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 	uint8_t i;
 	uint8_t match_bus_addr;
 	uint8_t index_copy;
+	uint8_t device_index;
 
 	for (i = 0;; i++) {
 		if (i == ARRAY_SIZE(uls))
@@ -333,7 +292,7 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 
 	sc = uls + i;
 
-	puls = sc;			/* XXX */
+	device_index = i;
 
 	match_bus_addr = (addr != 0);
 
@@ -432,23 +391,8 @@ found:
 	sc->pcfg = pcfg;
 	sc->pdev = pdev;
 
-	sc->fds[0] = -1;
-	sc->fds[1] = -1;
-
 	usb_linux_create_event_thread(p_dev);
 
-	if (pipe(sc->fds) != 0) {
-		usb_linux_detach_sub(sc);
-		libusb20_be_free(pbe);
-		return (-ENOMEM);
-	}
-	/* XXX temporary hack to make poll() return */
-
-	if (write(sc->fds[1], "", 1) != 1) {
-		usb_linux_detach_sub(sc);
-		libusb20_be_free(pbe);
-		return (-EINVAL);
-	}
 	if (udrv->probe(ui, id) != 0) {
 		usb_linux_detach_sub(sc);
 		libusb20_be_free(pbe);
@@ -457,7 +401,7 @@ found:
 	libusb20_be_dequeue_device(pbe, pdev);
 	libusb20_be_free(pbe);
 
-	return (sc->fds[0]);
+	return (device_index);
 }
 
 /*------------------------------------------------------------------------*

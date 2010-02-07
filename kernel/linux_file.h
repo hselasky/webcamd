@@ -26,11 +26,11 @@
 #ifndef _LINUX_FILE_H_
 #define	_LINUX_FILE_H_
 
-int	linux_open(struct cdev *cdev);
-int	linux_close(struct cdev *cdev);
-int	linux_ioctl(struct cdev *cdev, unsigned int cmd, void *arg);
-ssize_t	linux_read(struct cdev *cdev, char *ptr, size_t len);
-ssize_t	linux_write(struct cdev *cdev, char *ptr, size_t len);
-void   *linux_mmap(struct cdev *cdev, uint8_t *addr, size_t len, off_t offset);
+int	linux_open(int f_v4b);
+int	linux_close(int f_v4b);
+int	linux_ioctl(int f_v4b, unsigned int cmd, void *arg);
+ssize_t	linux_read(int f_v4b, char *ptr, size_t len);
+ssize_t	linux_write(int f_v4b, char *ptr, size_t len);
+void   *linux_mmap(int f_v4b, uint8_t *addr, size_t len, off_t offset);
 
 #endif					/* _LINUX_FILE_H_ */

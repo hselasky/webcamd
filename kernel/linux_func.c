@@ -406,24 +406,122 @@ cdev_alloc(void)
 		goto done;
 
 	/* initialise cdev */
-	memset(cdev, 0, sizeof(*cdev));
+	cdev_init(cdev, NULL);
 
-	cdev->fixed_dentry.d_inode = &cdev->fixed_inode;
-	cdev->fixed_file.f_path.dentry = &cdev->fixed_dentry;
+	cdev->is_alloced = 1;
 
 done:
 	return (cdev);
 }
 
+static struct cdev *cdev_registry[F_V4B_MAX];
+
+static void
+cdev_set_device(dev_t mm, struct cdev *cdev)
+{
+	switch (mm) {
+		case MKDEV(VIDEO_MAJOR, 0):
+		cdev_registry[F_V4B_VIDEO] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO):
+		cdev_registry[F_V4B_DVB_AUDIO] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_CA):
+		cdev_registry[F_V4B_DVB_CA] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX):
+		cdev_registry[F_V4B_DVB_DEMUX] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_DVR):
+		cdev_registry[F_V4B_DVB_DVR] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
+		cdev_registry[F_V4B_DVB_FRONTEND] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_OSD):
+		cdev_registry[F_V4B_DVB_OSD] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_SEC):
+		cdev_registry[F_V4B_DVB_SEC] = cdev;
+		break;
+	case MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO):
+		cdev_registry[F_V4B_DVB_VIDEO] = cdev;
+		break;
+	default:
+		if ((mm < MKDEV(DVB_MAJOR, 0)) ||
+		    (mm > MKDEV(DVB_MAJOR, 65535))) {
+			printf("Trying to register "
+			    "unknown device: 0x%08x\n", mm);
+		}
+		break;
+	}
+}
+
+struct cdev *
+cdev_get_device(int f_v4b)
+{
+	if ((f_v4b < 0) || (f_v4b >= F_V4B_MAX))
+		return (NULL);		/* should not happen */
+
+	return (cdev_registry[f_v4b]);
+}
+
+void
+cdev_init(struct cdev *cdev, const struct file_operations *fops)
+{
+	uint8_t n;
+
+	memset(cdev, 0, sizeof(*cdev));
+
+	cdev->ops = fops;
+
+	for (n = 0; n != F_V4B_MAX; n++) {
+
+		struct cdev_sub *sub = &cdev->sub[n];
+
+		sub->fixed_dentry.d_inode = &sub->fixed_inode;
+		sub->fixed_file.f_path.dentry = &sub->fixed_dentry;
+	}
+
+	cdev->sub[F_V4B_VIDEO].fixed_inode.d_inode =
+	    MKDEV(VIDEO_MAJOR, 0);
+	cdev->sub[F_V4B_DVB_AUDIO].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO);
+	cdev->sub[F_V4B_DVB_CA].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_CA);
+	cdev->sub[F_V4B_DVB_DEMUX].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX);
+	cdev->sub[F_V4B_DVB_DVR].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_DVR);
+	cdev->sub[F_V4B_DVB_FRONTEND].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND);
+	cdev->sub[F_V4B_DVB_OSD].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_OSD);
+	cdev->sub[F_V4B_DVB_SEC].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_SEC);
+	cdev->sub[F_V4B_DVB_VIDEO].fixed_inode.d_inode =
+	    MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO);
+}
+
 int
 cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
 {
-	cdev->fixed_inode.d_inode = mm;
-	cdev->fixed_file.f_op = cdev->ops;
+	uint8_t n;
 
-	/* XXX hack */
+	for (n = 0; n != F_V4B_MAX; n++) {
 
-	usb_linux_set_cdev(cdev);
+		struct cdev_sub *sub = &cdev->sub[n];
+
+		sub->fixed_file.f_op = cdev->ops;
+	}
+
+	cdev->mm_start = mm;
+	cdev->mm_end = mm + count;
+
+	while (mm != cdev->mm_end) {
+		cdev_set_device(mm, cdev);
+		mm++;
+	}
 
 	return (0);
 }
@@ -431,7 +529,20 @@ cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
 void
 cdev_del(struct cdev *cdev)
 {
-	free(cdev);
+	dev_t mm;
+
+	if (cdev == NULL)
+		return;
+
+	mm = cdev->mm_start;
+
+	while (mm != cdev->mm_end) {
+		cdev_set_device(mm, NULL);
+		mm++;
+	}
+
+	if (cdev->is_alloced)
+		free(cdev);
 }
 
 void
@@ -1244,12 +1355,4 @@ class_create(struct module *owner, const char *name)
 	class->name = name;
 
 	return (class);
-}
-
-void
-cdev_init(struct cdev *cdev, const struct file_operations *fops)
-{
-	memset(cdev, 0, sizeof(*cdev));
-
-	cdev->ops = fops;
 }

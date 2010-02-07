@@ -121,9 +121,9 @@
 #define	dev_err(...) __nop
 #define	dev_info(...) __nop
 #define	dev_warn(...) __nop
-#define	warn printk
-#define	dbg printk
-#define	err printk
+#define	warn(...) printk(__VA_ARGS__)
+#define	dbg(...) printk(__VA_ARGS__)
+#define	err(...) printk(__VA_ARGS__)
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
 #define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
@@ -180,7 +180,7 @@
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 29)
 #define	BUS_ID_SIZE 32
 #define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
-#define	MKDEV(maj,min) (min)
+#define	MKDEV(maj,min) ((dev_t)((((maj) & 0xFFFFUL) << 16)|((min) & 0xFFFFUL)))
 #define	dev_set_name(d, ...) snprintf((d)->name, sizeof((d)->name), __VA_ARGS__)
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)

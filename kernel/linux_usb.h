@@ -557,8 +557,6 @@ int	usb_register(struct usb_driver *drv);
 int	usb_deregister(struct usb_driver *drv);
 
 struct usb_linux_softc *usb_linux2usb(int fd);
-struct cdev *usb_linux2cdev(int fd);
-void	usb_linux_set_cdev(struct cdev *cdev);
 int	usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index);
 int	usb_linux_detach(int fd);
 int	usb_linux_suspend(int fd);

@@ -36,7 +36,36 @@
 
 #include <video4bsd.h>
 
-static int f_videodev = -1;
+struct f_videodev {
+	pthread_t process;
+	int	f;
+	int	f_v4b;
+};
+
+struct vm_allocation {
+	uint8_t *ptr;
+	uint32_t size;
+};
+
+static const char *devnames[F_V4B_MAX] = {
+
+	[F_V4B_VIDEO] = "/dev/video_daemon%d",
+
+	[F_V4B_DVB_AUDIO] = "/dev/dvb/adapter%d/audio_daemon0",
+	[F_V4B_DVB_CA] = "/dev/dvb/adapter%d/ca_daemon0",
+	[F_V4B_DVB_DEMUX] = "/dev/dvb/adapter%d/demux_daemon0",
+	[F_V4B_DVB_DVR] = "/dev/dvb/adapter%d/dvr_daemon0",
+
+	[F_V4B_DVB_FRONTEND] = "/dev/dvb/adapter%d/frontend_daemon0",
+	[F_V4B_DVB_OSD] = "/dev/dvb/adapter%d/osd_daemon0",
+	[F_V4B_DVB_SEC] = "/dev/dvb/adapter%d/sec_daemon0",
+	[F_V4B_DVB_VIDEO] = "/dev/dvb/adapter%d/video_daemon0",
+};
+
+static struct f_videodev f_videodev[F_V4B_MAX];
+static int u_unit = 0;
+static int u_addr = 0;
+static int u_index = 0;
 static int u_videodev = -1;
 static int f_usb = -1;
 static int local_user = 0;
@@ -45,30 +74,182 @@ static struct pidfh *local_pid = NULL;
 
 char	global_fw_prefix[128];
 
-struct vm_allocation {
-	uint8_t *ptr;
-	uint32_t size;
-};
-
 #if 0
 #define	V4B_DEBUG
 #endif
 
 static struct vm_allocation vm_allocations[V4B_ALLOC_UNIT_MAX];
 
-static void set_mmap(void *);
-static void *find_mmap_size(struct cdev *cdev, uint32_t offset, uint32_t *psize, uint32_t *delta);
+static void set_mmap(int f, void *);
+static void *find_mmap_size(int f_v4b, uint32_t offset, uint32_t *psize, uint32_t *delta);
+static void v4b_errx(int code, const char *str);
+
+static int
+find_video4bsd(void)
+{
+	pthread_t process = pthread_self();
+	uint8_t n;
+
+	for (n = 0; n != F_V4B_MAX; n++) {
+		if (f_videodev[n].process == process)
+			return (f_videodev[n].f);
+	}
+
+	v4b_errx(1, "Cannot find Video4BSD process\n");
+
+	return (0);
+}
+
+static void *
+work_video4bsd(void *arg)
+{
+	struct f_videodev *dev = (struct f_videodev *)arg;
+	static struct v4b_command cmd;
+	void *mm_ptr;
+	uint32_t size;
+	uint32_t delta;
+	int err;
+
+	dev->process = pthread_self();
+
+	pthread_set_kernel_prio();
+
+	if (dev->f_v4b == F_V4B_VIDEO) {
+		linux_init();
+
+		f_usb = usb_linux_probe(u_unit, u_addr, u_index);
+		if (f_usb < 0)
+			v4b_errx(1, "Cannot find USB device");
+
+		printf("Attached ugen%d.%d.%d to Video4BSD unit %d\n",
+		    u_unit, u_addr, u_index, u_videodev);
+	}
+	while (1) {
+
+		if (ioctl(dev->f, V4B_IOCTL_GET_COMMAND, &cmd) != 0)
+			v4b_errx(1, "Cannot get next V4B command");
+
+		linux_clear_signal();
+
+#ifdef V4B_DEBUG
+		printf("Received command %d 0x%08x\n", cmd.command, (uint32_t)cmd.arg);
+#endif
+		switch (cmd.command) {
+		case V4B_CMD_OPEN:
+			/* make sure we are closed before open */
+			err = linux_close(dev->f_v4b);
+
+			need_timer(1);
+
+			/* try to open the device */
+			err = linux_open(dev->f_v4b);
+
+			need_timer(err == 0);
+
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+
+		case V4B_CMD_CLOSE:
+			/* close device */
+			err = linux_close(dev->f_v4b);
+
+			need_timer(0);
+
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+
+		case V4B_CMD_READ:
+			err = linux_read(dev->f_v4b, cmd.ptr, cmd.arg);
+			if (err >= 0)
+				err = 0;
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+
+		case V4B_CMD_WRITE:
+			err = linux_write(dev->f_v4b, cmd.ptr, cmd.arg);
+			if (err >= 0)
+				err = 0;
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+
+		case V4B_CMD_IOCTL:
+#ifdef V4B_DEBUG
+			printf("IOCTL 0x%08x, %p\n", cmd.arg, cmd.ptr);
+#endif
+			err = linux_ioctl(dev->f_v4b, cmd.arg, cmd.ptr);
+#ifdef V4B_DEBUG
+			printf("IOCTL = %d\n", err);
+#endif
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+
+		case V4B_CMD_MMAP:
+
+			/* XXX V4L hack */
+			mm_ptr = find_mmap_size(dev->f_v4b, cmd.arg, &size, &delta);
+			if (size != 0) {
+				if (mm_ptr == MAP_FAILED) {
+					err = EINVAL;
+				} else {
+					err = 0;
+					set_mmap(dev->f, mm_ptr + delta);
+				}
+			} else {
+				err = EINVAL;
+			}
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+
+		default:
+			err = ENOTTY;
+			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
+				v4b_errx(1, "Cannot sync V4B command");
+			break;
+		}
+#ifdef V4B_DEBUG
+		printf("Status = %d\n", err);
+#endif
+
+	}
+	return (NULL);
+}
 
 static int
 open_video4bsd(int unit)
 {
-	char temp[32];
+	char temp[128];
+	pthread_t dummy;
+	uint8_t n;
 
-	snprintf(temp, sizeof(temp), "/dev/video_daemon%d", unit);
+	for (n = 0; n != F_V4B_MAX; n++) {
 
-	f_videodev = open(temp, O_RDWR);
+		snprintf(temp, sizeof(temp), devnames[n], unit);
 
-	return (f_videodev);
+		f_videodev[n].f = open(temp, O_RDWR);
+		f_videodev[n].f_v4b = n;
+
+		if (f_videodev[n].f < 0) {
+			while (n--) {
+				close(f_videodev[n].f);
+				f_videodev[n].f = -1;
+			}
+			return (-1);
+		}
+	}
+
+	for (n = 0; n != F_V4B_MAX; n++) {
+		if (pthread_create(&dummy, NULL, work_video4bsd, f_videodev + n)) {
+			v4b_errx(1, "Failed creating video4bsd process");
+		}
+	}
+
+	return (0);
 }
 
 static void
@@ -126,18 +307,9 @@ pidfile_create(int bus, int addr, int index)
 int
 main(int argc, char **argv)
 {
-	static struct v4b_command cmd;
 	struct rtprio prio_arg = {RTP_PRIO_REALTIME, 16};
-	void *mm_ptr;
 	const char *ptr;
-	struct cdev *cdev;
-	int unit = 0;
-	int addr = 0;
-	int index = 0;
 	int opt;
-	int err;
-	uint32_t size;
-	uint32_t delta;
 
 	atexit(&v4b_exit);
 
@@ -152,12 +324,12 @@ main(int argc, char **argv)
 			    (ptr[3] == 'n'))
 				ptr += 4;
 
-			if (sscanf(ptr, "%d.%d", &unit, &addr) != 2)
+			if (sscanf(ptr, "%d.%d", &u_unit, &u_addr) != 2)
 				usage();
 			break;
 
 		case 'i':
-			index = atoi(optarg);
+			u_index = atoi(optarg);
 			break;
 
 		case 'v':
@@ -182,127 +354,24 @@ main(int argc, char **argv)
 	if (u_videodev < 0) {
 		for (u_videodev = 0;; u_videodev++) {
 			if (u_videodev == V4B_DEVICES_MAX)
-				v4b_errx(1, "Cannot open /dev/video_daemonX. "
+				v4b_errx(1, "Cannot open /dev/video_xxx or /dev/dvb/xxx. "
 				    "Did you kldload video4bsd?");
 			if (open_video4bsd(u_videodev) >= 0)
 				break;
 		}
 	} else {
 		if (open_video4bsd(u_videodev) < 0)
-			v4b_errx(1, "Cannot open /dev/video_daemonX. "
+			v4b_errx(1, "Cannot open /dev/video_xxx or /dev/dvb/xxx. "
 			    "Did you kldload video4bsd?");
 	}
-
-	linux_init();
-
-#ifdef V4B_DEBUG
-	printf("Probing for %d.%d.%d\n", unit, addr, index);
-#endif
-
-	f_usb = usb_linux_probe(unit, addr, index);
-	if (f_usb < 0)
-		v4b_errx(1, "Cannot find USB device");
-
-	cdev = usb_linux2cdev(f_usb);
-	if (cdev == NULL)
-		v4b_errx(1, "Cannot find USB character device");
 
 	if (rtprio(RTP_SET, getpid(), &prio_arg))
 		printf("Cannot set realtime priority\n");
 
 	while (1) {
-
-		if (ioctl(f_videodev, V4B_IOCTL_GET_COMMAND, &cmd) != 0)
-			v4b_errx(1, "Cannot get next V4B command");
-
-		linux_clear_signal();
-
-#ifdef V4B_DEBUG
-		printf("Received command %d 0x%08x\n", cmd.command, (uint32_t)cmd.arg);
-#endif
-		switch (cmd.command) {
-		case V4B_CMD_OPEN:
-			/* make sure we are closed before open */
-			err = linux_close(cdev);
-
-			need_timer(1);
-
-			/* try to open the device */
-			err = linux_open(cdev);
-
-			need_timer(err == 0);
-
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-
-		case V4B_CMD_CLOSE:
-			/* close device */
-			err = linux_close(cdev);
-
-			need_timer(0);
-
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-
-		case V4B_CMD_READ:
-			err = linux_read(cdev, cmd.ptr, cmd.arg);
-			if (err >= 0)
-				err = 0;
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-
-		case V4B_CMD_WRITE:
-			err = linux_write(cdev, cmd.ptr, cmd.arg);
-			if (err >= 0)
-				err = 0;
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-
-		case V4B_CMD_IOCTL:
-#ifdef V4B_DEBUG
-			printf("IOCTL 0x%08x, %p\n", cmd.arg, cmd.ptr);
-#endif
-			err = linux_ioctl(cdev, cmd.arg, cmd.ptr);
-#ifdef V4B_DEBUG
-			printf("IOCTL = %d\n", err);
-#endif
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-
-		case V4B_CMD_MMAP:
-
-			/* XXX V4L hack */
-			mm_ptr = find_mmap_size(cdev, cmd.arg, &size, &delta);
-			if (size != 0) {
-				if (mm_ptr == MAP_FAILED) {
-					err = EINVAL;
-				} else {
-					err = 0;
-					set_mmap(mm_ptr + delta);
-				}
-			} else {
-				err = EINVAL;
-			}
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-
-		default:
-			err = ENOTTY;
-			if (ioctl(f_videodev, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
-				v4b_errx(1, "Cannot sync V4B command");
-			break;
-		}
-#ifdef V4B_DEBUG
-		printf("Status = %d\n", err);
-#endif
-
+		sleep(60);
 	}
+
 	return (0);
 }
 
@@ -316,7 +385,7 @@ copy_to_user(void *to, const void *from, unsigned long n)
 	};
 
 	if (local_user == 0)
-		return (ioctl(f_videodev, V4B_IOCTL_WRITE_DATA, &cmd) ? n : 0);
+		return (ioctl(find_video4bsd(), V4B_IOCTL_WRITE_DATA, &cmd) ? n : 0);
 
 	memcpy(to, from, n);
 	return (0);
@@ -332,14 +401,14 @@ copy_from_user(void *to, const void *from, unsigned long n)
 	};
 
 	if (local_user == 0)
-		return (ioctl(f_videodev, V4B_IOCTL_READ_DATA, &cmd) ? n : 0);
+		return (ioctl(find_video4bsd(), V4B_IOCTL_READ_DATA, &cmd) ? n : 0);
 
 	memcpy(to, from, n);
 	return (0);
 }
 
 static void *
-find_mmap_size(struct cdev *cdev, uint32_t offset,
+find_mmap_size(int f_v4b, uint32_t offset,
     uint32_t *psize, uint32_t *delta)
 {
 	struct v4l2_buffer buf = {0, 0, 0};
@@ -355,7 +424,7 @@ find_mmap_size(struct cdev *cdev, uint32_t offset,
 		buf.memory = V4L2_MEMORY_MMAP;
 		buf.index = i;
 
-		err = linux_ioctl(cdev, VIDIOC_QUERYBUF, &buf);
+		err = linux_ioctl(f_v4b, VIDIOC_QUERYBUF, &buf);
 		if (err) {
 			*psize = 0;
 			*delta = 0;
@@ -366,7 +435,7 @@ find_mmap_size(struct cdev *cdev, uint32_t offset,
 		    (offset <= (buf.m.offset + buf.length - 1))) {
 			*psize = buf.length;
 			*delta = offset - buf.m.offset;
-			ptr = linux_mmap(cdev, NULL,
+			ptr = linux_mmap(f_v4b, NULL,
 			    buf.length, buf.m.offset);
 			break;
 		}
@@ -378,7 +447,7 @@ find_mmap_size(struct cdev *cdev, uint32_t offset,
 }
 
 static void
-set_mmap(void *ptr)
+set_mmap(int f, void *ptr)
 {
 	struct v4b_mem_alloc cmd = {0, 0};
 	unsigned int n;
@@ -399,7 +468,7 @@ set_mmap(void *ptr)
 			cmd.page_count = (ptr - ptr_min) / PAGE_SIZE;
 
 			atomic_unlock();
-			if (ioctl(f_videodev, V4B_IOCTL_MAP_MEMORY, &cmd) != 0) {
+			if (ioctl(f, V4B_IOCTL_MAP_MEMORY, &cmd) != 0) {
 #ifdef V4B_DEBUG
 				printf("Mapping memory failed\n");
 #endif
@@ -417,6 +486,7 @@ malloc_vm(size_t size)
 	void *ptr;
 	uint32_t n;
 	int error;
+	int f = f_videodev[0].f;
 
 	if (size == 0)
 		size = 1;
@@ -438,7 +508,7 @@ malloc_vm(size_t size)
 #endif
 		cmd.alloc_nr = n;
 
-		error = ioctl(f_videodev, V4B_IOCTL_ALLOC_MEMORY, &cmd);
+		error = ioctl(f, V4B_IOCTL_ALLOC_MEMORY, &cmd);
 		if (error) {
 			atomic_lock();
 			vm_allocations[n].ptr = NULL;
@@ -452,11 +522,11 @@ malloc_vm(size_t size)
 		}
 		ptr = mmap(NULL, cmd.page_count * PAGE_SIZE,
 		    PROT_READ | PROT_WRITE,
-		    MAP_SHARED, f_videodev, V4B_ALLOC_PAGES_MAX *
+		    MAP_SHARED, f, V4B_ALLOC_PAGES_MAX *
 		    PAGE_SIZE * n);
 
 		if (ptr == MAP_FAILED) {
-			ioctl(f_videodev, V4B_IOCTL_FREE_MEMORY, &cmd);
+			ioctl(f, V4B_IOCTL_FREE_MEMORY, &cmd);
 			atomic_lock();
 			vm_allocations[n].ptr = NULL;
 #ifdef V4B_DEBUG
@@ -478,6 +548,7 @@ free_vm(void *ptr)
 {
 	struct v4b_mem_alloc cmd = {0, 0};
 	unsigned int n;
+	int f = f_videodev[0].f;
 
 	if (ptr == NULL)
 		return;
@@ -493,7 +564,7 @@ free_vm(void *ptr)
 
 		munmap(ptr, vm_allocations[n].size);
 
-		if (ioctl(f_videodev, V4B_IOCTL_FREE_MEMORY, &cmd) != 0) {
+		if (ioctl(f, V4B_IOCTL_FREE_MEMORY, &cmd) != 0) {
 #ifdef V4B_DEBUG
 			printf("Free failed %d\n", __LINE__);
 #endif
@@ -512,11 +583,12 @@ void
 check_signal(void)
 {
 	int has_signal = 0;
+	int f = f_videodev[0].f;
 
-	if (f_videodev < 0)
+	if (f < 0)
 		return;
 
-	if (ioctl(f_videodev, V4B_IOCTL_GET_SIGNAL, &has_signal) != 0) {
+	if (ioctl(f, V4B_IOCTL_GET_SIGNAL, &has_signal) != 0) {
 #ifdef V4B_DEBUG
 		printf("Get signal failed\n");
 #endif
