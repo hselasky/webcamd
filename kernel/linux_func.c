@@ -1202,12 +1202,22 @@ dmi_check_system(const struct dmi_system_id *list)
 unsigned long
 clear_user(void *to, unsigned long size)
 {
-	static uint8_t buf[PAGE_SIZE];
+	static uint8_t buf[256];
 
-	if (size > PAGE_SIZE)
-		return (size);
+	uint8_t *ptr = to;
 
-	return (copy_to_user(to, buf, size));
+	while (size > sizeof(buf)) {
+		if (copy_to_user(ptr, buf, sizeof(buf)))
+			return (size);
+
+		ptr += sizeof(buf);
+		size -= sizeof(buf);
+	}
+
+	if (size > 0)
+		return (copy_to_user(ptr, buf, size));
+
+	return (0);
 }
 
 void
