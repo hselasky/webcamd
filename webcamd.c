@@ -40,6 +40,7 @@ struct f_videodev {
 	pthread_t process;
 	int	f;
 	int	f_v4b;
+	int	local_user;
 };
 
 struct vm_allocation {
@@ -68,7 +69,6 @@ static int u_addr = 0;
 static int u_index = 0;
 static int u_videodev = -1;
 static int f_usb = -1;
-static int local_user = 0;
 static int do_fork = 0;
 static struct pidfh *local_pid = NULL;
 
@@ -91,13 +91,33 @@ find_video4bsd(void)
 	uint8_t n;
 
 	for (n = 0; n != F_V4B_MAX; n++) {
-		if (f_videodev[n].process == process)
+		if (f_videodev[n].process == process) {
+			if (f_videodev[n].local_user)
+				return (-1);
 			return (f_videodev[n].f);
+		}
 	}
 
 	v4b_errx(1, "Cannot find Video4BSD process\n");
 
 	return (0);
+}
+
+
+static void
+set_localuser(int local_user)
+{
+	pthread_t process = pthread_self();
+	uint8_t n;
+
+	for (n = 0; n != F_V4B_MAX; n++) {
+		if (f_videodev[n].process == process) {
+			f_videodev[n].local_user = local_user;
+			return;
+		}
+	}
+
+	v4b_errx(1, "Cannot find Video4BSD process\n");
 }
 
 static void *
@@ -388,9 +408,10 @@ copy_to_user(void *to, const void *from, unsigned long n)
 		.peer_ptr = to,
 		.length = n,
 	};
+	int f = find_video4bsd();
 
-	if (local_user == 0)
-		return (ioctl(find_video4bsd(), V4B_IOCTL_WRITE_DATA, &cmd) ? n : 0);
+	if (f >= 0)
+		return (ioctl(f, V4B_IOCTL_WRITE_DATA, &cmd) ? n : 0);
 
 	memcpy(to, from, n);
 	return (0);
@@ -404,9 +425,10 @@ copy_from_user(void *to, const void *from, unsigned long n)
 		.peer_ptr = (uint8_t *)(from - (const void *)0),
 		.length = n,
 	};
+	int f = find_video4bsd();
 
-	if (local_user == 0)
-		return (ioctl(find_video4bsd(), V4B_IOCTL_READ_DATA, &cmd) ? n : 0);
+	if (f >= 0)
+		return (ioctl(f, V4B_IOCTL_READ_DATA, &cmd) ? n : 0);
 
 	memcpy(to, from, n);
 	return (0);
@@ -421,7 +443,7 @@ find_mmap_size(int f_v4b, uint32_t offset,
 	int err;
 	int i;
 
-	local_user = 1;
+	set_localuser(1);
 
 	for (i = 0;; i++) {
 
@@ -446,7 +468,7 @@ find_mmap_size(int f_v4b, uint32_t offset,
 		}
 	}
 
-	local_user = 0;
+	set_localuser(0);
 
 	return (ptr);
 }
