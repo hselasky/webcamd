@@ -47,6 +47,7 @@ linux_open(int f_v4b)
 		return (-1);
 	}
 	sub->fixed_file.f_flags = O_RDWR;	/* XXX */
+	sub->fixed_file.f_op = cdev->ops;	/* reset */
 
 	if (cdev->ops->open == NULL) {
 		return (0);
@@ -96,10 +97,10 @@ linux_close(int f_v4b)
 		sub->fixed_vma[i].vm_ops = NULL;
 	}
 
-	if (cdev->ops->release == NULL)
+	if (sub->fixed_file.f_op->release == NULL)
 		return (0);
 
-	return ((cdev->ops->release) (&sub->fixed_inode, &sub->fixed_file));
+	return ((sub->fixed_file.f_op->release) (&sub->fixed_inode, &sub->fixed_file));
 }
 
 int
@@ -116,11 +117,11 @@ linux_ioctl(int f_v4b, unsigned int cmd, void *arg)
 	if (sub->is_opened == 0)
 		return (-EINVAL);
 
-	if (cdev->ops->unlocked_ioctl)
-		return (cdev->ops->unlocked_ioctl(&sub->fixed_file,
+	if (sub->fixed_file.f_op->unlocked_ioctl)
+		return (sub->fixed_file.f_op->unlocked_ioctl(&sub->fixed_file,
 		    cmd, (long)arg));
-	else if (cdev->ops->ioctl)
-		return (cdev->ops->ioctl(&sub->fixed_inode,
+	else if (sub->fixed_file.f_op->ioctl)
+		return (sub->fixed_file.f_op->ioctl(&sub->fixed_inode,
 		    &sub->fixed_file, cmd, (long)arg));
 	else
 		return (-EINVAL);
@@ -142,7 +143,7 @@ linux_read(int f_v4b, char *ptr, size_t len)
 	if (sub->is_opened == 0)
 		return (-EINVAL);
 
-	err = cdev->ops->read(&sub->fixed_file, ptr, len, &off);
+	err = sub->fixed_file.f_op->read(&sub->fixed_file, ptr, len, &off);
 
 	return (err);
 }
@@ -163,7 +164,7 @@ linux_write(int f_v4b, char *ptr, size_t len)
 	if (sub->is_opened == 0)
 		return (-EINVAL);
 
-	err = cdev->ops->write(&sub->fixed_file, ptr, len, &off);
+	err = sub->fixed_file.f_op->write(&sub->fixed_file, ptr, len, &off);
 
 	return (err);
 }
@@ -228,7 +229,7 @@ linux_mmap(int f_v4b, uint8_t *addr, size_t len, off_t offset)
 	sub->fixed_vma[i].vm_buffer_address = MAP_FAILED;
 	sub->fixed_vma[i].vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
 
-	err = cdev->ops->mmap(&sub->fixed_file, &sub->fixed_vma[i]);
+	err = sub->fixed_file.f_op->mmap(&sub->fixed_file, &sub->fixed_vma[i]);
 	if (err) {
 		sub->fixed_vma[i].vm_buffer_address = MAP_FAILED;
 		return (MAP_FAILED);
