@@ -46,6 +46,8 @@ linux_open(int f_v4b)
 	if (busy) {
 		return (-1);
 	}
+	sub->fixed_file.f_flags = O_RDWR;	/* XXX */
+
 	if (cdev->ops->open == NULL) {
 		return (0);
 	}
