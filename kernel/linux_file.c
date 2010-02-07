@@ -143,23 +143,7 @@ linux_read(int f_v4b, char *ptr, size_t len)
 	if (sub->is_opened == 0)
 		return (-EINVAL);
 
-	char *p2;
-
-	err = copy_to_user(ptr, p2 = malloc(len / 2), len / 2);
-
-	if (err)
-		printf("err\n");
-
-	err = copy_to_user(ptr + (len / 2), p2 = malloc(len / 2), len / 2);
-
-	free(p2);
-
-	if (err)
-		printf("err\n");
-
-	//printf("err = %d,%d\n", err, (int)len);
-
-	//err = sub->fixed_file.f_op->read(&sub->fixed_file, ptr, len, &off);
+	err = sub->fixed_file.f_op->read(&sub->fixed_file, ptr, len, &off);
 
 	return (err);
 }
