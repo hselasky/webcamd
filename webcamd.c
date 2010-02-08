@@ -41,6 +41,8 @@ struct f_videodev {
 	int	f;
 	int	f_v4b;
 	int	local_user;
+	int	is_reading;
+	uint32_t buffer[PAGE_SIZE / 4];
 };
 
 struct vm_allocation {
@@ -85,15 +87,58 @@ static void *find_mmap_size(int f_v4b, uint32_t offset, uint32_t *psize, uint32_
 static void v4b_errx(int code, const char *str);
 
 static int
-find_video4bsd(void)
+find_video4bsd(void *to, const void *from, unsigned long len, int is_read)
 {
 	pthread_t process = pthread_self();
+	unsigned long offset;
+	unsigned long rem;
 	uint8_t n;
 
 	for (n = 0; n != F_V4B_MAX; n++) {
 		if (f_videodev[n].process == process) {
-			if (f_videodev[n].local_user)
-				return (-1);
+			if (f_videodev[n].local_user) {
+				memcpy(to, from, len);
+				return (-2);
+			}
+#if 1
+			/* XXX V4L can copy back its written data XXX */
+			if (f_videodev[n].is_reading) {
+				if (is_read) {
+					offset = (uint8_t *)from - (uint8_t *)V4B_BUF_MIN_PTR;
+
+					if (offset < sizeof(f_videodev[n].buffer)) {
+						rem = sizeof(f_videodev[n].buffer) - offset;
+						if (rem >= len)
+							rem = len;
+						else
+							rem = 0;	/* overflow */
+					} else {
+						rem = 0;
+					}
+
+					if (rem != 0) {
+						memcpy(to, ((uint8_t *)f_videodev[n].buffer) + offset, rem);
+						return (-2);
+					} else {
+						return (-1);
+					}
+				} else {
+					offset = (uint8_t *)to - (uint8_t *)V4B_BUF_MIN_PTR;
+
+					if (offset < sizeof(f_videodev[n].buffer)) {
+						rem = sizeof(f_videodev[n].buffer) - offset;
+						if (rem > len)
+							rem = len;
+					} else {
+						rem = 0;
+					}
+
+					if (rem != 0) {
+						memcpy(((uint8_t *)f_videodev[n].buffer) + offset, from, rem);
+					}
+				}
+			}
+#endif
 			return (f_videodev[n].f);
 		}
 	}
@@ -180,8 +225,16 @@ work_video4bsd(void *arg)
 			break;
 
 		case V4B_CMD_READ:
+
+			/* set reading hint */
+			dev->is_reading = 1;
+
 			/* read from device */
 			err = linux_read(dev->f_v4b, cmd.ptr, cmd.arg);
+
+			/* clear reading hint */
+			dev->is_reading = 0;
+
 			if (err >= 0)
 				err = 0;
 			if (ioctl(dev->f, V4B_IOCTL_SYNC_COMMAND, &err) != 0)
@@ -408,12 +461,13 @@ copy_to_user(void *to, const void *from, unsigned long n)
 		.peer_ptr = to,
 		.length = n,
 	};
-	int f = find_video4bsd();
+	int f = find_video4bsd(to, from, n, 0);
 
+	if (f == -1)
+		return (n);
 	if (f >= 0)
 		return (ioctl(f, V4B_IOCTL_WRITE_DATA, &cmd) ? n : 0);
 
-	memcpy(to, from, n);
 	return (0);
 }
 
@@ -425,12 +479,13 @@ copy_from_user(void *to, const void *from, unsigned long n)
 		.peer_ptr = (uint8_t *)(from - (const void *)0),
 		.length = n,
 	};
-	int f = find_video4bsd();
+	int f = find_video4bsd(to, from, n, 1);
 
+	if (f == -1)
+		return (n);
 	if (f >= 0)
 		return (ioctl(f, V4B_IOCTL_READ_DATA, &cmd) ? n : 0);
 
-	memcpy(to, from, n);
 	return (0);
 }
 
