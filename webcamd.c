@@ -169,7 +169,7 @@ static void *
 work_video4bsd(void *arg)
 {
 	struct f_videodev *dev = (struct f_videodev *)arg;
-	static struct v4b_command cmd;
+	struct v4b_command cmd;
 	void *mm_ptr;
 	uint32_t size;
 	uint32_t delta;
