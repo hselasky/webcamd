@@ -100,7 +100,7 @@ do {						\
 	int __ret = 0;				\
 	atomic_lock();				\
 	while (!(condition)) {			\
-	  if (linux_signal_pending) {		\
+	  if (check_signal()) {		\
 		__ret = -ERESTARTSYS;		\
 		break;				\
 	  }					\
@@ -133,7 +133,7 @@ do {						\
 	__wait_get_timeout(__ret, ts);			\
 	atomic_lock();					\
 	while (!(condition)) {				\
-	  if (linux_signal_pending) {			\
+	  if (check_signal()) {			\
 		__ret = -ERESTARTSYS;			\
 		break;					\
 	  }						\
@@ -200,13 +200,13 @@ void	atomic_post_sleep(void);
 
 int	thread_init(void);
 
-void	linux_set_signal(void);
-void	linux_clear_signal(void);
-
 void	prepare_to_wait(wait_queue_head_t *, wait_queue_t *, int);
 void	finish_wait(wait_queue_head_t *, wait_queue_t *);
 
-extern int linux_signal_pending;
 extern struct task_struct linux_task;
+
+int	check_signal(void);
+void	wake_up_all_internal(void);
+
 
 #endif					/* _LINUX_THREAD_H_ */

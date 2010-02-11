@@ -27,7 +27,8 @@
 #
 # Makefile for Webcam Daemon
 #
-VERSION=	0.1.5
+
+VERSION=	0.1.7
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -433,15 +434,15 @@ CFLAGS+= -O2 -Wall -Wno-pointer-sign
 
 CFLAGS+= -fvisibility=hidden
 
-.if exists(${.CURDIR}/../video4bsd/video4bsd.h)
-CFLAGS+= -I${.CURDIR}/../video4bsd
+.if exists(${.CURDIR}/../cuse4bsd/cuse4bsd.h)
+CFLAGS+= -I${.CURDIR}/../cuse4bsd
 .endif
 
-.if exists(%%PREFIX%%/include/video4bsd.h)
+.if exists(%%PREFIX%%/include/cuse4bsd.h)
 CFLAGS+= -I%%PREFIX%%/include
 .endif
 
-LDFLAGS+= -lusb -lpthread -lutil
+LDFLAGS+= -lusb -lcuse4bsd -lpthread -lutil
 
 .include <bsd.prog.mk>
 
@@ -522,7 +523,7 @@ help:
 	@echo "#"
 	@echo "# Webcamd usage example:"
 	@echo "#"
-	@echo "# kldload video4bsd"
+	@echo "# kldload cuse4bsd"
 	@echo "# webcamd -B"
 	@echo "# pwcview"
 	@echo "#"

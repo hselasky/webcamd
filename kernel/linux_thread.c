@@ -26,7 +26,6 @@
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
-int	linux_signal_pending;
 
 struct task_struct linux_task = {
 	.comm = "V4B",
@@ -108,6 +107,14 @@ waitqueue_active(wait_queue_head_t *q)
 	count = q->sleep_count;
 	atomic_unlock();
 	return (count != 0);
+}
+
+void
+wake_up_all_internal(void)
+{
+	atomic_lock();
+	pthread_cond_broadcast(&sema_cond);
+	atomic_unlock();
 }
 
 void
@@ -322,7 +329,7 @@ wait_for_completion_interruptible(struct completion *x)
 
 	atomic_lock();
 	while (x->done == 0) {
-		if (linux_signal_pending) {
+		if (check_signal()) {
 			ret = -ERESTARTSYS;
 			break;
 		}
@@ -499,23 +506,6 @@ void
 thread_exit(void)
 {
 	pthread_cond_destroy(&sema_cond);
-}
-
-void
-linux_set_signal(void)
-{
-	atomic_lock();
-	linux_signal_pending = 1;
-	pthread_cond_broadcast(&sema_cond);
-	atomic_unlock();
-}
-
-void
-linux_clear_signal(void)
-{
-	atomic_lock();
-	linux_signal_pending = 0;
-	atomic_unlock();
 }
 
 void

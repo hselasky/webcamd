@@ -26,163 +26,139 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 
-int
-linux_open(int f_v4b)
+struct cdev_handle *
+linux_open(int f_v4b, int fflags)
 {
 	struct cdev *cdev = cdev_get_device(f_v4b);
-	struct cdev_sub *sub;
-	uint8_t busy;
+	struct cdev_handle *handle;
+	int error;
 
-	if (cdev == NULL) {
-		return (-1);
-	}
-	sub = &cdev->sub[f_v4b];
+	if (cdev == NULL)
+		return (NULL);
 
-	atomic_lock();
-	busy = sub->is_opened;
-	sub->is_opened = 1;
-	atomic_unlock();
+	handle = malloc(sizeof(*handle));
+	if (handle == NULL)
+		return (NULL);
 
-	if (busy) {
-		return (-1);
-	}
-	sub->fixed_file.f_flags = O_RDWR;	/* XXX */
-	sub->fixed_file.f_op = cdev->ops;	/* reset */
+	memset(handle, 0, sizeof(handle));
+
+	handle->fixed_file.f_flags = fflags;
+	handle->fixed_file.f_op = cdev->ops;
+	handle->fixed_dentry.d_inode = &handle->fixed_inode;
+	handle->fixed_file.f_path.dentry = &handle->fixed_dentry;
+	handle->fixed_inode.d_inode = cdev->mm_start;
 
 	if (cdev->ops->open == NULL) {
-		return (0);
+		return (handle);
 	}
-	if ((errno = -cdev->ops->open(&sub->fixed_inode, &sub->fixed_file))) {
-		atomic_lock();
-		sub->is_opened = 0;
-		atomic_unlock();
-		return (-1);
+	if ((error = -cdev->ops->open(&handle->fixed_inode, &handle->fixed_file))) {
+		free(handle);
+		return (NULL);
 	}
-	return (0);
+	return (handle);
 }
 
 int
-linux_close(int f_v4b)
+linux_close(struct cdev_handle *handle)
 {
-	struct cdev *cdev = cdev_get_device(f_v4b);
-	struct cdev_sub *sub;
-	uint8_t busy;
-	uint32_t i;
+	int i;
+	int error;
 
-	if (cdev == NULL)
-		return (0);
-
-	sub = &cdev->sub[f_v4b];
-
-	atomic_lock();
-	busy = sub->is_opened;
-	sub->is_opened = 0;
-	atomic_unlock();
-
-	if (!busy)
+	if (handle == NULL)
 		return (0);
 
 	/* release all memory mapped regions */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
-		if (sub->fixed_vma[i].vm_buffer_address == NULL)
+		if (handle->fixed_vma[i].vm_buffer_address == NULL)
 			continue;
-		if (sub->fixed_vma[i].vm_buffer_address == MAP_FAILED)
+		if (handle->fixed_vma[i].vm_buffer_address == MAP_FAILED)
 			continue;
 
-		if (sub->fixed_vma[i].vm_ops &&
-		    sub->fixed_vma[i].vm_ops->close)
-			sub->fixed_vma[i].vm_ops->close(&sub->fixed_vma[i]);
+		if (handle->fixed_vma[i].vm_ops &&
+		    handle->fixed_vma[i].vm_ops->close)
+			handle->fixed_vma[i].vm_ops->close(&handle->fixed_vma[i]);
 
-		sub->fixed_vma[i].vm_buffer_address = NULL;
-		sub->fixed_vma[i].vm_ops = NULL;
+		handle->fixed_vma[i].vm_buffer_address = NULL;
+		handle->fixed_vma[i].vm_ops = NULL;
 	}
 
-	if (sub->fixed_file.f_op->release == NULL)
-		return (0);
+	if (handle->fixed_file.f_op->release != NULL)
+		error = (handle->fixed_file.f_op->release)
+		    (&handle->fixed_inode, &handle->fixed_file);
+	else
+		error = 0;
 
-	return ((sub->fixed_file.f_op->release) (&sub->fixed_inode, &sub->fixed_file));
+	free(handle);
+
+	return (error);
 }
 
 int
-linux_ioctl(int f_v4b, unsigned int cmd, void *arg)
+linux_ioctl(struct cdev_handle *handle, int fflags,
+    unsigned int cmd, void *arg)
 {
-	struct cdev *cdev = cdev_get_device(f_v4b);
-	struct cdev_sub *sub;
-
-	if (cdev == NULL)
+	if (handle == NULL)
 		return (-EINVAL);
 
-	sub = &cdev->sub[f_v4b];
-
-	if (sub->is_opened == 0)
-		return (-EINVAL);
-
-	if (sub->fixed_file.f_op->unlocked_ioctl)
-		return (sub->fixed_file.f_op->unlocked_ioctl(&sub->fixed_file,
+	if (handle->fixed_file.f_op->unlocked_ioctl)
+		return (handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
 		    cmd, (long)arg));
-	else if (sub->fixed_file.f_op->ioctl)
-		return (sub->fixed_file.f_op->ioctl(&sub->fixed_inode,
-		    &sub->fixed_file, cmd, (long)arg));
+	else if (handle->fixed_file.f_op->ioctl)
+		return (handle->fixed_file.f_op->ioctl(&handle->fixed_inode,
+		    &handle->fixed_file, cmd, (long)arg));
 	else
 		return (-EINVAL);
 }
 
 ssize_t
-linux_read(int f_v4b, char *ptr, size_t len)
+linux_read(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 {
-	struct cdev *cdev = cdev_get_device(f_v4b);
-	struct cdev_sub *sub;
 	loff_t off = 0;
-	int err;
+	int error;
 
-	if (cdev == NULL)
+	if (handle == NULL)
 		return (-EINVAL);
 
-	sub = &cdev->sub[f_v4b];
+	if (fflags) {
+		if (!(handle->fixed_file.f_flags & O_NONBLOCK))
+			handle->fixed_file.f_flags |= O_NONBLOCK;
+	} else {
+		if (handle->fixed_file.f_flags & O_NONBLOCK)
+			handle->fixed_file.f_flags &= ~O_NONBLOCK;
+	}
 
-	if (sub->is_opened == 0)
-		return (-EINVAL);
+	error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
 
-	err = sub->fixed_file.f_op->read(&sub->fixed_file, ptr, len, &off);
-
-	return (err);
+	return (error);
 }
 
 ssize_t
-linux_write(int f_v4b, char *ptr, size_t len)
+linux_write(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 {
-	struct cdev *cdev = cdev_get_device(f_v4b);
-	struct cdev_sub *sub;
 	loff_t off = 0;
-	int err;
+	int error;
 
-	if (cdev == NULL)
+	if (handle == NULL)
 		return (-EINVAL);
 
-	sub = &cdev->sub[f_v4b];
+	if (fflags)
+		handle->fixed_file.f_flags |= O_NONBLOCK;
+	else
+		handle->fixed_file.f_flags &= ~O_NONBLOCK;
 
-	if (sub->is_opened == 0)
-		return (-EINVAL);
+	error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
 
-	err = sub->fixed_file.f_op->write(&sub->fixed_file, ptr, len, &off);
-
-	return (err);
+	return (error);
 }
 
 void   *
-linux_mmap(int f_v4b, uint8_t *addr, size_t len, off_t offset)
+linux_mmap(struct cdev_handle *handle, int fflags,
+    uint8_t *addr, size_t len, off_t offset)
 {
-	struct cdev *cdev = cdev_get_device(f_v4b);
-	struct cdev_sub *sub;
 	int err;
 	uint32_t i;
 
-	if (cdev == NULL)
-		return (MAP_FAILED);
-
-	sub = &cdev->sub[f_v4b];
-
-	if (sub->is_opened == 0)
+	if (handle == NULL)
 		return (MAP_FAILED);
 
 	/* sanity checks */
@@ -199,23 +175,23 @@ linux_mmap(int f_v4b, uint8_t *addr, size_t len, off_t offset)
 	}
 	/* check if the entry is already mapped */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
-		if ((sub->fixed_vma[i].vm_end -
-		    sub->fixed_vma[i].vm_start) != len)
+		if ((handle->fixed_vma[i].vm_end -
+		    handle->fixed_vma[i].vm_start) != len)
 			continue;
-		if (sub->fixed_vma[i].vm_pgoff != (offset >> PAGE_SHIFT))
+		if (handle->fixed_vma[i].vm_pgoff != (offset >> PAGE_SHIFT))
 			continue;
-		if (sub->fixed_vma[i].vm_buffer_address == NULL)
+		if (handle->fixed_vma[i].vm_buffer_address == NULL)
 			continue;
-		if (sub->fixed_vma[i].vm_buffer_address == MAP_FAILED)
+		if (handle->fixed_vma[i].vm_buffer_address == MAP_FAILED)
 			continue;
 
-		return (sub->fixed_vma[i].vm_buffer_address);
+		return (handle->fixed_vma[i].vm_buffer_address);
 	}
 
 	/* create new entry */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
-		if ((sub->fixed_vma[i].vm_buffer_address == NULL) ||
-		    (sub->fixed_vma[i].vm_buffer_address == MAP_FAILED))
+		if ((handle->fixed_vma[i].vm_buffer_address == NULL) ||
+		    (handle->fixed_vma[i].vm_buffer_address == MAP_FAILED))
 			break;
 	}
 
@@ -223,16 +199,16 @@ linux_mmap(int f_v4b, uint8_t *addr, size_t len, off_t offset)
 		return (MAP_FAILED);
 	}
 	/* fill in information */
-	sub->fixed_vma[i].vm_start = (unsigned long)addr;
-	sub->fixed_vma[i].vm_end = (unsigned long)(addr + len);
-	sub->fixed_vma[i].vm_pgoff = (offset >> PAGE_SHIFT);
-	sub->fixed_vma[i].vm_buffer_address = MAP_FAILED;
-	sub->fixed_vma[i].vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
+	handle->fixed_vma[i].vm_start = (unsigned long)addr;
+	handle->fixed_vma[i].vm_end = (unsigned long)(addr + len);
+	handle->fixed_vma[i].vm_pgoff = (offset >> PAGE_SHIFT);
+	handle->fixed_vma[i].vm_buffer_address = MAP_FAILED;
+	handle->fixed_vma[i].vm_flags = (VM_WRITE | VM_READ | VM_SHARED);
 
-	err = sub->fixed_file.f_op->mmap(&sub->fixed_file, &sub->fixed_vma[i]);
+	err = handle->fixed_file.f_op->mmap(&handle->fixed_file, &handle->fixed_vma[i]);
 	if (err) {
-		sub->fixed_vma[i].vm_buffer_address = MAP_FAILED;
+		handle->fixed_vma[i].vm_buffer_address = MAP_FAILED;
 		return (MAP_FAILED);
 	}
-	return (sub->fixed_vma[i].vm_buffer_address);
+	return (handle->fixed_vma[i].vm_buffer_address);
 }

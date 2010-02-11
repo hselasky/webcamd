@@ -40,6 +40,5 @@ int	timer_pending(const struct timer_list *timer);
 uint64_t get_jiffies_64(void);
 void	init_timer(struct timer_list *timer);
 void	need_timer(int flag);
-void	check_signal(void);
 
 #endif					/* _LINUX_TIMER_H_ */

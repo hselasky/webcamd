@@ -193,18 +193,16 @@ enum {
 	F_V4B_MAX,
 };
 
-struct cdev_sub {
+struct cdev_handle {
 	struct dentry fixed_dentry;
 	struct inode fixed_inode;
 	struct file fixed_file;
 	struct vm_area_struct fixed_vma[LINUX_VMA_MAX];
-	uint8_t	is_opened;
 };
 
 struct cdev {
 	const struct file_operations *ops;
 	struct module *owner;
-	struct cdev_sub sub[F_V4B_MAX];
 	dev_t	mm_start;
 	dev_t	mm_end;
 	uint8_t	is_alloced;

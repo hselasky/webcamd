@@ -469,52 +469,14 @@ cdev_get_device(int f_v4b)
 void
 cdev_init(struct cdev *cdev, const struct file_operations *fops)
 {
-	uint8_t n;
-
 	memset(cdev, 0, sizeof(*cdev));
 
 	cdev->ops = fops;
-
-	for (n = 0; n != F_V4B_MAX; n++) {
-
-		struct cdev_sub *sub = &cdev->sub[n];
-
-		sub->fixed_dentry.d_inode = &sub->fixed_inode;
-		sub->fixed_file.f_path.dentry = &sub->fixed_dentry;
-	}
-
-	cdev->sub[F_V4B_VIDEO].fixed_inode.d_inode =
-	    MKDEV(VIDEO_MAJOR, 0);
-	cdev->sub[F_V4B_DVB_AUDIO].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO);
-	cdev->sub[F_V4B_DVB_CA].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_CA);
-	cdev->sub[F_V4B_DVB_DEMUX].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX);
-	cdev->sub[F_V4B_DVB_DVR].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_DVR);
-	cdev->sub[F_V4B_DVB_FRONTEND].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND);
-	cdev->sub[F_V4B_DVB_OSD].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_OSD);
-	cdev->sub[F_V4B_DVB_SEC].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_SEC);
-	cdev->sub[F_V4B_DVB_VIDEO].fixed_inode.d_inode =
-	    MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO);
 }
 
 int
 cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
 {
-	uint8_t n;
-
-	for (n = 0; n != F_V4B_MAX; n++) {
-
-		struct cdev_sub *sub = &cdev->sub[n];
-
-		sub->fixed_file.f_op = cdev->ops;
-	}
-
 	cdev->mm_start = mm;
 	cdev->mm_end = mm + count;
 

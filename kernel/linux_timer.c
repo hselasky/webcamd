@@ -114,7 +114,8 @@ timer_exec(void *arg)
 
 			last_check = jiffies64;
 
-			check_signal();
+			/* make sure signals gets delivered */
+			wake_up_all_internal();
 		}
 #endif
 		jiffies64 += ms_delay;	/* ms */
