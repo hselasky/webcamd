@@ -42,7 +42,6 @@ static cuse_read_t v4b_read;
 static cuse_write_t v4b_write;
 static cuse_ioctl_t v4b_ioctl;
 static cuse_poll_t v4b_poll;
-static cuse_mmap_t v4b_mmap;
 
 static struct cuse_methods v4b_methods = {
 	.cm_open = v4b_open,
@@ -51,22 +50,21 @@ static struct cuse_methods v4b_methods = {
 	.cm_write = v4b_write,
 	.cm_ioctl = v4b_ioctl,
 	.cm_poll = v4b_poll,
-	.cm_mmap = v4b_mmap,
 };
 
 static const char *devnames[F_V4B_MAX] = {
 
-	[F_V4B_VIDEO] = "/dev/video%d",
+	[F_V4B_VIDEO] = "video%d",
 
-	[F_V4B_DVB_AUDIO] = "/dev/dvb/adapter%d/audio0",
-	[F_V4B_DVB_CA] = "/dev/dvb/adapter%d/ca0",
-	[F_V4B_DVB_DEMUX] = "/dev/dvb/adapter%d/demux0",
-	[F_V4B_DVB_DVR] = "/dev/dvb/adapter%d/dvr0",
+	[F_V4B_DVB_AUDIO] = "dvb/adapter%d/audio0",
+	[F_V4B_DVB_CA] = "dvb/adapter%d/ca0",
+	[F_V4B_DVB_DEMUX] = "dvb/adapter%d/demux0",
+	[F_V4B_DVB_DVR] = "dvb/adapter%d/dvr0",
 
-	[F_V4B_DVB_FRONTEND] = "/dev/dvb/adapter%d/frontend0",
-	[F_V4B_DVB_OSD] = "/dev/dvb/adapter%d/osd0",
-	[F_V4B_DVB_SEC] = "/dev/dvb/adapter%d/sec0",
-	[F_V4B_DVB_VIDEO] = "/dev/dvb/adapter%d/video0",
+	[F_V4B_DVB_FRONTEND] = "dvb/adapter%d/frontend0",
+	[F_V4B_DVB_OSD] = "dvb/adapter%d/osd0",
+	[F_V4B_DVB_SEC] = "dvb/adapter%d/sec0",
+	[F_V4B_DVB_VIDEO] = "dvb/adapter%d/video0",
 };
 
 static int u_unit = 0;
@@ -83,7 +81,6 @@ char	global_fw_prefix[128];
 #define	V4B_DEBUG
 #endif
 
-static void *v4b_find_mmap_size(struct cdev_handle *handle, int fflags, uint32_t offset, uint32_t *psize, uint32_t *delta);
 static void v4b_errx(int code, const char *str);
 
 static void
@@ -225,7 +222,9 @@ int
 v4b_ioctl(struct cuse_dev *cdev, int fflags,
     unsigned long cmd, void *peer_data)
 {
+	struct v4l2_buffer buf;
 	struct cdev_handle *handle;
+	void *ptr;
 	int error;
 
 	handle = cuse_dev_get_per_file_handle(cdev);
@@ -233,6 +232,24 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 	/* execute ioctl */
 	error = linux_ioctl(handle, fflags & CUSE_FFLAG_NONBLOCK, cmd, peer_data);
 
+	if (cmd == VIDIOC_QUERYBUF) {
+
+		if (copy_from_user(&buf, peer_data, sizeof(buf)) != 0)
+			goto done;
+
+		ptr = linux_mmap(handle, fflags, NULL,
+		    buf.length, buf.m.offset);
+
+		if (ptr != MAP_FAILED) {
+			buf.m.offset = cuse_vmoffset(ptr);
+		} else {
+			buf.m.offset = 0x80000000UL;
+		}
+
+		if (copy_to_user(peer_data, &buf, sizeof(buf)) != 0)
+			goto done;
+	}
+done:
 	return (v4b_convert_error(error));
 }
 
@@ -240,35 +257,6 @@ int
 v4b_poll(struct cuse_dev *cdev, int fflags, int events)
 {
 	return (events & (CUSE_POLL_READ | CUSE_POLL_WRITE | CUSE_POLL_ERROR));
-}
-
-int
-v4b_mmap(struct cuse_dev *cdev, int fflags,
-    unsigned long offset, unsigned long *vaddr)
-{
-	struct cdev_handle *handle;
-	void *mm_ptr;
-	uint32_t size;
-	uint32_t delta;
-	int error;
-
-	handle = cuse_dev_get_per_file_handle(cdev);
-
-	/* XXX V4L hack */
-	mm_ptr = v4b_find_mmap_size(handle, fflags & CUSE_FFLAG_NONBLOCK, offset, &size, &delta);
-	if (size != 0) {
-		if (mm_ptr == MAP_FAILED) {
-			error = CUSE_ERR_INVALID;
-		} else {
-			error = 0;
-
-			*vaddr = (unsigned long)(mm_ptr + delta);
-		}
-	} else {
-		error = CUSE_ERR_INVALID;
-	}
-
-	return (error);
 }
 
 static void
@@ -446,45 +434,6 @@ copy_from_user(void *to, const void *from, unsigned long n)
 	error = cuse_copy_in(from, to, (int)n);
 
 	return ((error != 0) ? n : 0);
-}
-
-static void *
-v4b_find_mmap_size(struct cdev_handle *handle, int fflags,
-    uint32_t offset, uint32_t *psize, uint32_t *delta)
-{
-	struct v4l2_buffer buf = {0, 0, 0};
-	void *ptr;
-	int err;
-	int i;
-
-	cuse_set_local(1);
-
-	for (i = 0;; i++) {
-
-		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		buf.memory = V4L2_MEMORY_MMAP;
-		buf.index = i;
-
-		err = linux_ioctl(handle, fflags, VIDIOC_QUERYBUF, &buf);
-		if (err) {
-			*psize = 0;
-			*delta = 0;
-			ptr = MAP_FAILED;
-			break;
-		}
-		if ((offset >= buf.m.offset) &&
-		    (offset <= (buf.m.offset + buf.length - 1))) {
-			*psize = buf.length;
-			*delta = offset - buf.m.offset;
-			ptr = linux_mmap(handle, fflags, NULL,
-			    buf.length, buf.m.offset);
-			break;
-		}
-	}
-
-	cuse_set_local(0);
-
-	return (ptr);
 }
 
 void   *
