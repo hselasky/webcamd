@@ -274,10 +274,10 @@ v4b_create(int unit)
 			linux_close(handle);
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
-			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ , 0600, devnames[n], n);
+			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ , 0600, devnames[n], unit);
 
 			printf("Creating /dev/");
-			printf(devnames[n], n);
+			printf(devnames[n], unit);
 			printf("\n");
 		}
 	}
@@ -339,7 +339,7 @@ pidfile_create(int bus, int addr, int index)
 		pidfile_write(local_pid);
 	}
 
-	printf("Attached ugen%d.%d[%d] to Video4BSD unit %d\n",
+	printf("Attached ugen%d.%d[%d] to cuse unit %d\n",
 	    bus, addr, index, u_videodev);
 
 	return (0);
