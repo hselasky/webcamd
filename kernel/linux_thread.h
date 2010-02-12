@@ -207,6 +207,6 @@ extern struct task_struct linux_task;
 
 int	check_signal(void);
 void	wake_up_all_internal(void);
-
+void	poll_wakeup_internal(void);
 
 #endif					/* _LINUX_THREAD_H_ */

@@ -124,6 +124,8 @@ wake_up(wait_queue_head_t *q)
 	q->sleep_ref++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
+
+	poll_wakeup_internal();
 }
 
 void
@@ -133,6 +135,8 @@ wake_up_all(wait_queue_head_t *q)
 	q->sleep_ref++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
+
+	poll_wakeup_internal();
 }
 
 void
@@ -142,6 +146,8 @@ wake_up_nr(wait_queue_head_t *q, uint32_t nr)
 	q->sleep_ref++;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
+
+	poll_wakeup_internal();
 }
 
 void

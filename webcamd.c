@@ -216,7 +216,7 @@ v4b_write(struct cuse_dev *cdev, int fflags,
 	return (v4b_convert_error(error));
 }
 
-int
+static int
 v4b_ioctl(struct cuse_dev *cdev, int fflags,
     unsigned long cmd, void *peer_data)
 {
@@ -251,10 +251,30 @@ done:
 	return (v4b_convert_error(error));
 }
 
-int
+static int
 v4b_poll(struct cuse_dev *cdev, int fflags, int events)
 {
-	return (events & (CUSE_POLL_READ | CUSE_POLL_WRITE | CUSE_POLL_ERROR));
+	struct cdev_handle *handle;
+	int error;
+	int revents;
+
+	handle = cuse_dev_get_per_file_handle(cdev);
+
+	/* write to device */
+	error = linux_poll(handle);
+
+	revents = 0;
+
+	if (error & (POLLIN | POLLRDNORM))
+		revents |= events & CUSE_POLL_READ;
+
+	if (error & (POLLOUT | POLLWRNORM))
+		revents |= events & CUSE_POLL_WRITE;
+
+	if (error & (POLLHUP | POLLNVAL | POLLERR))
+		revents |= events & (CUSE_POLL_ERROR | CUSE_POLL_READ | CUSE_POLL_WRITE);
+
+	return (revents);
 }
 
 static void
@@ -451,4 +471,10 @@ int
 check_signal(void)
 {
 	return (cuse_got_peer_signal() == 0);
+}
+
+void
+poll_wakeup_internal(void)
+{
+	cuse_poll_wakeup();
 }

@@ -100,14 +100,30 @@ linux_ioctl(struct cdev_handle *handle, int fflags,
 	if (handle == NULL)
 		return (-EINVAL);
 
-	if (handle->fixed_file.f_op->unlocked_ioctl)
+	if (handle->fixed_file.f_op->unlocked_ioctl != NULL)
 		return (handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
 		    cmd, (long)arg));
-	else if (handle->fixed_file.f_op->ioctl)
+	else if (handle->fixed_file.f_op->ioctl != NULL)
 		return (handle->fixed_file.f_op->ioctl(&handle->fixed_inode,
 		    &handle->fixed_file, cmd, (long)arg));
 	else
 		return (-EINVAL);
+}
+
+int
+linux_poll(struct cdev_handle *handle)
+{
+	int error;
+
+	if (handle == NULL)
+		return (POLLNVAL);
+
+	if (handle->fixed_file.f_op->poll == NULL)
+		return (POLLNVAL);
+
+	error = handle->fixed_file.f_op->poll(&handle->fixed_file, NULL);
+
+	return (error);
 }
 
 ssize_t
@@ -117,6 +133,9 @@ linux_read(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 	int error;
 
 	if (handle == NULL)
+		return (-EINVAL);
+
+	if (handle->fixed_file.f_op->read == NULL)
 		return (-EINVAL);
 
 	if (fflags) {
@@ -139,6 +158,9 @@ linux_write(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 	int error;
 
 	if (handle == NULL)
+		return (-EINVAL);
+
+	if (handle->fixed_file.f_op->write == NULL)
 		return (-EINVAL);
 
 	if (fflags)
