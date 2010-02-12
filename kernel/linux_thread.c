@@ -115,6 +115,8 @@ wake_up_all_internal(void)
 	atomic_lock();
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
+
+	poll_wakeup_internal();
 }
 
 void
