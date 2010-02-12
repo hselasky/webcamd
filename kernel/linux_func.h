@@ -140,6 +140,7 @@ int	add_uevent_var(struct kobj_uevent_env *env, const char *format,...);
 struct class *class_create(struct module *owner, const char *name);
 void	cdev_init(struct cdev *cdev, const struct file_operations *fops);
 struct cdev *cdev_get_device(int f_v4b);
+uint32_t cdev_get_mm(int f_v4b);
 
 #ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);

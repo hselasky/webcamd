@@ -415,37 +415,48 @@ done:
 }
 
 static struct cdev *cdev_registry[F_V4B_MAX];
+static uint32_t cdev_mm[F_V4B_MAX];
 
 static void
 cdev_set_device(dev_t mm, struct cdev *cdev)
 {
+	;				/* indent fix */
 	switch (mm) {
-		case MKDEV(VIDEO_MAJOR, 0):
+	case MKDEV(VIDEO_MAJOR, 0):
 		cdev_registry[F_V4B_VIDEO] = cdev;
+		cdev_mm[F_V4B_VIDEO] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO):
 		cdev_registry[F_V4B_DVB_AUDIO] = cdev;
+		cdev_mm[F_V4B_DVB_AUDIO] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_CA):
 		cdev_registry[F_V4B_DVB_CA] = cdev;
+		cdev_mm[F_V4B_DVB_CA] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX):
 		cdev_registry[F_V4B_DVB_DEMUX] = cdev;
+		cdev_mm[F_V4B_DVB_DEMUX] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_DVR):
 		cdev_registry[F_V4B_DVB_DVR] = cdev;
+		cdev_mm[F_V4B_DVB_DVR] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
 		cdev_registry[F_V4B_DVB_FRONTEND] = cdev;
+		cdev_mm[F_V4B_DVB_FRONTEND] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_OSD):
 		cdev_registry[F_V4B_DVB_OSD] = cdev;
+		cdev_mm[F_V4B_DVB_OSD] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_SEC):
 		cdev_registry[F_V4B_DVB_SEC] = cdev;
+		cdev_mm[F_V4B_DVB_SEC] = mm;
 		break;
 	case MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO):
 		cdev_registry[F_V4B_DVB_VIDEO] = cdev;
+		cdev_mm[F_V4B_DVB_VIDEO] = mm;
 		break;
 	default:
 		if ((mm < MKDEV(DVB_MAJOR, 0)) ||
@@ -464,6 +475,15 @@ cdev_get_device(int f_v4b)
 		return (NULL);		/* should not happen */
 
 	return (cdev_registry[f_v4b]);
+}
+
+uint32_t
+cdev_get_mm(int f_v4b)
+{
+	if ((f_v4b < 0) || (f_v4b >= F_V4B_MAX))
+		return (0);		/* should not happen */
+
+	return (cdev_mm[f_v4b]);
 }
 
 void

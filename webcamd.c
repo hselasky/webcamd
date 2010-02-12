@@ -274,7 +274,8 @@ v4b_create(int unit)
 			linux_close(handle);
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
-			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ , 0600, devnames[n], unit);
+			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ , 
+			    0600, devnames[n], unit);
 
 			printf("Creating /dev/");
 			printf(devnames[n], unit);
