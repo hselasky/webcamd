@@ -77,10 +77,6 @@ static struct pidfh *local_pid = NULL;
 
 char	global_fw_prefix[128];
 
-#if 0
-#define	V4B_DEBUG
-#endif
-
 static void v4b_errx(int code, const char *str);
 
 static void
@@ -107,9 +103,11 @@ v4b_work(void *arg)
 static int
 v4b_convert_error(int error)
 {
+	;				/* indent fix */
 	if (error < 0) {
 		switch (error) {
-			case -EBUSY:error = CUSE_ERR_BUSY;
+		case -EBUSY:
+			error = CUSE_ERR_BUSY;
 			break;
 		case -EWOULDBLOCK:
 			error = CUSE_ERR_WOULDBLOCK;
@@ -143,7 +141,7 @@ v4b_open(struct cuse_dev *cdev, int fflags)
 
 	f_v4b = (int)(long)cuse_dev_get_priv0(cdev);
 
-	switch (fflags & (CUSE_FFLAG_READ | CUSE_FFLAG_READ)) {
+	switch (fflags & (CUSE_FFLAG_WRITE | CUSE_FFLAG_READ)) {
 	case (CUSE_FFLAG_WRITE | CUSE_FFLAG_READ):
 		fflags_linux = O_RDWR;
 		break;
@@ -274,7 +272,7 @@ v4b_create(int unit)
 			linux_close(handle);
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
-			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ , 
+			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ ,
 			    0600, devnames[n], unit);
 
 			printf("Creating /dev/");
