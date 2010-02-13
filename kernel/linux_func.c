@@ -1422,7 +1422,7 @@ class_create(struct module *owner, const char *name)
 	if (class == NULL)
 		return (NULL);
 
-	memset(class, 0, sizeof(class));
+	memset(class, 0, sizeof(*class));
 
 	class->name = name;
 

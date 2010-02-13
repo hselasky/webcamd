@@ -97,7 +97,7 @@ v4b_work(void *arg)
 			break;
 	}
 
-	exit(0);	/* we are done */
+	exit(0);			/* we are done */
 
 	return (NULL);
 }

@@ -40,7 +40,7 @@ linux_open(int f_v4b, int fflags)
 	if (handle == NULL)
 		return (NULL);
 
-	memset(handle, 0, sizeof(handle));
+	memset(handle, 0, sizeof(*handle));
 
 	handle->fixed_file.f_flags = fflags;
 	handle->fixed_file.f_op = cdev->ops;
