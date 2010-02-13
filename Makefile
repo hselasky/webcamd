@@ -74,6 +74,7 @@ ${LINUXDIR}/drivers/media/video/gspca \
 ${LINUXDIR}/drivers/media/video/gspca/gl860 \
 ${LINUXDIR}/drivers/media/video/gspca/m5602 \
 ${LINUXDIR}/drivers/media/video/gspca/stv06xx \
+${LINUXDIR}/drivers/media/video/hdpvr \
 ${LINUXDIR}/drivers/media/video/ivtv \
 ${LINUXDIR}/drivers/media/video/ovcamchip \
 ${LINUXDIR}/drivers/media/video/pvrusb2 \
@@ -254,6 +255,37 @@ SRCS+= et61x251_tas5130d1b.c
 #SRCS+= em28xx-video.c
 
 #
+# hdpvr
+#
+
+SRCS+= hdpvr-control.c
+SRCS+= hdpvr-core.c
+SRCS+= hdpvr-i2c.c
+SRCS+= hdpvr-video.c
+
+#
+# ivtv
+#
+
+#SRCS+= ivtv-cards.c
+#SRCS+= ivtv-controls.c
+#SRCS+= ivtv-driver.c
+#SRCS+= ivtv-fileops.c
+#SRCS+= ivtv-firmware.c
+#SRCS+= ivtv-gpio.c
+#SRCS+= ivtv-i2c.c
+#SRCS+= ivtv-ioctl.c
+#SRCS+= ivtv-irq.c
+#SRCS+= ivtv-mailbox.c
+#SRCS+= ivtv-udma.c
+#SRCS+= ivtv-queue.c
+#SRCS+= ivtv-routing.c
+#SRCS+= ivtv-streams.c
+#SRCS+= ivtv-vbi.c
+#SRCS+= ivtv-yuv.c
+#SRCS+= ivtvfb.c
+
+#
 # pvrusb2
 #
 
@@ -413,6 +445,7 @@ CFLAGS+= -I${.CURDIR}/dummy
 CFLAGS+= -I${.CURDIR}/headers
 
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
+CFLAGS+= -I${LINUXDIR}/drivers/media/video/hdpvr
 CFLAGS+= -I${LINUXDIR}/drivers/media/common/tuners
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/dvb-core
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/frontends
@@ -506,7 +539,7 @@ package: clean
 		--exclude="v4l2-apps" --exclude="media-specs" --exclude="v4l_experimental" \
 		--exclude="*.txt" --exclude=".svn" \
 		--exclude="Documentation" --exclude="v4l2-apps" \
-		Makefile *.[ch] dummy kernel/*.[ch] \
+		Makefile *.[ch] dummy headers kernel/*.[ch] \
 		patches/do_patch.sh patches/*.diff \
 		v4l-dvb v4l-dvb-*
 

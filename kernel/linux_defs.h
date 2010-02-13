@@ -278,6 +278,7 @@
 #define	wmb() __nop
 #define	min_t(cast,x,y) ((((cast)(x)) < ((cast)(y))) ? (cast)(x) : (cast)(y))
 #define	max_t(cast,x,y) ((((cast)(x)) > ((cast)(y))) ? (cast)(x) : (cast)(y))
+#define	ATOMIC_INIT(x) { (x) }
 
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
 #if (BYTE_ORDER == LITTLE_ENDIAN)
@@ -306,8 +307,8 @@ typedef signed short s16;
 typedef unsigned short u16;
 typedef signed int s32;
 typedef unsigned int u32;
-typedef signed long long s64;
-typedef unsigned long long u64;
+typedef int64_t s64;
+typedef uint64_t u64;
 typedef u64 dma_addr_t;
 typedef u64 dma64_addr_t;
 typedef u64 sector_t;

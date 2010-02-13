@@ -15,8 +15,14 @@ uint16_t cpu_to_be16(uint16_t x);
 uint32_t le32_to_cpu(uint32_t x);
 uint32_t be32_to_cpu(uint32_t x);
 
+uint64_t le64_to_cpu(uint64_t x);
+uint64_t be64_to_cpu(uint64_t x);
+
 uint32_t cpu_to_le32(uint32_t x);
 uint32_t cpu_to_be32(uint32_t x);
+
+uint64_t cpu_to_le64(uint64_t x);
+uint64_t cpu_to_be64(uint64_t x);
 
 uint16_t le16_to_cpup(uint16_t *p);
 uint16_t be16_to_cpup(uint16_t *p);
@@ -29,6 +35,12 @@ uint32_t be32_to_cpup(uint32_t *p);
 
 uint32_t cpu_to_le32p(uint32_t *p);
 uint32_t cpu_to_be32p(uint32_t *p);
+
+uint64_t le64_to_cpup(uint64_t *p);
+uint64_t be64_to_cpup(uint64_t *p);
+
+uint64_t cpu_to_le64p(uint64_t *p);
+uint64_t cpu_to_be64p(uint64_t *p);
 
 void	put_unaligned_le32(uint32_t, void *);
 void	put_unaligned_le16(uint16_t, void *);

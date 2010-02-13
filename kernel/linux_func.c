@@ -69,6 +69,28 @@ be32_to_cpu(uint32_t x)
 	return (p[3] | (p[2] << 8) | (p[1] << 16) | (p[0] << 24));
 }
 
+uint64_t
+le64_to_cpu(uint64_t x)
+{
+	uint8_t *p = (uint8_t *)&x;
+
+	return ((((uint64_t)p[0])) | (((uint64_t)p[1]) << 8) |
+	    (((uint64_t)p[2]) << 16) | (((uint64_t)p[3]) << 24) |
+	    (((uint64_t)p[4]) << 32) | (((uint64_t)p[5]) << 40) |
+	    (((uint64_t)p[6]) << 48) | (((uint64_t)p[7]) << 56));
+}
+
+uint64_t
+be64_to_cpu(uint64_t x)
+{
+	uint8_t *p = (uint8_t *)&x;
+
+	return ((((uint64_t)p[7])) | (((uint64_t)p[6]) << 8) |
+	    (((uint64_t)p[5]) << 16) | (((uint64_t)p[4]) << 24) |
+	    (((uint64_t)p[3]) << 32) | (((uint64_t)p[2]) << 40) |
+	    (((uint64_t)p[1]) << 48) | (((uint64_t)p[0]) << 56));
+}
+
 uint16_t
 cpu_to_le16(uint16_t x)
 {
@@ -115,6 +137,40 @@ cpu_to_be32(uint32_t x)
 	p[0] = x >> 24;
 
 	return (*(uint32_t *)p);
+}
+
+uint64_t
+cpu_to_le64(uint64_t x)
+{
+	uint8_t p[8];
+
+	p[0] = x;
+	p[1] = x >> 8;
+	p[2] = x >> 16;
+	p[3] = x >> 24;
+	p[4] = x >> 32;
+	p[5] = x >> 40;
+	p[6] = x >> 48;
+	p[7] = x >> 56;
+
+	return (*(uint64_t *)p);
+}
+
+uint64_t
+cpu_to_be64(uint64_t x)
+{
+	uint8_t p[8];
+
+	p[7] = x;
+	p[6] = x >> 8;
+	p[5] = x >> 16;
+	p[4] = x >> 24;
+	p[3] = x >> 32;
+	p[2] = x >> 40;
+	p[1] = x >> 48;
+	p[0] = x >> 56;
+
+	return (*(uint64_t *)p);
 }
 
 uint16_t
@@ -164,6 +220,30 @@ uint32_t
 cpu_to_be32p(uint32_t *p)
 {
 	return cpu_to_be32(*p);
+}
+
+uint64_t
+le64_to_cpup(uint64_t *p)
+{
+	return le64_to_cpu(*p);
+}
+
+uint64_t
+cpu_to_le64p(uint64_t *p)
+{
+	return cpu_to_le64(*p);
+}
+
+uint64_t
+be64_to_cpup(uint64_t *p)
+{
+	return be64_to_cpu(*p);
+}
+
+uint64_t
+cpu_to_be64p(uint64_t *p)
+{
+	return cpu_to_be64(*p);
 }
 
 void
