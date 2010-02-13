@@ -502,7 +502,8 @@ fetch:
 
 package: clean
 
-	tar -jcvf temp.tar.bz2 --include="media" --include="include" \
+	tar -jcvf temp.tar.bz2 \
+		--exclude="v4l2-apps" --exclude="media-specs" --exclude="v4l_experimental" \
 		--exclude="*.txt" --exclude=".svn" \
 		--exclude="Documentation" --exclude="v4l2-apps" \
 		Makefile *.[ch] dummy kernel/*.[ch] \
