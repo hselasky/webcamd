@@ -97,6 +97,8 @@ v4b_work(void *arg)
 			break;
 	}
 
+	exit(0);	/* we are done */
+
 	return (NULL);
 }
 
@@ -175,6 +177,8 @@ v4b_close(struct cuse_dev *cdev, int fflags)
 	int error;
 
 	handle = cuse_dev_get_per_file_handle(cdev);
+
+	cuse_dev_set_per_file_handle(cdev, NULL);
 
 	/* close device */
 	error = linux_close(handle);
