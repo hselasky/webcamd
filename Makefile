@@ -539,7 +539,7 @@ package: clean
 		--exclude="v4l2-apps" --exclude="media-specs" --exclude="v4l_experimental" \
 		--exclude="*.txt" --exclude=".svn" \
 		--exclude="Documentation" --exclude="v4l2-apps" \
-		Makefile *.[ch] dummy headers kernel/*.[ch] \
+		Makefile *.[ch] dummy headers tests/*.[ch] kernel/*.[ch] \
 		patches/do_patch.sh patches/*.diff \
 		v4l-dvb v4l-dvb-*
 
