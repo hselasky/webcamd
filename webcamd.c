@@ -75,7 +75,7 @@ static int f_usb = -1;
 static int do_fork = 0;
 static struct pidfh *local_pid = NULL;
 
-char	global_fw_prefix[128];
+char	global_fw_prefix[128] = {"/boot/modules"};
 
 static void v4b_errx(int code, const char *str);
 
