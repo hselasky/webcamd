@@ -41,6 +41,7 @@ struct usb_linux_softc {
 };
 
 static struct usb_linux_softc uls[16];
+static struct device usb_dummy_bus;
 
 /* prototypes */
 
@@ -943,6 +944,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ud->product = "";
 	p_ud->manufacturer = "";
 	p_ud->serial = "";
+	p_ud->bus = &usb_dummy_bus;
 
 	switch (libusb20_dev_get_speed(udev)) {
 	case LIBUSB20_SPEED_LOW:
