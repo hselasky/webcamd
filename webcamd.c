@@ -269,15 +269,16 @@ v4b_poll(struct cuse_dev *cdev, int fflags, int events)
 
 	revents = 0;
 
-	if (error & (POLLIN | POLLRDNORM))
+	if (error & (POLLPRI | POLLIN | POLLRDNORM))
 		revents |= events & CUSE_POLL_READ;
 
 	if (error & (POLLOUT | POLLWRNORM))
 		revents |= events & CUSE_POLL_WRITE;
 
-	if (error & (POLLHUP | POLLNVAL | POLLERR))
-		revents |= events & (CUSE_POLL_ERROR | CUSE_POLL_READ | CUSE_POLL_WRITE);
-
+	if (error & (POLLHUP | POLLNVAL | POLLERR)) {
+		revents |= events & (CUSE_POLL_ERROR |
+		    CUSE_POLL_READ | CUSE_POLL_WRITE);
+	}
 	return (revents);
 }
 
