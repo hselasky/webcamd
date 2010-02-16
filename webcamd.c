@@ -73,6 +73,7 @@ static int u_index = 0;
 static int u_videodev = -1;
 static int f_usb = -1;
 static int do_fork = 0;
+static int do_realtime = 1;
 static struct pidfh *local_pid = NULL;
 
 char	global_fw_prefix[128] = {"/boot/modules"};
@@ -323,6 +324,7 @@ usage(void)
 	    "	-v <video device number>\n"
 	    "	-B Run in background\n"
 	    "	-f <firmware path>\n"
+	    "	-r Do not set realtime priority\n"
 	    "	-h Print help\n"
 	);
 	exit(1);
@@ -378,7 +380,7 @@ main(int argc, char **argv)
 
 	atexit(&v4b_exit);
 
-	while ((opt = getopt(argc, argv, "Bd:f:i:v:h")) != -1) {
+	while ((opt = getopt(argc, argv, "Bd:f:i:v:hr")) != -1) {
 		switch (opt) {
 		case 'd':
 			ptr = optarg;
@@ -410,6 +412,10 @@ main(int argc, char **argv)
 			    sizeof(global_fw_prefix));
 			break;
 
+		case 'r':
+			do_realtime = 0;
+			break;
+
 		default:
 			usage();
 			break;
@@ -424,9 +430,10 @@ main(int argc, char **argv)
 		if (cuse_alloc_unit_number(&u_videodev) != 0)
 			v4b_errx(1, "Cannot allocate unique unit number");
 	}
-	if (rtprio(RTP_SET, getpid(), &prio_arg))
-		printf("Cannot set realtime priority\n");
-
+	if (do_realtime != 0) {
+		if (rtprio(RTP_SET, getpid(), &prio_arg))
+			printf("Cannot set realtime priority\n");
+	}
 	linux_init();
 
 	f_usb = usb_linux_probe(u_unit, u_addr, u_index);
