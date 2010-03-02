@@ -93,12 +93,26 @@ linux_close(struct cdev_handle *handle)
 	return (error);
 }
 
+static void
+linux_fix_f_flags(struct file *fp, int fflags)
+{
+	if (fflags & O_NONBLOCK) {
+		if (!(fp->f_flags & O_NONBLOCK))
+			fp->f_flags |= O_NONBLOCK;
+	} else {
+		if (fp->f_flags & O_NONBLOCK)
+			fp->f_flags &= ~O_NONBLOCK;
+	}
+}
+
 int
 linux_ioctl(struct cdev_handle *handle, int fflags,
     unsigned int cmd, void *arg)
 {
 	if (handle == NULL)
 		return (-EINVAL);
+
+	linux_fix_f_flags(&handle->fixed_file, fflags);
 
 	if (handle->fixed_file.f_op->unlocked_ioctl != NULL)
 		return (handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
@@ -138,13 +152,7 @@ linux_read(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 	if (handle->fixed_file.f_op->read == NULL)
 		return (-EINVAL);
 
-	if (fflags) {
-		if (!(handle->fixed_file.f_flags & O_NONBLOCK))
-			handle->fixed_file.f_flags |= O_NONBLOCK;
-	} else {
-		if (handle->fixed_file.f_flags & O_NONBLOCK)
-			handle->fixed_file.f_flags &= ~O_NONBLOCK;
-	}
+	linux_fix_f_flags(&handle->fixed_file, fflags);
 
 	error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
 
@@ -163,10 +171,7 @@ linux_write(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 	if (handle->fixed_file.f_op->write == NULL)
 		return (-EINVAL);
 
-	if (fflags)
-		handle->fixed_file.f_flags |= O_NONBLOCK;
-	else
-		handle->fixed_file.f_flags &= ~O_NONBLOCK;
+	linux_fix_f_flags(&handle->fixed_file, fflags);
 
 	error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
 

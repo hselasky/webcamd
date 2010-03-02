@@ -233,7 +233,8 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 	handle = cuse_dev_get_per_file_handle(cdev);
 
 	/* execute ioctl */
-	error = linux_ioctl(handle, fflags & CUSE_FFLAG_NONBLOCK, cmd, peer_data);
+	error = linux_ioctl(handle, fflags & CUSE_FFLAG_NONBLOCK,
+	    cmd, peer_data);
 
 	if (cmd == VIDIOC_QUERYBUF) {
 
