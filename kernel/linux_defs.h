@@ -278,6 +278,11 @@
 #define	wmb() __nop
 #define	min_t(cast,x,y) ((((cast)(x)) < ((cast)(y))) ? (cast)(x) : (cast)(y))
 #define	max_t(cast,x,y) ((((cast)(x)) > ((cast)(y))) ? (cast)(x) : (cast)(y))
+#define	clamp(x,y,z) clamp_t(typeof(x),x,y,z)
+#define	clamp_t(cast,x,y,z) \
+((cast)((((cast)(x)) < ((cast)(y))) ? ((cast)(y)) : \
+	(((cast)(x)) > ((cast)(z))) ? ((cast)(z)) : ((cast)(x))))
+
 #define	ATOMIC_INIT(x) { (x) }
 
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
@@ -321,5 +326,6 @@ typedef long long loff_t;
 typedef unsigned int gfp_t;
 typedef uint32_t dev_t;
 typedef uint8_t bool;
+typedef struct timespec ktime_t;
 
 #endif					/* _LINUX_DEFS_H_ */

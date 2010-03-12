@@ -1165,6 +1165,27 @@ pthread_set_kernel_prio(void)
 	pthread_setschedparam(pthread_self(), SCHED_FIFO, &parm);
 }
 
+struct timespec
+ktime_get(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_REALTIME, &ts);
+
+	return (ts);
+}
+
+struct timeval
+ktime_to_timeval(const struct timespec ts)
+{
+	struct timeval tv;
+
+	tv.tv_sec = ts.tv_sec;
+	tv.tv_usec = ts.tv_nsec / 1000;
+
+	return (tv);
+}
+
 void
 ktime_get_ts(struct timespec *ts)
 {
