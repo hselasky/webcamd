@@ -19,6 +19,8 @@ struct dmi_system_id;
 struct input_device_id;
 struct pci_dev;
 struct tasklet_struct;
+struct usb_driver;
+struct usb_interface;
 
 #define	LINUX_VMA_MAX 16
 
@@ -212,6 +214,13 @@ struct poll_wqueues {
 	poll_table pt;
 	struct poll_table_page *table;
 	int	error;
+};
+
+struct usb_class_driver {
+	char   *name;
+	char   *(*devnode) (struct device *dev, mode_t *mode);
+	const struct file_operations *fops;
+	int	minor_base;
 };
 
 #endif					/* _LINUX_STRUCT_H_ */

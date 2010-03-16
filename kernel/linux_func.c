@@ -1449,3 +1449,21 @@ class_create(struct module *owner, const char *name)
 
 	return (class);
 }
+
+int
+usb_register_dev(struct usb_interface *iface, struct usb_class_driver *info)
+{
+	return (0);
+}
+
+void
+usb_deregister_dev(struct usb_interface *iface, struct usb_class_driver *info)
+{
+
+}
+
+struct usb_interface *
+usb_find_interface(struct usb_driver *drv, int minor)
+{
+	return (NULL);			/* not supported */
+}

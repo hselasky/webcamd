@@ -47,6 +47,7 @@ ${LINUXDIR}/drivers/media \
 ${LINUXDIR}/drivers/media/common \
 ${LINUXDIR}/drivers/media/common/tuners \
 ${LINUXDIR}/drivers/media/dvb \
+${LINUXDIR}/drivers/media/dvb/as102 \
 ${LINUXDIR}/drivers/media/dvb/b2c2 \
 ${LINUXDIR}/drivers/media/dvb/bt8xx \
 ${LINUXDIR}/drivers/media/dvb/dm1105 \
@@ -374,6 +375,20 @@ SRCS+= smsir.c
 SRCS+= smsusb.c
 
 #
+# PCTV 74E
+#
+
+.if exists(${LINUXDIR}/drivers/media/dvb/as102/as102_usb_drv.c)
+SRCS+= as102_drv.c
+SRCS+= as102_fe.c
+SRCS+= as102_fw.c
+SRCS+= as102_usb_drv.c
+SRCS+= as10x_cmd.c
+SRCS+= as10x_cmd_cfg.c
+SRCS+= as10x_cmd_stream.c
+.endif
+
+#
 # TT DVB USB
 #
 
@@ -454,11 +469,14 @@ CFLAGS+= -I${LINUXDIR}
 
 CFLAGS+= -I${.CURDIR}
 
+CFLAGS+= -DLINUX
 CFLAGS+= -DCONFIG_INPUT
 CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
 CFLAGS+= -DCONFIG_DVB_DIB3000MC
 CFLAGS+= -DCONFIG_VIDEO_PVRUSB2_DVB
 CFLAGS+= -DCONFIG_I2C
+CFLAGS+= -DCONFIG_DVB_CORE
+CFLAGS+= -DCONFIG_AS102_USB
 CFLAGS+= -DHAVE_WEBCAMD
 
 CFLAGS+= -include webcamd_global.h

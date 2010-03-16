@@ -155,6 +155,9 @@ struct class *class_create(struct module *owner, const char *name);
 void	cdev_init(struct cdev *cdev, const struct file_operations *fops);
 struct cdev *cdev_get_device(int f_v4b);
 uint32_t cdev_get_mm(int f_v4b);
+int	usb_register_dev(struct usb_interface *, struct usb_class_driver *);
+void	usb_deregister_dev(struct usb_interface *, struct usb_class_driver *);
+struct usb_interface *usb_find_interface(struct usb_driver *, int);
 
 #ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);
