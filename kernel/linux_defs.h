@@ -282,6 +282,7 @@
 #define	clamp_t(cast,x,y,z) \
 ((cast)((((cast)(x)) < ((cast)(y))) ? ((cast)(y)) : \
 	(((cast)(x)) > ((cast)(z))) ? ((cast)(z)) : ((cast)(x))))
+#define	try_then_request_module(x,...) (x)
 
 #define	ATOMIC_INIT(x) { (x) }
 

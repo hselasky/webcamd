@@ -48,6 +48,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 #include <libusb20.h>
 #include <libusb20_desc.h>
