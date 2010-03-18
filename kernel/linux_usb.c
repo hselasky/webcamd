@@ -532,7 +532,7 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	    uhe->bsd_xfer[1]) {
 		/* we are ready! */
 
-		TAILQ_INSERT_HEAD(&uhe->bsd_urb_list, urb, bsd_urb_list);
+		TAILQ_INSERT_TAIL(&uhe->bsd_urb_list, urb, bsd_urb_list);
 
 		urb->status = -EINPROGRESS;
 
@@ -576,12 +576,28 @@ static void
 usb_unlink_bsd(struct libusb20_transfer *xfer,
     struct urb *urb, uint8_t drain)
 {
-	if ((xfer != NULL) &&
-	    (libusb20_tr_pending(xfer) != 0) &&
-	    (libusb20_tr_get_priv_sc1(xfer) == (void *)urb)) {
-		/* restart transfer */
-		libusb20_tr_stop(xfer);
-		libusb20_tr_start(xfer);
+	uint32_t drops;
+
+	if ((xfer != NULL) && (urb != NULL)) {
+		while (libusb20_tr_get_priv_sc1(xfer) == (void *)urb) {
+			/* restart transfer */
+			libusb20_tr_stop(xfer);
+			libusb20_tr_start(xfer);
+
+			/* check if we should drain */
+			if (drain == 0)
+				break;
+
+			atomic_lock();
+			drops = atomic_drop();
+			atomic_unlock();
+
+			usleep(10000);
+
+			atomic_lock();
+			atomic_pickup(drops);
+			atomic_unlock();
+		}
 	}
 }
 
@@ -1004,6 +1020,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 				ed = id->endpoints + k;
 				libusb20_me_encode(&p_uhe->desc,
 				    sizeof(p_uhe->desc), &ed->desc);
+				TAILQ_INIT(&p_uhe->bsd_urb_list);
 				p_uhe->bsd_iface_index = i;
 				p_uhe->extra = ed->extra.ptr;
 				p_uhe->extralen = ed->extra.len;
