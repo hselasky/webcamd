@@ -32,6 +32,7 @@ VERSION=	0.1.8
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
+LIBDIR?=	%%PREFIX%%/lib
 LINUXDIR=	${.CURDIR}/v4l-dvb/linux
 MKLINT=		no
 NOGCCERROR=
@@ -494,7 +495,7 @@ CFLAGS+= -I${.CURDIR}/../cuse4bsd
 CFLAGS+= -I%%PREFIX%%/include
 .endif
 
-LDFLAGS+= -lusb -lcuse4bsd -lpthread -lutil
+LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd -lpthread -lutil
 
 .include <bsd.prog.mk>
 

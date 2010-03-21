@@ -324,9 +324,10 @@ usage(void)
 	    "	-i <interface number>\n"
 	    "	-v <video device number>\n"
 	    "	-B Run in background\n"
-	    "	-f <firmware path>\n"
+	    "	-f <firmware path> [%s]\n"
 	    "	-r Do not set realtime priority\n"
-	    "	-h Print help\n"
+	    "	-h Print help\n",
+	    global_fw_prefix
 	);
 	exit(1);
 }
