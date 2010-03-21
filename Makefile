@@ -25,10 +25,10 @@
 # SUCH DAMAGE.
 #
 #
-# Makefile for Webcam Daemon
+# Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.7
+VERSION=	0.1.8
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -515,23 +515,62 @@ patch:
 	-e "s/__le16/uint16_t/g" \
 	-e "s/__be16/uint16_t/g" \
 	-e "s/linux.ioctl.h/sys\/ioctl.h/g" \
-	-e "s/linux.types.h/sys\/types.h/g" \
-	-e "s/linux.compiler.h/sys\/types.h/g" \
+	-e "s/linux.compiler.h/linux\/types.h/g" \
 	-e "s/__user//g" \
 	${LINUXDIR}/include/linux/videodev.h \
-	${LINUXDIR}/include/linux/videodev2.h
+	${LINUXDIR}/include/linux/videodev2.h \
+	${LINUXDIR}/include/linux/dvb/audio.h \
+	${LINUXDIR}/include/linux/dvb/ca.h \
+	${LINUXDIR}/include/linux/dvb/dmx.h \
+	${LINUXDIR}/include/linux/dvb/frontend.h \
+	${LINUXDIR}/include/linux/dvb/net.h \
+	${LINUXDIR}/include/linux/dvb/osd.h \
+	${LINUXDIR}/include/linux/dvb/version.h \
+	${LINUXDIR}/include/linux/dvb/video.h
 
 	[ -d /usr/local/include/linux ] || mkdir -p /usr/local/include/linux
 
+	@echo "#include <stdint.h>" > ${LINUXDIR}/include/linux/types.h
+	@echo "#include <time.h>" >> ${LINUXDIR}/include/linux/types.h
+	@echo "" >> ${LINUXDIR}/include/linux/types.h
+	@echo "#ifndef HAVE_LINUX_INTEGER_TYPES" >> ${LINUXDIR}/include/linux/types.h
+	@echo "#define HAVE_LINUX_INTEGER_TYPES" >> ${LINUXDIR}/include/linux/types.h
+	@echo "" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef struct timespec __kernel_time_t;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef uint64_t __u64;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef uint32_t __u32;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef uint16_t __u16;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef uint8_t __u8;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef int64_t __s64;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef int32_t __s32;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef int16_t __s16;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "typedef int8_t __s8;" >> ${LINUXDIR}/include/linux/types.h
+	@echo "#endif" >> ${LINUXDIR}/include/linux/types.h
+
 	cp -v 	${LINUXDIR}/include/linux/videodev.h \
 		${LINUXDIR}/include/linux/videodev2.h \
+		${LINUXDIR}/include/linux/types.h \
 		/usr/local/include/linux/
+
+	[ -d /usr/local/include/linux/dvb ] || mkdir -p /usr/local/include/linux/dvb
+
+	cp -v 	${LINUXDIR}/include/linux/dvb/audio.h \
+		${LINUXDIR}/include/linux/dvb/ca.h \
+		${LINUXDIR}/include/linux/dvb/dmx.h \
+		${LINUXDIR}/include/linux/dvb/frontend.h \
+		${LINUXDIR}/include/linux/dvb/net.h \
+		${LINUXDIR}/include/linux/dvb/osd.h \
+		${LINUXDIR}/include/linux/dvb/version.h \
+		${LINUXDIR}/include/linux/dvb/video.h \
+		/usr/local/include/linux/dvb/
 
 	cd patches ; ./do_patch.sh
 
 fetch:
 	rm -v -r -f v4l-dvb-* libv4l-* linux-* libv4l v4l-dvb \
-		tip0.tar.bz2 tip1.tar.bz2 tip2.tar.bz2
+		tip0.tar.bz2 tip1.tar.bz2 tip2.tar.bz2 tip3.tar.bz2
 
 #
 # Fetch latest Video4Linux:
@@ -546,11 +585,25 @@ fetch:
 #	[ -f tip2.tar.bz2 ] || \
 #		fetch -o tip2.tar.bz2 http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.32.6.tar.bz2
 
+#
+# Fetch latest Linux PCTV 74E driver
+#
+	[ -f tip3.tar.bz2 ] || \
+		fetch -o tip3.tar.bz2 http://kernellabs.com/hg/~dheitmueller/v4l-dvb-as102/archive/tip.tar.bz2
+
 	@echo "Extracting Files ... Please wait"
 
 	tar -jxf tip1.tar.bz2
 
 	ln -s v4l-dvb-* v4l-dvb
+
+	tar -jxf tip3.tar.bz2 "*/as102/*"
+
+	mkdir -p v4l-dvb/linux/drivers/media/dvb/as102
+
+	cp -v v4l-dvb-as102-*/linux/drivers/media/dvb/as102/*.[ch] v4l-dvb/linux/drivers/media/dvb/as102/
+
+	rm -rf v4l-dvb-as102-*
 
 package: clean
 

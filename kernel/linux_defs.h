@@ -284,6 +284,9 @@
 	(((cast)(x)) > ((cast)(z))) ? ((cast)(z)) : ((cast)(x))))
 #define	try_then_request_module(x,...) (x)
 
+#undef errno
+#define	errno errno_v4l
+
 #define	ATOMIC_INIT(x) { (x) }
 
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
