@@ -871,10 +871,17 @@ usb_setup_endpoint(struct usb_device *dev,
 		    1, addr))
 			goto failure;
 
+		if (libusb20_tr_open(uhe->bsd_xfer[1], bufsize,
+		    1, addr))
+			goto failure;
+
 		libusb20_tr_set_callback(uhe->bsd_xfer[0],
+		    &usb_linux_non_isoc_callback);
+		libusb20_tr_set_callback(uhe->bsd_xfer[1],
 		    &usb_linux_non_isoc_callback);
 
 		libusb20_tr_set_priv_sc0(uhe->bsd_xfer[0], uhe);
+		libusb20_tr_set_priv_sc0(uhe->bsd_xfer[1], uhe);
 	}
 	return (0);
 
