@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.8
+VERSION=	0.1.10
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -390,6 +390,29 @@ SRCS+= as10x_cmd_stream.c
 .endif
 
 #
+# Tevii S660
+#
+
+CFLAGS+= -DCONFIG_DVB_STV0288
+SRCS+= stv0288.c
+CFLAGS+= -DCONFIG_DVB_MT312
+SRCS+= mt312.c
+CFLAGS+= -DCONFIG_DVB_DS3000
+SRCS+= ds3000.c
+
+.if exists(${LINUXDIR}/drivers/media/dvb/dvb-usb/pctv452e.c)
+SRCS+= pctv452e.c
+SRCS+= ttpci-eeprom.c
+CFLAGS+= -DCONFIG_DVB_STB0899
+SRCS+= stb0899_drv.c
+SRCS+= stb0899_algo.c
+CFLAGS+= -DCONFIG_DVB_STB6100
+SRCS+= stb6100.c
+CFLAGS+= -DCONFIG_DVB_LNBP22
+SRCS+= lnbp22.c
+.endif
+
+#
 # TT DVB USB
 #
 
@@ -469,6 +492,8 @@ CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}
 
 CFLAGS+= -I${.CURDIR}
+
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/ttpci
 
 CFLAGS+= -DLINUX
 CFLAGS+= -DCONFIG_INPUT
@@ -569,9 +594,15 @@ patch:
 
 	cd patches ; ./do_patch.sh
 
-fetch:
+fetch_clean:
+
 	rm -v -r -f v4l-dvb-* libv4l-* linux-* libv4l v4l-dvb \
-		tip0.tar.bz2 tip1.tar.bz2 tip2.tar.bz2 tip3.tar.bz2
+		tip0.tar.bz2 tip1.tar.bz2 tip2.tar.bz2 tip3.tar.bz2 \
+		tip4.tar.bz2 s2-liplianin-*
+
+fetch:
+
+	@echo "Try make fetch_clean if you get problems below!"
 
 #
 # Fetch latest Video4Linux:
@@ -592,11 +623,19 @@ fetch:
 	[ -f tip3.tar.bz2 ] || \
 		fetch -o tip3.tar.bz2 http://kernellabs.com/hg/~dheitmueller/v4l-dvb-as102/archive/tip.tar.bz2
 
+#
+# Fetch latest PCTV 452E driver
+#
+	[ -f tip4.tar.bz2 ] || \
+		fetch -o tip4.tar.bz2 http://mercurial.intuxication.org/hg/s2-liplianin/archive/tip.tar.bz2
+
 	@echo "Extracting Files ... Please wait"
 
 	tar -jxf tip1.tar.bz2
 
 	ln -s v4l-dvb-* v4l-dvb
+
+# TIP3
 
 	tar -jxf tip3.tar.bz2 "*/as102/*"
 
@@ -605,6 +644,34 @@ fetch:
 	cp -v v4l-dvb-as102-*/linux/drivers/media/dvb/as102/*.[ch] v4l-dvb/linux/drivers/media/dvb/as102/
 
 	rm -rf v4l-dvb-as102-*
+
+# TIP4
+
+	tar -jxf tip4.tar.bz2 "*/pctv452e.c" "*/lnbp22.c" \
+		"*/lnbp22.h" "*/dvb-usb-ids.h" "*/ttpci-eeprom.c" \
+		"*/ttpci-eeprom.h"
+
+	mkdir -p v4l-dvb/linux/drivers/media/dvb/dvb-usb
+	mkdir -p v4l-dvb/linux/drivers/media/dvb/frontends
+	mkdir -p v4l-dvb/linux/drivers/media/dvb/ttpci
+
+	cp -v s2-liplianin-*/linux/drivers/media/dvb/dvb-usb/pctv452e.c \
+		v4l-dvb/linux/drivers/media/dvb/dvb-usb/
+
+	cp -v s2-liplianin-*/linux/drivers/media/dvb/frontends/lnbp22.[ch] \
+		v4l-dvb/linux/drivers/media/dvb/frontends/
+
+	cp -v s2-liplianin-*/linux/drivers/media/dvb/ttpci/ttpci-eeprom.[ch] \
+		v4l-dvb/linux/drivers/media/dvb/ttpci/
+
+	cat \
+	v4l-dvb/linux/drivers/media/dvb/dvb-usb/dvb-usb-ids.h \
+	s2-liplianin-*/linux/drivers/media/dvb/dvb-usb/dvb-usb-ids.h \
+	| grep "^#define.*USB_" | sort | uniq > temp
+
+	mv temp v4l-dvb/linux/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
+
+	rm -rf s2-liplianin-*
 
 package: clean
 

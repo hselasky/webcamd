@@ -224,6 +224,8 @@
 #define	KERN_ERR ""
 #define	KERN_DEBUG ""
 #define	KERN_CONT ""
+#define	KBUILD_MODNAME ""
+#define	KERN_NOTICE ""
 #define	BUG(...) __nop
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
