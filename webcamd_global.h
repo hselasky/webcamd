@@ -38,6 +38,8 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include <netinet/in.h>
+
 #include <errno.h>
 #include <stdlib.h>
 #define	sync(...) bsd_sync(__VA_ARGS__)

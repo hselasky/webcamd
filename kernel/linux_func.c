@@ -1346,6 +1346,8 @@ div64_u64(uint64_t rem, uint64_t div)
 	return (rem / div);
 }
 
+#undef do_div
+
 uint32_t
 do_div(uint64_t *rem, uint32_t div)
 {
