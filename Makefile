@@ -647,21 +647,41 @@ fetch:
 
 # TIP4
 
-	tar -jxf tip4.tar.bz2 "*/pctv452e.c" "*/lnbp22.c" \
-		"*/lnbp22.h" "*/dvb-usb-ids.h" "*/ttpci-eeprom.c" \
-		"*/ttpci-eeprom.h"
+	tar -jxf tip4.tar.bz2 \
+		"*/ds3000.c" \
+		"*/ds3000.h" \
+		"*/dvb-usb-ids.h" \
+		"*/dw2102.c" \
+		"*/lnbp22.c" \
+		"*/lnbp22.h" \
+		"*/pctv452e.c" \
+		"*/stb0899_algo.c" \
+		"*/stb0899_drv.c" \
+		"*/stb6100.c" \
+		"*/stb6100_cfg.h" \
+		"*/ttpci-eeprom.c" \
+		"*/ttpci-eeprom.h" \
+		"*/ttusb2.c"
 
 	mkdir -p v4l-dvb/linux/drivers/media/dvb/dvb-usb
 	mkdir -p v4l-dvb/linux/drivers/media/dvb/frontends
 	mkdir -p v4l-dvb/linux/drivers/media/dvb/ttpci
 
-	cp -v s2-liplianin-*/linux/drivers/media/dvb/dvb-usb/pctv452e.c \
+	cp -v \
+		s2-liplianin-*/linux/drivers/media/dvb/dvb-usb/ttusb2.c \
+		s2-liplianin-*/linux/drivers/media/dvb/dvb-usb/pctv452e.c \
+		s2-liplianin-*/linux/drivers/media/dvb/dvb-usb/dw2102.c \
 		v4l-dvb/linux/drivers/media/dvb/dvb-usb/
 
-	cp -v s2-liplianin-*/linux/drivers/media/dvb/frontends/lnbp22.[ch] \
+	cp -v \
+		s2-liplianin-*/linux/drivers/media/dvb/frontends/ds3000*.[ch] \
+		s2-liplianin-*/linux/drivers/media/dvb/frontends/lnbp22*.[ch] \
+		s2-liplianin-*/linux/drivers/media/dvb/frontends/stb0899*.[ch] \
+		s2-liplianin-*/linux/drivers/media/dvb/frontends/stb6100*.[ch] \
 		v4l-dvb/linux/drivers/media/dvb/frontends/
 
-	cp -v s2-liplianin-*/linux/drivers/media/dvb/ttpci/ttpci-eeprom.[ch] \
+	cp -v \
+		s2-liplianin-*/linux/drivers/media/dvb/ttpci/ttpci-eeprom*.[ch] \
 		v4l-dvb/linux/drivers/media/dvb/ttpci/
 
 	cat \
