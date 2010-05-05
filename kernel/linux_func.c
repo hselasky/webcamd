@@ -984,7 +984,7 @@ kcalloc(size_t n, size_t size, int flags)
 void   *
 vmalloc(size_t size)
 {
-	return (malloc(size));
+	return (malloc_vm(size));
 }
 
 long
