@@ -580,9 +580,12 @@ usb_unlink_bsd(struct libusb20_transfer *xfer,
 
 	if ((xfer != NULL) && (urb != NULL)) {
 		while (libusb20_tr_get_priv_sc1(xfer) == (void *)urb) {
+
 			/* restart transfer */
+			atomic_lock();
 			libusb20_tr_stop(xfer);
 			libusb20_tr_start(xfer);
+			atomic_unlock();
 
 			/* check if we should drain */
 			if (drain == 0)
@@ -748,6 +751,7 @@ int
 usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 {
 	struct usb_interface *p_ui = usb_ifnum_to_if(dev, iface_no);
+	struct usb_interface *ui;
 	uint32_t drops;
 	int err;
 
@@ -762,7 +766,15 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 	drops = atomic_drop();
 	atomic_unlock();
 
-	usb_linux_cleanup_interface(dev, p_ui);
+	/*
+	 * Due to the LibUSB v2.0 design, doing an alternate setting
+	 * on one endpoint means we need to kill the URB's on the
+	 * other endpoints aswell!
+	 */
+	for (ui = dev->bsd_iface_start;
+	    ui != dev->bsd_iface_end; ui++)
+		usb_linux_cleanup_interface(dev, ui);
+
 	err = libusb20_dev_set_alt_index(dev->bsd_udev,
 	    p_ui->bsd_iface_index, alt_index);
 
