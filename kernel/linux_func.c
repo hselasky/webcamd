@@ -25,8 +25,6 @@
 
 /* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
 
-#include <sched.h>
-
 #include <sys/endian.h>
 
 #include <linux/input.h>
@@ -1151,18 +1149,6 @@ uint64_t
 div_round_closest_u64(uint64_t rem, uint64_t div)
 {
 	return ((rem + (div / 2)) / div);
-}
-
-void
-pthread_set_kernel_prio(void)
-{
-	struct sched_param parm;
-
-	memset(&parm, 0, sizeof(parm));
-
-	parm.sched_priority = sched_get_priority_max(SCHED_FIFO);
-
-	pthread_setschedparam(pthread_self(), SCHED_FIFO, &parm);
 }
 
 struct timespec

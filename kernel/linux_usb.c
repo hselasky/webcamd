@@ -157,8 +157,6 @@ usb_exec(void *arg)
 	struct libusb20_device *dev = sc->p_dev->bsd_udev;
 	int err;
 
-	pthread_set_kernel_prio();
-
 	signal(SIGHUP, usb_exec_hup);
 
 	sc->thread_started = 1;

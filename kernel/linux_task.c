@@ -97,8 +97,6 @@ work_exec(void *arg)
 {
 	struct work_struct *t;
 
-	pthread_set_kernel_prio();
-
 	atomic_lock();
 	while (1) {
 		t = TAILQ_FIRST(&work_head);

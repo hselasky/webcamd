@@ -97,8 +97,6 @@ timer_exec(void *arg)
 	struct timer_list *t;
 	uint32_t ms_delay = 0;
 
-	pthread_set_kernel_prio();
-
 	signal(SIGHUP, timer_exec_hup);
 
 	timer_thread_started = 1;

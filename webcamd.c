@@ -25,12 +25,13 @@
 
 #include <sys/mman.h>
 #include <sys/types.h>
-#include <sys/rtprio.h>
 #include <sys/param.h>
+#include <sys/time.h>
 
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sched.h>
 
 #include <libutil.h>
 
@@ -89,8 +90,6 @@ v4b_work_exec_hup(int dummy)
 static void *
 v4b_work(void *arg)
 {
-	pthread_set_kernel_prio();
-
 	signal(SIGHUP, v4b_work_exec_hup);
 
 	while (1) {
@@ -376,7 +375,6 @@ pidfile_create(int bus, int addr, int index)
 int
 main(int argc, char **argv)
 {
-	struct rtprio prio_arg = {RTP_PRIO_REALTIME, 16};
 	const char *ptr;
 	int opt;
 
@@ -433,7 +431,13 @@ main(int argc, char **argv)
 			v4b_errx(1, "Cannot allocate unique unit number");
 	}
 	if (do_realtime != 0) {
-		if (rtprio(RTP_SET, getpid(), &prio_arg))
+		struct sched_param params;
+
+		memset(&params, 0, sizeof(params));
+
+		params.sched_priority = sched_get_priority_max(SCHED_FIFO) - 1;
+
+		if (sched_setscheduler(getpid(), SCHED_FIFO, &params) == -1)
 			printf("Cannot set realtime priority\n");
 	}
 	linux_init();
