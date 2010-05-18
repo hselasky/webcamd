@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.12
+VERSION=	0.1.13
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -137,6 +137,11 @@ SRCS+= dvbdev.c
 #
 # GSPCA based Webcams
 #
+
+CFLAGS += -DCONFIG_USB_GSPCA
+CFLAGS += -DCONFIG_USB_GSPCA_SONIXB
+CFLAGS += -DCONFIG_USB_GSPCA_SONIXJ
+CFLAGS += -DCONFIG_USB_GSPCA_ZC3XX
 
 SRCS+= benq.c
 SRCS+= conex.c
