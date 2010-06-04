@@ -207,7 +207,7 @@ usb_linux_create_event_thread(struct usb_device *dev)
 		printf("Failed creating USB process\n");
 	} else {
 		while (sc->thread_started == 0)
-			pthread_yield();
+			schedule();
 	}
 }
 
@@ -1391,7 +1391,7 @@ usb_linux_cleanup_interface(struct usb_device *dev,
 	while (sc->thread_started != 0) {
 		sc->thread_stopping = 1;
 		pthread_kill(sc->thread, SIGHUP);
-		pthread_yield();
+		schedule();
 	}
 
 	atomic_lock();

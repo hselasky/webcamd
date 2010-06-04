@@ -169,7 +169,7 @@ timer_init(void)
 		printf("Failed creating timer process\n");
 	} else {
 		while (timer_thread_started == 0)
-			pthread_yield();
+			schedule();
 	}
 	return (0);
 }

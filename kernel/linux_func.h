@@ -145,6 +145,7 @@ struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
 uint64_t div64_u64(uint64_t, uint64_t);
 uint32_t do_div(uint64_t *rem, uint32_t div);
+
 #define	do_div(r,d) do_div(&(r),(d))
 int	sysfs_create_group(struct kobject *kobj, const struct attribute_group *grp);
 void	sysfs_remove_group(struct kobject *kobj, const struct attribute_group *grp);
