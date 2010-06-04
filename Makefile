@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.13
+VERSION=	0.1.14
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -118,6 +118,7 @@ SRCS+= v4l2-dev.c
 SRCS+= v4l2-device.c
 SRCS+= v4l2-int-device.c
 SRCS+= v4l2-ioctl.c
+SRCS+= v4l2-event.c
 SRCS+= v4l1-compat.c
 
 #

@@ -240,6 +240,7 @@
 #define	spin_unlock_irq(...) atomic_unlock()
 #define	atomic_inc_return atomic_inc
 #define	atomic_dec_return atomic_dec
+#define	assert_spin_locked(...) __nop
 #define	IS_ERR_VALUE(x) ((x) >= (unsigned long)-(1<<14))
 #define	find_first_bit(addr, size) find_next_bit((addr), (size), 0)
 #define	find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
