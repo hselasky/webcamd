@@ -33,7 +33,7 @@ request_firmware(const struct firmware **ppfw, const char *name,
     struct device *device)
 {
 	struct firmware *fw;
-	size_t size;
+	ssize_t size;
 	char path[256];
 	int f;
 
@@ -57,7 +57,11 @@ request_firmware(const struct firmware **ppfw, const char *name,
 		return (-EINVAL);
 	}
 	size = lseek(f, 0, SEEK_END);
-
+	if (size < 0) {
+		free(fw);
+		close(f);
+		return (-EINVAL);
+	}
 	lseek(f, 0, SEEK_SET);
 
 	fw->size = size;

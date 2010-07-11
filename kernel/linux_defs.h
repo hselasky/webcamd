@@ -107,9 +107,14 @@
 #define	module_param_call(...)
 #define	module_param_array(...)
 #define	module_param_string(...)
+#ifdef HAVE_DEBUG
+#define	info(...) printf(__VA_ARGS__)
+#define	printk(...) printf(__VA_ARGS__)
+#else
 #define	info(...) __nop
-#define	print_hex_dump_bytes(...) printk_nop()
 #define	printk(...) printk_nop()
+#endif
+#define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	pr_err(...) __nop
 #define	pr_info(...) __nop

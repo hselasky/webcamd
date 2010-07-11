@@ -437,9 +437,10 @@ usb_linux_suspend(int fd)
 	struct usb_linux_softc *sc = usb_linux2usb(fd);
 	struct usb_driver *udrv = sc->udrv;
 	struct usb_interface *ui = sc->ui;
+	struct pm_message pm = {0};
 
 	if (udrv->suspend) {
-		(udrv->suspend) (ui, 0);
+		(udrv->suspend) (ui, pm);
 	}
 	return (0);
 }

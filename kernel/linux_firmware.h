@@ -27,7 +27,7 @@
 #define	_LINUX_FIRMWARE_H_
 
 struct firmware {
-	size_t	size;
+	ssize_t	size;
 	const uint8_t *data;
 };
 

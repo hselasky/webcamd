@@ -535,6 +535,11 @@ CFLAGS+= -DCONFIG_AS102_USB
 CFLAGS+= -DCONFIG_FW_LOADER
 CFLAGS+= -DHAVE_WEBCAMD
 
+.if defined(HAVE_DEBUG)
+CFLAGS+= -DHAVE_DEBUG
+CFLAGS+= -g
+.endif
+
 CFLAGS+= -include webcamd_global.h
 
 CFLAGS+= -O2 -Wall -Wno-pointer-sign

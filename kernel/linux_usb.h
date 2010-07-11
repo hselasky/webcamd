@@ -41,7 +41,10 @@ struct usb_device_id;
 struct input_id;
 struct urb;
 
-typedef void *pm_message_t;
+typedef struct pm_message {
+	int	event;
+} pm_message_t;
+
 typedef void (usb_complete_t)(struct urb *);
 
 #define	USB_LINUX_IFACE_MAX 32
@@ -477,9 +480,9 @@ struct usb_device {
 	struct usb_host_endpoint *bsd_endpoint_end;
 
 	/* static strings from the device */
-	const char *product;		/* iProduct string, if present */
-	const char *manufacturer;	/* iManufacturer string, if present */
-	const char *serial;		/* iSerialNumber string, if present */
+	char   *product;		/* iProduct string, if present */
+	char   *manufacturer;		/* iManufacturer string, if present */
+	char   *serial;			/* iSerialNumber string, if present */
 
 	uint16_t devnum;
 
