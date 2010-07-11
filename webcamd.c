@@ -290,6 +290,7 @@ v4b_create(int unit)
 	pthread_t dummy;
 	unsigned int n;
 	unsigned int ndev;
+	int temp;
 
 	for (ndev = 0, n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX); n++) {
 
@@ -298,14 +299,15 @@ v4b_create(int unit)
 		if (handle != NULL) {
 			linux_close(handle);
 
+			temp = (unit * F_V4B_SUBDEV_MAX) +
+			  (n % F_V4B_SUBDEV_MAX);
+
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
 			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ ,
-			    0600, devnames[n / F_V4B_SUBDEV_MAX],
-			    (unit * F_V4B_SUBDEV_MAX) +
-			    (n % F_V4B_SUBDEV_MAX));
+			    0600, devnames[n / F_V4B_SUBDEV_MAX], temp);
 
 			printf("Creating /dev/");
-			printf(devnames[n / F_V4B_SUBDEV_MAX], unit);
+			printf(devnames[n / F_V4B_SUBDEV_MAX], temp);
 			printf("\n");
 
 			ndev++;
