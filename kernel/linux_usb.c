@@ -2024,3 +2024,22 @@ usb_to_input_id(const struct usb_device *dev, struct input_id *id)
 	id->product = le16_to_cpu(dev->descriptor.idProduct);
 	id->version = le16_to_cpu(dev->descriptor.bcdDevice);
 }
+
+int
+usb_autopm_get_interface(struct usb_interface *intf)
+{
+	return (0);
+}
+
+int
+usb_autopm_set_interface(struct usb_interface *intf)
+{
+	return (0);
+}
+
+int
+usb_driver_claim_interface(struct usb_driver *drv,
+    struct usb_interface *intf, void *priv)
+{
+	return (0);
+}

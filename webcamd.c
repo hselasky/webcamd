@@ -496,3 +496,16 @@ poll_wakeup_internal(void)
 {
 	cuse_poll_wakeup();
 }
+
+struct cdev_handle *
+get_current_cdev_handle(void)
+{
+	struct cuse_dev *cdev;
+
+	cdev = cuse_dev_get_current(NULL);
+
+	if (cdev == NULL)
+		return (NULL);
+
+	return (cuse_dev_get_per_file_handle(cdev));
+}

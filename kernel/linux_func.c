@@ -43,6 +43,18 @@ le16_to_cpu(uint16_t x)
 	return (p[0] | (p[1] << 8));
 }
 
+void
+le16_to_cpus(uint16_t *p)
+{
+	uint16_t temp;
+
+	/* assuming that the pointer is correctly aligned */
+
+	temp = ((uint8_t *)p)[0] | (((uint8_t *)p)[1] << 8);
+
+	*p = temp;
+}
+
 uint16_t
 be16_to_cpu(uint16_t x)
 {
@@ -57,6 +69,19 @@ le32_to_cpu(uint32_t x)
 	uint8_t *p = (uint8_t *)&x;
 
 	return (p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
+}
+
+void
+le32_to_cpus(uint32_t *p)
+{
+	uint32_t temp;
+
+	/* assuming that the pointer is correctly aligned */
+
+	temp = (((uint8_t *)p)[0] | (((uint8_t *)p)[1] << 8) |
+	    (((uint8_t *)p)[2] << 16) | (((uint8_t *)p)[3] << 24));
+
+	*p = temp;
 }
 
 uint32_t
@@ -724,9 +749,12 @@ device_create_vargs(struct class *class, struct device *parent,
 		retval = -ENOMEM;
 		goto error;
 	}
+	dev->driver_static.name = "webcamd";
+
 	dev->devt = devt;
 	dev->class = class;
 	dev->parent = parent;
+	dev->driver = &dev->driver_static;
 	dev_set_drvdata(dev, drvdata);
 
 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);

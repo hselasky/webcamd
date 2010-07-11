@@ -94,6 +94,11 @@ struct class {
 	struct kref refcount;
 };
 
+struct device_driver {
+	const char *name;
+	struct module *owner;
+};
+
 typedef void device_release_t (struct device *);
 
 struct device {
@@ -108,21 +113,18 @@ struct device {
 	const struct file_operations *fops;
 	struct cdev *cdev;
 	struct class *class;
+	struct device_driver driver_static;
 	dev_t	devt;
 	char	name[64];
 	char	bus_name[32];
 	char	bus_id[32];
 };
 
-struct device_driver {
-	char	name[32];
-	struct module *owner;
-};
-
 typedef unsigned long pgprot_t;
 
 struct vm_fault {
-
+	void   *virtual_address;
+	struct page *page;
 };
 
 struct vm_area_struct {

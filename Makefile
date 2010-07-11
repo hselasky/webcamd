@@ -81,11 +81,14 @@ ${LINUXDIR}/drivers/media/video/ivtv \
 ${LINUXDIR}/drivers/media/video/ovcamchip \
 ${LINUXDIR}/drivers/media/video/pvrusb2 \
 ${LINUXDIR}/drivers/media/video/pwc \
+${LINUXDIR}/drivers/media/video/saa7134 \
 ${LINUXDIR}/drivers/media/video/sn9c102 \
 ${LINUXDIR}/drivers/media/video/usbvideo \
 ${LINUXDIR}/drivers/media/video/uvc \
 ${LINUXDIR}/drivers/media/video/zc0301 \
-${LINUXDIR}/drivers/media/video/zoran
+${LINUXDIR}/drivers/media/video/zoran \
+${LINUXDIR}/drivers/staging/go7007 \
+
 
 #
 # Start Section (must be first)
@@ -248,6 +251,19 @@ SRCS+= cpia2_v4l.c
 
 SRCS+= et61x251_core.c
 SRCS+= et61x251_tas5130d1b.c
+
+#
+# Go7007 based webcams (does not compile yet)
+#
+
+#CFLAGS += -I${LINUXDIR}/drivers/staging/go7007
+#CFLAGS += -I${LINUXDIR}/drivers/media/video/saa7134 
+
+#SRCS+= go7007-driver.c
+#SRCS+= go7007-fw.c
+#SRCS+= go7007-i2c.c
+#SRCS+= go7007-usb.c
+#SRCS+= go7007-v4l2.c
 
 #
 # em28xx
@@ -494,6 +510,7 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/video/hdpvr
 CFLAGS+= -I${LINUXDIR}/drivers/media/common/tuners
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/dvb-core
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/frontends
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/dvb-usb
 CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}
 

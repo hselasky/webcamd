@@ -133,7 +133,10 @@
 #define	vmalloc_32(s) malloc_vm(s)
 #define	vmalloc_to_page(x) ((struct page *)(x))	/* HACK */
 #define	vmalloc_to_pfn(x) ((unsigned long)(x))	/* HACK */
+#define	alloc_page(...) malloc_vm(PAGE_SIZE)
 #define	page_address(x) ((void *)(x))	/* HACK */
+#define	page_cache_release(...) __nop
+#define	clear_user_highpage(...) __nop
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	udelay(d) usleep(d)
@@ -152,6 +155,7 @@
 #define	__GFP_ZERO 0
 #define	__GFP_NOMEMALLOC 0
 #define	__GFP_HARDWALL 0
+#define	__GFP_DMA32 0
 #define	GFP_NOWAIT 0
 #define	GFP_ATOMIC 0
 #define	GFP_NOIO 0
@@ -249,6 +253,7 @@
 #define	down_read(...) __nop
 #define	up_write(...) __nop
 #define	up_read(...) __nop
+#define	get_user_pages(a,b,...) linux_get_user_pages(__VA_ARGS__)
 #define	DECLARE_RWSEM(x) struct semaphore x
 #define	crc32(s, d, l) crc32_le(s, (unsigned char const *)d, l)
 #define	CRCPOLY_LE 0xedb88320
@@ -268,6 +273,11 @@
 #define	__attribute_const__
 #define	noinline
 #define	__cpu_to_le32(x) cpu_to_le32(x)
+#define	__cpu_to_le16(x) cpu_to_le16(x)
+#define	__le32_to_cpu(x) le32_to_cpu(x)
+#define	__le16_to_cpu(x) le16_to_cpu(x)
+#define	__le32_to_cpus(p) le32_to_cpus(p)
+#define	__le16_to_cpus(p) le16_to_cpus(p)
 #define	NSEC_PER_USEC	1000
 #define	simple_strtoul strtoul
 #define	simple_strtol strtol

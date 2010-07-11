@@ -198,7 +198,7 @@ linux_mmap(struct cdev_handle *handle, int fflags,
 	/* round up length */
 	if (len & (PAGE_SIZE - 1)) {
 		len += PAGE_SIZE;
-		len &= ~(PAGE_SIZE - 1);
+		len &= ~(size_t)(PAGE_SIZE - 1);
 	}
 	/* check if the entry is already mapped */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {
@@ -238,4 +238,55 @@ linux_mmap(struct cdev_handle *handle, int fflags,
 		return (MAP_FAILED);
 	}
 	return (handle->fixed_vma[i].vm_buffer_address);
+}
+
+int
+linux_get_user_pages(unsigned long start, int npages, int write, int force,
+    struct page **ppages, struct vm_area_struct **pvm)
+{
+	struct cdev_handle *handle;
+	int i;
+	int j;
+
+	if (npages <= 0)
+		return (-1);		/* failure */
+
+	if (start & (PAGE_SIZE - 1))
+		return (-1);		/* failure */
+
+	handle = get_current_cdev_handle();
+	if (handle == NULL)
+		return (-1);		/* failure */
+
+	/* check if the entry is already mapped */
+	for (i = 0; i != LINUX_VMA_MAX; i++) {
+
+		unsigned long off;
+
+		if (handle->fixed_vma[i].vm_buffer_address == NULL)
+			continue;
+		if (handle->fixed_vma[i].vm_buffer_address == MAP_FAILED)
+			continue;
+		if ((start < handle->fixed_vma[i].vm_start) ||
+		    (start > handle->fixed_vma[i].vm_end))
+			continue;
+		if (npages > ((unsigned long)(handle->fixed_vma[i].vm_end -
+		    start) >> PAGE_SHIFT))
+			continue;
+
+		off = start - handle->fixed_vma[i].vm_start;
+
+		for (j = 0; j != npages; j++) {
+			if (ppages != NULL) {
+				ppages[j] = (struct page *)(((uint8_t *)
+				    (handle->fixed_vma[i].vm_buffer_address)) + off);
+				off += PAGE_SIZE;
+			}
+			if (pvm != NULL)
+				pvm[j] = NULL;	/* not supported */
+		}
+
+		return (j);
+	}
+	return (-1);			/* failure */
 }

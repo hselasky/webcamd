@@ -25,6 +25,11 @@
  * SUCH DAMAGE.
  */
 
+/*
+ * Many definitions in this header file derive
+ * from the Linux Kernel's usb.h
+ */
+
 #ifndef _LINUX_USB_H_
 #define	_LINUX_USB_H_
 
@@ -76,6 +81,13 @@ struct usb_device_id {
 	(USB_DEVICE_ID_MATCH_INT_CLASS | \
 	 USB_DEVICE_ID_MATCH_INT_SUBCLASS | \
 	 USB_DEVICE_ID_MATCH_INT_PROTOCOL)
+#define	USB_DEVICE_ID_MATCH_DEV_RANGE \
+	(USB_DEVICE_ID_MATCH_DEV_LO | \
+	 USB_DEVICE_ID_MATCH_DEV_HI)
+#define	USB_DEVICE_ID_MATCH_DEVICE_AND_VERSION \
+	(USB_DEVICE_ID_MATCH_DEVICE | \
+	 USB_DEVICE_ID_MATCH_DEV_LO | \
+	 USB_DEVICE_ID_MATCH_DEV_HI)
 
 	/* Used for product specific matches; the BCD range is inclusive */
 	uint16_t idVendor;
@@ -102,6 +114,13 @@ struct usb_device_id {
 	(USB_DEVICE_ID_MATCH_INT_CLASS | \
 	 USB_DEVICE_ID_MATCH_INT_SUBCLASS | \
 	 USB_DEVICE_ID_MATCH_INT_PROTOCOL)
+#define	USB_DEVICE_ID_MATCH_DEV_RANGE \
+	(USB_DEVICE_ID_MATCH_DEV_LO | \
+	 USB_DEVICE_ID_MATCH_DEV_HI)
+#define	USB_DEVICE_ID_MATCH_DEVICE_AND_VERSION \
+	(USB_DEVICE_ID_MATCH_DEVICE | \
+	 USB_DEVICE_ID_MATCH_DEV_LO | \
+	 USB_DEVICE_ID_MATCH_DEV_HI)
 #endif
 
 #define	USB_DEVICE_ID_MATCH_DEVICE \
@@ -635,15 +654,15 @@ struct usb_device *usb_get_dev(struct usb_device *intf);
 void	usb_put_dev(struct usb_device *intf);
 int	usb_string(struct usb_device *dev, int index, char *buf, size_t size);
 int	usb_make_path(struct usb_device *dev, char *buf, size_t size);
+int	usb_autopm_get_interface(struct usb_interface *);
+int	usb_autopm_set_interface(struct usb_interface *);
+int	usb_driver_claim_interface(struct usb_driver *, struct usb_interface *, void *);
 
-#define	usb_autopm_set_interface(...) 0
-#define	usb_autopm_get_interface(...) 0
 #define	usb_autopm_put_interface(...) __nop
 #define	usb_autopm_enable(...) __nop
 #define	usb_autopm_disable(...) __nop
 #define	usb_mark_last_busy(...) __nop
 #define	usb_driver_release_interface(...) __nop
-#define	usb_driver_claim_interface(...) 0
 
 #define	usb_endpoint_num(epd) \
 	((epd)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK)
