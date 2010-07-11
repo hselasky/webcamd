@@ -184,6 +184,8 @@ typedef struct inode {
 	dev_t	d_inode;
 } inode_t;
 
+#define	F_V4B_SUBDEV_MAX 	8
+
 enum {
 	F_V4B_VIDEO,
 	F_V4B_DVB_AUDIO,

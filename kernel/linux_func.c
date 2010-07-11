@@ -517,76 +517,112 @@ done:
 	return (cdev);
 }
 
-static struct cdev *cdev_registry[F_V4B_MAX];
-static uint32_t cdev_mm[F_V4B_MAX];
+static struct cdev *cdev_registry[F_V4B_MAX][F_V4B_SUBDEV_MAX];
+static uint32_t cdev_mm[F_V4B_MAX][F_V4B_SUBDEV_MAX];
 
 static void
 cdev_set_device(dev_t mm, struct cdev *cdev)
 {
-	;				/* indent fix */
-	switch (mm) {
+	uint8_t subdev;
+	uint8_t id;
+
+	switch (mm & 0xFFFF0000U) {
 	case MKDEV(VIDEO_MAJOR, 0):
-		cdev_registry[F_V4B_VIDEO] = cdev;
-		cdev_mm[F_V4B_VIDEO] = mm;
+		subdev = mm & 0xFF;
+		if (subdev >= F_V4B_SUBDEV_MAX)
+			goto error;
+		cdev_registry[F_V4B_VIDEO][subdev] = cdev;
+		cdev_mm[F_V4B_VIDEO][subdev] = mm;
 		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO):
-		cdev_registry[F_V4B_DVB_AUDIO] = cdev;
-		cdev_mm[F_V4B_DVB_AUDIO] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_CA):
-		cdev_registry[F_V4B_DVB_CA] = cdev;
-		cdev_mm[F_V4B_DVB_CA] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX):
-		cdev_registry[F_V4B_DVB_DEMUX] = cdev;
-		cdev_mm[F_V4B_DVB_DEMUX] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_DVR):
-		cdev_registry[F_V4B_DVB_DVR] = cdev;
-		cdev_mm[F_V4B_DVB_DVR] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
-		cdev_registry[F_V4B_DVB_FRONTEND] = cdev;
-		cdev_mm[F_V4B_DVB_FRONTEND] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_OSD):
-		cdev_registry[F_V4B_DVB_OSD] = cdev;
-		cdev_mm[F_V4B_DVB_OSD] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_SEC):
-		cdev_registry[F_V4B_DVB_SEC] = cdev;
-		cdev_mm[F_V4B_DVB_SEC] = mm;
-		break;
-	case MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO):
-		cdev_registry[F_V4B_DVB_VIDEO] = cdev;
-		cdev_mm[F_V4B_DVB_VIDEO] = mm;
-		break;
-	default:
-		if ((mm < MKDEV(DVB_MAJOR, 0)) ||
-		    (mm > MKDEV(DVB_MAJOR, 65535))) {
-			printf("Trying to register "
-			    "unknown device: 0x%08x\n", mm);
+
+	case MKDEV(DVB_MAJOR, 0):
+		subdev = (mm >> 6) & 0x3FF;
+		if (subdev >= F_V4B_SUBDEV_MAX)
+			return;
+
+		id = (mm >> 4) & 0x03;
+		if (id != 0)
+			return;
+
+		switch (mm & 0xFFFF000FU) {
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO):
+			cdev_registry[F_V4B_DVB_AUDIO][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_AUDIO][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_CA):
+			cdev_registry[F_V4B_DVB_CA][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_CA][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX):
+			cdev_registry[F_V4B_DVB_DEMUX][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_DEMUX][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_DVR):
+			cdev_registry[F_V4B_DVB_DVR][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_DVR][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
+			cdev_registry[F_V4B_DVB_FRONTEND][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_FRONTEND][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_OSD):
+			cdev_registry[F_V4B_DVB_OSD][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_OSD][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_SEC):
+			cdev_registry[F_V4B_DVB_SEC][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_SEC][subdev] = mm;
+			break;
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO):
+			cdev_registry[F_V4B_DVB_VIDEO][subdev] = cdev;
+			cdev_mm[F_V4B_DVB_VIDEO][subdev] = mm;
+			break;
+		default:
+			break;		/* silently ignore */
 		}
 		break;
+	default:
+		subdev = 0;
+		goto error;
 	}
+	return;
+
+error:
+	printf("Trying to register "
+	    "unknown device(0x%08x) "
+	    "or subdevice(%d) too big.\n",
+	    mm, (int)subdev);
+	return;
 }
 
 struct cdev *
-cdev_get_device(int f_v4b)
+cdev_get_device(unsigned int f_v4b)
 {
-	if ((f_v4b < 0) || (f_v4b >= F_V4B_MAX))
+	unsigned int subunit;
+
+	subunit = f_v4b % F_V4B_SUBDEV_MAX;
+
+	f_v4b /= F_V4B_SUBDEV_MAX;
+
+	if (f_v4b >= F_V4B_MAX)
 		return (NULL);		/* should not happen */
 
-	return (cdev_registry[f_v4b]);
+	return (cdev_registry[f_v4b][subunit]);
 }
 
 uint32_t
-cdev_get_mm(int f_v4b)
+cdev_get_mm(unsigned int f_v4b)
 {
-	if ((f_v4b < 0) || (f_v4b >= F_V4B_MAX))
+	unsigned int subunit;
+
+	subunit = f_v4b % F_V4B_SUBDEV_MAX;
+
+	f_v4b /= F_V4B_SUBDEV_MAX;
+
+	if (f_v4b >= F_V4B_MAX)
 		return (0);		/* should not happen */
 
-	return (cdev_mm[f_v4b]);
+	return (cdev_mm[f_v4b][subunit]);
 }
 
 void

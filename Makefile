@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.14
+VERSION=	0.1.15
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -385,6 +385,12 @@ SRCS+= vp702x-fe.c
 SRCS+= vp702x.c
 SRCS+= vp7045-fe.c
 SRCS+= vp7045.c
+
+CFLAGS+= -DCONFIG_DVB_AF9013
+SRCS+= af9013.c
+
+CFLAGS+= -DCONFIG_MEDIA_TUNER_MXL5005S
+SRCS+= mxl5005s.c
 
 #
 # Siano DVB USB

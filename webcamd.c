@@ -288,9 +288,10 @@ v4b_create(int unit)
 {
 	struct cdev_handle *handle;
 	pthread_t dummy;
-	uint8_t n;
+	unsigned int n;
+	unsigned int ndev;
 
-	for (n = 0; n != F_V4B_MAX; n++) {
+	for (ndev = 0, n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX); n++) {
 
 		handle = linux_open(n, O_RDONLY);
 
@@ -299,15 +300,21 @@ v4b_create(int unit)
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
 			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ ,
-			    0600, devnames[n], unit);
+			    0600, devnames[n / F_V4B_SUBDEV_MAX],
+			    (unit * F_V4B_SUBDEV_MAX) +
+			    (n % F_V4B_SUBDEV_MAX));
 
 			printf("Creating /dev/");
-			printf(devnames[n], unit);
+			printf(devnames[n / F_V4B_SUBDEV_MAX], unit);
 			printf("\n");
+
+			ndev++;
 		}
 	}
 
-	for (n = 0; n != 4; n++) {
+	ndev *= 4;
+
+	for (n = 0; n != ndev; n++) {
 		if (pthread_create(&dummy, NULL, v4b_work, NULL)) {
 			v4b_errx(1, "Failed creating Video4BSD process");
 		}
