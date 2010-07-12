@@ -102,6 +102,7 @@
 #define	MODULE_ALIAS(...)
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	MODULE_SUPPORTED_DEVICE(...)
+#define	MODULE_FIRMWARE(...)
 #define	THIS_MODULE (NULL)
 #define	module_param(...)
 #define	module_param_call(...)
