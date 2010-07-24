@@ -462,6 +462,11 @@ SRCS+= flexcop-sram.c
 SRCS+= flexcop-usb.c
 SRCS+= flexcop.c
 
+SRCS+= dib7000p.c
+CFLAGS+= -DCONFIG_DVB_DIB7000P
+SRCS+= mt2060.c
+CFLAGS+= -DCONFIG_MEDIA_TUNER_MT2060
+
 #
 # Various webcams
 #
