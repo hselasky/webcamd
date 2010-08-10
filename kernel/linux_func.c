@@ -1188,7 +1188,7 @@ poll_freewait(struct poll_wqueues *pwq)
 void
 poll_schedule(struct poll_wqueues *pwq, int flag)
 {
-
+	schedule();
 }
 
 int32_t
