@@ -462,6 +462,8 @@ SRCS+= flexcop-sram.c
 SRCS+= flexcop-usb.c
 SRCS+= flexcop.c
 
+SRCS+= dib0070.c
+CFLAGS+= -DCONFIG_DVB_TUNER_DIB0070
 SRCS+= dib7000p.c
 CFLAGS+= -DCONFIG_DVB_DIB7000P
 SRCS+= mt2060.c
