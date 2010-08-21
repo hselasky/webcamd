@@ -132,3 +132,9 @@ i2c_master_recv(struct i2c_client *client, char *buf, int count)
 
 	return ((ret == 1) ? count : ret);
 }
+
+void
+i2c_clients_command(struct i2c_adapter *adap, unsigned int cmd, void *arg)
+{
+	printf("WARNING: i2c_clients_command() is not implemented\n");
+}

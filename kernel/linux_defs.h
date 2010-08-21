@@ -145,6 +145,7 @@
 #define	clear_user_highpage(...) __nop
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
+#define	kstrdup(a,b) strdup(a)
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
 #define	__GFP_WAIT 0
@@ -259,6 +260,7 @@
 #define	down_read(...) __nop
 #define	up_write(...) __nop
 #define	up_read(...) __nop
+#define	dump_stack(...) __nop
 #define	get_user_pages(a,b,...) linux_get_user_pages(__VA_ARGS__)
 #define	DECLARE_RWSEM(x) struct semaphore x
 #define	crc32(s, d, l) crc32_le(s, (unsigned char const *)d, l)

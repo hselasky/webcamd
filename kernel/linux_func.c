@@ -293,6 +293,30 @@ put_unaligned_le16(uint16_t val, void *_ptr)
 	ptr[1] = val & 0xFF;
 }
 
+uint64_t
+get_unaligned_le64(const void *_ptr)
+{
+	const uint8_t *ptr = _ptr;
+	uint64_t val;
+
+	val = ptr[7];
+	val <<= 8;
+	val |= ptr[6];
+	val <<= 8;
+	val |= ptr[5];
+	val <<= 8;
+	val |= ptr[4];
+	val <<= 8;
+	val |= ptr[3];
+	val <<= 8;
+	val |= ptr[2];
+	val <<= 8;
+	val |= ptr[1];
+	val <<= 8;
+	val |= ptr[0];
+	return (val);
+}
+
 uint32_t
 get_unaligned_le32(const void *_ptr)
 {
@@ -480,6 +504,43 @@ hweight8(unsigned int w)
 
 	res = (res & 0x33) + ((res >> 2) & 0x33);
 	return (res + (res >> 4)) & 0x0F;
+}
+
+unsigned int
+hweight16(unsigned int w)
+{
+	unsigned int res = w - ((w >> 1) & 0x5555);
+
+	res = (res & 0x3333) + ((res >> 2) & 0x3333);
+	res = (res + (res >> 4)) & 0x0F0F;
+	return (res + (res >> 8)) & 0x00FF;
+}
+
+unsigned int
+hweight32(unsigned int w)
+{
+	unsigned int res = w - ((w >> 1) & 0x55555555);
+
+	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
+	res = (res + (res >> 4)) & 0x0F0F0F0F;
+	res = res + (res >> 8);
+	return (res + (res >> 16)) & 0x000000FF;
+}
+
+unsigned long
+hweight64(uint64_t w)
+{
+	if (sizeof(long) == 4) {
+		return (hweight32((unsigned int)(w >> 32)) + hweight32((unsigned int)w));
+	} else {
+		uint64_t res = w - ((w >> 1) & 0x5555555555555555ul);
+
+		res = (res & 0x3333333333333333ul) + ((res >> 2) & 0x3333333333333333ul);
+		res = (res + (res >> 4)) & 0x0F0F0F0F0F0F0F0Ful;
+		res = res + (res >> 8);
+		res = res + (res >> 16);
+		return (res + (res >> 32)) & 0x00000000000000FFul;
+	}
 }
 
 #ifndef HAVE_WEBCAMD

@@ -48,6 +48,7 @@ void	le32_to_cpus(uint32_t *p);
 void	put_unaligned_le32(uint32_t, void *);
 void	put_unaligned_le16(uint16_t, void *);
 
+uint64_t get_unaligned_le64(const void *);
 uint32_t get_unaligned_le32(const void *);
 uint16_t get_unaligned_le16(const void *);
 
@@ -76,6 +77,9 @@ struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
 unsigned int hweight8(unsigned int w);
+unsigned int hweight16(unsigned int w);
+unsigned int hweight32(unsigned int w);
+unsigned long hweight64(uint64_t w);
 unsigned long copy_to_user(void *to, const void *from, unsigned long n);
 unsigned long copy_from_user(void *to, const void *from, unsigned long n);
 void	kref_get(struct kref *kref);

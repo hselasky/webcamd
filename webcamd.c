@@ -300,7 +300,7 @@ v4b_create(int unit)
 			linux_close(handle);
 
 			temp = (unit * F_V4B_SUBDEV_MAX) +
-			  (n % F_V4B_SUBDEV_MAX);
+			    (n % F_V4B_SUBDEV_MAX);
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
 			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ ,
