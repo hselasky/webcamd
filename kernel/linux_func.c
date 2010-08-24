@@ -1580,3 +1580,31 @@ usb_find_interface(struct usb_driver *drv, int minor)
 {
 	return (NULL);			/* not supported */
 }
+
+void   *
+kmemdup(const void *src, size_t len, gfp_t gfp)
+{
+	void *p;
+
+	p = malloc(len);
+	if (p)
+		memcpy(p, src, len);
+
+	return (p);
+}
+
+void   *
+memdup_user(const void *src, size_t len)
+{
+	void *p;
+
+	p = malloc(len);
+	if (p == NULL)
+		return (ERR_PTR(-ENOMEM));
+
+	if (copy_from_user(p, src, len)) {
+		free(p);
+		return ERR_PTR(-EFAULT);
+	}
+	return (p);
+}

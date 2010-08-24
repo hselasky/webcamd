@@ -177,4 +177,7 @@ int	pidfile_create(int bus, int addr, int index);
 #define	free_vm(x) free(x)
 #endif
 
+void   *kmemdup(const void *src, size_t len, gfp_t gfp);
+void   *memdup_user(const void *src, size_t len);
+
 #endif					/* _LINUX_FUNC_H_ */
