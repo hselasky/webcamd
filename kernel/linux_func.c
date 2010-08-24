@@ -934,9 +934,34 @@ __ffz(int x)
 }
 
 int
-__fls(int x)
+fls(int mask)
 {
-	return (fls(x));
+	int bit;
+
+	if (mask == 0)
+		return (0);
+	bit = 1;
+	if (mask & 0xFFFF0000U) {
+		bit += 16;
+		mask = (unsigned int)mask >> 16;
+	}
+	if (mask & 0xFF00U) {
+		bit += 8;
+		mask = (unsigned int)mask >> 8;
+	}
+	if (mask & 0xF0U) {
+		bit += 4;
+		mask = (unsigned int)mask >> 4;
+	}
+	if (mask & 0xCU) {
+		bit += 2;
+		mask = (unsigned int)mask >> 2;
+	}
+	if (mask & 0x2U) {
+		bit += 1;
+		mask = (unsigned int)mask >> 1;
+	}
+	return (bit);
 }
 
 unsigned long

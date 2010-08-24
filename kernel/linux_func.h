@@ -103,7 +103,9 @@ long	PTR_ERR(const void *ptr);
 long	IS_ERR(const void *ptr);
 int	__ffs(int x);
 int	__ffz(int x);
-int	__fls(int x);
+
+#define	__fls(x) fls(x)
+int	fls (int mask);
 unsigned long find_next_bit(const unsigned long *addr, unsigned long size, unsigned long offset);
 unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size, unsigned long offset);
 void	sort(void *base, size_t num, size_t size, int (*cmp) (const void *, const void *), void (*swap) (void *, void *, int size));

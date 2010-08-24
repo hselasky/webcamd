@@ -304,6 +304,12 @@
 ((cast)((((cast)(x)) < ((cast)(y))) ? ((cast)(y)) : \
 	(((cast)(x)) > ((cast)(z))) ? ((cast)(z)) : ((cast)(x))))
 #define	try_then_request_module(x,...) (x)
+#ifndef __packed
+#define	__packed __attribute__((__packed__))
+#endif
+#ifndef __pure
+#define	__pure __attribute__((pure))
+#endif
 
 #undef errno
 #define	errno errno_v4l
@@ -312,9 +318,13 @@
 
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
 #if (BYTE_ORDER == LITTLE_ENDIAN)
+#ifndef __LITTLE_ENDIAN
 #define	__LITTLE_ENDIAN
+#endif
 #elif BYTE_ORDER == BIG_ENDIAN
+#ifndef __BIG_ENDIAN
 #define	__BIG_ENDIAN
+#endif
 #else
 #error "Unknown byte order"
 #endif
@@ -347,7 +357,11 @@ typedef unsigned int __le32;
 typedef unsigned short __be16;
 typedef unsigned int __be32;
 typedef unsigned int uint;
+
+#ifndef __GLIBC__
 typedef long long loff_t;
+
+#endif
 typedef unsigned int gfp_t;
 typedef uint32_t dev_t;
 typedef uint8_t bool;

@@ -30,6 +30,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <sched.h>
 

@@ -33,6 +33,10 @@
 #ifndef _LINUX_USB_H_
 #define	_LINUX_USB_H_
 
+#ifndef __packed
+#define	__packed __attribute__((__packed__))
+#endif
+
 struct usb_device;
 struct usb_interface;
 struct usb_driver;

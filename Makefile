@@ -38,6 +38,7 @@ MKLINT=		no
 NOGCCERROR=
 MLINKS=
 BITS_PER_LONG!=${CC} ${.CURDIR}/tests/long_size_test.c && ./a.out
+CFLAGS+= 	-D_GNU_SOURCE
 
 .PATH: \
 ${.CURDIR} \

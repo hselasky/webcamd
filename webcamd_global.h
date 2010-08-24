@@ -29,11 +29,9 @@
 #include <machine/param.h>
 
 #include <sys/types.h>
-#include <sys/stdint.h>
 #include <sys/queue.h>
 #include <sys/ctype.h>
 #include <sys/ioccom.h>
-#include <sys/fcntl.h>
 #include <sys/msg.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -41,6 +39,7 @@
 #include <netinet/in.h>
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 #define	sync(...) bsd_sync(__VA_ARGS__)
 #include <unistd.h>
@@ -51,6 +50,7 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 #include <libusb20.h>
 #include <libusb20_desc.h>
