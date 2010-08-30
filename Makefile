@@ -510,6 +510,7 @@ SRCS+= uvc_video.c
 SRCS+= linux_end_section.c
 
 SRCS+= webcamd.c
+SRCS+= webcamd_hal.c
 
 CFLAGS+= -DBITS_PER_LONG=${BITS_PER_LONG}
 
@@ -539,6 +540,13 @@ CFLAGS+= -DCONFIG_DVB_CORE
 CFLAGS+= -DCONFIG_AS102_USB
 CFLAGS+= -DCONFIG_FW_LOADER
 CFLAGS+= -DHAVE_WEBCAMD
+
+.if defined(HAVE_HAL)
+HAL_CFLAGS!= pkg-config --cflags hal
+HAL_LDFLAGS!= pkg-config --libs hal
+CFLAGS+= ${HAL_CFLAGS} -DHAVE_HAL
+LDFLAGS+= ${HAL_LDFLAGS}
+.endif
 
 .if defined(HAVE_DEBUG)
 CFLAGS+= -DHAVE_DEBUG

@@ -38,6 +38,8 @@
 
 #include <cuse4bsd.h>
 
+#include <webcamd_hal.h>
+
 static cuse_open_t v4b_open;
 static cuse_close_t v4b_close;
 static cuse_read_t v4b_read;
@@ -76,6 +78,7 @@ static int u_videodev = -1;
 static int f_usb = -1;
 static int do_fork = 0;
 static int do_realtime = 1;
+static int do_hal_register = 0;
 static struct pidfh *local_pid = NULL;
 
 char	global_fw_prefix[128] = {"/boot/modules"};
@@ -290,10 +293,11 @@ v4b_create(int unit)
 	struct cdev_handle *handle;
 	pthread_t dummy;
 	unsigned int n;
-	unsigned int ndev;
+	unsigned int p;
 	int temp;
+	char buf[128];
 
-	for (ndev = 0, n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX); n++) {
+	for (n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX); n++) {
 
 		handle = linux_open(n, O_RDONLY);
 
@@ -307,19 +311,18 @@ v4b_create(int unit)
 			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ ,
 			    0600, devnames[n / F_V4B_SUBDEV_MAX], temp);
 
-			printf("Creating /dev/");
-			printf(devnames[n / F_V4B_SUBDEV_MAX], temp);
-			printf("\n");
+			snprintf(buf, sizeof(buf), devnames[n / F_V4B_SUBDEV_MAX], temp);
 
-			ndev++;
-		}
-	}
+			printf("Creating /dev/%s\n", buf);
 
-	ndev *= 4;
+			for (p = 0; p != 4; p++) {
+				if (pthread_create(&dummy, NULL, v4b_work, NULL)) {
+					v4b_errx(1, "Failed creating Video4BSD process");
+				}
+			}
 
-	for (n = 0; n != ndev; n++) {
-		if (pthread_create(&dummy, NULL, v4b_work, NULL)) {
-			v4b_errx(1, "Failed creating Video4BSD process");
+			if (do_hal_register)
+				hal_add_device(buf);
 		}
 	}
 }
@@ -335,6 +338,9 @@ usage(void)
 	    "	-B Run in background\n"
 	    "	-f <firmware path> [%s]\n"
 	    "	-r Do not set realtime priority\n"
+#ifdef HAVE_HAL
+	    "	-H Register device by HAL daemon\n"
+#endif
 	    "	-h Print help\n",
 	    global_fw_prefix
 	);
@@ -390,7 +396,7 @@ main(int argc, char **argv)
 
 	atexit(&v4b_exit);
 
-	while ((opt = getopt(argc, argv, "Bd:f:i:v:hr")) != -1) {
+	while ((opt = getopt(argc, argv, "Bd:f:i:v:hHr")) != -1) {
 		switch (opt) {
 		case 'd':
 			ptr = optarg;
@@ -426,6 +432,10 @@ main(int argc, char **argv)
 			do_realtime = 0;
 			break;
 
+		case 'H':
+			do_hal_register = 1;
+			break;
+
 		default:
 			usage();
 			break;
@@ -455,6 +465,9 @@ main(int argc, char **argv)
 	f_usb = usb_linux_probe(u_unit, u_addr, u_index);
 	if (f_usb < 0)
 		v4b_errx(1, "Cannot find USB device");
+
+	if (do_hal_register)
+		hal_init(u_unit, u_addr, u_index);
 
 	v4b_create(u_videodev);
 
