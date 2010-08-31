@@ -69,6 +69,9 @@ hal_init(int bus, int addr, int iface)
 	char **ppdev;
 	int n;
 
+	hal_conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+	if (hal_conn == NULL)
+		return;
 	hal_ctx = libhal_ctx_new();
 	if (hal_ctx == NULL)
 		return;
