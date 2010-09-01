@@ -68,6 +68,7 @@ hal_init(int bus, int addr, int iface)
 {
 	char **ppdev;
 	int n;
+	int to = 120;
 
 	hal_conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
 	if (hal_conn == NULL)
@@ -77,8 +78,13 @@ hal_init(int bus, int addr, int iface)
 		return;
 	if (libhal_ctx_set_dbus_connection(hal_ctx, hal_conn) == 0)
 		return;
-	if (libhal_ctx_init(hal_ctx, NULL) == 0)
-		return;
+
+	while (libhal_ctx_init(hal_ctx, NULL) == 0) {
+		if (!to--)
+			return;
+		usleep(1000000);
+		printf("Waiting %u seconds for hald.\n", to);
+	}
 
 	ppdev = libhal_manager_find_device_string_match(
 	    hal_ctx, "info.bus", "usb_device", &n, NULL);
