@@ -266,7 +266,7 @@ usb_linux_fill_ep_info(struct usb_device *udev,
  * This function is the FreeBSD probe and attach callback.
  *------------------------------------------------------------------------*/
 int
-usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
+usb_linux_probe_p(int *p_bus, int *p_addr, int *p_index)
 {
 	const struct usb_device_id *id;
 	struct usb_linux_softc *sc;
@@ -281,6 +281,9 @@ usb_linux_probe(uint8_t bus, uint8_t addr, uint8_t index)
 	uint8_t match_bus_addr;
 	uint8_t index_copy;
 	uint8_t device_index;
+	uint8_t bus = *p_bus;
+	uint8_t addr = *p_addr;
+	uint8_t index = *p_index;
 
 	for (i = 0;; i++) {
 		if (i == ARRAY_SIZE(uls))
@@ -365,9 +368,11 @@ next_dev:
 	return (-ENXIO);
 
 found:
+	*p_bus = libusb20_dev_get_bus_number(pdev);
+	*p_addr = libusb20_dev_get_address(pdev);
+	*p_index = index_copy;
 #ifdef HAVE_WEBCAMD
-	if (pidfile_create(libusb20_dev_get_bus_number(pdev),
-	    libusb20_dev_get_address(pdev), index_copy)) {
+	if (pidfile_create(*p_bus, *p_addr, index_copy)) {
 		fprintf(stderr, "Webcamd is already running for "
 		    "ugen%d.%d.%d\n",
 		    libusb20_dev_get_bus_number(pdev),

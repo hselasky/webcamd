@@ -462,7 +462,7 @@ main(int argc, char **argv)
 	}
 	linux_init();
 
-	f_usb = usb_linux_probe(u_unit, u_addr, u_index);
+	f_usb = usb_linux_probe_p(&u_unit, &u_addr, &u_index);
 	if (f_usb < 0)
 		v4b_errx(1, "Cannot find USB device");
 
