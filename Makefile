@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.15
+VERSION=	0.1.16
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin

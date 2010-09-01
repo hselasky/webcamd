@@ -68,43 +68,59 @@ hal_init(int bus, int addr, int iface)
 {
 	char **ppdev;
 	int n;
-	int to = 120;
 
-	hal_conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
-	if (hal_conn == NULL)
-		return;
+	while (1) {
+		hal_conn = dbus_bus_get(DBUS_BUS_SYSTEM, NULL);
+		if (hal_conn != NULL)
+			break;
+		usleep(1000000);
+		printf("Waiting for DBUS connection.\n");
+	}
+
 	hal_ctx = libhal_ctx_new();
 	if (hal_ctx == NULL)
 		return;
+
 	if (libhal_ctx_set_dbus_connection(hal_ctx, hal_conn) == 0)
 		return;
 
 	while (libhal_ctx_init(hal_ctx, NULL) == 0) {
-		if (!to--)
-			return;
 		usleep(1000000);
-		printf("Waiting %u seconds for hald.\n", to);
+		printf("Waiting for HAL connection.\n");
 	}
 
-	ppdev = libhal_manager_find_device_string_match(
-	    hal_ctx, "info.bus", "usb_device", &n, NULL);
+	while (1) {
+		printf("Waiting for HAL USB device.\n");
 
-	if ((ppdev == NULL) || (n < 1))
-		return;
+		ppdev = libhal_manager_find_device_string_match(
+		    hal_ctx, "info.bus", "usb_device", &n, NULL);
 
-	while (n--) {
-		if (libhal_device_get_property_int(hal_ctx, ppdev[n],
-		    "usb_device.bus_number", NULL) != bus)
+		if (ppdev == NULL) {
+			usleep(1000000);
 			continue;
-		if (libhal_device_get_property_int(hal_ctx, ppdev[n],
-		    "usb_device.port_number", NULL) != addr)
-			continue;
+		}
+		if (n > 0) {
+			while (n--) {
+				if (libhal_device_get_property_int(hal_ctx, ppdev[n],
+				    "usb_device.bus_number", NULL) != bus)
+					continue;
+				if (libhal_device_get_property_int(hal_ctx, ppdev[n],
+				    "usb_device.port_number", NULL) != addr)
+					continue;
 
-		hal_dev = strdup(ppdev[n]);
-		break;
+				hal_dev = strdup(ppdev[n]);
+				break;
+			}
+		}
+		libhal_free_string_array(ppdev);
+
+		if (hal_dev == NULL) {
+			usleep(1000000);
+			continue;
+		} else {
+			break;
+		}
 	}
-
-	libhal_free_string_array(ppdev);
 }
 
 void
