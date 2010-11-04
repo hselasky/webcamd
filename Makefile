@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.16
+VERSION=	0.1.17
 PROG=		webcamd
 MAN=
 BINDIR=		%%PREFIX%%/sbin
@@ -86,7 +86,6 @@ ${LINUXDIR}/drivers/media/video/saa7134 \
 ${LINUXDIR}/drivers/media/video/sn9c102 \
 ${LINUXDIR}/drivers/media/video/usbvideo \
 ${LINUXDIR}/drivers/media/video/uvc \
-${LINUXDIR}/drivers/media/video/zc0301 \
 ${LINUXDIR}/drivers/media/video/zoran \
 ${LINUXDIR}/drivers/staging/go7007 \
 
@@ -229,14 +228,6 @@ SRCS+= sn9c102_pas202bcb.c
 SRCS+= sn9c102_tas5110c1b.c
 SRCS+= sn9c102_tas5110d.c
 SRCS+= sn9c102_tas5130d1b.c
-
-#
-# zc0301 based webcams
-#
-
-SRCS+= zc0301_core.c
-SRCS+= zc0301_pas202bcb.c
-SRCS+= zc0301_pb0330.c
 
 #
 # cpia2 based webcams
