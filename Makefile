@@ -31,6 +31,8 @@
 VERSION=	0.1.17
 PROG=		webcamd
 MAN=
+MAN+=		webcamd.8
+
 BINDIR=		%%PREFIX%%/sbin
 LIBDIR?=	%%PREFIX%%/lib
 LINUXDIR=	${.CURDIR}/v4l-dvb/linux
