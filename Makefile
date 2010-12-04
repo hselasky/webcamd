@@ -30,8 +30,56 @@
 
 VERSION=	0.1.17
 PROG=		webcamd
+#
+# List of all manual pages
+#
 MAN=
-MAN+=		webcamd.8
+MAN+=	webcamd.8
+MAN+=	man4/au0828.4
+MAN+=	man4/benq.4
+MAN+=	man4/bttv.4
+MAN+=	man4/conex.4
+MAN+=	man4/cpiax.4
+MAN+=	man4/cx23885.4
+MAN+=	man4/cx88.4
+MAN+=	man4/em28xx.4
+MAN+=	man4/et61x251.4
+MAN+=	man4/finepix.4
+MAN+=	man4/gl860.4
+MAN+=	man4/ibmcam.4
+MAN+=	man4/ivtv.4
+MAN+=	man4/jeilinj.4
+MAN+=	man4/m5602.4
+MAN+=	man4/mars.4
+MAN+=	man4/meye.4
+MAN+=	man4/mr97310a.4
+MAN+=	man4/ov519.4
+MAN+=	man4/ov534.4
+MAN+=	man4/pacxxx.4
+MAN+=	man4/pvrusb2.4
+MAN+=	man4/pwc.4
+MAN+=	man4/saa7134.4
+MAN+=	man4/saa7164.4
+MAN+=	man4/se401.4
+MAN+=	man4/si470x.4
+MAN+=	man4/sn9c102.4
+MAN+=	man4/sn9c20x.4
+MAN+=	man4/sonixj.4
+MAN+=	man4/spca5xx.4
+MAN+=	man4/sq905c.4
+MAN+=	man4/stk014.4
+MAN+=	man4/stv06xx.4
+MAN+=	man4/sunplus.4
+MAN+=	man4/t613.4
+MAN+=	man4/tv8532.4
+MAN+=	man4/usbvision.4
+MAN+=	man4/vc032x.4
+MAN+=	man4/w9966.4
+MAN+=	man4/w996x.4
+MAN+=	man4/zc0301.4
+MAN+=	man4/zc3xx.4
+MAN+=	man4/zoran.4
+MAN+=	man4/zr364xx.4
 
 BINDIR=		%%PREFIX%%/sbin
 LIBDIR?=	%%PREFIX%%/lib

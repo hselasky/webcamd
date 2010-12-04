@@ -1,0 +1,173 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Nov 27, 2010
+.Dt EM28XX 4
+.Os FreeBSD
+.Sh NAME
+.Nm em28xx
+.Nd  em28xx webcamd driver for USB camera and TV devices
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports USB devices based on EMPIA's EM28xx chipset. A listing of tested and untested devices is available from 
+.An http://linuxtv.org/wiki/index.php/Em28xx_devices.
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following devices. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of the inserted device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 0413:6023	 Ta "Leadtek Winfast USB II"                            
+.It 0438:b002	 Ta "AMD ATI TV Wonder HD 600"                          
+.It 04bb:0515	 Ta "IO-DATA GV-MVP/SZ"                          
+.It 093b:a005	 Ta "Plextor ConvertX PX-TV100U"                        
+.It 0ccd:0036	 Ta "Terratec Cinergy 250 USB"                   
+.It 0ccd:0042	 Ta "Terratec Hybrid XS"                                
+.It 0ccd:0043	 Ta "Terratec Cinergy T XS"                             
+.It 0ccd:0047	 Ta "Terratec Prodigy XS"                               
+.It 0ccd:004c	 Ta "Terratec Hybrid XS Secam"                          
+.It 0ccd:004f	 Ta "Terratec Cinergy A Hybrid XS"                      
+.It 0ccd:005e	 Ta "Terratec Hybrid XS"                         
+.It 0ccd:0084	 Ta "Terratec AV350"                                    
+.It 0ccd:0096	 Ta "Terratec Grabby"                                   
+.It 185b:2041	 Ta "Compro VideoMate ForYou/Stereo"             
+.It 185b:2870	 Ta "Compro VideoMate U3                              
+.It 1b80:e302	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
+.It 1b80:e304	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
+.It 2001:f112	 Ta "D-Link DUB-T210 TV Tuner"                   
+.It 2040:4200	 Ta "Hauppauge WinTV USB 2"                      
+.It 2040:4201	 Ta "Hauppauge WinTV USB 2"                      
+.It 2040:6500	 Ta "Hauppauge WinTV HVR 900"                           
+.It 2040:6502	 Ta "Hauppauge WinTV HVR 900 (R2)"                      
+.It 2040:6513	 Ta "Hauppauge WinTV HVR 950"                          
+.It 2040:6517	 Ta "Hauppauge WinTV HVR 950"                          
+.It 2040:651b	 Ta "Hauppauge WinTV HVR 950"                          
+.It 2040:651f	 Ta "Hauppauge WinTV HVR 850"                           
+.It 2304:0207	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
+.It 2304:0208	 Ta "Pinnacle PCTV USB 2"                        
+.It 2304:021a	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
+.It 2304:0226	 Ta "Pinnacle Hybrid Pro (2)"                           
+.It 2304:0227	 Ta "Pinnacle PCTV HD Pro Stick"                        
+.It eb1a:2710	 Ta
+.It eb1a:2750	 Ta "EM2710/EM2750/EM2751 webcam grabber"               
+.It eb1a:2751	 Ta "EM2710/EM2750/EM2751 webcam grabber"               
+.It eb1a:2800	 Ta "Terratec Cinergy 200 USB"                  
+.It eb1a:2801	 Ta "eMPIA GrabBeeX+ Video Encoder"          
+.It Eb1a:2820	 Ta
+.It eb1a:2821	 Ta
+.It eb1a:2860	 Ta
+.It eb1a:2861	 Ta
+.It eb1a:2862	 Ta
+.It eb1a:2863	 Ta
+.It eb1a:2868	 Ta
+.It eb1a:2870	 Ta
+.It eb1a:2881	 Ta
+.It eb1a:2883	 Ta
+.It eb1a:50a6	 Ta "Gadmei UTV330"                                     
+.It eb1a:a313	 Ta "KWorld ATSC 315U HDTV TV Box"                      
+.It eb1a:a316	 Ta "Kworld PlusTV HD Hybrid 330"                       
+.It eb1a:e300	 Ta "KWorld PVRTV 300U"                                 
+.It eb1a:e303	 Ta "Kaiomy TVnPC U2"                                   
+.It eb1a:e305	 Ta "KWorld DVB-T 305U"                                 
+.It eb1a:e310	 Ta "KWorld DVB-T 310U"                                 
+.It eb1a:e310	 Ta "MSI DigiVox A/D"                                   
+.It eb1a:e320	 Ta "MSI DigiVox A/D II"                                
+.It eb1a:e323	 Ta "Kworld VS-DVB-T 323UR"                             
+.It eb1a:e350	 Ta "Kworld 350 U DVB-T"                                
+.It eb1a:e355	 Ta "Kworld 355 U DVB-T"                                
+.It eb1a:e357	 Ta "Kworld 355 U DVB-T"                                
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr  benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr  ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Ludovico Cavedon, Markus Rechberger, Mauro Carvalho Chehab, and Sascha Sommer
+for the Linux TV project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

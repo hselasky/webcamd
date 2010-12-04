@@ -1,0 +1,147 @@
+a/\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Nov 26, 2010
+.Dt CX23885 4
+.Os FreeBSD
+.Sh NAME
+.Nm cx23885
+.Nd cx23885 webcamd driver for TV tuner boards 
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports the CX23885, a PCI Express broadcast audio/video decoder chipset from Conexant. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following TV tuner boards. The
+.Xr pciconf 8
+command can be used to determine the VendorID:ProductID of the device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em "Tuner Board"
+.It 0001:2005 	 Ta "DVBWorld DVB-S2 2005"                                
+.It 0070:2211 	 Ta "Hauppauge WinTV-HVR1270"                             
+.It 0070:2215 	 Ta "Hauppauge WinTV-HVR1275"                             
+.It 0070:2251 	 Ta "Hauppauge WinTV-HVR1255"                             
+.It 0070:2291	 Ta "Hauppauge WinTV-HVR1210"                             
+.It 0070:2295 	 Ta "Hauppauge WinTV-HVR1210"                             
+.It 0070:3400	 Ta "Hauppauge WinTV 34xxx models"                        
+.It 0070:71d1	 Ta "Hauppauge WinTV-HVR1200"                             
+.It 0070:71d3	 Ta "Hauppauge WinTV-HVR1200"                             
+.It 0070:7600 	 Ta "Hauppauge WinTV-HVR1800lp"                           
+.It 0070:7710	 Ta "Hauppauge WinTV-HVR1500"                             
+.It 0070:7717 	 Ta "Hauppauge WinTV-HVR1500"                             
+.It 0070:7790	 Ta "Hauppauge WinTV-HVR1500Q"                            
+.It 0070:7797 	 Ta "Hauppauge WinTV-HVR1500Q"                            
+.It 0070:7800	 Ta "Hauppauge WinTV-HVR1800"                             
+.It 0070:7801	 Ta "Hauppauge WinTV-HVR1800"                             
+.It 0070:7809 	 Ta "Hauppauge WinTV-HVR1800"                             
+.It 0070:7911 	 Ta "Hauppauge WinTV-HVR1250"                             
+.It 0070:8010 	 Ta "Hauppauge WinTV-HVR1400"                             
+.It 0070:8101 	 Ta "Hauppauge WinTV-HVR1700"                             
+.It 0070:8541 	 Ta "Hauppauge WinTV-HVR1850"                             
+.It 0070:8551 	 Ta "Hauppauge WinTV-HVR1290"                             
+.It 107d:6681 	 Ta "Leadtek Winfast PxDVR3200 H"                         
+.It 107d:6f22 	 Ta "LEADTEK WinFast PxTV1200"                            
+.It 14f1:8578 	 Ta "Mygica X8558 PRO DMB-TH"                             
+.It 14f1:8651 	 Ta "Mygica X8506 DMB-TH"                                 
+.It 14f1:8657 	 Ta "Magic-Pro ProHDTV Extreme 2"                         
+.It 1858:e800 	 Ta "Compro VideoMate E800"                               
+.It 185b:e800 	 Ta "Compro VideoMate E650F"                              
+.It 18ac:d618 	 Ta "DViCO FusionHDTV7 Dual Express"                      
+.It 18ac:db78 	 Ta "DViCO FusionHDTV DVB-T Dual ExPress"                 
+.It 1b55:2a2c 	 Ta "NetUP Dual DVB-S2 CI"                                
+.It 6920:8888 	 Ta "TurboSight TBS 6920"                                 
+.It d470:9022 	 Ta "TeVii S470"                                          
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr  benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr  ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Steven Toth stoth@linuxtv.org
+for the Linux TV project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

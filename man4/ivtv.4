@@ -1,0 +1,147 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Nov 26, 2010
+.Dt IVTV 4
+.Os FreeBSD
+.Sh NAME
+.Nm ivtv 
+.Nd ivtv webcamd driver for PCI PVR cards
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports PCI PVR cards based on the Conexant CX23415 (iCompression iTVC15) or Conexant CX23416 (iCompression iTVC16) chipsets.
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following PCI cards. The
+.Xr pciconfig 8
+command can be used to determine the VendorID:ProductID of a device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 0000:ff5f	 Ta "AOpen VA2000MAX-STN6"    
+.It 1043:462e	 Ta "ASUS Falcon2"				
+.It 1043:4b2e	 Ta "ASUS Falcon2"				
+.It 1043:4b66	 Ta "ASUS Falcon2"    
+.It 10fc:40a0	 Ta "Yuan MPG160 iTVC15-STVLP" 	
+.It 10fc:d01e	 Ta "I/O Data GV-MVP/RX"    
+.It 10fc:d025	 Ta "I/O Data GV-MVP/RX2E"    
+.It 10fc:d038	 Ta "I/O Data GV-MVP/RX" 			
+.It 10fc:d039	 Ta "I/O Data GV-MVP/RX" 			
+.It 1154:0523	 Ta "YUAN MPG600GR CX23416GYC-STVLP" 
+.It 12ab:0000	 Ta "Yuan MPG160 iTVC15-STVLP"  
+.It 12ab:0600	 Ta "YUAN MPG600GR CX23416GYC-STVLP" 
+.It 12ab:fff3	 Ta "Yuan MPG600 iTVC16-STVLP"  
+.It 12ab:ffff	 Ta "Yuan MPG600 iTVC16-STVLP" 	
+.It 1461:a3ce	 Ta "AVerMedia M179"     
+.It 1461:a3cf	 Ta "AVerMedia M179" 				
+.It 1461:bfff	 Ta "Digital Cowboy DCT-MTVP1"    
+.It 1461:bfff	 Ta "NAGASE TRANSGEAR 5000TV"    
+.It 1461:c035	 Ta "AverMedia PVR-150 Plus"   
+.It 1461:c03f	 Ta "AverMedia EZMaker PCI Deluxe"  
+.It 1461:c439	 Ta "AverMedia AverTV MCE 116 Plus"   
+.It 9005:0092	 Ta "Adaptec AVC-2010"     
+.It 9005:0093	 Ta "Adaptec AVC-2410"     
+.It fbab:0600	 Ta "YUAN MPG600GR CX23416GYC-STVLP" 
+.It ff01:d998	 Ta "Yuan MPC622"     
+.It ff92:0070	 Ta "Yuan PG600/DiamondMM PVR-550"   
+.It ffab:0600	 Ta "Club3D ZAP-TV1x01"    
+.It ffab:0600	 Ta "Yuan PG600/DiamondMM PVR-550" 		
+.It ffab:0600	 Ta "Yuan PG600V2"
+.It ffac:0600	 Ta "GOTVIEW PCI DVD2 Deluxe"    
+.It ffad:0600	 Ta "GotView PCI DVD Lite"  
+.It 		 Ta "Hauppauge WinTV PVR-150 or PVR-500"
+.It 		 Ta "Hauppauge WinTV PVR-250"
+.It 		 Ta "Hauppauge WinTV PVR-350"
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w966x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Kevin Thayer nufan_wfk@yahoo.com 
+for the Linux TV project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

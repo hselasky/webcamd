@@ -1,0 +1,164 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Dec 3, 2010
+.Dt SPCA5xx 4
+.Os FreeBSD
+.Sh NAME
+.Nm spca5xx
+.Nd webcamd driver for USB cameras
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports USB cameras based on the SPCA500, SPCA501, SPCA505, SPCA506, SPCA508, and Sunplus SPCA561 chipsets. This is the GSPCA version of the driver.
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB cameras. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 0000:0000	 Ta "MystFromOri Unknown Camera"
+.It 0130:0130	 Ta "Clone Digital Webcam 11043"
+.It 040a:0002	 Ta "Kodak DVC-325"
+.It 040a:0300	 Ta "Kodak EZ200"
+.It 041e:400a	 Ta "Creative PC-CAM 300"
+.It 041e:4018	 Ta "Creative Webcam Vista (PD1100)"
+.It 041e:401a	 Ta "Creative Webcam Vista (PD1100)"
+.It 041e:401d	 Ta "Creative Webcam NX ULTRA"
+.It 041e:403b	 Ta "Creative Webcam Vista (VF0010)"
+.It 0458:7004	 Ta "Genius VideoCAM Express V2"
+.It 0461:0815	 Ta "Micro Innovation IC200"
+.It 046d:0890	 Ta "Logitech QuickCam traveler"
+.It 046d:0900	 Ta "Logitech Inc. ClickSmart 310"
+.It 046d:0901	 Ta "Logitech Inc. ClickSmart 510"
+.It 046d:0928	 Ta "Logitech QC Express Etch2"
+.It 046d:0929	 Ta "Labtec Webcam Elch2"
+.It 046d:092a	 Ta "Logitech QC for Notebook"
+.It 046d:092b	 Ta "Labtec Webcam Plus"
+.It 046d:092c	 Ta "Logitech QC chat Elch2"
+.It 046d:092d	 Ta "Logitech QC Elch2"
+.It 046d:092e	 Ta "Logitech QC Elch2"
+.It 046d:092f	 Ta "Logitech QuickCam Express Plus"
+.It 0497:c001	 Ta "Smile International"
+.It 04a5:300c	 Ta "Benq DC 1016"
+.It 04fc:0561	 Ta "Flexcam 100"
+.It 04fc:7333	 Ta "PalmPixDC85"
+.It 0506:00df	 Ta "3Com HomeConnect Lite"
+.It 055f:c200	 Ta "Mustek Gsmart 300"
+.It 055f:c220	 Ta "Mustek gSmart Mini"
+.It 055f:c420	 Ta "Mustek gSmart Mini 2"
+.It 060b:a001	 Ta "Maxell Compact Pc PM3"
+.It 06bd:0404	 Ta "Agfa CL20"
+.It 06be:0800	 Ta "Optimedia"
+.It 06e1:a190	 Ta "ADS Instant VCD"
+.It 0733:0110	 Ta "ViewQuest VQ110"
+.It 0733:0401	 Ta "Intel Create and Share"
+.It 0733:0402	 Ta "ViewQuest M318B"
+.It 0733:0430	 Ta "Intel PC Camera Pro"
+.It 0734:043b	 Ta "3DeMon USB Capture"
+.It 084d:0003	 Ta "D-Link DSC-350"
+.It 08ca:0103	 Ta "Aiptek PocketDV"
+.It 0af9:0010	 Ta "Hama USB Sightcam 100"
+.It 0af9:0011	 Ta "Hama USB Sightcam 100"
+.It 10fd:7e50	 Ta "FlyCam Usb 100"
+.It 1776:501c	 Ta "Arowana 300K CMOS Camera"
+.It 2899:012c	 Ta "Toptro Industrial"
+.It 8086:0110	 Ta "Intel Easy PC Camera"
+.It 8086:0630	 Ta "Intel Pocket PC Camera"
+.It 99fa:8988	 Ta "Grandtec V.cap"
+.It abcd:cdee	 Ta "Petcam"
+.It 			Aiptek MegaCam
+.EL
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Michel Xhaard mxhaard@magic.fr
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

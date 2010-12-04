@@ -1,0 +1,145 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Dec 1, 2010
+.Dt PACXXX 4
+.Os FreeBSD
+.Sh NAME
+.Nm pacxxx
+.Nd pacxxx webcamd driver for Pixart USB cameras 
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports USB cameras based on the Pixart PAC207BCA, PCA7302 and PAC7311 chipsets. This is the GSPCA version of the driver.
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB cameras. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em Driver Em Ta VendorID:ProductID Ta Em Device
+.It pac207 Ta "041e:4028" Ta "Creative Webcam Vista Plus"
+.It pac207 Ta 093a:2460 Ta "Qtec Webcam 100"
+.It pac207 Ta 093a:2461 Ta "HP Webcam"
+.It pac207 Ta 093a:2463	Ta "Philips SPC 220 NC"
+.It pac207 Ta 093a:2464	Ta "Labtec Webcam 1200"
+.It pac207 Ta 093a:2468	Ta "Webcam WB-1400T"
+.It pac207 Ta 093a:2470	Ta "Genius GF112"
+.It pac207 Ta 093a:2471	Ta "Genius VideoCam ge111"
+.It pac207 Ta 093a:2472	Ta "Genius VideoCam ge110"
+.It pac207 Ta 093a:2474	Ta "Genius iLook 111"
+.It pac207 Ta 093a:2476	Ta "Genius e-Messenger 112"
+.It pac207 Ta 145f:013a	Ta "Trust WB-1300N"
+.It pac207 Ta 2001:f115	Ta "D-Link DSB-C120"
+.It pac7302 Ta 06f8:3009 Ta "Hercules Classic Link"
+.It pac7302 Ta 093a:2620 Ta "Apollo AC-905"
+.It pac7302 Ta 093a:2621 Ta "PAC731x"
+.It pac7302 Ta 093a:2622 Ta "Genius Eye 312"
+.It pac7302 Ta 093a:2624 Ta "PAC7302"
+.It pac7302 Ta 093a:2626 Ta "Labtec 2200"
+.It pac7302 Ta 093a:2628 Ta "Genius iLook 300"
+.It pac7302 Ta 093a:2629 Ta "Genious iSlim 300"
+.It pac7302 Ta 093a:262a Ta "Webcam 300k"
+.It pac7302 Ta 093a:262c Ta "Philips SPC 230 NC"
+.It pac7311 Ta 093a:2600 Ta "PAC7311 Typhoon"
+.It pac7311 Ta 093a:2601 Ta "Philips SPC 610 NC"
+.It pac7311 Ta 093a:2603 Ta "Philips SPC 500 NC"
+.It pac7311 Ta 093a:2608 Ta "Trust WB-3300p"
+.It pac7311 Ta 093a:260e Ta "Gigaware VGA PC Camera" 
+.It pac7311 Ta Ta "Trust WB-3350p" 
+.It pac7311 Ta Ta "SIGMA cam 2350"
+.It pac7311 Ta 093a:260f Ta "SnakeCam"
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Hans de Goede hdgoede@redhat.com and
+.An Thomas Kaiser thomas@kaiser-linux.li
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

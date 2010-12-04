@@ -1,0 +1,144 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Dec 4, 2010
+.Dt ZR364XX 4
+.Os FreeBSD
+.Sh NAME
+.Nm zr364xx
+.Nd zr364xx webcamd driver for Zoran USB cameras
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports USB cameras based on the Zoran ZR36430, ZR36430BGC, ZR36431, ZR36440, and ZR36442 chipsets. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB cameras. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 041e:4024	 Ta "Creative PC-CAM 880"
+.It 041e:405d	 Ta "Creative DiVi CAM 516
+.It 04c8:0729	 Ta "Konica Revio 2
+.It 04f2:a208	 Ta "Creative PC-CAM 850
+.It 052b:1a18	 Ta "Chiphead Megapix V12
+.It 0546:3187	 Ta "Polaroid iON 230
+.It 055f:b500	 Ta "Mustek MDC 3000
+.It 0595:4343	 Ta "Concord Eye-Q Duo 1300/2000
+.It 0595:4343	 Ta "Digitrex DSC 1300
+.It 0595:4343	 Ta "Firstline FDC 2000
+.It 0595:4343	 Ta "Fujifilm EX-10
+.It 0595:4343	 Ta "Ricoh RDC-6000
+.It 06d6:0034	 Ta "Trust Powerc@m 750
+.It 06d6:003b	 Ta "Trust Powerc@m 970Z
+.It 06d6:003d	 Ta "Trust Powerc@m 910Z
+.It 0784:0040	 Ta "Traveler Slimline X5
+.It 08ca:0109	 Ta "Aiptek PocketDV 3300
+.It 08ca:0109	 Ta "Maxell Maxcam PRO DV3
+.It 08ca:2062	 Ta "Aiptek PocketDV 5700
+.It 08ca:2102	 Ta "Aiptek DVT300
+.It 0a17:004e	 Ta "Pentax Optio 50
+.It 0a17:0062	 Ta "Pentax Optio 50L
+.It 0bb0:500d	 Ta "Concord EyeQ Go Wireless
+.It 0d64:0108	 Ta "Aiptek Fidelity 3200
+.It 0d64:0108	 Ta "DXG Technology Fashion Cam
+.It 0d64:0108	 Ta "Genius Digital Camera 
+.It 0d64:0108	 Ta "Praktica DCZ 1.3 S
+.It 0d64:3108	 Ta "Genius G-Shot D211
+.It 0d64:3108	 Ta "Praktica Exakta DC 2200
+.It 0feb:2004	 Ta "CRS Electronic 3.3 Digital Camera
+.It 0feb:2004	 Ta "Packard Bell DSC-300
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Antoine Jacquet royale@zerezo.com
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

@@ -1,0 +1,139 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Nov 29, 2010
+.Dt OV519 4
+.Os FreeBSD
+.Sh NAME
+.Nm ov519
+.Nd ov519 webcamd driver for USB cameras
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports USB cameras using the OV511(+), OV518(+), OV519, OVFX2, and W9968CF chipsets. This is the GSPCA version of the driver.
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB cameras. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 041e:4003	 Ta "Creative Video Blaster WebCam Go Plus"
+.It 041e:4052	 Ta "Creative Live! VISTA IM"
+.It 041e:405f	 Ta "Creative Live! VISTA VF0330"
+.It 041e:4060	 Ta "Creative Live! VISTA VF0350"
+.It 041e:4061	 Ta "Creative Live! VISTA VF0400"
+.It 041e:4064	 Ta "Creative Live! VISTA VF0420"
+.It 041e:4067	 Ta "Creative Live! Cam Video IM (VF0350)"
+.It 041e:4068	 Ta "Creative Live! VISTA VF0470"
+.It 045e:028c	 Ta "Microsoft xbox cam"
+.It 054c:0154	 Ta "Sony EyeToy4"
+.It 05a9:0511	 Ta "D-Link USB Digital Video Camera"
+.It 05a9:0511	 Ta "Video Blaster WebCam 3 or Plus"
+.It 05a9:0518	 Ta "Creative WebCam"
+.It 05a9:0519	
+.It 05a9:0530	
+.It 05a9:2800	 Ta "OmniVision SuperCAM"
+.It 05a9:4519	 Ta "Hercules Webcam Classic or Deluxe"
+.It 05a9:8519	 Ta "Trust SpaceC@m 320"
+.It 05a9:a511	 Ta "D-Link USB Digital Video Camera"
+.It 06f8:3004	 Ta "Hercules Webcam Classique"
+.It 0813:0002	 Ta "Mattel Dual Mode USB Camera Plus"
+.It 0b62:0059	 Ta "Orange Micro iBOT2 Webcam"
+.It 0e96:c001	 Ta "Trust  SpaceC@m 380"
+.It 1046:9967	 Ta "Creative Video Blaster WebCam Go"
+.It 8020:ef04	
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr  benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Jean-Francois Moine http://moinejf.free.fr and
+.An Hans de Goede hdegoede@redhat.com
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

@@ -1,0 +1,171 @@
+.\"
+.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Dec 3, 2010
+.Dt SUNPLUS 4
+.Os FreeBSD
+.Sh NAME
+.Nm sunplus
+.Nd sunplus webcamd driver for USB cameras
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports USB cameras based on the Sunplus SPCA504, SPCA533, and SPCA536 chipsets. This is the GSPCA version of the driver.
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB cameras. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 041e:400b	 Ta "Creative PC-CAM 600"
+.It 041e:4012	 Ta "PC-Cam350"
+.It 041e:4013	 Ta "Creative Pccam750"
+.It 0458:7006	 Ta "Genius Dsc 1.3 Smart"
+.It 0461:0821	 Ta "Fujifilm MV-1"
+.It 046d:0905	 Ta "Logitech ClickSmart 820"
+.It 046d:0960	 Ta "Logitech ClickSmart 420"
+.It 0471:0322	 Ta "Philips DMVC1300K"
+.It 04a5:3003	 Ta "Benq DC 1300"
+.It 04a5:3008	 Ta "Benq DC 1500"
+.It 04a5:300a	 Ta "Benq DC 3410"
+.It 04f1:1001	 Ta "JVC GC A50"
+.It 04fc:500c	 Ta "Sunplus CA500C"
+.It 04fc:504a	 Ta "Aiptek Mini PenCam 1.3"
+.It 04fc:504b	 Ta "Maxell MaxPocket LE 1.3"
+.It 04fc:5330	 Ta "Digitrex 2110"
+.It 04fc:5360	 Ta "Sunplus Generic"
+.It 04fc:ffff	 Ta "Pure DigitalDakota"
+.It 052b:1507	 Ta "Megapixel 5 Pretec DC-1007"
+.It 052b:1513	 Ta "Megapix V4"
+.It 052b:1803	 Ta "MegaImage VI"
+.It 0546:3155	 Ta "Polaroid PDC3070"
+.It 0546:3191	 Ta "Polaroid Ion 80"
+.It 0546:3273	 Ta "Polaroid PDC2030"
+.It 055f:c211	 Ta "Kowa Bs888e Microcamera"
+.It 055f:c230	 Ta "Mustek Digicam 330K"
+.It 055f:c232	 Ta "Mustek MDC3500"
+.It 055f:c360	 Ta "Mustek DV4000 Mpeg4"
+.It 055f:c430	 Ta "Mustek Gsmart LCD 2"
+.It 055f:c440	 Ta "Mustek DV 3000"
+.It 055f:c520	 Ta "Mustek gSmart Mini 3"
+.It 055f:c530	 Ta "Mustek Gsmart LCD 3"
+.It 055f:c540	 Ta "Gsmart D30"
+.It 055f:c630	 Ta "Mustek MDC4000"
+.It 055f:c650	 Ta "Mustek MDC5500Z"
+.It 05da:1018	 Ta "Digital Dream Enigma 1.3"
+.It 06d6:0031	 Ta "Trust 610 LCD PowerC@m Zoom"
+.It 0733:1311	 Ta "Digital Dream Epsilon 1.3"
+.It 0733:1314	 Ta "Mercury 2.1MEG Deluxe Classic Cam"
+.It 0733:2211	 Ta "Jenoptik jdc 21 LCD"
+.It 0733:2221	 Ta "Mercury Digital Pro 3.1p"
+.It 0733:3261	 Ta "Concord 3045" 
+.It 0733:3281	 Ta "Cyberpix S550V"
+.It 08ca:0104	 Ta "Aiptek PocketDVII 1.3"
+.It 08ca:0106	 Ta "Aiptek Pocket DV3100+"
+.It 08ca:2008	 Ta "Aiptek Mini PenCam 2 M"
+.It 08ca:2010	 Ta "Aiptek PocketCam 3M"
+.It 08ca:2016	 Ta "Aiptek PocketCam 2 Mega"
+.It 08ca:2018	 Ta "Aiptek Pencam SD 2M"
+.It 08ca:2020	 Ta "Aiptek Slim 3000F"
+.It 08ca:2022	 Ta "Aiptek Slim 3200"
+.It 08ca:2024	 Ta "Aiptek DV3500 Mpeg4"
+.It 08ca:2028	 Ta "Aiptek PocketCam4M"
+.It 08ca:2040	 Ta "Aiptek PocketDV 4100M"
+.It 08ca:2042	 Ta "Aiptek PocketDV 5100"
+.It 08ca:2050	 Ta "Medion MD 41437"
+.It 08ca:2060	 Ta "Aiptek PocketDV 5300"
+.It 0d64:0303	 Ta "Sunplus FashionCam DXG"
+.EL
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Michel Xhaard mxhaard@magic.fr
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp
