@@ -438,11 +438,6 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (do_fork) {
-		if (daemon(0, 0) != 0)
-			v4b_errx(1, "Cannot daemonize");
-	}
-
 	if (cuse_init() != 0) {
 		v4b_errx(1, "Could not open /dev/cuse. "
 		    "Did you kldload cuse4bsd?");
@@ -466,6 +461,11 @@ main(int argc, char **argv)
 	f_usb = usb_linux_probe_p(&u_unit, &u_addr, &u_index);
 	if (f_usb < 0)
 		v4b_errx(1, "Cannot find USB device");
+
+	if (do_fork) {
+		if (daemon(0, 0) != 0)
+			v4b_errx(1, "Cannot daemonize");
+	}
 
 	if (do_hal_register)
 		hal_init(u_unit, u_addr, u_index);
