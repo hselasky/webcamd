@@ -82,6 +82,7 @@ MAN+=	man4/zoran.4
 MAN+=	man4/zr364xx.4
 
 BINDIR=		%%PREFIX%%/sbin
+MANDIR=		%%PREFIX%%/man/man
 LIBDIR?=	%%PREFIX%%/lib
 LINUXDIR=	${.CURDIR}/v4l-dvb/linux
 MKLINT=		no
@@ -940,7 +941,7 @@ package: clean
 		--exclude="v4l2-apps" --exclude="media-specs" --exclude="v4l_experimental" \
 		--exclude="*.txt" --exclude=".svn" \
 		--exclude="Documentation" --exclude="v4l2-apps" \
-		Makefile *.[ch] dummy headers tests/*.[ch] kernel/*.[ch] \
+		Makefile *.[ch] webcamd.8 man4/*.[4] dummy headers tests/*.[ch] kernel/*.[ch] \
 		patches/do_patch.sh patches/*.diff \
 		v4l-dvb v4l-dvb-*
 
