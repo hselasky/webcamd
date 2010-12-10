@@ -375,10 +375,6 @@ pidfile_create(int bus, int addr, int index)
 	if (local_pid == NULL) {
 		return (EEXIST);
 	} else {
-		if (do_fork) {
-			if (daemon(0, 0) != 0)
-				v4b_errx(1, "Cannot daemonize");
-		}
 		pidfile_write(local_pid);
 	}
 
@@ -440,6 +436,11 @@ main(int argc, char **argv)
 			usage();
 			break;
 		}
+	}
+
+	if (do_fork) {
+		if (daemon(0, 0) != 0)
+			v4b_errx(1, "Cannot daemonize");
 	}
 
 	if (cuse_init() != 0) {
