@@ -255,7 +255,7 @@
 #define	IS_ERR_VALUE(x) ((x) >= (unsigned long)-(1<<14))
 #define	find_first_bit(addr, size) find_next_bit((addr), (size), 0)
 #define	find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
-#define	signal_pending(...) 0
+#define	signal_pending(...) check_signal()
 #define	down_write(...) __nop
 #define	down_read(...) __nop
 #define	up_write(...) __nop
