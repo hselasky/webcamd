@@ -34,6 +34,8 @@ PROG=		webcamd
 # List of all manual pages
 #
 MAN=
+
+.if defined(HAVE_MAN)
 MAN+=	webcamd.8
 MAN+=	man4/au0828.4
 MAN+=	man4/benq.4
@@ -80,6 +82,7 @@ MAN+=	man4/zc0301.4
 MAN+=	man4/zc3xx.4
 MAN+=	man4/zoran.4
 MAN+=	man4/zr364xx.4
+.endif
 
 BINDIR=		%%PREFIX%%/sbin
 MANDIR=		%%PREFIX%%/man/man
