@@ -199,6 +199,7 @@ void	atomic_pre_sleep(void);
 void	atomic_post_sleep(void);
 
 int	thread_init(void);
+int	thread_got_stopping(void);
 
 void	prepare_to_wait(wait_queue_head_t *, wait_queue_t *, int);
 void	finish_wait(wait_queue_head_t *, wait_queue_t *);
