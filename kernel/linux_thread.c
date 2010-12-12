@@ -23,9 +23,12 @@
  * SUCH DAMAGE.
  */
 
+#include <signal.h>
+
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
+static pthread_key_t wrapper_key;
 
 struct task_struct linux_task = {
 	.comm = "V4B",
@@ -393,21 +396,53 @@ complete(struct completion *x)
 }
 
 struct funcdata {
-	threadfn_t *func;
-	void   *data;
+	threadfn_t * volatile func;
+	void   * volatile data;
 };
+
+struct thread_wrapper {
+	uint32_t stopping;
+};
+
+static void
+thread_kill(int dummy)
+{
+	struct thread_wrapper *pw;
+	pw = pthread_getspecific(wrapper_key);
+	if (pw != NULL)
+		pw->stopping = 1;
+}
+
+int
+thread_got_stopping(void)
+{
+	struct thread_wrapper *pw;
+	pw = pthread_getspecific(wrapper_key);
+	if (pw != NULL) {
+		if (pw->stopping)
+			return (0);
+	}
+	return (EINVAL);
+}
 
 static void *
 kthread_wrapper(void *arg)
 {
 	struct funcdata fd = *(struct funcdata *)arg;
+	struct thread_wrapper wrapper = {0};
 
-	free(arg);
+	pthread_setspecific(wrapper_key, &wrapper);
 
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	signal(SIGKILL, thread_kill);
+
+	pthread_mutex_lock(&atomic_mutex);
+	((struct funcdata *)arg)->func = NULL;
+	pthread_cond_broadcast(&sema_cond);
+	pthread_mutex_unlock(&atomic_mutex);
 
 	fd.func(fd.data);
+
+	pthread_setspecific(wrapper_key, NULL);
 
 	pthread_exit(NULL);
 }
@@ -441,22 +476,31 @@ kthread_run(threadfn_t *func, void *data, char *fmt,...)
 		free(fd);
 		return (ERR_PTR(-ENOMEM));
 	}
+
+	pthread_mutex_lock(&atomic_mutex);
+	while (fd->func != NULL)
+		pthread_cond_wait(&sema_cond, &atomic_mutex);
+	pthread_mutex_unlock(&atomic_mutex);
+
+	free(fd);
 	return ((struct task_struct *)ptd);
 }
 
 int
 kthread_stop(struct task_struct *k)
 {
-	pthread_cancel((pthread_t)k);
-	pthread_join((pthread_t)k, NULL);
+	pthread_t ptd = (pthread_t)k;
+
+	pthread_kill(ptd, SIGKILL);
+	pthread_join(ptd, NULL);
+
 	return (0);
 }
 
 int
 kthread_should_stop(void)
 {
-	pthread_testcancel();		/* XXX workaround */
-	return (0);
+	return (thread_got_stopping() == 0);
 }
 
 int
@@ -507,6 +551,9 @@ thread_init(void)
 	pthread_mutex_init(&atomic_mutex, &attr);
 
 	pthread_cond_init(&sema_cond, NULL);
+
+	pthread_key_create(&wrapper_key, NULL);
+
 	return (0);
 }
 
