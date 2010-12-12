@@ -368,6 +368,9 @@ pidfile_create(int bus, int addr, int index)
 {
 	char buf[64];
 
+	if (local_pid != NULL)
+		return (0);
+
 	snprintf(buf, sizeof(buf), "/var/run/webcamd."
 	    "%d.%d.%d.pid", bus, addr, index);
 
@@ -389,8 +392,6 @@ main(int argc, char **argv)
 {
 	const char *ptr;
 	int opt;
-
-	atexit(&v4b_exit);
 
 	while ((opt = getopt(argc, argv, "Bd:f:i:v:hHr")) != -1) {
 		switch (opt) {
@@ -438,6 +439,26 @@ main(int argc, char **argv)
 		}
 	}
 
+	if (do_fork) {
+		/* need to daemonise before creating any threads */
+
+		if (u_addr == 0)
+			v4b_errx(1, "-B options requires a valid -d option");
+
+		if (pidfile_create(u_unit, u_addr, u_index)) {
+			fprintf(stderr, "Webcamd is already running for "
+			    "ugen%d.%d.%d\n", u_unit, u_addr, u_index);
+			exit(1);
+		}
+
+		if (daemon(0, 0) != 0)
+			v4b_errx(1, "Cannot daemonize");
+
+		atexit(&v4b_exit);
+	} else {
+		atexit(&v4b_exit);
+	}
+
 	if (cuse_init() != 0) {
 		v4b_errx(1, "Could not open /dev/cuse. "
 		    "Did you kldload cuse4bsd?");
@@ -461,11 +482,6 @@ main(int argc, char **argv)
 	f_usb = usb_linux_probe_p(&u_unit, &u_addr, &u_index);
 	if (f_usb < 0)
 		v4b_errx(1, "Cannot find USB device");
-
-	if (do_fork) {
-		if (daemon(0, 0) != 0)
-			v4b_errx(1, "Cannot daemonize");
-	}
 
 	if (do_hal_register)
 		hal_init(u_unit, u_addr, u_index);
@@ -512,7 +528,8 @@ free_vm(void *ptr)
 int
 check_signal(void)
 {
-	return (cuse_got_peer_signal() == 0);
+	return (cuse_got_peer_signal() == 0 ||
+		thread_got_stopping() == 0);
 }
 
 void
