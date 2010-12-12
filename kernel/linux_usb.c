@@ -176,14 +176,16 @@ usb_exec(void *arg)
 			if (err != 0)
 				exit(0);
 #endif
-			break;
+			if (sc->thread_stopping)
+				break;
+			else
+				usleep(100000);
 		}
 		/* wait for USB event from kernel */
 		libusb20_dev_wait_process(dev, -1);
 
-		if (sc->thread_stopping) {
+		if (sc->thread_stopping)
 			break;
-		}
 	}
 
 	sc->thread_started = 0;
@@ -198,6 +200,9 @@ usb_linux_create_event_thread(struct usb_device *dev)
 {
 	struct usb_linux_softc *sc = dev->parent;
 
+	if (sc->thread_started)
+		return;
+
 	sc->thread_started = 0;
 	sc->thread_stopping = 0;
 
@@ -206,8 +211,18 @@ usb_linux_create_event_thread(struct usb_device *dev)
 	    usb_exec, sc)) {
 		printf("Failed creating USB process\n");
 	} else {
+		uint32_t drops;
+
+		atomic_lock();
+		drops = atomic_drop();
+		atomic_unlock();
+	
 		while (sc->thread_started == 0)
 			schedule();
+
+		atomic_lock();
+		atomic_pickup(drops);
+		atomic_unlock();
 	}
 }
 
