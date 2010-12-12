@@ -31,7 +31,7 @@ TAILQ_HEAD(timer_head, timer_list);
 
 static struct timer_head timer_head;
 static pthread_t timer_thread;
-static int timer_thread_started;
+static volatile int timer_thread_started;
 static int timer_needed;
 
 int
@@ -188,7 +188,7 @@ need_timer(int flag)
 	}
 	atomic_unlock();
 
-	if (flag && (timer_thread != NULL))
+	if (flag && timer_thread_started)
 		pthread_kill(timer_thread, SIGHUP);
 }
 
