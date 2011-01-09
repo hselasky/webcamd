@@ -216,7 +216,7 @@ usb_linux_create_event_thread(struct usb_device *dev)
 		atomic_lock();
 		drops = atomic_drop();
 		atomic_unlock();
-	
+
 		while (sc->thread_started == 0)
 			schedule();
 
