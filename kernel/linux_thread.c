@@ -262,6 +262,7 @@ sema_init(struct semaphore *sem, int32_t value)
 {
 	memset(sem, 0, sizeof(*sem));
 	sem->value = value;
+	sem->owner = MUTEX_NO_OWNER;
 }
 
 void
@@ -396,8 +397,8 @@ complete(struct completion *x)
 }
 
 struct funcdata {
-	threadfn_t * volatile func;
-	void   * volatile data;
+	threadfn_t *volatile func;
+	void   *volatile data;
 };
 
 struct thread_wrapper {
@@ -408,6 +409,7 @@ static void
 thread_kill(int dummy)
 {
 	struct thread_wrapper *pw;
+
 	pw = pthread_getspecific(wrapper_key);
 	if (pw != NULL)
 		pw->stopping = 1;
@@ -417,6 +419,7 @@ int
 thread_got_stopping(void)
 {
 	struct thread_wrapper *pw;
+
 	pw = pthread_getspecific(wrapper_key);
 	if (pw != NULL) {
 		if (pw->stopping)
@@ -476,7 +479,6 @@ kthread_run(threadfn_t *func, void *data, char *fmt,...)
 		free(fd);
 		return (ERR_PTR(-ENOMEM));
 	}
-
 	pthread_mutex_lock(&atomic_mutex);
 	while (fd->func != NULL)
 		pthread_cond_wait(&sema_cond, &atomic_mutex);
@@ -573,4 +575,36 @@ void
 finish_wait(wait_queue_head_t *qh, wait_queue_t *wait)
 {
 
+}
+
+void
+mutex_lock(struct mutex *m)
+{
+	pthread_t self;
+
+	self = pthread_self();
+
+	atomic_lock();
+	/* check for recursive locking first */
+	if (m->sem.owner == self) {
+		m->sem.value--;
+	} else {
+		down(&m->sem);
+		m->sem.owner = self;
+	}
+	atomic_unlock();
+}
+
+void
+mutex_unlock(struct mutex *m)
+{
+	atomic_lock();
+	up(&m->sem);
+	if (m->sem.value > 0) {
+		/* clear owner variable */
+		m->sem.owner = MUTEX_NO_OWNER;
+		/* guard against double unlock */
+		m->sem.value = 1;
+	}
+	atomic_unlock();
 }

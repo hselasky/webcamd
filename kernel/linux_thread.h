@@ -26,6 +26,8 @@
 #ifndef _LINUX_THREAD_H_
 #define	_LINUX_THREAD_H_
 
+#define	MUTEX_NO_OWNER ((pthread_t)-1UL)
+
 typedef struct task_struct {
 	const char *comm;
 } task_struct_t;
@@ -45,9 +47,10 @@ typedef struct wait_queue_head {
 
 typedef struct semaphore {
 	int32_t	value;
+	pthread_t owner;
 } semaphore_t;
 
-#define	DEFINE_MUTEX(n) struct mutex n = { .sem.value = 1 };
+#define	DEFINE_MUTEX(n) struct mutex n = { .sem.value = 1, .sem.owner = MUTEX_NO_OWNER, };
 struct mutex {
 	struct semaphore sem;
 };
@@ -157,11 +160,12 @@ void	down(struct semaphore *);
 int	down_read_trylock(struct semaphore *sem);
 void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
 
+void	mutex_lock(struct mutex *m);
+void	mutex_unlock(struct mutex *m);
+
 #define	mutex_init(m) sema_init(&(m)->sem, 1)
 #define	mutex_destroy(m) sema_uninit(&(m)->sem)
-#define	mutex_lock(m) down(&(m)->sem)
-#define	mutex_unlock(m) up(&(m)->sem)
-#define	mutex_lock_interruptible(m) (down(&(m)->sem),0)
+#define	mutex_lock_interruptible(m) (mutex_lock(m),0)
 
 #define	init_MUTEX(s) sema_init(s,1)
 #define	init_MUTEX_LOCKED(s) sema_init(s, 0)
