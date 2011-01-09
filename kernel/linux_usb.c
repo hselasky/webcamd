@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2011 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -403,6 +403,8 @@ found:
 		return (-ENOMEM);
 	}
 	ui = p_dev->bsd_iface_start + i;
+	ui->dev.driver_static.name = "webcamd";
+	ui->dev.driver = &ui->dev.driver_static;
 
 	sc->udrv = udrv;
 	sc->p_dev = p_dev;
@@ -1077,6 +1079,8 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	}
 
 	p_ud->parent = sc;
+	p_ud->dev.driver_static.name = "webcamd";
+	p_ud->dev.driver = &p_ud->dev.driver_static;
 
 	get_device(&p_ud->dev);		/* make sure we don't get freed */
 
