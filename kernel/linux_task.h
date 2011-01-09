@@ -62,6 +62,7 @@ struct workqueue_struct *create_singlethread_workqueue(const char *name);
 void	flush_workqueue(struct workqueue_struct *wq);
 void	flush_scheduled_work(void);
 void	cancel_rearming_delayed_work(struct delayed_work *work);
+void	cancel_delayed_work_sync(struct delayed_work *work);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsigned long data);
 void	tasklet_kill(struct tasklet_struct *t);

@@ -25,6 +25,7 @@
 
 TAILQ_HEAD(work_head, work_struct);
 
+static struct work_struct *work_curr;
 static struct work_head work_head;
 static pthread_t work_thread;
 static pthread_cond_t work_cond;
@@ -103,9 +104,11 @@ work_exec(void *arg)
 		if (t != NULL) {
 			TAILQ_REMOVE(&work_head, t, entry);
 			t->entry.tqe_prev = NULL;
+			work_curr = t;
 			atomic_unlock();
 			t->func(t);
 			atomic_lock();
+			work_curr = NULL;
 		} else {
 			atomic_pre_sleep();
 			pthread_cond_wait(&work_cond, atomic_get_lock());
@@ -126,6 +129,17 @@ void
 flush_workqueue(struct workqueue_struct *wq)
 {
 
+}
+
+void
+cancel_delayed_work_sync(struct delayed_work *_work)
+{
+	cancel_rearming_delayed_work(_work);
+
+	atomic_lock();
+	while (&_work->work == work_curr)
+		schedule();
+	atomic_unlock();
 }
 
 void

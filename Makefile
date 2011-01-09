@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.18
+VERSION=	0.1.19
 PROG=		webcamd
 #
 # List of all manual pages
@@ -323,6 +323,7 @@ SRCS+= et61x251_tas5130d1b.c
 #SRCS+= em28xx-input.c
 #SRCS+= em28xx-vbi.c
 #SRCS+= em28xx-video.c
+SRCS+= s921.c
 
 #
 # hdpvr

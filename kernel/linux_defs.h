@@ -56,6 +56,7 @@
 #define	__release(x) __nop
 #define	__cond_lock(x,c) (c)
 #define	__pgprot(x)     ((pgprot_t)(x))
+#define	irqs_disabled(...) (0)
 #define	SetPageReserved(...)   __nop
 #define	ClearPageReserved(...) __nop
 #define	_PAGE_PRESENT   0
