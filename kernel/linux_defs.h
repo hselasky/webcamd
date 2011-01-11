@@ -113,10 +113,8 @@
 #define	module_param_array(...)
 #define	module_param_string(...)
 #ifdef HAVE_DEBUG
-#define	info(...) printf(__VA_ARGS__)
 #define	printk(...) printf(__VA_ARGS__)
 #else
-#define	info(...) __nop
 #define	printk(...) printk_nop()
 #endif
 #define	print_hex_dump_bytes(...) printk_nop()
@@ -131,9 +129,10 @@
 #define	dev_err(...) __nop
 #define	dev_info(...) __nop
 #define	dev_warn(...) __nop
-#define	warn(...) printk(__VA_ARGS__)
-#define	dbg(...) printk(__VA_ARGS__)
-#define	err(...) printk(__VA_ARGS__)
+#define	info(fmt,...) printk(fmt "\n",## __VA_ARGS__)
+#define	warn(fmt,...) printk(fmt "\n",## __VA_ARGS__)
+#define	dbg(fmt,...) printk(fmt "\n",## __VA_ARGS__)
+#define	err(fmt,...) printk(fmt "\n",## __VA_ARGS__)
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
 #define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
