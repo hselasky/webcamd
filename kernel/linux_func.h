@@ -3,6 +3,7 @@
 
 #define	device_create_file(...) 0
 #define	device_remove_file(...) __nop
+#define	DPM_ORDER_NONE 0
 
 int	printk_nop(void);
 
@@ -76,6 +77,7 @@ void	clear_bit(int nr, volatile unsigned long *addr);
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
+uint8_t	bitrev8(uint8_t a);
 unsigned int hweight8(unsigned int w);
 unsigned int hweight16(unsigned int w);
 unsigned int hweight32(unsigned int w);
@@ -87,7 +89,7 @@ int	kref_put(struct kref *kref, void (*release) (struct kref *kref));
 void	kref_init(struct kref *kref);
 struct device *get_device(struct device *dev);
 void	put_device(struct device *dev);
-int	device_move(struct device *dev, struct device *new_parent);
+int	device_move(struct device *dev, struct device *new_parent, int how);
 int	device_add(struct device *dev);
 void	device_del(struct device *dev);
 int	device_register(struct device *dev);
@@ -97,6 +99,8 @@ struct device *device_create(struct class *class, struct device *parent, dev_t d
 void	device_destroy(struct class *class, dev_t devt);
 void	module_put(struct module *module);
 int	try_module_get(struct module *module);
+
+#define	__module_get module_get
 void	module_get(struct module *module);
 void   *ERR_PTR(long error);
 long	PTR_ERR(const void *ptr);
@@ -120,6 +124,7 @@ struct class *class_put(struct class *class);
 int	class_register(struct class *class);
 void	class_unregister(struct class *class);
 void	class_destroy(struct class *class);
+int	alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
 int	register_chrdev_region(dev_t from, unsigned count, const char *name);
 void	unregister_chrdev_region(dev_t from, unsigned count);
 int	remap_vmalloc_range(struct vm_area_struct *vma, void *addr, unsigned long pgoff);
@@ -137,6 +142,8 @@ struct timespec ktime_get(void);
 struct timeval ktime_to_timeval(const struct timespec ts);
 void	ktime_get_ts(struct timespec *ts);
 void	ktime_get_real_ts(struct timespec *ts);
+int64_t	ktime_to_ns(const struct timespec ts);
+struct timespec ktime_sub(const struct timespec a, const struct timespec b);
 void	msleep(uint32_t ms);
 uint32_t msleep_interruptible(uint32_t ms);
 void	request_module(const char *ptr);
@@ -181,5 +188,9 @@ int	pidfile_create(int bus, int addr, int index);
 
 void   *kmemdup(const void *src, size_t len, gfp_t gfp);
 void   *memdup_user(const void *src, size_t len);
+
+unsigned long rounddown_pow_of_two(unsigned long);
+unsigned long roundup_pow_of_two(unsigned long);
+const char *skip_spaces(const char *str);
 
 #endif					/* _LINUX_FUNC_H_ */

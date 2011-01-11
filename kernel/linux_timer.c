@@ -79,6 +79,17 @@ del_timer_sync(struct timer_list *timer)
 	return (del_timer(timer));
 }
 
+int
+mod_timer(struct timer_list *timer, unsigned long expires)
+{
+	int retval;
+
+	atomic_lock();
+	timer->expires = expires;
+	retval = (timer->entry.tqe_prev != NULL);
+	atomic_unlock();
+}
+
 static void
 timer_exec_hup(int dummy)
 {

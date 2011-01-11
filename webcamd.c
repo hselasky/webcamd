@@ -69,6 +69,8 @@ static const char *devnames[F_V4B_MAX] = {
 	[F_V4B_DVB_OSD] = "dvb/adapter%d/osd0",
 	[F_V4B_DVB_SEC] = "dvb/adapter%d/sec0",
 	[F_V4B_DVB_VIDEO] = "dvb/adapter%d/video0",
+
+	[F_V4B_LIRC] = "lirc%d",
 };
 
 static int u_unit = 0;

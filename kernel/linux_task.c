@@ -134,24 +134,34 @@ flush_workqueue(struct workqueue_struct *wq)
 void
 cancel_delayed_work_sync(struct delayed_work *_work)
 {
-	cancel_rearming_delayed_work(_work);
+	cancel_work(&_work->work);
 
-	atomic_lock();
-	while (&_work->work == work_curr)
-		schedule();
-	atomic_unlock();
+	cancel_work_sync(&_work->work);
 }
 
 void
 cancel_rearming_delayed_work(struct delayed_work *_work)
 {
-	struct work_struct *work = &_work->work;
+	cancel_work(&_work->work);
+}
 
+void
+cancel_work(struct work_struct *work)
+{
 	atomic_lock();
 	if (work->entry.tqe_prev != NULL) {
 		TAILQ_REMOVE(&work_head, work, entry);
 		work->entry.tqe_prev = NULL;
 	}
+	atomic_unlock();
+}
+
+void
+cancel_work_sync(struct work_struct *work)
+{
+	atomic_lock();
+	while (work == work_curr)
+		schedule();
 	atomic_unlock();
 }
 

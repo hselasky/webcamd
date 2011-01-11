@@ -33,6 +33,11 @@ typedef struct timer_list {
 	unsigned long data;
 } timer_list_t;
 
+#define	setup_timer(t,fn,arg) do {	\
+    (t)->function = (fn);		\
+    (t)->data = (arg);			\
+} while (0)
+
 void	add_timer(struct timer_list *timer);
 int	del_timer(struct timer_list *timer);
 int	del_timer_sync(struct timer_list *timer);
@@ -40,5 +45,6 @@ int	timer_pending(const struct timer_list *timer);
 uint64_t get_jiffies_64(void);
 void	init_timer(struct timer_list *timer);
 void	need_timer(int flag);
+int	mod_timer(struct timer_list *timer, unsigned long);
 
 #endif					/* _LINUX_TIMER_H_ */

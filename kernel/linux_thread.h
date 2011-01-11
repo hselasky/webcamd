@@ -50,7 +50,8 @@ typedef struct semaphore {
 	pthread_t owner;
 } semaphore_t;
 
-#define	DEFINE_MUTEX(n) struct mutex n = { .sem.value = 1, .sem.owner = MUTEX_NO_OWNER, };
+#define	DEFINE_SPINLOCK(n) struct spinlock n = { }
+#define	DEFINE_MUTEX(n) struct mutex n = { .sem.value = 1, .sem.owner = MUTEX_NO_OWNER, }
 struct mutex {
 	struct semaphore sem;
 };

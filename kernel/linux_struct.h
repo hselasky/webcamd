@@ -11,16 +11,17 @@ struct inode;
 struct class;
 struct device;
 struct device_driver;
+struct dev_pm_ops;
 struct page;
 struct cdev;
 struct mutex;
-struct device_type;
 struct dmi_system_id;
 struct input_device_id;
 struct pci_dev;
 struct tasklet_struct;
 struct usb_driver;
 struct usb_interface;
+struct pt_regs;
 
 #define	LINUX_VMA_MAX 16
 
@@ -70,6 +71,16 @@ struct device_attribute {
 	ssize_t (*store) (struct device *, struct device_attribute *, const char *buf, size_t count);
 };
 
+struct device_type {
+	const char *name;
+	const struct attribute_group **groups;
+	int     (*uevent) (struct device *dev, struct kobj_uevent_env *env);
+	char   *(*devnode) (struct device *dev, mode_t *mode);
+	void    (*release) (struct device *dev);
+
+	const struct dev_pm_ops *pm;
+};
+
 #define	__ATTR(_name,_mode,_show,_store) {		\
         .attr = {.name = __stringify(_name),		\
 	    .mode = _mode, .owner = THIS_MODULE },	\
@@ -86,10 +97,12 @@ struct device_attribute				\
 
 struct class {
 	const char *name;
+	const char *nodename;
 	const struct device_attribute *dev_attrs;
 	int     (*dev_uevent) (struct device *, struct kobj_uevent_env *);
 	void    (*class_release) (struct class *);
 	void    (*dev_release) (struct device *);
+	char   *(*devnode) (struct device *, mode_t *);
 
 	struct kref refcount;
 };
@@ -109,6 +122,7 @@ struct device {
 	device_release_t *release;
 	struct device_driver *driver;
 	struct device *parent;
+	struct device_type *type;
 	void   *driver_data;
 	const struct file_operations *fops;
 	struct cdev *cdev;
@@ -178,10 +192,12 @@ struct file {
 	int	f_flags;
 };
 
+#define	f_dentry f_path.dentry
 #define	iminor(i) ((i)->d_inode & 0xFFFFUL)
 
 typedef struct inode {
 	dev_t	d_inode;
+	char	i_rdev[0];		/* dummy, must be non-zero */
 } inode_t;
 
 #define	F_V4B_SUBDEV_MAX 	8
@@ -196,6 +212,7 @@ enum {
 	F_V4B_DVB_OSD,
 	F_V4B_DVB_SEC,
 	F_V4B_DVB_VIDEO,
+	F_V4B_LIRC,
 	F_V4B_MAX,
 };
 
@@ -226,5 +243,10 @@ struct usb_class_driver {
 	const struct file_operations *fops;
 	int	minor_base;
 };
+
+struct scatterlist {
+};
+
+extern struct device_attribute dev_attr_protocols;
 
 #endif					/* _LINUX_STRUCT_H_ */

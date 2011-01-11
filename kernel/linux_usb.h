@@ -49,7 +49,7 @@ typedef struct pm_message {
 	int	event;
 } pm_message_t;
 
-typedef void (usb_complete_t)(struct urb *);
+typedef void (*usb_complete_t)(struct urb *);
 
 #define	USB_LINUX_IFACE_MAX 32
 
@@ -405,6 +405,9 @@ struct usb_endpoint_descriptor {
 #define	usb_rcvintpipe(dev,endpoint) \
   usb_create_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_IN)
 
+#define	usb_pipein(endpoint) ((endpoint) & USB_DIR_IN)
+#define	usb_pipeout(endpoint) ((~(endpoint)) & USB_DIR_IN)
+
 /* The following four structures makes up a tree, where we have the
  * leaf structure, "usb_host_endpoint", first, and the root structure,
  * "usb_device", last. The four structures below mirror the structure
@@ -458,6 +461,8 @@ struct usb_interface {
 
 	void   *align[0];
 };
+
+#define	usb_host_config usb_config
 
 struct usb_config {
 	struct usb_config_descriptor desc;
@@ -527,7 +532,7 @@ struct urb {
 	uint8_t *bsd_data_ptr;
 	void   *transfer_buffer;	/* (in) associated data buffer */
 	void   *context;		/* (in) context for completion */
-	usb_complete_t *complete;	/* (in) completion routine */
+	usb_complete_t complete;	/* (in) completion routine */
 
 	uint32_t transfer_buffer_length;/* (in) data buffer length */
 	uint32_t bsd_length_rem;
@@ -551,7 +556,7 @@ struct urb {
 	int16_t	status;			/* (return) status */
 
 	uint8_t	setup_dma;		/* (in) not used on FreeBSD */
-	uint8_t	transfer_dma;		/* (in) not used on FreeBSD */
+	dma_addr_t transfer_dma;	/* (in) not used on FreeBSD */
 	uint8_t	bsd_isread;
 	uint8_t	bsd_no_resubmit;
 
@@ -574,7 +579,7 @@ struct usb_interface *usb_ifnum_to_if(struct usb_device *dev, uint8_t iface_no);
 void   *usb_buffer_alloc(struct usb_device *dev, uint32_t size, uint16_t mem_flags, dma_addr_t *dma_addr);
 void   *usb_get_intfdata(struct usb_interface *intf);
 
-void	usb_buffer_free(struct usb_device *dev, uint32_t size, void *addr, uint8_t dma_addr);
+void	usb_buffer_free(struct usb_device *dev, uint32_t size, void *addr, dma_addr_t dma_addr);
 void	usb_free_urb(struct urb *urb);
 void	usb_init_urb(struct urb *urb);
 void	usb_kill_urb(struct urb *urb);
@@ -696,5 +701,9 @@ void	usb_unlock_device(struct usb_device *udev);
 int	usb_reset_device(struct usb_device *dev);
 uint8_t	usb_pipetype(unsigned int);
 void	usb_to_input_id(const struct usb_device *dev, struct input_id *id);
+uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
+
+#define	usb_alloc_coherent(...) usb_buffer_alloc(__VA_ARGS__)
+#define	usb_free_coherent(...) usb_buffer_free(__VA_ARGS__)
 
 #endif					/* _LINUX_USB_H_ */

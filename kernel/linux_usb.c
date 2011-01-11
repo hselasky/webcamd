@@ -1319,7 +1319,7 @@ usb_linux_free_device(struct usb_device *dev)
  *------------------------------------------------------------------------*/
 void
 usb_buffer_free(struct usb_device *dev, uint32_t size,
-    void *addr, uint8_t dma_addr)
+    void *addr, dma_addr_t dma_addr)
 {
 	free(addr);
 }
@@ -2067,4 +2067,20 @@ usb_driver_claim_interface(struct usb_driver *drv,
     struct usb_interface *intf, void *priv)
 {
 	return (0);
+}
+
+uint16_t
+usb_maxpacket(struct usb_device *dev, int endpoint, int is_out)
+{
+	struct usb_host_endpoint *ep;
+	uint8_t index = endpoint & 15;
+
+	if (is_out) {
+		ep = dev->ep_out[index];
+	} else {
+		ep = dev->ep_in[index];
+	}
+	if (ep == NULL)
+		return (0);
+	return (le16_to_cpu(ep->desc.wMaxPacketSize));
 }

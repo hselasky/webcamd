@@ -497,6 +497,15 @@ clear_bit(int nr, volatile unsigned long *addr)
 	atomic_unlock();
 }
 
+uint8_t
+bitrev8(uint8_t a)
+{
+	a = ((a & 0x55) << 1) | ((a & 0xAA) >> 1);
+	a = ((a & 0x33) << 2) | ((a & 0xCC) >> 2);
+	a = ((a & 0x0F) << 4) | ((a & 0xF0) >> 4);
+	return (a);
+}
+
 unsigned int
 hweight8(unsigned int w)
 {
@@ -578,6 +587,8 @@ done:
 	return (cdev);
 }
 
+#define	LIRC_MAJOR 13
+
 static struct cdev *cdev_registry[F_V4B_MAX][F_V4B_SUBDEV_MAX];
 static uint32_t cdev_mm[F_V4B_MAX][F_V4B_SUBDEV_MAX];
 
@@ -588,6 +599,14 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 	uint8_t id;
 
 	switch (mm & 0xFFFF0000U) {
+	case MKDEV(LIRC_MAJOR, 0):
+		subdev = mm & 0xFF;
+		if (subdev >= F_V4B_SUBDEV_MAX)
+			goto error;
+		cdev_registry[F_V4B_LIRC][subdev] = cdev;
+		cdev_mm[F_V4B_LIRC][subdev] = mm;
+		break;
+
 	case MKDEV(VIDEO_MAJOR, 0):
 		subdev = mm & 0xFF;
 		if (subdev >= F_V4B_SUBDEV_MAX)
@@ -784,7 +803,7 @@ put_device(struct device *dev)
 }
 
 int
-device_move(struct device *dev, struct device *new_parent)
+device_move(struct device *dev, struct device *new_parent, int how)
 {
 	if (dev->parent != NULL)
 		put_device(dev->parent);
@@ -960,6 +979,43 @@ fls(int mask)
 	if (mask & 0x2U) {
 		bit += 1;
 		mask = (unsigned int)mask >> 1;
+	}
+	return (bit);
+}
+
+static unsigned long
+__flsl(unsigned long mask)
+{
+	int bit;
+
+	if (mask == 0)
+		return (0);
+	bit = 1;
+#if (BITS_PER_LONG > 32)
+	if (mask & 0xFFFFFFFF00000000UL) {
+		bit += 32;
+		mask = (unsigned long)mask >> 32;
+	}
+#endif
+	if (mask & 0xFFFF0000UL) {
+		bit += 16;
+		mask = (unsigned long)mask >> 16;
+	}
+	if (mask & 0xFF00UL) {
+		bit += 8;
+		mask = (unsigned long)mask >> 8;
+	}
+	if (mask & 0xF0UL) {
+		bit += 4;
+		mask = (unsigned long)mask >> 4;
+	}
+	if (mask & 0xCUL) {
+		bit += 2;
+		mask = (unsigned long)mask >> 2;
+	}
+	if (mask & 0x2UL) {
+		bit += 1;
+		mask = (unsigned long)mask >> 1;
 	}
 	return (bit);
 }
@@ -1191,6 +1247,17 @@ class_destroy(struct class *class)
 }
 
 int
+alloc_chrdev_region(dev_t *pdev, unsigned basemin, unsigned count, const char *name)
+{
+	if (strcmp(name, "BaseRemoteCtl") == 0) {
+		*pdev = MKDEV(LIRC_MAJOR, basemin);
+		return (0);
+	}
+	printf("alloc_chrdev_region: Unknown region name: '%s'\n", name);
+	return (-ENOMEM);
+}
+
+int
 register_chrdev_region(dev_t from, unsigned count, const char *name)
 {
 	return (0);
@@ -1332,6 +1399,30 @@ void
 ktime_get_real_ts(struct timespec *ts)
 {
 	clock_gettime(CLOCK_REALTIME, ts);
+}
+
+int64_t
+ktime_to_ns(const struct timespec ts)
+{
+	return ((((int64_t)ts.tv_sec) *
+	    (int64_t)1000000000L) + (int64_t)ts.tv_nsec);
+}
+
+struct timespec
+ktime_sub(const struct timespec a, const struct timespec b)
+{
+	struct timespec r;
+
+	/* do subtraction */
+	r.tv_sec = a.tv_sec - b.tv_sec;
+	r.tv_nsec = a.tv_nsec - b.tv_nsec;
+
+	/* carry */
+	if (r.tv_nsec < 0) {
+		r.tv_nsec += 1000000000LL;
+		r.tv_sec--;
+	}
+	return (r);
 }
 
 struct timespec
@@ -1632,4 +1723,30 @@ memdup_user(const void *src, size_t len)
 		return ERR_PTR(-EFAULT);
 	}
 	return (p);
+}
+
+unsigned long
+rounddown_pow_of_two(unsigned long x)
+{
+	if (x == 0)
+		return (0);
+	else
+		return (1UL << (__flsl(x) - 1));
+}
+
+unsigned long
+roundup_pow_of_two(unsigned long x)
+{
+	if (x == 0)
+		return (0);
+	else
+		return (1UL << __flsl((x) - 1));
+}
+
+const char *
+skip_spaces(const char *str)
+{
+	while (isspace(*str))
+		str++;
+	return ((const char *)str);
 }

@@ -97,7 +97,7 @@ CFLAGS+= 	-D_GNU_SOURCE
 .PATH: \
 ${.CURDIR} \
 ${.CURDIR}/kernel \
-${.CURDIR}/pwcview \
+${.CURDIR}/linux/kernel \
 ${LINUXDIR}/drivers \
 ${LINUXDIR}/drivers/media \
 ${LINUXDIR}/drivers/media/common \
@@ -141,6 +141,8 @@ ${LINUXDIR}/drivers/media/video/sn9c102 \
 ${LINUXDIR}/drivers/media/video/usbvideo \
 ${LINUXDIR}/drivers/media/video/uvc \
 ${LINUXDIR}/drivers/media/video/zoran \
+${LINUXDIR}/drivers/media/IR \
+${LINUXDIR}/drivers/media/IR/keymaps \
 ${LINUXDIR}/drivers/staging/go7007 \
 
 
@@ -316,13 +318,13 @@ SRCS+= et61x251_tas5130d1b.c
 #
 
 #SRCS+= em28xx-audio.c
-#SRCS+= em28xx-cards.c
-#SRCS+= em28xx-core.c
-#SRCS+= em28xx-dvb.c
-#SRCS+= em28xx-i2c.c
-#SRCS+= em28xx-input.c
-#SRCS+= em28xx-vbi.c
-#SRCS+= em28xx-video.c
+SRCS+= em28xx-cards.c
+SRCS+= em28xx-core.c
+SRCS+= em28xx-dvb.c
+SRCS+= em28xx-i2c.c
+SRCS+= em28xx-input.c
+SRCS+= em28xx-vbi.c
+SRCS+= em28xx-video.c
 SRCS+= s921.c
 
 #
@@ -752,6 +754,98 @@ SRCS+= xc5000.c
 SRCS+= zl10039.c
 SRCS+= zl10353.c
 
+#
+# IR-control related drivers
+#
+
+CFLAGS += -DCONFIG_IR_CORE
+CFLAGS += -DCONFIG_VIDEO_IR
+
+SRCS+= kfifo.c
+SRCS+= ir-functions.c
+SRCS+= ir-jvc-decoder.c
+SRCS+= ir-keytable.c
+SRCS+= ir-lirc-codec.c
+SRCS+= ir-nec-decoder.c
+SRCS+= ir-raw-event.c
+SRCS+= ir-rc5-decoder.c
+SRCS+= ir-rc6-decoder.c
+SRCS+= ir-sony-decoder.c
+SRCS+= ir-sysfs.c
+SRCS+= lirc_dev.c
+SRCS+= mceusb.c
+SRCS+= rc-adstech-dvb-t-pci.c
+SRCS+= rc-apac-viewcomp.c
+SRCS+= rc-asus-pc39.c
+SRCS+= rc-ati-tv-wonder-hd-600.c
+SRCS+= rc-avermedia-a16d.c
+SRCS+= rc-avermedia-cardbus.c
+SRCS+= rc-avermedia-dvbt.c
+SRCS+= rc-avermedia-m135a.c
+SRCS+= rc-avermedia-m733a-rm-k6.c
+SRCS+= rc-avermedia.c
+SRCS+= rc-avertv-303.c
+SRCS+= rc-behold-columbus.c
+SRCS+= rc-behold.c
+SRCS+= rc-budget-ci-old.c
+SRCS+= rc-cinergy-1400.c
+SRCS+= rc-cinergy.c
+SRCS+= rc-dm1105-nec.c
+SRCS+= rc-dntv-live-dvb-t.c
+SRCS+= rc-dntv-live-dvbt-pro.c
+SRCS+= rc-em-terratec.c
+SRCS+= rc-empty.c
+SRCS+= rc-encore-enltv-fm53.c
+SRCS+= rc-encore-enltv.c
+SRCS+= rc-encore-enltv2.c
+SRCS+= rc-evga-indtube.c
+SRCS+= rc-eztv.c
+SRCS+= rc-flydvb.c
+SRCS+= rc-flyvideo.c
+SRCS+= rc-fusionhdtv-mce.c
+SRCS+= rc-gadmei-rm008z.c
+SRCS+= rc-genius-tvgo-a11mce.c
+SRCS+= rc-gotview7135.c
+SRCS+= rc-hauppauge-new.c
+SRCS+= rc-imon-mce.c
+SRCS+= rc-imon-pad.c
+SRCS+= rc-iodata-bctv7e.c
+SRCS+= rc-kaiomy.c
+SRCS+= rc-kworld-315u.c
+SRCS+= rc-kworld-plus-tv-analog.c
+SRCS+= rc-lirc.c
+SRCS+= rc-manli.c
+SRCS+= rc-map.c
+SRCS+= rc-msi-tvanywhere-plus.c
+SRCS+= rc-msi-tvanywhere.c
+SRCS+= rc-nebula.c
+SRCS+= rc-nec-terratec-cinergy-xs.c
+SRCS+= rc-norwood.c
+SRCS+= rc-npgtech.c
+SRCS+= rc-pctv-sedna.c
+SRCS+= rc-pinnacle-color.c
+SRCS+= rc-pinnacle-grey.c
+SRCS+= rc-pinnacle-pctv-hd.c
+SRCS+= rc-pixelview-mk12.c
+SRCS+= rc-pixelview-new.c
+SRCS+= rc-pixelview.c
+SRCS+= rc-powercolor-real-angel.c
+SRCS+= rc-proteus-2309.c
+SRCS+= rc-purpletv.c
+SRCS+= rc-pv951.c
+SRCS+= rc-rc5-hauppauge-new.c
+SRCS+= rc-rc5-tv.c
+SRCS+= rc-rc6-mce.c
+SRCS+= rc-real-audio-220-32-keys.c
+SRCS+= rc-tbs-nec.c
+SRCS+= rc-terratec-cinergy-xs.c
+SRCS+= rc-tevii-nec.c
+SRCS+= rc-tt-1500.c
+SRCS+= rc-videomate-s350.c
+SRCS+= rc-videomate-tv-pvr.c
+SRCS+= rc-winfast-usbii-deluxe.c
+SRCS+= rc-winfast.c
+
 CFLAGS+= -include webcamd_global.h
 
 CFLAGS+= -O2 -Wall -Wno-pointer-sign
@@ -947,7 +1041,7 @@ package: clean
 		--exclude="Documentation" --exclude="v4l2-apps" \
 		Makefile *.[ch] webcamd.8 man4/*.[4] dummy headers tests/*.[ch] kernel/*.[ch] \
 		patches/do_patch.sh patches/*.diff \
-		v4l-dvb v4l-dvb-*
+		v4l-dvb v4l-dvb-* linux
 
 	rm -rf webcamd-${VERSION}
 

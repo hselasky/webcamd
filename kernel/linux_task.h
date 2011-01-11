@@ -63,6 +63,8 @@ void	flush_workqueue(struct workqueue_struct *wq);
 void	flush_scheduled_work(void);
 void	cancel_rearming_delayed_work(struct delayed_work *work);
 void	cancel_delayed_work_sync(struct delayed_work *work);
+void	cancel_work(struct work_struct *work);
+void	cancel_work_sync(struct work_struct *work);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsigned long data);
 void	tasklet_kill(struct tasklet_struct *t);

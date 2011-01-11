@@ -39,10 +39,12 @@
   div_round_closest_s32(rem,div) :  \
   div_round_closest_u32(rem,div)))
 
+#define	is_power_of_2(x) (((-(x)) & (x)) == (x))
 #define	__nop do {} while (0)
 #define	__user
 #define	__kernel
 #define	__safe
+#define	__deprecated
 #define	__force
 #define	__nocast
 #define	__iomem
@@ -56,6 +58,7 @@
 #define	__release(x) __nop
 #define	__cond_lock(x,c) (c)
 #define	__pgprot(x)     ((pgprot_t)(x))
+#define	__rcu
 #define	irqs_disabled(...) (0)
 #define	SetPageReserved(...)   __nop
 #define	ClearPageReserved(...) __nop
@@ -142,8 +145,18 @@
 #define	vmalloc_to_pfn(x) ((unsigned long)(x))	/* HACK */
 #define	alloc_page(...) malloc_vm(PAGE_SIZE)
 #define	page_address(x) ((void *)(x))	/* HACK */
+#define	virt_to_page(x) ((struct page *)(((uintptr_t)(x)) & ~(PAGE_SIZE-1)))	/* HACK */
+#define	offset_in_page(x) (((uintptr_t)(x)) & (PAGE_SIZE - 1))
+#define	page_to_phys(x) ((uintptr_t)(x))
 #define	page_cache_release(...) __nop
 #define	clear_user_highpage(...) __nop
+#define	sg_set_page(...) __nop
+#define	sg_next(...) NULL
+#define	sysfs_attr_init(x) __nop
+#define	kobject_set_name(...) __nop
+#define	kobject_get_path(...) strdup("webcamd")
+#define	kobject_put(...) __nop
+#define	kobject_get(...) __nop
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	kstrdup(a,b) strdup(a)
@@ -189,11 +202,19 @@
 #define	BITS_TO_LONGS(n) (((n) + BITS_PER_LONG - 1) / BITS_PER_LONG)
 #define	BIT(n) (1UL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 29)
+#define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 37)
 #define	BUS_ID_SIZE 32
 #define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
 #define	MKDEV(maj,min) ((dev_t)((((maj) & 0xFFFFUL) << 16)|((min) & 0xFFFFUL)))
-#define	dev_set_name(d, ...) snprintf((d)->name, sizeof((d)->name), __VA_ARGS__)
+#define	MAJOR(dev) (((dev) >> 16) & 0xFFFFUL)
+#define	MINOR(dev) ((dev) & 0xFFFFUL)
+#define	dev_set_name(d, ...) \
+	snprintf((d)->name, sizeof((d)->name), __VA_ARGS__)
+#define	kasprintf(mem,...) ({			\
+	char *temp_ptr;				\
+	asprintf(&temp_ptr, __VA_ARGS__);	\
+	temp_ptr;				\
+})
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
@@ -224,6 +245,7 @@
 #define	HZ 1000
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)
+#define	usecs_to_jiffies(x) ((x) / 1000)
 #define	jiffies_to_msecs(x) (x)
 #define	likely(...) __VA_ARGS__
 #define	unlikely(...) __VA_ARGS__
@@ -241,6 +263,7 @@
 #define	BUG(...) __nop
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
+#define	WARN(...) __nop
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -268,10 +291,14 @@
 #define	CRCPOLY_LE 0xedb88320
 #define	CRCPOLY_BE 0x04c11db7
 #define	mb() __asm volatile("":::"memory")
+#define	smp_wmb() mb()
+#define	smp_mb() mb()
+#define	smp_rmb() mb()
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
 #define	__devinitconst
 #define	__devinit
+#define	__devexit
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
 #define	set_current_state(...) __nop
@@ -279,6 +306,7 @@
 #define	time_after_eq(a,b) (((long)(b) - (long)(a)) <= 0)
 #define	time_before(a,b) time_after(b,a)
 #define	time_before_eq(a,b) time_after_eq(b,a)
+#define	time_is_after_eq_jiffies(a) time_before_eq(jiffies,a)
 #define	__attribute_const__
 #define	noinline
 #define	__cpu_to_le32(x) cpu_to_le32(x)
@@ -294,6 +322,7 @@
 #define	ENOSR ENOBUFS
 #define	ENOTSUPP ENOTSUP
 #define	EREMOTEIO EIO
+#define	EBADRQC EBADMSG
 #define	I2C_NAME_SIZE 20
 #define	__SPIN_LOCK_UNLOCKED(...) {}
 #define	in_interrupt() 0
@@ -311,7 +340,23 @@
 #ifndef __pure
 #define	__pure __attribute__((pure))
 #endif
-
+#define	put_user(val, ptr) ({						\
+	int temp_err;							\
+	__typeof(val) temp_var = (val);					\
+	if (copy_to_user((ptr), &temp_var, sizeof(temp_var)) == 0)	\
+		temp_err = 0;						\
+	else								\
+		temp_err = -EFAULT;					\
+	temp_err;							\
+})
+#define	get_user(temp_var, ptr) ({					\
+	int temp_err;							\
+	if (copy_from_user(&(temp_var), (ptr), sizeof(temp_var)) == 0)	\
+		temp_err = 0;						\
+	else								\
+		temp_err = -EFAULT;					\
+	temp_err;							\
+})
 #undef errno
 #define	errno errno_v4l
 
