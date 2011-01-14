@@ -442,6 +442,18 @@ CFLAGS+= -DCONFIG_MEDIA_TUNER_MXL5005S
 SRCS+= mxl5005s.c
 
 #
+# Hauppauge 950Q
+#
+SRCS+= au0828-cards.c
+SRCS+= au0828-core.c
+SRCS+= au0828-dvb.c
+SRCS+= au0828-i2c.c
+SRCS+= au0828-vbi.c
+SRCS+= au0828-video.c
+SRCS+= au8522_dig.c
+#SRCS+= au8522_decoder.c
+
+#
 # Siano DVB USB
 #
 
@@ -521,7 +533,6 @@ CFLAGS+= -DCONFIG_MEDIA_TUNER_MT2060
 #
 # Various webcams
 #
-#SRCS+= au0828-cards.c
 #SRCS+= s2255drv.c
 SRCS+= stv0680.c
 SRCS+= se401.c
