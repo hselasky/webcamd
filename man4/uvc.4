@@ -1,0 +1,326 @@
+.\"
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Jan 18, 2011 
+.Dt UVC 4
+.Os FreeBSD
+.Sh NAME
+.Nm uvc
+.Nd webcamd driver for UVC compliant USB devices
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports UVC compliant USB devices. UVC is a USB device class that describes devices capable of streaming video like webcams, digital camcorders, analog video converters, television tuners, and still-image cameras. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB devices. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 0402:5606	 Ta "VIT D2010 notebooks"
+.It 0408:030c 	 Ta "HP Pavilion DV6744/6750"
+.It 0408:1030	 Ta "faceVsion TouchCam"
+.It 041e:4057 	 Ta "Creative Live! Cam Optia" 
+.It 041e:4058 	 Ta "Creative Live! Cam Optia AF" 
+.It 041e:4063 	 Ta "Creative Live! Cam Video IM Pro" 
+.It 041e:4065 	 Ta "Creative Live! Cam Optia Pro" 
+.It 041e:406a 	 Ta "Creative Live! Cam Notebook Ultra" 
+.It 041e:4080 	 Ta "Creative Live! Cam Socialize HD" 
+.It 0458:505e 	 Ta "Genius iSlim 330" 
+.It 0458:7055 	 Ta "Genius iSlim 2020AF" 
+.It 0458:705d 	 Ta "Genius iSlim 2000AF" 
+.It 0458:706e 	 Ta "Genius eFace 2025" 
+.It 0458:7070 	 Ta "Genius FaceCam 310" 
+.It 0458:7071 	 Ta "Genius iSlim 1300 V2" 
+.It 045e:00f8 	 Ta "Microsoft LifeCam NX-6000" 
+.It 045e:074a 	 Ta "Microsoft LifeCam VX-500" 
+.It 045e:075d 	 Ta "Microsoft LifeCam Cinema" 
+.It 045e:0770 	 Ta "Microsoft LifeCam VX-700" 
+.It 046d:0802 	 Ta "Logitech Webcam C200" 
+.It 046d:0804 	 Ta "Logitech Webcam C250" 
+.It 046d:0805 	 Ta "Logitech Webcam C300" 
+.It 046d:0807 	 Ta "Logitech Webcam C500" 
+.It 046d:0808 	 Ta "Logitech Webcam C600" 
+.It 046d:0809 	 Ta "Logitech Webcam Pro 9000" 
+.It 046d:080a 	 Ta "Logitech Portable Webcam C200" 
+.It 046d:0819 	 Ta "Logitech Webcam C210" 
+.It 046d:081d 	 Ta "Logitech Webcam C310" 
+.It 046d:0821 	 Ta "Logitech Portable Webcam C910" 
+.It 046d:08c1 	 Ta "Logitech Quickcam Fusion" 
+.It 046d:08c2 	 Ta "Logitech Quickcam Orbit/Sphere MP" 
+.It 046d:08c3 	 Ta "Logitech Quickcam for Notebooks Pro" 
+.It 046d:08c5 	 Ta "Logitech Quickcam Pro 5000" 
+.It 046d:08c6 	 Ta "Logitech Quickcam Dell Notebook" 
+.It 046d:08c7 	 Ta "Logitech Quickcam Cisco VT Camera II" 
+.It 046d:08c9 	 Ta "Logitech Quickcam Ultra Vision" 
+.It 046d:08ca 	 Ta "Logitech Quickcam Fusion 2006" 
+.It 046d:08cb 	 Ta "Logitech Quickcam for Notebooks Pro" 
+.It 046d:08cc 	 Ta "Logitech Quickcam Orbit/Sphere MP" 
+.It 046d:08ce 	 Ta "Logitech Quickcam Pro 5000" 
+.It 046d:0990 	 Ta "Logitech Quickcam Pro 9000"
+.It 046d:0991 	 Ta "Logitech Quickcam Pro for Notebooks" 
+.It 046d:0992 	 Ta "Logitech Quickcam Communicate Deluxe" 
+.It 046d:0994 	 Ta "Logitech Quickcam Orbit/Sphere AF" 
+.It 046d:09a1 	 Ta "Quickcam Communicate MP/S5500"
+.It 046d:09a2 	 Ta "Quickcam Communicate Deluxe/S7500" 
+.It 046d:09a4 	 Ta "Logitech Quickcam E 3500" 
+.It 046d:09a5 	 Ta "Logitech Quickcam 3000 for Business" 
+.It 046d:09a6 	 Ta "Logitech Quickcam Vision Pro" 
+.It 046d:09b0 	 Ta "Acer notebooks OrbiCam" 
+.It 046d:09b2 	 Ta "Fujitsu notebooks Webcam" 
+.It 046d:09c0 	 Ta "Quickcam for Dell Notebooks" 
+.It 046d:09c1 	 Ta "Logitech Quickcam Deluxe"
+.It 0471:0331 	 Ta "Philips SPC 1300NC" 
+.It 0471:0332 	 Ta "Philips SPC 1000NC" 
+.It 0471:0333 	 Ta "Philips SPC 620NC" 
+.It 0471:0334 	 Ta "Philips SPC 520/525NC" 
+.It 0471:2034 	 Ta "Philips SPC 530NC" 
+.It 0471:2037 	 Ta "Philips SPC 1330NC" 
+.It 0471:2038 	 Ta "Philips SPC 2050NC" 
+.It 0474:02da 	 Ta "Sanyo Xacti HD2000" 
+.It 0474:0722 	 Ta "Sanyo W33SA" 
+.It 0474:0b0e 	 Ta "Sanyo VPC-CA102" 
+.It 0489:d00a 	 Ta "Traveler DC 8900" 
+.It 04cb:014c 	 Ta "Fujifilm FinePix A340" 
+.It 04cb:016f 	 Ta "Fujifilm FinePix S5500 Zoom" 
+.It 04cb:0172 	 Ta "Fujifilm FinePix E550" 
+.It 04da:2318 	 Ta "Panasonic Camcorder NV-GS11/230/250"
+.It 04da:231a 	 Ta "Panasonic Camcorder NV-GS11/230/250" 
+.It 04da:231d 	 Ta "Panasonic NV-GS27/37/320/500" 
+.It 04da:231e 	 Ta "Panasonic NV-GS27/37/320/500"  
+.It 04f2:a133 	 Ta "Maxell MaxCam MWC-1300D"
+.It 04f2:a133 	 Ta "Chicony USB 2.0 1.3MP UVC Camera" 
+.It 04f2:a13c 	 Ta "HP Deluxe Webcam KQ246AA" 
+.It 04f2:a13e 	 Ta "Panda 10C" 
+.It 04f2:a147 	 Ta "Medion P86004 2MP Webcam with Headset" 
+.It 04f2:b008 	 Ta "Chicony USB 2.0 Camera" 
+.It 04f2:b012 	 Ta "Asus G1S notebooks"
+.It 04f2:b013 	 Ta "Lenovo 3000 N200 notebooks" 
+.It 04f2:b015 	 Ta "HP notebooks" 
+.It 04f2:b016 	 Ta "HP notebooks" 
+.It 04f2:b018 	 Ta "Compal notebooks"
+.It 04f2:b021 	 Ta "ViewSonic 1.3M VX2255WMB" 
+.It 04f2:b022 	 Ta "Gateway One C34xx notebooks"
+.It 04f2:b023 	 Ta "HP Pavilion DV9560EG notebooks" 
+.It 04f2:b024 	 Ta "Packard Bell notebooks"
+.It 04f2:b027 	 Ta "Gateway T-1616 notebooks"
+.It 04f2:b029 	 Ta "Asus F6S notebooks"
+.It 04f2:b033 	 Ta "Asus M70VM notebooks"
+.It 04f2:b044 	 Ta "Acer Aspire 5535 notebooks" 
+.It 04f2:b062 	 Ta "Packard-Bell notebooks"
+.It 04f2:b070 	 Ta "Toshiba Satellite L350D notebooks" 
+.It 04f2:b071 	 Ta "Asus N10JA2, EeePC 1000HE, K50IN"
+.It 04f2:b073 	 Ta "MSI MS-1722 ID1 notebooks" 
+.It 04f2:b082 	 Ta "HP EliteBook 2530p notebooks"
+.It 04f2:b083 	 Ta "HP Compaq 6830s notebooks" 
+.It 04f2:b084 	 Ta "Acer Aspire One D150" 
+.It 04f2:b105 	 Ta "Lenovo IdeaPad Y530 notebooks" 
+.It 04f2:b106 	 Ta "Asus G71V notebooks" 
+.It 04f2:b107 	 Ta "HP 2133 notebooks" 
+.It 04f2:b1b9 	 Ta "Asus U52F notebooks" 
+.It 04f2:b1bb 	 Ta "Asus N82JV notebooks"
+.It 04f2:b1be 	 Ta "Asus UL30JT notebooks" 
+.It 04f2:b1e5 	 Ta "Asus K25JC notebooks" 
+.It 058f:3820 	 Ta "Alcor Micro AU3820 chipset" 
+.It 05a9:2640 	 Ta "Dell Inspiron 1420/1720 notebooks" 
+.It 05a9:2643 	 Ta "Dell SP2208WFP"
+.It 05a9:2649 	 Ta "Dell SP2309W"
+.It 05a9:7670 	 Ta "Dell XPS m1330 notebooks" 
+.It 05ac:8502 	 Ta "Apple built-in iSight" 
+.It 05c8:0103 	 Ta "FO13FF-65 PC-CAM" 
+.It 05ca:18a1 	 Ta "Dell Studio 1535 notebooks" 
+.It 05ca:18b7 	 Ta "Sony VPCS12J1E notebooks" 
+.It 064e:a100 	 Ta "Acer notebooks OrbiCam" 
+.It 064e:a101 	 Ta "Acer notebooks CrystalEye" 
+.It 064e:a102 	 Ta "Acer Timeline 1810T notebooks" 
+.It 064e:a103 	 Ta "Acer Aspire 7730ZG-343G32Mn notebooks"
+.It 064e:a110 	 Ta "HP TX2000 notebooks"
+.It 064e:a111 	 Ta "Datron TW7A notebooks"
+.It 064e:a116 	 Ta "Asus N20A notebooks"
+.It 064e:a117 	 Ta "Acer 4930 notebooks" 
+.It 064e:a118 	 Ta "Dell Mini 9 netbooks"
+.It 064e:a136 	 Ta "Asus UL50VT netbooks" 
+.It 064e:a219 	 Ta "Acer Aspire 5745G notebooks"
+.It 064e:d101 	 Ta "Acer Aspire One AOA150-Ab netbooks"
+.It 064e:e201 	 Ta "Lenovo Thinkpad Edge 13" notebooks"
+.It 06f8:3005 	 Ta "Hercules Dualpix Exchange" 
+.It 06f8:3007 	 Ta "Hercules Dualpix Chat and Show" 
+.It 06f8:300a 	 Ta "Hercules Dualpix Infinite" 
+.It 06f8:3020 	 Ta "Malata PC-81005 netbooks and clones" 
+.It 090c:37b3	 Ta "Lenovo G560 notebooks"
+.It 090c:b370 	 Ta "Silicon Motion SM370 /371"
+.It 090c:b371 	 Ta "iSonic W002"
+.It 093a:2700	 Ta "A4Tech PK-635K"
+.It 093a:2700	 Ta "Digital Innovations 1.3MP Webcam" 
+.It 093a:2800 	 Ta "DealExtreme USB 2.0 Camera" 
+.It 093a:2900 	 Ta "Agama V-315" 
+.It 0ac8:0336 	 Ta "Elecom UCAM-DLQ30 VC0336" 
+.It 0ac8:3313 	 Ta "TopSpeed USB 2.0 Camera B." 
+.It 0ac8:332d 	 Ta "Vega Techsolo TCA-4900" 
+.It 0ac8:3330 	 Ta "Sirius Xinyi Y867 LCD Prince" 
+.It 0ac8:3343 	 Ta "Fujitsu A6110 notebook" 
+.It 0ac8:3410 	 Ta "Venus Minoru3D"
+.It 0ac8:3420 	 Ta "Venus Tevion MD 85872 and Minoru3D"
+.It 0ac8:3450 	 Ta "A4Tech PK-333E" 
+.It 0ac8:c302 	 Ta "Samsung Q45 notebook" 
+.It 0ac8:c303 	 Ta "Saturn (Samsung screens)" 
+.It 0ac8:c315 	 Ta "HP Elite Autofocus Webcam" 
+.It 0ac8:c338 	 Ta "Namuge 2MP Webcam" 
+.It 0ac8:c338 	 Ta "Acer Aspire 5050, HP Pavilion DV6000"
+.It 0c45:62c0	 Ta "Trust SpotLight Webcam Pro"
+.It 0c45:62c0	 Ta "Centrios 1.3MP auto focus" 
+.It 0c45:62e0 	 Ta "MSI Starcam Racer" 
+.It 0c45:62f1 	 Ta "Avatec CMA-L688"
+.It 0c45:6310 	 Ta "Trust Chat Webcam"
+.It 0c45:63e0 	 Ta "Dell notebooks"
+.It 0c45:63ea 	 Ta "Dell Studio 1555 notebooks" 
+.It 0c45:6409 	 Ta "Nokia Booklet 3G netbooks" 
+.It 0c45:6415 	 Ta "Dell Inspiron 13z notebooks"
+.It 0e8d:0004 	 Ta "MediaTek MT6227 phone" 
+.It 13d3:509b 	 Ta "Asus EeePC T91 netbooks" 
+.It 13d3:5103 	 Ta "Medion Akoya All-in-one PC"
+.It 13d3:5122 	 Ta "Asus U33JC notebooks" 
+.It 13d3:5130 	 Ta "Asus K40AE and K50IE notebooks"
+.It 145f:013e 	 Ta "Trust Megapixel USB2 WB-5600R" 
+.It 145f:013f 	 Ta "Trust Megapixel USB2 Webcam" 
+.It 145f:0142 	 Ta "Trust WB-6250X Webcam" 
+.It 45f:015b 	 Ta "Trust WB-8500X Webcam" 
+.It 174f:5212 	 Ta "HP Spartan notebooks"
+.It 174f:5215 	 Ta "Syntek USB 2.0 UVC PC Camera"
+.It 174f:5271 	 Ta "Syntek USB 2.0 UVC PC Camera" 
+.It 174f:5931 	 Ta "Samsung Q310 notebooks"
+.It 174f:5a11 	 Ta "Asus A8Sc notebook" 
+.It 174f:5a31 	 Ta "Asus M50SV notebook" 
+.It 174f:5a35 	 Ta "Asus F3KE and G2S notebook" 
+.It 174f:8a12 	 Ta "Packard Bell Easynote MX52 notebooks" 
+.It 174f:8a33 	 Ta "Asus U3S notebooks"
+.It 174f:8a34 	 Ta "JAOtech Smart Terminal"
+.It 1778:0204 	 Ta "PEVO corp" 
+.It 177f:0060 	 Ta "Sweex" 
+.It 17dc:0202 	 Ta "Miricle 307K" 
+.It 17ef:1004 	 Ta "Lenovo Thinkpad T61 notebooks" 
+.It 17ef:480b 	 Ta "Lenovo SL400 and SL500 notebooks" 
+.It 17ef:481c 	 Ta "Lenovo SL510 notebooks" 
+.It 1871:01f0 	 Ta "Aveo Technology USB 2.0 Camera" 
+.It 1871:0306 	 Ta "Aveo Technology USB 2.0 Camera" 
+.It 18cd:cafe 	 Ta "Pico iMage" 
+.It 18ec:3188 	 Ta "Manta MM-353 Plako" 
+.It 18ec:3288 	 Ta "FSC WebCam V30S" 
+.It 18ec:3290 	 Ta "Sabrent WCM-6LNV" 
+.It 18ec:3299 	 Ta "USB 2.0 Camera QC3231" 
+.It 199e:8101 	 Ta "DFx 21BU04" 
+.It 19ab:1000 	 Ta "Bodelin ProScope HR" 
+.It 19ab:1020 	 Ta "Bodelin ProScope HR2" 
+.It 19ff:0102 	 Ta "Dynex 1.3MP Webcam" 
+.It 1b3b:2951 	 Ta "MSI StarCam 370i" 
+.It 1c4f:3000 	 Ta "SiGma Micro USB Web Camera" 
+.It 1cac:a332 	 Ta "Kinstone C8" 
+.It 1cac:b288 	 Ta "Kinstone C18" 
+.It 1e4e:0100 	 Ta "USB 2.0 Camera" 
+.It 22b8:6006 	 Ta "Motorola MOTOROKR E6" 
+.It 5986:0100 	 Ta "Acer notebooks OrbiCam" 
+.It 5986:0101 	 Ta "Packard Bell Easynote SJ notebooks" 
+.It 5986:0102 	 Ta "Acer TravelMate 7720 notebooks" 
+.It 5986:0200 	 Ta "Acer notebooks OrbiCam" 
+.It 5986:0202 	 Ta "Fujitsu-Siemens Amilo SI2636"
+.It 5986:0203 	 Ta "Advent 4211 and MSI Wind notebooks" 
+.It 5986:0205 	 Ta "Lenovo N500 and U330 notebooks"
+.It 5986:0241 	 Ta "MSI Wind Top AE1900 nettop" 
+.It eb1a:2571 	 Ta "eMPIA 27xx based camera"
+.It eb1a:2761 	 Ta "eMPIA 2761 based camera" 
+.It eb1a:2771 	 Ta "Intelbras iPlug notebook"
+.El
+.Pp
+.Sh SEE ALSO
+.Xr  au0828 4 ,
+.Xr benq 4 ,
+.Xr  bttv 4 ,
+.Xr  conex 4 ,
+.Xr  cpiax 4 ,
+.Xr  cx23885 4 ,
+.Xr  cx88 4 ,
+.Xr  em28xx 4 ,
+.Xr  et61x251 4 ,
+.Xr  finepix 4 ,
+.Xr  gl860 4 ,
+.Xr  ibmcam 4 ,
+.Xr  ivtv 4 ,
+.Xr  jeilinj 4 ,
+.Xr  m5602 4 ,
+.Xr  mars 4 ,
+.Xr  meye 4 ,
+.Xr  mr97310a 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr saa7134 4 ,
+.Xr saa7164 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c2ox 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr tv8532 4 ,
+.Xr usbvision 4 ,
+.Xr vc032x 4 ,
+.Xr w9966 4 ,
+.Xr w996x 4 ,
+.Xr zc0301 4 ,
+.Xr zc3xx 4 ,
+.Xr zoran 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8
+.Sh AUTHORS
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Laurent Pinchart laurent.pinchart@skynet.be
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp
