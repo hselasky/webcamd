@@ -36,7 +36,7 @@
 .Sh DESCRIPTION
 The
 .Nm
-driver supports USB cameras based on the STV0600, STV0600-1, STV0602, and STV0610 chipsets. This is the GSPCA version of the driver.
+driver supports USB cameras based on the STV0600, STV0600-1, STV0602, STV0610, and STV0680 chipsets. The supported sensors are HDCS1000, Photobit PB100, ST VV6410, and the ST 6422 bridge. This is the GSPCA version of the driver.
 .Pp
 Devices using the
 .Nm
@@ -52,9 +52,13 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Pp
 .Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
 .It Em "VendorID:ProductID" Ta Em Device
+.It 041e:4007	 Ta "Creative Go Mini"
 .It 046d:0840	 Ta "QuickCam Express"
 .It 046d:0850	 Ta "LEGO cam/QuickCam Web"
 .It 046d:0870	 Ta "Dexxa WebCam USB"
+.It 046d:08f0	 Ta "Logitech QuickCam Messenger"
+.It 046d:08f6	 Ta "Logitech QuickCam Mess. Plus"
+.It 0553:0202	 Ta "Pencam
 .El
 .Pp
 .Sh SEE ALSO
@@ -69,6 +73,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr  et61x251 4 ,
 .Xr  finepix 4 ,
 .Xr  gl860 4 ,
+.Xr  hdpvr 4 ,
 .Xr  ibmcam 4 ,
 .Xr  ivtv 4 ,
 .Xr  jeilinj 4 ,
