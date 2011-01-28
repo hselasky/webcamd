@@ -66,8 +66,10 @@ command can be used to determine the VendorID:ProductID of the inserted device.
 .It 0ccd:005e	 Ta "Terratec Hybrid XS"                         
 .It 0ccd:0084	 Ta "Terratec AV350"                                    
 .It 0ccd:0096	 Ta "Terratec Grabby"                                   
+.It 0fd9:0033	 Ta ""
 .It 185b:2041	 Ta "Compro VideoMate ForYou/Stereo"             
-.It 185b:2870	 Ta "Compro VideoMate U3                              
+.It 185b:2870	 Ta "Compro VideoMate U3"                              
+.It 1b80:a340	 Ta "Kworld 340U PlusTV HD ATSC" 
 .It 1b80:e302	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
 .It 1b80:e304	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
 .It 2001:f112	 Ta "D-Link DUB-T210 TV Tuner"                   
@@ -84,22 +86,27 @@ command can be used to determine the VendorID:ProductID of the inserted device.
 .It 2304:021a	 Ta "Pinnacle Dazzle DVC 90/100/101/107"    
 .It 2304:0226	 Ta "Pinnacle Hybrid Pro (2)"                           
 .It 2304:0227	 Ta "Pinnacle PCTV HD Pro Stick"                        
-.It eb1a:2710	 Ta
+.It eb1a:2710	 Ta "QB-325 USB webcam"
 .It eb1a:2750	 Ta "EM2710/EM2750/EM2751 webcam grabber"               
 .It eb1a:2751	 Ta "EM2710/EM2750/EM2751 webcam grabber"               
 .It eb1a:2800	 Ta "Terratec Cinergy 200 USB"                  
 .It eb1a:2801	 Ta "eMPIA GrabBeeX+ Video Encoder"          
-.It Eb1a:2820	 Ta
-.It eb1a:2821	 Ta
-.It eb1a:2860	 Ta
-.It eb1a:2861	 Ta
-.It eb1a:2862	 Ta
-.It eb1a:2863	 Ta
+.It eb1a:2820	 Ta "MSI vox USB 2.0"
+.It eb1a:2820	 Ta "Gadmei UTV310"                             
+.It eb1a:2821	 Ta "Yuan MPB101 TV2GO"
+.It eb1a:2860	 Ta "Kworld USB2800"
+.It eb1a:2860	 Ta "Typhoon DVD Maker"                         
+.It eb1a:2861	 Ta "K-VOX Mini USB MovieEditor"
+.It eb1a:2861	 Ta "Easy Cap Capture DC-60"
+.It eb1a:2862	 Ta "Kw-usb2800d"
+.It eb1a:2863	 Ta "SilverCrest Video Grabber VG 2000"
+.It eb1a:2863	 Ta "Evga inDtube"
 .It eb1a:2868	 Ta
-.It eb1a:2870	 Ta
-.It eb1a:2881	 Ta
-.It eb1a:2883	 Ta
-.It eb1a:50a6	 Ta "Gadmei UTV330"                                     
+.It eb1a:2870	 Ta "Pinnacle PCTV USB Stick DVB-T"
+.It eb1a:2875	 Ta "EzCap ATSC TV Tuner"
+.It eb1a:2881	 Ta "Pinnacle PCTV TV-C Digital DD 4"
+.It eb1a:2883	 Ta "Cinergy Hybrid T USB XS DVB-T"
+.It eb1a:50a6	 Ta "Gadmei UTV330 +"                                     
 .It eb1a:a313	 Ta "KWorld ATSC 315U HDTV TV Box"                      
 .It eb1a:a316	 Ta "Kworld PlusTV HD Hybrid 330"                       
 .It eb1a:e300	 Ta "KWorld PVRTV 300U"                                 
@@ -115,33 +122,47 @@ command can be used to determine the VendorID:ProductID of the inserted device.
 .El
 .Pp
 .Sh SEE ALSO
-.Xr  au0828 4 ,
-.Xr  benq 4 ,
-.Xr  bttv 4 ,
-.Xr  conex 4 ,
-.Xr  cpiax 4 ,
-.Xr  cx23885 4 ,
-.Xr  cx88 4 ,
-.Xr  et61x251 4 ,
-.Xr  finepix 4 ,
-.Xr  gl860 4 ,
-.Xr  hdpvr 4 ,
-.Xr  ibmcam 4 ,
-.Xr  ivtv 4 ,
-.Xr  jeilinj 4 ,
-.Xr  m5602 4 ,
-.Xr  mars 4 ,
-.Xr  meye 4 ,
-.Xr  mr97310a 4 ,
-.Xr  ov519 4 ,
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr af9015 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr au6610 4 ,
+.Xr b2c2 4 ,
+.Xr benq 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
+.Xr ov519 4 ,
 .Xr ov534 4 ,
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
 .Xr pwc 4 ,
-.Xr saa7134 4 ,
-.Xr saa7164 4 ,
 .Xr se401 4 ,
 .Xr si470x 4 ,
+.Xr siano 4 ,
 .Xr sn9c102 4 ,
 .Xr sn9c20x 4 ,
 .Xr sonixj 4 ,
@@ -151,18 +172,21 @@ command can be used to determine the VendorID:ProductID of the inserted device.
 .Xr stv06xx 4 ,
 .Xr sunplus 4 ,
 .Xr t613 4 ,
+.Xr ttusb2 4 ,
 .Xr tv8532 4 ,
+.Xr umt 4 ,
 .Xr usbvision 4 ,
 .Xr uvc 4 ,
 .Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
 .Xr w9966 4 ,
 .Xr w996x 4 ,
 .Xr zc0301 4 ,
 .Xr zc3xx 4 ,
-.Xr zoran 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8
-.Sh AUTHORS
+.Xr webcamd 8 
+.Sh AUTHORs
 .An -nosplit
 The original
 .Nm

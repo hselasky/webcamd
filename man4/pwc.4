@@ -53,31 +53,45 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
 .It Em "VendorID:ProductID" Ta Em Device
 .It 0471:0320	 Ta "SPC900NC"
-.It			Askey VC010
-.It			Creative Labs Webcam 5
-.It			Creative Labs Webcam Pro Ex
-.It			Creative WebCam 5 400c
-.It			Logitech QuickCam 3000 Pro 
-.It			Logitech QuickCam 4000 Pro
-.It			Logitech QuickCam Notebook Pro
-.It			Logitech QuickCam Orbit/Sphere 
-.It			Logitech QuickCam Zoom
-.It			PCA645VC
-.It			PCA646VC
-.It			PCVC675K Vesta
-.It			PCVC680K Vesta Pro
-.It			PCVC690K Vesta Scan
-.It			PCVC720K/40 ToUCam XS 
-.It			PCVC730K ToUCam Fun
-.It			PCVC740K ToUCam Pro
-.It			PCVC750K ToUCam Scan
-.It			PCVC830K ToUCam Fun II
-.It			PCVC840K ToUCam Pro II
-.It			Samsung MPC-C10 
-.It			Samsung MPC-C30 
-.It			Sotec Afina Eye 
-.It			Visionite VCS UC300 
-.It			Visionite VCS UM100 
+.It 041e:400c 	 Ta "Creative Labs Webcam 5"
+.It 041e:4011 	 Ta "Creative Labs Webcam Pro Ex"
+.It 0461:0813 	 Ta "IBM Ultracam"  
+.It 046d:08b0 	 Ta "Logitech QuickCam 3000 Pro" 
+.It 046d:08b1 	 Ta "Logitech QuickCam Notebook Pro"
+.It 046d:08b2 	 Ta "Logitech QuickCam 4000 Pro"
+.It 046d:08b3 	 Ta "Logitech QuickCam Zoom"
+.It 046d:08b4 	 Ta "QuickCam Zoom"    
+.It 046d:08b5 	 Ta "Logitech QuickCam Orbit/Sphere" 
+.It 046d:08b6 	 Ta "Cisco VT Camera"  
+.It 046d:08b7	 Ta ""
+.It 046d:08b8	 Ta ""
+.It 0471:0302 	 Ta "Philips PCA645VC"
+.It 0471:0303 	 Ta "Philips PCA646VC"
+.It 0471:0304 	 Ta "Philips Askey VC010 WebCam"  
+.It 0471:0307 	 Ta "PCVC675K Vesta"
+.It 0471:0308 	 Ta "PCVC680K Vesta Pro"
+.It 0471:030b 	 Ta "Philips Vesta Fun"   
+.It 0471:030c 	 Ta "PCVC690K Vesta Scan"
+.It 0471:0310 	 Ta "PCVC730K ToUCam Fun/II"
+.It 0471:0311 	 Ta "PCVC740K ToUCam Pro/II"
+.It 0471:0312 	 Ta "PCVC750K ToUCam Scan"
+.It 0471:0313 	 Ta "Philips Touch Cam"    
+.It 0471:0320 	 Ta "SPC900NC"
+.It 0471:0329 	 Ta "Philips ORITE CCD Webcam"
+.It 04b4:1002 	 Ta "Cypress CY7C63001 R100 FM Radio"   
+.It 04c1:009d 	 Ta "HomeConnect WebCam"   
+.It 04c8:0720 	 Ta "Konica Digital Color"   
+.It 04cc:8116	 Ta ""
+.It 0545:808	 Ta "0IBM C-It Webcam"   
+.It 0547:9999	 Ta ""
+.It 055d:9000 	 Ta "Samsung Anycam"  
+.It 055d:9001 	 Ta "Samsung MPC-C30 AnyCam Premium"  
+.It 055d:9002	 Ta ""
+.It 05a9:a518 	 Ta "D-Link DSB-C310 Webcam"  
+.It 069a:0001 	 Ta "Philips Askey VC010"
+.It 06be:8116 	 Ta "Creative Video Blaster Webcam 5"   
+.It 0d81:1900	 Ta ""	
+.It 0d81:1910	 Ta ""	
 .El
 .Pp
 .Sh CAVEATS
@@ -86,35 +100,49 @@ Newer models of the Logitech QuickCam Notebook Pro (VendorID:ProductID 046d:08c3
 Some Logitech models such as the Quickcam Zoom Silver (VendorID:ProductID: 046d:08b4) require you to set module option: power_save=1  
 .Pp
 .Sh SEE ALSO
-.Xr  au0828 4 ,
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr af9015 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr au6610 4 ,
+.Xr b2c2 4 ,
 .Xr benq 4 ,
-.Xr  bttv 4 ,
-.Xr  conex 4 ,
-.Xr  cpiax 4 ,
-.Xr  cx23885 4 ,
-.Xr  cx88 4 ,
-.Xr  em28xx 4 ,
-.Xr  et61x251 4 ,
-.Xr  finepix 4 ,
-.Xr  gl860 4 ,
-.Xr  hdpvr 4 ,
-.Xr  ibmcam 4 ,
-.Xr  ivtv 4 ,
-.Xr  jeilinj 4 ,
-.Xr  m5602 4 ,
-.Xr  mars 4 ,
-.Xr  meye 4 ,
-.Xr  mr97310a 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
 .Xr ov519 4 ,
 .Xr ov534 4 ,
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
-.Xr saa7134 4 ,
-.Xr saa7164 4 ,
 .Xr se401 4 ,
 .Xr si470x 4 ,
+.Xr siano 4 ,
 .Xr sn9c102 4 ,
-.Xr sn9c2ox 4 ,
+.Xr sn9c20x 4 ,
 .Xr sonixj 4 ,
 .Xr spca5xx 4 ,
 .Xr sq905c 4 ,
@@ -122,17 +150,20 @@ Some Logitech models such as the Quickcam Zoom Silver (VendorID:ProductID: 046d:
 .Xr stv06xx 4 ,
 .Xr sunplus 4 ,
 .Xr t613 4 ,
+.Xr ttusb2 4 ,
 .Xr tv8532 4 ,
+.Xr umt 4 ,
 .Xr usbvision 4 ,
 .Xr uvc 4 ,
 .Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
 .Xr w9966 4 ,
 .Xr w996x 4 ,
 .Xr zc0301 4 ,
 .Xr zc3xx 4 ,
-.Xr zoran 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8
+.Xr webcamd 8 
 .Sh AUTHORS
 .An -nosplit
 The original
