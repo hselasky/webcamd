@@ -37,6 +37,7 @@ MAN=
 
 .if defined(HAVE_MAN)
 MAN+=	webcamd.8
+MAN+=	man4/a800.4
 MAN+=	man4/au0828.4
 MAN+=	man4/benq.4
 MAN+=	man4/conex.4
@@ -72,8 +73,6 @@ MAN+=	man4/usbvision.4
 MAN+=	man4/uvc.4
 MAN+=	man4/vc032x.4
 MAN+=	man4/w9966.4
-MAN+=	man4/w996x.4
-MAN+=	man4/zc0301.4
 MAN+=	man4/zc3xx.4
 MAN+=	man4/zr364xx.4
 .endif

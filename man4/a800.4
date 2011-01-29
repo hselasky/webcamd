@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
 .\"
 .\" All rights reserved.
 .\"
@@ -25,18 +25,18 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd Dec 3, 2010
-.Dt W996X 4
+.Dd Jan 28, 2011
+.Dt A800 4
 .Os FreeBSD
 .Sh NAME
-.Nm w996x
-.Nd w996x webcamd driver for USB cameras
+.Nm a800
+.Nd webcamd driver for 
 .Sh SYNOPSIS
 .Nm
 .Sh DESCRIPTION
 The
 .Nm
-driver supports dual mode USB cameras based on the W9967 and W99678 chipsets. This is the GSPCA version of the driver.
+driver supports the AVerMedia AverTV A800 USB 2.0 DVB-T receiver. 
 .Pp
 Devices using the
 .Nm
@@ -46,51 +46,58 @@ is loaded.
 .Sh HARDWARE
 The
 .Nm
-driver should work with the following USB cameras. The
+driver should work with the following USB devices. The
 .Xr usbconfig 8
 command can be used to determine the VendorID:ProductID of a plugged in USB device.
 .Pp
 .Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
 .It Em "VendorID:ProductID" Ta Em Device
-.It			Aroma Digi Pen ADG-5000
-.It			AverMedia AverTV USB
-.It			Ezonics EZ-802 EZMega Cam
-.It			Lebon LDC-035A
-.It			OmniVision OV8610-EDE
-.It			OPCOM Digi Pen
-.It			Pretec Digi Pen-480
-.It			Pretec Digi Pen-II
+.It 07ca:a800	 Ta "AverTV DVB-T"
+.It 07ca:a801	 Ta "AverTV DVB-T"
 .El
 .Pp
 .Sh SEE ALSO
-.Xr  au0828 4 ,
+.Xr af9005 4 ,
+.Xr af9015 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr au6610 4 ,
+.Xr b2c2 4 ,
 .Xr benq 4 ,
-.Xr  bttv 4 ,
-.Xr  conex 4 ,
-.Xr  cpiax 4 ,
-.Xr  cx23885 4 ,
-.Xr  cx88 4 ,
-.Xr  em28xx 4 ,
-.Xr  et61x251 4 ,
-.Xr  finepix 4 ,
-.Xr  gl860 4 ,
-.Xr  hdpvr 4 ,
-.Xr  ibmcam 4 ,
-.Xr  ivtv 4 ,
-.Xr  jeilinj 4 ,
-.Xr  m5602 4 ,
-.Xr  mars 4 ,
-.Xr  meye 4 ,
-.Xr  mr97310a 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
 .Xr ov519 4 ,
 .Xr ov534 4 ,
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
 .Xr pwc 4 ,
-.Xr saa7134 4 ,
-.Xr saa7164 4 ,
 .Xr se401 4 ,
 .Xr si470x 4 ,
+.Xr siano 4 ,
 .Xr sn9c102 4 ,
 .Xr sn9c20x 4 ,
 .Xr sonixj 4 ,
@@ -100,22 +107,24 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr stv06xx 4 ,
 .Xr sunplus 4 ,
 .Xr t613 4 ,
+.Xr ttusb2 4 ,
 .Xr tv8532 4 ,
+.Xr umt 4 ,
 .Xr usbvision 4 ,
 .Xr uvc 4 ,
 .Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
 .Xr w9966 4 ,
-.Xr zc0301 4 ,
 .Xr zc3xx 4 ,
-.Xr zoran 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8
-.Sh AUTHORS
+.Xr webcamd 8 
+.Sh AUTHORs
 .An -nosplit
 The original
 .Nm
 driver was written by 
-.An Hans de Goede hdegoede@redhat.com
+.An Patrick Boettcher patrick.boettcher@desy.de
 for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
 .An Hans Petter Selasky hselasky@freebsd.org .
 This man page was written by 

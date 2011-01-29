@@ -53,9 +53,21 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
 .It Em "VendorID:ProductID" Ta Em Device
 .It 041e:041e	 Ta "Creative WebCam Live!"
+.It 041e:4017	 Ta "Creative Webcam Mobile PD1090"
+.It 041e:401c	 Ta "Creative NX"
+.It 041e:401e	 Ta "Creative Nx Pro"
+.It 041e:401f	 Ta "Creative Webcam Notebook PD1171"
+.It 041e:4022	 Ta "Creative Webcam NX Pro"
 .It 041e:4029	 Ta "Creative WebCam Vista Pro"
+.It 041e:4034	 Ta "Creative Instant P0620"
+.It 041e:4035	 Ta "Creative Instant P0620D"
+.It 041e:4036	 Ta "Creative Live!"
+.It 041e:403a	 Ta "Creative Nx Pro 2"
 .It 041e:4051	 Ta "Creative Live!Cam Notebook Pro VF0250"
 .It 041e:4053	 Ta "Creative Live!Cam Video IM"
+.It 0458:7007	 Ta "Genius VideoCam V2"
+.It 0458:700c	 Ta "Genius VideoCam V3"
+.It 0458:700f	 Ta "Genius VideoCam Web V2"
 .It 0461:0a00	 Ta "MicroInnovation WebCam320"
 .It 046d:089d	 Ta "Logitech QuickCam E2500"
 .It 046d:08a0	 Ta "Logitech QC IM"
@@ -81,41 +93,63 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .It 0471:032d	 Ta "Philips SPC 210 NC"
 .It 0471:032e	 Ta "Philips SPC 315 NC"
 .It 055f:c005	 Ta "Mustek Wcam300A"
+.It 055f:d003	 Ta "Mustek WCam300A"
+.It 055f:d004	 Ta "Mustek WCam300 AN"
 .It 0698:2003	 Ta "CTX M730V built in"
+.It 0ac8:0301	 Ta ""
 .It 0ac8:0302	 Ta "Z-star Vimicro zc0302"
+.It 0ac8:301b	 Ta "Z-Star zc301b"
+.It 0ac8:303b	 Ta "Vimicro 0x303b"
 .It 0ac8:305b	 Ta "Z-star Vimicro zc0305b"
 .It 0ac8:307b	 Ta "PC Camera (ZS0211)"
+.It 10fd:0128	 Ta "Typhoon Webshot II USB 300k"
+.It 10fd:804d	 Ta "Typhoon Webshot II" 
+.It 10fd:8050	 Ta "Logitech QuickCam"
 .El
 .Pp
 .Sh SEE ALSO
-.Xr  au0828 4 ,
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr af9015 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr au6610 4 ,
+.Xr b2c2 4 ,
 .Xr benq 4 ,
-.Xr  bttv 4 ,
-.Xr  conex 4 ,
-.Xr  cpiax 4 ,
-.Xr  cx23885 4 ,
-.Xr  cx88 4 ,
-.Xr  em28xx 4 ,
-.Xr  et61x251 4 ,
-.Xr  finepix 4 ,
-.Xr  gl860 4 ,
-.Xr  hdpvr 4 ,
-.Xr  ibmcam 4 ,
-.Xr  ivtv 4 ,
-.Xr  jeilinj 4 ,
-.Xr  m5602 4 ,
-.Xr  mars 4 ,
-.Xr  meye 4 ,
-.Xr  mr97310a 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
 .Xr ov519 4 ,
 .Xr ov534 4 ,
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
 .Xr pwc 4 ,
-.Xr saa7134 4 ,
-.Xr saa7164 4 ,
 .Xr se401 4 ,
 .Xr si470x 4 ,
+.Xr siano 4 ,
 .Xr sn9c102 4 ,
 .Xr sn9c20x 4 ,
 .Xr sonixj 4 ,
@@ -125,16 +159,18 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr stv06xx 4 ,
 .Xr sunplus 4 ,
 .Xr t613 4 ,
+.Xr ttusb2 4 ,
 .Xr tv8532 4 ,
+.Xr umt 4 ,
 .Xr usbvision 4 ,
 .Xr uvc 4 ,
 .Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
 .Xr w9966 4 ,
-.Xr w996x 4 ,
-.Xr zc0301 4 ,
-.Xr zoran 4 ,
+.Xr zc3xx 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8
+.Xr webcamd 8 
 .Sh AUTHORS
 .An -nosplit
 The original
