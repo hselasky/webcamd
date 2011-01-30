@@ -1,13 +1,22 @@
---- pctv452e.c	2010-04-10 22:19:26.000000000 +0200
-+++ pctv452e.c	2010-04-10 23:07:36.000000000 +0200
-@@ -34,8 +34,8 @@
+--- pctv452e.c.orig
++++ pctv452e.c
+@@ -1367,14 +1367,14 @@ static struct dvb_usb_device_properties 
  
- DVB_DEFINE_MOD_OPT_ADAPTER_NR(adapter_nr);
- 
--#define ISO_BUF_COUNT      4
--#define FRAMES_PER_ISO_BUF 4
-+#define ISO_BUF_COUNT      2
-+#define FRAMES_PER_ISO_BUF 56
- #define ISO_FRAME_SIZE     940
- #define ISOC_INTERFACE_ALTERNATIVE 3
- 
+ 		/* parameter for the MPEG2-data transfer */
+ 		.stream = {
+-			.type = USB_ISOC,
+-			.count = 7,
++			.type     = USB_ISOC,
++			.count    = ISO_BUF_COUNT,
+ 			.endpoint = 0x02,
+ 			.u = {
+ 				.isoc = {
+-					.framesperurb = 4,
+-					.framesize = 940,
+-					.interval = 1
++					.framesperurb = FRAMES_PER_ISO_BUF,
++					.framesize    = ISO_FRAME_SIZE,
++					.interval     = 1
+ 				}
+ 			}
+ 		},

@@ -1,0 +1,22 @@
+--- af9015.c.orig
++++ af9015.c
+@@ -832,6 +836,9 @@ static const struct af9015_setup af9015_
+ 	{ 0x9b7dc64e,
+ 		ir_codes_af9015_table_mygictv, ARRAY_SIZE(ir_codes_af9015_table_mygictv),
+ 		af9015_ir_table_mygictv, ARRAY_SIZE(af9015_ir_table_mygictv) },
++	{ 0x5d49e3db,
++		ir_codes_af9015_table_digittrade, ARRAY_SIZE(ir_codes_af9015_table_digittrade),
++		af9015_ir_table_digittrade, ARRAY_SIZE(af9015_ir_table_digittrade) },
+ 	{ }
+ };
+ 
+@@ -1465,6 +1472,9 @@ static struct dvb_usb_device_properties 
+ 		.adapter = {
+ 			{
+ 				.caps = DVB_USB_ADAP_HAS_PID_FILTER |
++#if 1
++				DVB_USB_ADAP_NEED_PID_FILTERING |
++#endif
+ 				DVB_USB_ADAP_PID_FILTER_CAN_BE_TURNED_OFF,
+ 
+ 				.pid_filter_count = 32,
