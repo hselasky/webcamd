@@ -1,0 +1,264 @@
+.\"
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Jan 31, 2011
+.Dt AU6610 4
+.Os FreeBSD
+.Sh NAME
+.Nm au6610
+.Nd webcamd driver for AU6610 DVB-T
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports the Alcor Micro AU6610 DVB-T USB 2.0 receiver. The Sigmatek DVB-110 is the only device that uses this driver. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB devices. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 058f:6610	 Ta "Sigmatek DVB-110"
+.El
+.Pp
+.Sh SEE ALSO
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr af9015 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr b2c2 4 ,
+.Xr benq 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr cxusb 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr siano 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr ttusb2 4 ,
+.Xr tv8532 4 ,
+.Xr umt 4 ,
+.Xr usbvision 4 ,
+.Xr uvc 4 ,
+.Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
+.Xr w9966 4 ,
+.Xr zc3xx 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8 
+.Sh AUTHORs
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Antti Palosaari crope@iki.fi
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp
+.\"
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Jan 31, 2011
+.Dt AU6610 4
+.Os FreeBSD
+.Sh NAME
+.Nm au6610
+.Nd webcamd driver for AU6610 DVB-T
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports the Alcor Micro AU6610 DVB-T USB 2.0 receiver. The Sigmatek DVB-110 is the only device that uses this driver. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB devices. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 058f:6610	 Ta "Sigmatek DVB-110"
+.El
+.Pp
+.Sh SEE ALSO
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr af9015 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr b2c2 4 ,
+.Xr benq 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr cxusb 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr siano 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr ttusb2 4 ,
+.Xr tv8532 4 ,
+.Xr umt 4 ,
+.Xr usbvision 4 ,
+.Xr uvc 4 ,
+.Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
+.Xr w9966 4 ,
+.Xr zc3xx 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8 
+.Sh AUTHORs
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Antti Palosaari crope@iki.fi
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

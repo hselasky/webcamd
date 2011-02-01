@@ -1,0 +1,352 @@
+.\"
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Jan 31, 2011
+.Dt AF9015 4
+.Os FreeBSD
+.Sh NAME
+.Nm af9015
+.Nd webcamd driver for Afatech 9015 DVB-T receiver
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports the Afatech AF9015 DVB-T USB 2.0 receiver. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB devices. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 00cd:0069	 Ta "TerraTec Cinergy T XE rev2"
+.It 0413:6029	 Ta "WinFast DTV Dongle Gold"
+.It 0413:6a04	 Ta "Leadtek WinFast DTV2000 DS" 
+.It 0458:4012	 Ta "Genius TVGo DVB-T03"
+.It 07ca:8150	 Ta "Fujitsu Slim Mobile DVB-T"
+.It 07ca:815a	 Ta ""
+.It 07ca:850a	 Ta "AVerTV Volar Black HD A850"
+.It 07ca:850b	 Ta "AverTV Red HD+ A850T"
+.It 07ca:a309	 Ta "AVerMedia A309"
+.It 07ca:a805	 Ta "AVerTV Volar GPS 805"
+.It 07ca:a815	 Ta "AVerTV Digi Volar X A815"
+.It 0ccd:0069	 Ta "Cinergy T XE DVB-T Receiver"
+.It 0ccd:0097	 Ta "TerraTec Cinergy T mk II"
+.It 0ccd:0099	 Ta ""
+.It 10b9:8000	 Ta "Telstar Starstick 2"
+.It 13d3:3226	 Ta "DigitalNow TinyTwin DVB-T"
+.It 13d3:3237	 Ta "TwinHan AzureWave AD-TU700/704J"
+.It 1462:8801	 Ta "MSI Digivox Duo"
+.It 1462:8807	 Ta "MSI Digivox mini III"
+.It 15a4:9015	 Ta "Afatech DVB-T"
+.It 15a4:9016	 Ta "Alcor DTV DUO"
+.It 15a4:9016	 Ta "MSI Digivox mini II v3"
+.It 15a4:9016	 Ta "TVISTO TVT-DVB"
+.It 15a4:9016	 Ta "Geniatech T328B"
+.It 15a4:9016	 Ta "LC-Power LC-USB-DVBT"
+.It 15a4:901b	 Ta "TrekStor DVB-T"
+.It 1ae7:0381	 Ta "Xtensions XD-380"
+.It 1b80:c160	 Ta "KWorld PlusTV PC160-2T"
+.It 1b80:c161	 Ta "Kworld PC-160-T"
+.It 1b80:c810	 Ta "KWorld Digial MC-810"
+.It 1b80:e383	 Ta "KWorld DVB-T UB383-T"
+.It 1b80:e395	 Ta "KWorld USB DVB-T TV"
+.It 1b80:e395	 Ta "KWorld VS-DVB-T 395U"
+.It 1b80:e396	 Ta "KWorld USB DVB-T TV Stick II 395U"
+.It 1b80:e397	 Ta "Conceptronic CTVDIGRCU v3"
+.It 1b80:e397	 Ta "Conceptronic DVB-T CTVDIGRCU V3.0" 
+.It 1b80:e399	 Ta "Dikom MAXmedia"  
+.It 1b80:e39a	 Ta "KWorld USB Stick II KW-D-395UR"
+.It 1b80:e39b	 Ta "KWorld DVB-T 395U"
+.It 1b80:e39d	 ""
+.It 1b80:e400	 Ta "KWorld DVB-T 399U"
+.It 1b80:e402	 Ta "DigitalNow TinyTwin DVB-T v2"
+.It 1f4d:9016	 Ta "DigitalNow TinyTwin DVB-T v3"
+.It 2304:022b	 Ta "Pinnacle PCTV 71e"
+.It 07ca:850b	 Ta "AverTV Red HD+ A850T"  
+.El
+.Pp
+.Sh SEE ALSO
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr au6610 4 ,
+.Xr b2c2 4 ,
+.Xr benq 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr cxusb 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr siano 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr ttusb2 4 ,
+.Xr tv8532 4 ,
+.Xr umt 4 ,
+.Xr usbvision 4 ,
+.Xr uvc 4 ,
+.Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
+.Xr w9966 4 ,
+.Xr zc3xx 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8 
+.Sh AUTHORs
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Antti Palosaari crope@iki.fi
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp
+.\"
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
+.\"
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"
+.Dd Jan 31, 2011
+.Dt AF9015 4
+.Os FreeBSD
+.Sh NAME
+.Nm af9015
+.Nd webcamd driver for Afatech 9015 DVB-T receiver
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+driver supports the Afatech AF9015 DVB-T USB 2.0 receiver. 
+.Pp
+Devices using the
+.Nm
+driver become available to other applications once
+.Xr webcamd 8
+is loaded.
+.Sh HARDWARE
+The
+.Nm
+driver should work with the following USB devices. The
+.Xr usbconfig 8
+command can be used to determine the VendorID:ProductID of a plugged in USB device.
+.Pp
+.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
+.It Em "VendorID:ProductID" Ta Em Device
+.It 00cd:0069	 Ta "TerraTec Cinergy T XE rev2"
+.It 0413:6029	 Ta "WinFast DTV Dongle Gold"
+.It 0413:6a04	 Ta "Leadtek WinFast DTV2000 DS" 
+.It 0458:4012	 Ta "Genius TVGo DVB-T03"
+.It 07ca:8150	 Ta "Fujitsu Slim Mobile DVB-T"
+.It 07ca:815a	 Ta ""
+.It 07ca:850a	 Ta "AVerTV Volar Black HD A850"
+.It 07ca:850b	 Ta "AverTV Red HD+ A850T"
+.It 07ca:a309	 Ta "AVerMedia A309"
+.It 07ca:a805	 Ta "AVerTV Volar GPS 805"
+.It 07ca:a815	 Ta "AVerTV Digi Volar X A815"
+.It 0ccd:0069	 Ta "Cinergy T XE DVB-T Receiver"
+.It 0ccd:0097	 Ta "TerraTec Cinergy T mk II"
+.It 0ccd:0099	 Ta ""
+.It 10b9:8000	 Ta "Telstar Starstick 2"
+.It 13d3:3226	 Ta "DigitalNow TinyTwin DVB-T"
+.It 13d3:3237	 Ta "TwinHan AzureWave AD-TU700/704J"
+.It 1462:8801	 Ta "MSI Digivox Duo"
+.It 1462:8807	 Ta "MSI Digivox mini III"
+.It 15a4:9015	 Ta "Afatech DVB-T"
+.It 15a4:9016	 Ta "Alcor DTV DUO"
+.It 15a4:9016	 Ta "MSI Digivox mini II v3"
+.It 15a4:9016	 Ta "TVISTO TVT-DVB"
+.It 15a4:9016	 Ta "Geniatech T328B"
+.It 15a4:9016	 Ta "LC-Power LC-USB-DVBT"
+.It 15a4:901b	 Ta "TrekStor DVB-T"
+.It 1ae7:0381	 Ta "Xtensions XD-380"
+.It 1b80:c160	 Ta "KWorld PlusTV PC160-2T"
+.It 1b80:c161	 Ta "Kworld PC-160-T"
+.It 1b80:c810	 Ta "KWorld Digial MC-810"
+.It 1b80:e383	 Ta "KWorld DVB-T UB383-T"
+.It 1b80:e395	 Ta "KWorld USB DVB-T TV"
+.It 1b80:e395	 Ta "KWorld VS-DVB-T 395U"
+.It 1b80:e396	 Ta "KWorld USB DVB-T TV Stick II 395U"
+.It 1b80:e397	 Ta "Conceptronic CTVDIGRCU v3"
+.It 1b80:e397	 Ta "Conceptronic DVB-T CTVDIGRCU V3.0" 
+.It 1b80:e399	 Ta "Dikom MAXmedia"  
+.It 1b80:e39a	 Ta "KWorld USB Stick II KW-D-395UR"
+.It 1b80:e39b	 Ta "KWorld DVB-T 395U"
+.It 1b80:e39d	 ""
+.It 1b80:e400	 Ta "KWorld DVB-T 399U"
+.It 1b80:e402	 Ta "DigitalNow TinyTwin DVB-T v2"
+.It 1f4d:9016	 Ta "DigitalNow TinyTwin DVB-T v3"
+.It 2304:022b	 Ta "Pinnacle PCTV 71e"
+.It 07ca:850b	 Ta "AverTV Red HD+ A850T"  
+.El
+.Pp
+.Sh SEE ALSO
+.Xr a800 4 ,
+.Xr af9005 4 ,
+.Xr anysee 4 ,
+.Xr au0828 4 ,
+.Xr au6610 4 ,
+.Xr b2c2 4 ,
+.Xr benq 4 ,
+.Xr ce6230 4 ,
+.Xr cinergy 4 ,
+.Xr conex 4 ,
+.Xr cpiax 4 ,
+.Xr cxusb 4 ,
+.Xr dib0700 4 ,
+.Xr digitv 4 ,
+.Xr dt200u 4 ,
+.Xr dtv5100 4 ,
+.Xr dw2102 4 ,
+.Xr ec168 4 ,
+.Xr em28xx 4 ,
+.Xr et61x251 4 ,
+.Xr finepix 4 ,
+.Xr friio 4 ,
+.Xr gl860 4 ,
+.Xr gl861 4 ,
+.Xr gp8psk 4 ,
+.Xr hdpvr 4 ,
+.Xr ibmcam 4 ,
+.Xr jeilinj 4 ,
+.Xr m5602 4 ,
+.Xr m920x 4 ,
+.Xr mars 4 ,
+.Xr mr97310a 4 ,
+.Xr nova-t 4 ,
+.Xr opera1 4 ,
+.Xr ov519 4 ,
+.Xr ov534 4 ,
+.Xr pacxxx 4 ,
+.Xr pvrusb2 4 ,
+.Xr pwc 4 ,
+.Xr se401 4 ,
+.Xr si470x 4 ,
+.Xr siano 4 ,
+.Xr sn9c102 4 ,
+.Xr sn9c20x 4 ,
+.Xr sonixj 4 ,
+.Xr spca5xx 4 ,
+.Xr sq905c 4 ,
+.Xr stk014 4 ,
+.Xr stv06xx 4 ,
+.Xr sunplus 4 ,
+.Xr t613 4 ,
+.Xr ttusb2 4 ,
+.Xr tv8532 4 ,
+.Xr umt 4 ,
+.Xr usbvision 4 ,
+.Xr uvc 4 ,
+.Xr vc032x 4 ,
+.Xr vp702x 4 ,
+.Xr vp7045 4 ,
+.Xr w9966 4 ,
+.Xr zc3xx 4 ,
+.Xr zr364xx 4 ,
+.Xr webcamd 8 
+.Sh AUTHORs
+.An -nosplit
+The original
+.Nm
+driver was written by 
+.An Antti Palosaari crope@iki.fi
+for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
+.An Hans Petter Selasky hselasky@freebsd.org .
+This man page was written by 
+.An Dru Lavigne dru@freebsd.org .
+.Pp

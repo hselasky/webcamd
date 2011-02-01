@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2010 Dru Lavigne <dru@freebsd.org>
+.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
 .\"
 .\" All rights reserved.
 .\"
@@ -25,18 +25,18 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd Dec 3, 2010
-.Dt STK014 4
+.Dd Jan 31, 2011
+.Dt GL861 4
 .Os FreeBSD
 .Sh NAME
-.Nm stk014
-.Nd webcamd driver for Syntek DV4000 USB camera
+.Nm gl861
+.Nd webcamd driver for GL861
 .Sh SYNOPSIS
 .Nm
 .Sh DESCRIPTION
 The
 .Nm
-driver supports the Syntek DV4000 USB camera. This is the GSPCA version of the driver.
+driver supports the Genesys Logic GL861 USB 2.0 DVB-T receiver. 
 .Pp
 Devices using the
 .Nm
@@ -46,13 +46,14 @@ is loaded.
 .Sh HARDWARE
 The
 .Nm
-driver should work with the following USB cameras. The
+driver should work with the following USB devices. The
 .Xr usbconfig 8
 command can be used to determine the VendorID:ProductID of a plugged in USB device.
 .Pp
 .Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
 .It Em "VendorID:ProductID" Ta Em Device
-.It 05e1:0893	 Ta "Syntek DV4000"
+.It 05e3:f170	 Ta "A-link DTU"
+.It 0db0:5581	 Ta "MSI Mega Sky 55801 DVB-T"
 .El
 .Pp
 .Sh SEE ALSO
@@ -80,7 +81,6 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr finepix 4 ,
 .Xr friio 4 ,
 .Xr gl860 4 ,
-.Xr gl861 4 ,
 .Xr gp8psk 4 ,
 .Xr hdpvr 4 ,
 .Xr ibmcam 4 ,
@@ -104,6 +104,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr sonixj 4 ,
 .Xr spca5xx 4 ,
 .Xr sq905c 4 ,
+.Xr stk014 4 ,
 .Xr stv06xx 4 ,
 .Xr sunplus 4 ,
 .Xr t613 4 ,
@@ -119,12 +120,11 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr zc3xx 4 ,
 .Xr zr364xx 4 ,
 .Xr webcamd 8 
-.Sh AUTHORS
+.Sh AUTHORs
 .An -nosplit
 The original
 .Nm
-driver was written by 
-.An Jean-Francois Moine http://moinejf.free.fr
+driver was written  
 for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
 .An Hans Petter Selasky hselasky@freebsd.org .
 This man page was written by 
