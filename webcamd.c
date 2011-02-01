@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2010-2011 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>
+#include <sys/filio.h>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -237,14 +238,20 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 
 	handle = cuse_dev_get_per_file_handle(cdev);
 
+	/* we support blocking/non-blocking I/O */
+	if (cmd == FIONBIO || cmd == FIOASYNC)
+		return (0);
+
 	/* execute ioctl */
 	error = linux_ioctl(handle, fflags & CUSE_FFLAG_NONBLOCK,
 	    cmd, peer_data);
 
-	if (cmd == VIDIOC_QUERYBUF) {
+	if ((cmd == VIDIOC_QUERYBUF) && (error >= 0)) {
 
-		if (copy_from_user(&buf, peer_data, sizeof(buf)) != 0)
+		if (copy_from_user(&buf, peer_data, sizeof(buf)) != 0) {
+			error = -EFAULT;
 			goto done;
+		}
 
 		ptr = linux_mmap(handle, fflags, NULL,
 		    buf.length, buf.m.offset);
@@ -255,8 +262,10 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 			buf.m.offset = 0x80000000UL;
 		}
 
-		if (copy_to_user(peer_data, &buf, sizeof(buf)) != 0)
+		if (copy_to_user(peer_data, &buf, sizeof(buf)) != 0) {
+			error = -EFAULT;
 			goto done;
+		}
 	}
 done:
 	return (v4b_convert_error(error));
@@ -271,7 +280,7 @@ v4b_poll(struct cuse_dev *cdev, int fflags, int events)
 
 	handle = cuse_dev_get_per_file_handle(cdev);
 
-	/* write to device */
+	/* poll device */
 	error = linux_poll(handle);
 
 	revents = 0;

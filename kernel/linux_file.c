@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2010 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2011 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,6 +25,8 @@
 
 #include <sys/mman.h>
 #include <sys/syscall.h>
+
+#include <cuse4bsd.h>
 
 struct cdev_handle *
 linux_open(int f_v4b, int fflags)
@@ -96,7 +98,7 @@ linux_close(struct cdev_handle *handle)
 static void
 linux_fix_f_flags(struct file *fp, int fflags)
 {
-	if (fflags & O_NONBLOCK) {
+	if (fflags & CUSE_FFLAG_NONBLOCK) {
 		if (!(fp->f_flags & O_NONBLOCK))
 			fp->f_flags |= O_NONBLOCK;
 	} else {
