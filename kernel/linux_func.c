@@ -117,7 +117,7 @@ be64_to_cpu(uint64_t x)
 uint16_t
 cpu_to_le16(uint16_t x)
 {
-	uint8_t p[2];
+	uint8_t p[2] __attribute__((__aligned__(2)));
 
 	p[0] = x & 0xFF;
 	p[1] = x >> 8;
@@ -128,7 +128,7 @@ cpu_to_le16(uint16_t x)
 uint16_t
 cpu_to_be16(uint16_t x)
 {
-	uint8_t p[2];
+	uint8_t p[2] __attribute__((__aligned__(2)));
 
 	p[1] = x & 0xFF;
 	p[0] = x >> 8;
@@ -139,7 +139,7 @@ cpu_to_be16(uint16_t x)
 uint32_t
 cpu_to_le32(uint32_t x)
 {
-	uint8_t p[4];
+	uint8_t p[4] __attribute__((__aligned__(4)));
 
 	p[0] = x;
 	p[1] = x >> 8;
@@ -152,7 +152,7 @@ cpu_to_le32(uint32_t x)
 uint32_t
 cpu_to_be32(uint32_t x)
 {
-	uint8_t p[4];
+	uint8_t p[4] __attribute__((__aligned__(4)));
 
 	p[3] = x;
 	p[2] = x >> 8;
@@ -165,7 +165,7 @@ cpu_to_be32(uint32_t x)
 uint64_t
 cpu_to_le64(uint64_t x)
 {
-	uint8_t p[8];
+	uint8_t p[8] __attribute__((__aligned__(8)));
 
 	p[0] = x;
 	p[1] = x >> 8;
@@ -182,7 +182,7 @@ cpu_to_le64(uint64_t x)
 uint64_t
 cpu_to_be64(uint64_t x)
 {
-	uint8_t p[8];
+	uint8_t p[8] __attribute__((__aligned__(8)));
 
 	p[7] = x;
 	p[6] = x >> 8;
