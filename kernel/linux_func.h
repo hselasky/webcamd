@@ -1,29 +1,31 @@
 #ifndef _LINUX_FUNC_H_
 #define	_LINUX_FUNC_H_
 
+#include <sys/endian.h>
+
 #define	device_create_file(...) 0
 #define	device_remove_file(...) __nop
 #define	DPM_ORDER_NONE 0
 
 int	printk_nop(void);
 
-uint16_t le16_to_cpu(uint16_t x);
-uint16_t be16_to_cpu(uint16_t x);
+#define	le16_to_cpu(x) le16toh(x)
+#define	be16_to_cpu(x) be16toh(x)
 
-uint16_t cpu_to_le16(uint16_t x);
-uint16_t cpu_to_be16(uint16_t x);
+#define	cpu_to_le16(x) htole16(x)
+#define	cpu_to_be16(x) htobe16(x)
 
-uint32_t le32_to_cpu(uint32_t x);
-uint32_t be32_to_cpu(uint32_t x);
+#define	le32_to_cpu(x) le32toh(x)
+#define	be32_to_cpu(x) be32toh(x)
 
-uint64_t le64_to_cpu(uint64_t x);
-uint64_t be64_to_cpu(uint64_t x);
+#define	le64_to_cpu(x) le64toh(x)
+#define	be64_to_cpu(x) be64toh(x)
 
-uint32_t cpu_to_le32(uint32_t x);
-uint32_t cpu_to_be32(uint32_t x);
+#define	cpu_to_le32(x) htole32(x)
+#define	cpu_to_be32(x) htobe32(x)
 
-uint64_t cpu_to_le64(uint64_t x);
-uint64_t cpu_to_be64(uint64_t x);
+#define	cpu_to_le64(x) htole64(x)
+#define	cpu_to_be64(x) htobe64(x)
 
 uint16_t le16_to_cpup(uint16_t *p);
 uint16_t be16_to_cpup(uint16_t *p);

@@ -551,7 +551,7 @@ CFLAGS+= -DCONFIG_MEDIA_TUNER_MT2060
 #
 # Various webcams
 #
-#SRCS+= s2255drv.c
+SRCS+= s2255drv.c
 SRCS+= stv0680.c
 SRCS+= se401.c
 SRCS+= stk-webcam.c

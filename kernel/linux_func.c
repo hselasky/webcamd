@@ -25,22 +25,12 @@
 
 /* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
 
-#include <sys/endian.h>
-
 #include <linux/input.h>
 
 int
 printk_nop()
 {
 	return (1);
-}
-
-uint16_t
-le16_to_cpu(uint16_t x)
-{
-	uint8_t *p = (uint8_t *)&x;
-
-	return (p[0] | (p[1] << 8));
 }
 
 void
@@ -55,22 +45,6 @@ le16_to_cpus(uint16_t *p)
 	*p = temp;
 }
 
-uint16_t
-be16_to_cpu(uint16_t x)
-{
-	uint8_t *p = (uint8_t *)&x;
-
-	return (p[1] | (p[0] << 8));
-}
-
-uint32_t
-le32_to_cpu(uint32_t x)
-{
-	uint8_t *p = (uint8_t *)&x;
-
-	return (p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24));
-}
-
 void
 le32_to_cpus(uint32_t *p)
 {
@@ -82,118 +56,6 @@ le32_to_cpus(uint32_t *p)
 	    (((uint8_t *)p)[2] << 16) | (((uint8_t *)p)[3] << 24));
 
 	*p = temp;
-}
-
-uint32_t
-be32_to_cpu(uint32_t x)
-{
-	uint8_t *p = (uint8_t *)&x;
-
-	return (p[3] | (p[2] << 8) | (p[1] << 16) | (p[0] << 24));
-}
-
-uint64_t
-le64_to_cpu(uint64_t x)
-{
-	uint8_t *p = (uint8_t *)&x;
-
-	return ((((uint64_t)p[0])) | (((uint64_t)p[1]) << 8) |
-	    (((uint64_t)p[2]) << 16) | (((uint64_t)p[3]) << 24) |
-	    (((uint64_t)p[4]) << 32) | (((uint64_t)p[5]) << 40) |
-	    (((uint64_t)p[6]) << 48) | (((uint64_t)p[7]) << 56));
-}
-
-uint64_t
-be64_to_cpu(uint64_t x)
-{
-	uint8_t *p = (uint8_t *)&x;
-
-	return ((((uint64_t)p[7])) | (((uint64_t)p[6]) << 8) |
-	    (((uint64_t)p[5]) << 16) | (((uint64_t)p[4]) << 24) |
-	    (((uint64_t)p[3]) << 32) | (((uint64_t)p[2]) << 40) |
-	    (((uint64_t)p[1]) << 48) | (((uint64_t)p[0]) << 56));
-}
-
-uint16_t
-cpu_to_le16(uint16_t x)
-{
-	uint8_t p[2] __attribute__((__aligned__(2)));
-
-	p[0] = x & 0xFF;
-	p[1] = x >> 8;
-
-	return (*(uint16_t *)p);
-}
-
-uint16_t
-cpu_to_be16(uint16_t x)
-{
-	uint8_t p[2] __attribute__((__aligned__(2)));
-
-	p[1] = x & 0xFF;
-	p[0] = x >> 8;
-
-	return (*(uint16_t *)p);
-}
-
-uint32_t
-cpu_to_le32(uint32_t x)
-{
-	uint8_t p[4] __attribute__((__aligned__(4)));
-
-	p[0] = x;
-	p[1] = x >> 8;
-	p[2] = x >> 16;
-	p[3] = x >> 24;
-
-	return (*(uint32_t *)p);
-}
-
-uint32_t
-cpu_to_be32(uint32_t x)
-{
-	uint8_t p[4] __attribute__((__aligned__(4)));
-
-	p[3] = x;
-	p[2] = x >> 8;
-	p[1] = x >> 16;
-	p[0] = x >> 24;
-
-	return (*(uint32_t *)p);
-}
-
-uint64_t
-cpu_to_le64(uint64_t x)
-{
-	uint8_t p[8] __attribute__((__aligned__(8)));
-
-	p[0] = x;
-	p[1] = x >> 8;
-	p[2] = x >> 16;
-	p[3] = x >> 24;
-	p[4] = x >> 32;
-	p[5] = x >> 40;
-	p[6] = x >> 48;
-	p[7] = x >> 56;
-
-	return (*(uint64_t *)p);
-}
-
-uint64_t
-cpu_to_be64(uint64_t x)
-{
-	uint8_t p[8] __attribute__((__aligned__(8)));
-
-	p[7] = x;
-	p[6] = x >> 8;
-	p[5] = x >> 16;
-	p[4] = x >> 24;
-	p[3] = x >> 32;
-	p[2] = x >> 40;
-	p[1] = x >> 48;
-	p[0] = x >> 56;
-
-	return (*(uint64_t *)p);
 }
 
 uint16_t
