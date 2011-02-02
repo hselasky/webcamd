@@ -68,6 +68,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .It 0458:7070 	 Ta "Genius FaceCam 310" 
 .It 0458:7071 	 Ta "Genius iSlim 1300 V2" 
 .It 045e:00f8 	 Ta "Microsoft LifeCam NX-6000" 
+.It 045e:0723	 Ta "LifeCam VX-7000"
 .It 045e:074a 	 Ta "Microsoft LifeCam VX-500" 
 .It 045e:075d 	 Ta "Microsoft LifeCam Cinema" 
 .It 045e:0770 	 Ta "Microsoft LifeCam VX-700" 
@@ -161,10 +162,12 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .It 05a9:2643 	 Ta "Dell SP2208WFP"
 .It 05a9:2649 	 Ta "Dell SP2309W"
 .It 05a9:7670 	 Ta "Dell XPS m1330 notebooks" 
-.It 05ac:8502 	 Ta "Apple built-in iSight" 
+.It 05ac:8501 	 Ta "Apple built-in iSight" 
 .It 05c8:0103 	 Ta "FO13FF-65 PC-CAM" 
 .It 05ca:18a1 	 Ta "Dell Studio 1535 notebooks" 
 .It 05ca:18b7 	 Ta "Sony VPCS12J1E notebooks" 
+.It 05e3:0505	 Ta "Msi Wind U100"
+.It 0602:1001	 Ta "ViCam"
 .It 064e:a100 	 Ta "Acer notebooks OrbiCam" 
 .It 064e:a101 	 Ta "Acer notebooks CrystalEye" 
 .It 064e:a102 	 Ta "Acer Timeline 1810T notebooks" 
@@ -228,6 +231,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .It 174f:5a31 	 Ta "Asus M50SV notebook" 
 .It 174f:5a35 	 Ta "Asus F3KE and G2S notebook" 
 .It 174f:8a12 	 Ta "Packard Bell Easynote MX52 notebooks" 
+.It 174f:8a31	 Ta ""
 .It 174f:8a33 	 Ta "Asus U3S notebooks"
 .It 174f:8a34 	 Ta "JAOtech Smart Terminal"
 .It 1778:0204 	 Ta "PEVO corp" 
@@ -256,11 +260,16 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .It 5986:0100 	 Ta "Acer notebooks OrbiCam" 
 .It 5986:0101 	 Ta "Packard Bell Easynote SJ notebooks" 
 .It 5986:0102 	 Ta "Acer TravelMate 7720 notebooks" 
+.It 5986:0104	 Ta ""	
+.It 5986:0105	 Ta "Acer Crystal Eye"
+.It 5986:0141	 Ta "Lenovo EasyCamera"
 .It 5986:0200 	 Ta "Acer notebooks OrbiCam" 
 .It 5986:0202 	 Ta "Fujitsu-Siemens Amilo SI2636"
 .It 5986:0203 	 Ta "Advent 4211 and MSI Wind notebooks" 
 .It 5986:0205 	 Ta "Lenovo N500 and U330 notebooks"
 .It 5986:0241 	 Ta "MSI Wind Top AE1900 nettop" 
+.It 5986:0300	 Ta ""
+.It 5986:0303	 Ta "BisonCam NB Pro"
 .It eb1a:2571 	 Ta "eMPIA 27xx based camera"
 .It eb1a:2761 	 Ta "eMPIA 2761 based camera" 
 .It eb1a:2771 	 Ta "Intelbras iPlug notebook"
@@ -282,7 +291,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr cxusb 4 ,
 .Xr dib0700 4 ,
 .Xr digitv 4 ,
-.Xr dt200u 4 ,
+.Xr dtt200u 4 ,
 .Xr dtv5100 4 ,
 .Xr dw2102 4 ,
 .Xr ec168 4 ,
@@ -299,6 +308,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr m5602 4 ,
 .Xr m920x 4 ,
 .Xr mars 4 ,
+.Xr mr800 4 ,
 .Xr mr97310a 4 ,
 .Xr nova-t 4 ,
 .Xr opera1 4 ,
@@ -307,8 +317,8 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
 .Xr pwc 4 ,
+.Xr s2255 4 ,
 .Xr se401 4 ,
-.Xr si470x 4 ,
 .Xr siano 4 ,
 .Xr sn9c102 4 ,
 .Xr sn9c20x 4 ,
@@ -326,10 +336,9 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr vc032x 4 ,
 .Xr vp702x 4 ,
 .Xr vp7045 4 ,
-.Xr w9966 4 ,
 .Xr zc3xx 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8 
+.Xr webcamd 8
 .Sh AUTHORS
 .An -nosplit
 The original

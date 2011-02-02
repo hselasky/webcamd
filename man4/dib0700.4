@@ -188,7 +188,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr cpiax 4 ,
 .Xr cxusb 4 ,
 .Xr digitv 4 ,
-.Xr dt200u 4 ,
+.Xr dtt200u 4 ,
 .Xr dtv5100 4 ,
 .Xr dw2102 4 ,
 .Xr ec168 4 ,
@@ -205,6 +205,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr m5602 4 ,
 .Xr m920x 4 ,
 .Xr mars 4 ,
+.Xr mr800 4 ,
 .Xr mr97310a 4 ,
 .Xr nova-t 4 ,
 .Xr opera1 4 ,
@@ -213,8 +214,8 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
 .Xr pwc 4 ,
+.Xr s2255 4 ,
 .Xr se401 4 ,
-.Xr si470x 4 ,
 .Xr siano 4 ,
 .Xr sn9c102 4 ,
 .Xr sn9c20x 4 ,
@@ -233,260 +234,9 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr vc032x 4 ,
 .Xr vp702x 4 ,
 .Xr vp7045 4 ,
-.Xr w9966 4 ,
 .Xr zc3xx 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8 
-.Sh AUTHORs
-.An -nosplit
-The original
-.Nm
-driver was written by 
-.An Patrick Boettcher patrick.boettcher@desy.de
-for the Video4Linux project. It was ported to the FreeBSD webcamd port by 
-.An Hans Petter Selasky hselasky@freebsd.org .
-This man page was written by 
-.An Dru Lavigne dru@freebsd.org .
-.Pp
-.\"
-.\" Copyright (c) 2011 Dru Lavigne <dru@freebsd.org>
-.\"
-.\" All rights reserved.
-.\"
-.\" Redistribution and use in source and binary forms, with or without
-.\" modification, are permitted provided that the following conditions
-.\" are met:
-.\" 1. Redistributions of source code must retain the above copyright
-.\"    notice, this list of conditions and the following disclaimer.
-.\" 2. Redistributions in binary form must reproduce the above copyright
-.\"    notice, this list of conditions and the following disclaimer in the
-.\"    documentation and/or other materials provided with the distribution.
-.\"
-.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-.\" SUCH DAMAGE.
-.\"
-.\"
-.Dd Jan 31, 2011
-.Dt DIB0700 4
-.Os FreeBSD
-.Sh NAME
-.Nm dib0700
-.Nd webcamd driver for DiBcom DiB0700 USB bridge
-.Sh SYNOPSIS
-.Nm
-.Sh DESCRIPTION
-The
-.Nm
-driver supports the DiBcom DiB0700 USB bridge which includes support for DiB3000M-B, DiB3000M-C/P, DiB3000P, and DiB0700 devices. 
-.Pp
-Devices using the
-.Nm
-driver become available to other applications once
 .Xr webcamd 8
-is loaded.
-.Sh HARDWARE
-The
-.Nm
-driver should work with the following USB devices. The
-.Xr usbconfig 8
-command can be used to determine the VendorID:ProductID of a plugged in USB device.
-.Pp
-.Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
-.It Em "VendorID:ProductID" Ta Em Device
-.It 022c:2304 	 Ta "Pinnacle PCTV Dual Diversity 2000e"
-.It 0413:6025	 Ta "Leadtek USB2.0 Winfast DTV STK3000P"
-.It 0413:6026	 Ta "Leadtek USB2.0 Winfast DTV STK3000P"
-.It 0413:60f6	 Ta "Leadtek WinFast DTV Dongle H"
-.It 0413:6f00	 Ta "Leadtek WinFast DTV Dongle"
-.It 0413:6f01	 Ta "Leadtek WinFast DTV Dongle"
-.It 0458:701e	 Ta "VideoWalker DVB-T USB"
-.It 0458:701f	 Ta "VideoWalker DVB-T USB"
-.It 04ca:f000	 Ta "LITE-ON USB2.0 DVB-T" 
-.It 04ca:f001	 Ta "LITE-ON USB2.0 DVB-T" 
-.It 0547:2235	 Ta "Artec T1 USB1.1 TVBOX" 
-.It 05d8:8105 	 Ta "Artec T1 TVBOX with AN2135"
-.It 05d8:8106	 Ta "Artec T1 TVBOX with AN2135"
-.It 05d8:8107	 Ta "Artec T1 TVBOX with AN2235"
-.It 05d8:8108	 Ta "Artec T1 TVBOX with AN2235"
-.It 05d8:8109	 Ta "Artec T1 USB2.0" 
-.It 05d8:8109	 Ta "Artec T1 USB2.0 TVBOX" 
-.It 05d8:810a	 Ta "Artec T1 USB2.0" 
-.It 05d8:810b	 Ta "Artec T14" 
-.It 05d8:810c	 Ta "Artec T14" 
-.It 05d8:810f	 Ta "Artec T14BR DVB-T" 
-.It 06e1:a333	 Ta "KWorld 300U/Instant"
-.It 06e1:a334	 Ta "KWorld 300U/Instant"
-.It 07ca:1234	 Ta ""
-.It 07ca:a807	 Ta "AverMedia AVerTV DVB-T Volar"
-.It 07ca:b568	 Ta "Avermedia DVB E568 ExpressCard DVB-T"
-.It 07ca:b808	 Ta "AverMedia Volar USB" 
-.It 0b05:171f	 Ta "Asus My Cinema-U3000 Mini"
-.It 0b05:1736	 Ta "Asus My Cinema U3000 Hybrid"
-.It 0b05:173f	 Ta "Asus My Cinema U3100 Mini"
-.It 0ccd:0058	 Ta "TerraTec Cinergy HT USB XE"
-.It 0ccd:005a	 Ta "TerraTec Cinergy DT USB XS Diversity"
-.It 0ccd:0060	 Ta "TerraTec Cinergy HT Express"
-.It 0ccd:0060	 Ta "TerraTec Cinergy HT Express PC-E"
-.It 0ccd:0062	 Ta "Terratec Cinergy T Express"
-.It 0ccd:0078	 Ta "TerraTec Cinergy T USB XXS/ T3"
-.It 0ccd:0081	 Ta "TerraTec Cinergy DT USB XS Diversity"
-.It 0ccd:00ab	 Ta "TerraTec Cinergy T USB XXS HD"
-.It 0ccd:10a0	 Ta "TerraTec Cinergy T USB XXS/ T3"
-.It 0ccd:10a1	 Ta "TerraTec Cinergy XS Diversity/T5"
-.It 0fd9:0011	 Ta "Elgato EyeTV Diversity DVB-T"
-.It 0fd9:0020	 Ta "Elgato EyeTV DTT deluxe PD378S"
-.It 0fd9:0021	 Ta "Elgato EyeTV DTT"
-.It 1025:005e	 Ta "Hyper-Paltek"
-.It 1025:005f	 Ta "Hyper-Paltek"
-.It 1044:7001	 Ta "Gigabyte GT-U7000"
-.It 1044:7002	 Ta "Gigabyte GT-U8000-RH"
-.It 1044:7002	 Ta "Gigabyte U8000-RH"
-.It 10b8:0bb8	 Ta "DiBcom DVB-T MOD3000"
-.It 10b8:0bb9	 Ta "DiBcom DVB-T MOD3000"
-.It 10b8:0bc6	 Ta "YUAN High-Tech PD300 DVB-T"
-.It 10b8:0bc7	 Ta "YUAN High-Tech PD300 DVB-T"
-.It 10b8:1e14	 Ta "DiBcom STK7700P" 
-.It 10b8:1e78	 Ta ""
-.It 10b8:1e80	 Ta "Kaiser Baas KBA01008 USB TVStick"
-.It 10b8:1ebc	 Ta "DiBcom STK7070P" 
-.It 10b8:1ebe	 Ta "DiBcom STK7070PD"
-.It 10b8:1ef0	 Ta "DiBcom STK7700D" 
-.It 10b8:1f90	 Ta "Geniatech/MyGica SBTVD Stick S870"
-.It 10b8:1f98	 Ta "DiBcom STK807xPVR" 
-.It 10b8:1fa0	 Ta "PixelView PlayTV USB" 
-.It 10b9:5000	 Ta ""
-.It 10b9:5001	 Ta ""
-.It 1164:0871	 Ta "Yuan MC770 DVB-T" 
-.It 1164:1e8c	 Ta "Emtec S830"
-.It 1164:1edc	 Ta "Yuan EC372S"
-.It 1164:1efc	 Ta "Yuan"
-.It 1164:1f08	 Ta "EMTEC S826"
-.It 1164:2edc	 Ta "Emtec S810"
-.It 13d3:3201	 Ta "TwinhanDTV VP7041"
-.It 13d3:3202	 Ta "TwinhanDTV VP7041"
-.It 1415:0003	 Ta "Sony PlayTV dual tuner DVB-T"
-.It 145f:010c	 Ta "Compro Videomate DVB-U2000"
-.It 14aa:0001	 Ta "AVerMedia AVerTV DVBT"
-.It 14aa:0002	 Ta "AVerMedia AVerTV DVBT"
-.It 1554:5010	 Ta "PixelView PlayTV USB SBTVD"
-.It 1584:6003	 Ta "Uniwill STK7700P"
-.It 1822:3201	 Ta "TwinhanDTV Magic Box I VP7041e"
-.It 1822:3202	 Ta "TwinhanDTV Magic Box I VP7041e"
-.It 185b:1e78	 Ta "Compro Videomate U500"
-.It 185b:1e80	 Ta "Compro Videomate U500"
-.It 185b:d000	 Ta "Compro Videomate DVB-U2000"
-.It 185b:d001	 Ta "Compro Videomate DVB-U2000"
-.It 1e59:0002	 Ta Evolutepc TVWay+"
-.It 2013:0245	 Ta "PCTV 73eSE"
-.It 2013:0248	 Ta "PCTV 282E"
-.It 2040:5200	 Ta "Hauppauge WinTV NOVA-TD USB2 stick"
-.It 2040:7050	 Ta "Hauppauge WinTV-NOVA-T-Stick"
-.It 2040:7060	 Ta "Hauppauge WinTV-NOVA-T-Stick"
-.It 2040:7070	 Ta "Hauppauge WinTV-NOVA-T-Stick"
-.It 2040:7080	 Ta "Hauppauge myTV.t"
-.It 2040:8400	 Ta "Hauppauge WinTV-NOVA-T-500"
-.It 2040:9580	 Ta "Hauppauge WinTV-NOVA-TD-Stick"
-.It 2040:9941	 Ta "Hauppauge WinTV Nova-T-500"
-.It 2040:9950	 Ta "Hauppauge WinTV Nova-T-500"
-.It 2040:b200	 Ta "Hauppauge"
-.It 2040:b210	 Ta "Hauppauge"
-.It 2304:0228	 Ta "PCTV DVB-T Flash Stick"
-.It 2304:0229	 Ta "Pinnacle PCTV Dual Diversity 2001e"
-.It 2304:022c	 Ta "Pinnacle Pro PCTV Dual DVB-T"
-.It 2304:022e	 Ta "Pinnacle 320CX"
-.It 2304:0236	 Ta "Pinnacle PCTV 72e"
-.It 2304:0237	 Ta "Pinnacle PCTV 73e"
-.It 2304:023a	 Ta "Pinnacle PCTV HD Pro Stick 801e"
-.It 2304:023b	 Ta "Pinnacle PCTV HD Stick 801eSE"
-.It 2304:0243	 Ta "Pinnacle PCTV 73A"
-.It 2304:0245	 Ta "Pinnacle PCTV 73e SE" 
-.It 2304:0248	 Ta "Pinnacle PCTV 282e"
-.It 5032:0bb8	 Ta "Grandtec USB1.1 DVB-T" 
-.It 5032:0bb9	 Ta "Grandtec USB1.1 DVB-T" 
-.It 5032:0bc6	 Ta "GRAND USB2.0 DVB-T" 
-.It 5032:0bc7	 Ta "GRAND USB2.0 DVB-T" 
-.It 5032:0fa0	 Ta "Grandtec USB1.1 DVB-T"
-.It 5032:0fa1	 Ta "Grandtec USB1.1 DVB-T"
-.It eb1a:17de	 Ta "KWorld V-Stream XPERT"
-.It eb1a:17df	 Ta "KWorld V-Stream XPERT"
-.It eb1a:e360	 Ta "MSI Digivox Mini SL"
-.It eb1a:e361	 Ta "MSI Digivox Mini SL"
-.It eb2a:17de	 Ta "KWorld V-Stream XPERT"
-.El
-.Pp
-.Sh SEE ALSO
-.Xr a800 4 ,
-.Xr af9005 4 ,
-.Xr af9015 4 ,
-.Xr anysee 4 ,
-.Xr au0828 4 ,
-.Xr au6610 4 ,
-.Xr b2c2 4 ,
-.Xr benq 4 ,
-.Xr ce6230 4 ,
-.Xr cinergy 4 ,
-.Xr conex 4 ,
-.Xr cpiax 4 ,
-.Xr cxusb 4 ,
-.Xr digitv 4 ,
-.Xr dt200u 4 ,
-.Xr dtv5100 4 ,
-.Xr dw2102 4 ,
-.Xr ec168 4 ,
-.Xr em28xx 4 ,
-.Xr et61x251 4 ,
-.Xr finepix 4 ,
-.Xr friio 4 ,
-.Xr gl860 4 ,
-.Xr gl861 4 ,
-.Xr gp8psk 4 ,
-.Xr hdpvr 4 ,
-.Xr ibmcam 4 ,
-.Xr jeilinj 4 ,
-.Xr m5602 4 ,
-.Xr m920x 4 ,
-.Xr mars 4 ,
-.Xr mr97310a 4 ,
-.Xr nova-t 4 ,
-.Xr opera1 4 ,
-.Xr ov519 4 ,
-.Xr ov534 4 ,
-.Xr pacxxx 4 ,
-.Xr pvrusb2 4 ,
-.Xr pwc 4 ,
-.Xr se401 4 ,
-.Xr si470x 4 ,
-.Xr siano 4 ,
-.Xr sn9c102 4 ,
-.Xr sn9c20x 4 ,
-.Xr sonixj 4 ,
-.Xr spca5xx 4 ,
-.Xr sq905c 4 ,
-.Xr stk014 4 ,
-.Xr stv06xx 4 ,
-.Xr sunplus 4 ,
-.Xr t613 4 ,
-.Xr ttusb2 4 ,
-.Xr tv8532 4 ,
-.Xr umt 4 ,
-.Xr usbvision 4 ,
-.Xr uvc 4 ,
-.Xr vc032x 4 ,
-.Xr vp702x 4 ,
-.Xr vp7045 4 ,
-.Xr w9966 4 ,
-.Xr zc3xx 4 ,
-.Xr zr364xx 4 ,
-.Xr webcamd 8 
 .Sh AUTHORs
 .An -nosplit
 The original

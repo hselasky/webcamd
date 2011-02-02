@@ -30,13 +30,13 @@
 .Os FreeBSD
 .Sh NAME
 .Nm stk014
-.Nd webcamd driver for Syntek DV4000 USB camera
+.Nd webcamd driver for Syntek USB camera
 .Sh SYNOPSIS
 .Nm
 .Sh DESCRIPTION
 The
 .Nm
-driver supports the Syntek DV4000 USB camera. This is the GSPCA version of the driver.
+driver supports the Syntek DV4000 and Syntek DC1125 USB cameras. 
 .Pp
 Devices using the
 .Nm
@@ -52,7 +52,9 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Pp
 .Bl -column -compact ".Li 0fe9:d62" "DViCO FusionHDTV USB"
 .It Em "VendorID:ProductID" Ta Em Device
+.It 05e1:0501	 Ta "Syntek DC-1125"
 .It 05e1:0893	 Ta "Syntek DV4000"
+.It 174f:a311	 Ta "Syntek 1.3MPixel"
 .El
 .Pp
 .Sh SEE ALSO
@@ -71,7 +73,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr cxusb 4 ,
 .Xr dib0700 4 ,
 .Xr digitv 4 ,
-.Xr dt200u 4 ,
+.Xr dtt200u 4 ,
 .Xr dtv5100 4 ,
 .Xr dw2102 4 ,
 .Xr ec168 4 ,
@@ -88,6 +90,7 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr m5602 4 ,
 .Xr m920x 4 ,
 .Xr mars 4 ,
+.Xr mr800 4 ,
 .Xr mr97310a 4 ,
 .Xr nova-t 4 ,
 .Xr opera1 4 ,
@@ -96,8 +99,8 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr pacxxx 4 ,
 .Xr pvrusb2 4 ,
 .Xr pwc 4 ,
+.Xr s2255 4 ,
 .Xr se401 4 ,
-.Xr si470x 4 ,
 .Xr siano 4 ,
 .Xr sn9c102 4 ,
 .Xr sn9c20x 4 ,
@@ -115,10 +118,9 @@ command can be used to determine the VendorID:ProductID of a plugged in USB devi
 .Xr vc032x 4 ,
 .Xr vp702x 4 ,
 .Xr vp7045 4 ,
-.Xr w9966 4 ,
 .Xr zc3xx 4 ,
 .Xr zr364xx 4 ,
-.Xr webcamd 8 
+.Xr webcamd 8
 .Sh AUTHORS
 .An -nosplit
 The original
