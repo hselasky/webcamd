@@ -1825,7 +1825,9 @@ usb_fill_int_urb(struct urb *urb,
 	urb->transfer_buffer_length = buffer_length;
 	urb->complete = complete_fn;
 	urb->context = context;
-	if (dev->speed == USB_SPEED_HIGH)
+	if (dev->speed == USB_SPEED_HIGH ||
+	    dev->speed == USB_SPEED_SUPER ||
+	    dev->speed == USB_SPEED_VARIABLE)
 		urb->interval = 1 << (interval - 1);
 	else
 		urb->interval = interval;
