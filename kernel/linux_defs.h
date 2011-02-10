@@ -124,15 +124,15 @@
 #define	pr_dbg(...) __nop
 #define	pr_debug(...) __nop
 #define	pr_warn(...) __nop
-#define	dev_dbg(...) __nop
-#define	dev_debug(...) __nop
-#define	dev_err(...) __nop
-#define	dev_info(...) __nop
-#define	dev_warn(...) __nop
-#define	info(fmt,...) printk(fmt "\n",## __VA_ARGS__)
-#define	warn(fmt,...) printk(fmt "\n",## __VA_ARGS__)
-#define	dbg(fmt,...) printk(fmt "\n",## __VA_ARGS__)
-#define	err(fmt,...) printk(fmt "\n",## __VA_ARGS__)
+#define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
+#define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
+#define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
+#define	dev_info(dev, fmt, ...) printk("INFO: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
+#define	dev_warn(dev, fmt, ...) printk("WARN: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
+#define	info(fmt, ...) printk("INFO: " fmt "\n",## __VA_ARGS__)
+#define	warn(fmt, ...) printk("WARN: " fmt "\n",## __VA_ARGS__)
+#define	dbg(fmt, ...) printk("DBG: " fmt "\n",## __VA_ARGS__)
+#define	err(fmt, ...) printk("ERR: " fmt "\n",## __VA_ARGS__)
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
 #define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
