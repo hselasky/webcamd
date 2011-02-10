@@ -124,11 +124,11 @@
 #define	pr_dbg(...) __nop
 #define	pr_debug(...) __nop
 #define	pr_warn(...) __nop
-#define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
-#define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
-#define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
-#define	dev_info(dev, fmt, ...) printk("INFO: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
-#define	dev_warn(dev, fmt, ...) printk("WARN: %s: " fmt, (dev) ? (dev)->name : "NULL",## __VA_ARGS__)
+#define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_info(dev, fmt, ...) printk("INFO: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_warn(dev, fmt, ...) printk("WARN: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	info(fmt, ...) printk("INFO: " fmt "\n",## __VA_ARGS__)
 #define	warn(fmt, ...) printk("WARN: " fmt "\n",## __VA_ARGS__)
 #define	dbg(fmt, ...) printk("DBG: " fmt "\n",## __VA_ARGS__)

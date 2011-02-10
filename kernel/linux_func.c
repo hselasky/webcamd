@@ -222,6 +222,8 @@ dev_set_drvdata(struct device *dev, void *data)
 const char *
 dev_name(struct device *dev)
 {
+	if (dev == NULL)
+		return ("NULL");
 	return (dev->name);
 }
 
@@ -728,6 +730,10 @@ device_create_vargs(struct class *class, struct device *parent,
 		goto error;
 	}
 	dev->driver_static.name = "webcamd";
+
+	/* set a default device name */
+	if (class != NULL && class->name != NULL)
+		snprintf(dev->name, sizeof(dev->name), "%s0", class->name);
 
 	dev->devt = devt;
 	dev->class = class;
