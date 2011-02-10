@@ -107,6 +107,6 @@
 
 #include <headers/linux/input.h>
 
-#define	PUBLIC_API __attribute__((visibility("default")))
+extern int webcamd_unit;
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */

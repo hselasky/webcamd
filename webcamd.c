@@ -85,6 +85,7 @@ static int do_hal_register = 0;
 static struct pidfh *local_pid = NULL;
 
 char	global_fw_prefix[128] = {"/boot/modules"};
+int	webcamd_unit;
 
 static void v4b_errx(int code, const char *str);
 
@@ -252,7 +253,6 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 			error = -EFAULT;
 			goto done;
 		}
-
 		ptr = linux_mmap(handle, fflags, NULL,
 		    buf.length, buf.m.offset);
 
@@ -461,7 +461,6 @@ main(int argc, char **argv)
 			    "ugen%d.%d.%d\n", u_unit, u_addr, u_index);
 			exit(1);
 		}
-
 		if (daemon(0, 0) != 0)
 			v4b_errx(1, "Cannot daemonize");
 
@@ -478,6 +477,8 @@ main(int argc, char **argv)
 		if (cuse_alloc_unit_number(&u_videodev) != 0)
 			v4b_errx(1, "Cannot allocate unique unit number");
 	}
+	webcamd_unit = u_videodev * F_V4B_SUBDEV_MAX;
+
 	if (do_realtime != 0) {
 		struct sched_param params;
 
@@ -540,7 +541,7 @@ int
 check_signal(void)
 {
 	return (cuse_got_peer_signal() == 0 ||
-		thread_got_stopping() == 0);
+	    thread_got_stopping() == 0);
 }
 
 void
