@@ -268,6 +268,10 @@ usb_linux_fill_ep_info(struct usb_device *udev,
 
 		ea = uhe->desc.bEndpointAddress;
 
+		/* skip any bogus control endpoints */
+		if ((ea & 15) == 0)
+			continue;
+
 		if (ea & USB_ENDPOINT_DIR_MASK)
 			udev->ep_in[ea & 15] = uhe;
 		else
@@ -1005,9 +1009,37 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	switch (libusb20_dev_get_speed(udev)) {
 	case LIBUSB20_SPEED_LOW:
 		p_ud->speed = USB_SPEED_LOW;
+		p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(8);
 		break;
 	case LIBUSB20_SPEED_FULL:
 		p_ud->speed = USB_SPEED_FULL;
+		switch (libusb20_dev_get_device_desc(udev)->bMaxPacketSize0) {
+		case 8:
+			p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(8);
+			break;
+		case 16:
+			p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(16);
+			break;
+		case 32:
+			p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(32);
+			break;
+		default:
+			p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(64);
+			break;
+		}
+		break;
+	case LIBUSB20_SPEED_HIGH:
+		p_ud->speed = USB_SPEED_HIGH;
+		p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(64);
+		break;
+	case LIBUSB20_SPEED_SUPER:
+		p_ud->speed = USB_SPEED_SUPER;
+		p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(512);
+		break;
+	case LIBUSB20_SPEED_VARIABLE:
+		p_ud->speed = USB_SPEED_VARIABLE;
+		p_ud->ep0.desc.wMaxPacketSize = cpu_to_le16(512);
+
 		break;
 	default:
 		p_ud->speed = USB_SPEED_HIGH;
@@ -1022,6 +1054,13 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ud->devnum = addr;
 	p_ud->config = &p_ud->bsd_config;
 	p_ud->actconfig = &p_ud->bsd_config;
+
+	p_ud->ep0.desc.bLength = 7;
+	p_ud->ep0.desc.bDescriptorType = 5;	/* endpoint descriptor */
+	p_ud->ep0.desc.bEndpointAddress = 0;
+	p_ud->ep0.desc.bmAttributes = USB_ENDPOINT_XFER_CONTROL;
+	p_ud->ep_in[0] = &p_ud->ep0;
+	p_ud->ep_out[0] = &p_ud->ep0;
 
 	libusb20_me_encode(&p_ud->descriptor, sizeof(p_ud->descriptor),
 	    libusb20_dev_get_device_desc(udev));
