@@ -921,8 +921,6 @@ patch:
 	${LINUXDIR}/include/linux/dvb/version.h \
 	${LINUXDIR}/include/linux/dvb/video.h
 
-	[ -d /usr/local/include/linux ] || mkdir -p /usr/local/include/linux
-
 	@echo "#include <stdint.h>" > ${LINUXDIR}/include/linux/types.h
 	@echo "#include <time.h>" >> ${LINUXDIR}/include/linux/types.h
 	@echo "" >> ${LINUXDIR}/include/linux/types.h
@@ -942,12 +940,18 @@ patch:
 	@echo "typedef int8_t __s8;" >> ${LINUXDIR}/include/linux/types.h
 	@echo "#endif" >> ${LINUXDIR}/include/linux/types.h
 
+	cd patches ; ./do_patch.sh
+
+install_headers:
+
+	[ -d ${PREFIX}/include/linux ] || mkdir -p ${PREFIX}/include/linux
+
 	cp -v 	${LINUXDIR}/include/linux/videodev.h \
 		${LINUXDIR}/include/linux/videodev2.h \
 		${LINUXDIR}/include/linux/types.h \
-		/usr/local/include/linux/
+		${PREFIX}/include/linux/
 
-	[ -d /usr/local/include/linux/dvb ] || mkdir -p /usr/local/include/linux/dvb
+	[ -d ${PREFIX}/include/linux/dvb ] || mkdir -p ${PREFIX}/include/linux/dvb
 
 	cp -v 	${LINUXDIR}/include/linux/dvb/audio.h \
 		${LINUXDIR}/include/linux/dvb/ca.h \
@@ -957,9 +961,7 @@ patch:
 		${LINUXDIR}/include/linux/dvb/osd.h \
 		${LINUXDIR}/include/linux/dvb/version.h \
 		${LINUXDIR}/include/linux/dvb/video.h \
-		/usr/local/include/linux/dvb/
-
-	cd patches ; ./do_patch.sh
+		${PREFIX}/include/linux/dvb/
 
 fetch_clean:
 
