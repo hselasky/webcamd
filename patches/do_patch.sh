@@ -18,5 +18,6 @@ patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/pctv452e.c pctv452e.c.diff
 patch $OPT ../v4l-dvb/linux/include/linux/dvb/frontend.h frontend.h.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/dw2102.c dw2102.c.diff
 cat lirc-patches.diff | patch $OPT
+cat af9013.c.diff | patch $OPT
 
 exit 0
