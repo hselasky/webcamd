@@ -102,14 +102,20 @@ MAN+=	man4/zc3xx.4
 MAN+=	man4/zr364xx.4
 .endif
 
-BINDIR=		%%PREFIX%%/sbin
-MANDIR=		%%PREFIX%%/man/man
-LIBDIR?=	%%PREFIX%%/lib
+.if exists(%%PREFIX%%)
+PREFIX=		%%PREFIX%%
+.else
+PREFIX=		/usr/local
+.endif
+
+BINDIR=		${PREFIX}/sbin
+MANDIR=		${PREFIX}/man/man
+LIBDIR?=	${PREFIX}/lib
 LINUXDIR=	${.CURDIR}/v4l-dvb/linux
 MKLINT=		no
 NOGCCERROR=
 MLINKS=
-BITS_PER_LONG!=${CC} ${.CURDIR}/tests/long_size_test.c && ./a.out
+BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./long_size_test
 CFLAGS+= 	-D_GNU_SOURCE
 
 .PATH: \
@@ -877,17 +883,9 @@ SRCS+= rc-winfast.c
 
 CFLAGS+= -include webcamd_global.h
 
-CFLAGS+= -O2 -Wall -Wno-pointer-sign
+CFLAGS+= -Wall -Wno-pointer-sign
 
-CFLAGS+= -fvisibility=hidden
-
-.if exists(${.CURDIR}/../cuse4bsd/cuse4bsd.h)
-CFLAGS+= -I${.CURDIR}/../cuse4bsd
-.endif
-
-.if exists(%%PREFIX%%/include/cuse4bsd.h)
-CFLAGS+= -I%%PREFIX%%/include
-.endif
+CFLAGS+= -I${PREFIX}/include
 
 LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd -lpthread -lutil
 
