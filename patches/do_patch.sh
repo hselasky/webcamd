@@ -16,5 +16,6 @@ patch $OPT ../v4l-dvb/linux/include/media/videobuf-dvb.h videobuf-dvb.h.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/af9015.c af9015.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/pctv452e.c pctv452e.c.diff
 patch $OPT ../v4l-dvb/linux/include/linux/dvb/frontend.h frontend.h.diff
+patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/dw2102.c dw2102.c.diff
 
 exit 0
