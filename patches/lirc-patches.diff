@@ -1,45 +1,45 @@
 --- ../v4l-dvb/linux/drivers/media/IR/ir-lirc-codec.c.orig
 +++ ../v4l-dvb/linux/drivers/media/IR/ir-lirc-codec.c
 @@ -104,7 +104,7 @@ static int ir_lirc_ioctl(struct inode *n
-       struct ir_input_dev *ir_dev;
-       int ret = 0;
-       void *drv_data;
--      unsigned long val;
-+      __u32 val;
+ 	struct ir_input_dev *ir_dev;
+ 	int ret = 0;
+ 	void *drv_data;
+-	unsigned long val;
++	__u32 val;
  
-       lirc = lirc_get_pdata(filep);
-       if (!lirc)
+ 	lirc = lirc_get_pdata(filep);
+ 	if (!lirc)
 @@ -118,7 +118,7 @@ static int ir_lirc_ioctl(struct inode *n
  
-       switch (cmd) {
-       case LIRC_SET_TRANSMITTER_MASK:
--              ret = get_user(val, (unsigned long *)arg);
-+              ret = get_user(val, (__u32 *)arg);
-               if (ret)
-                       return ret;
+ 	switch (cmd) {
+ 	case LIRC_SET_TRANSMITTER_MASK:
+-		ret = get_user(val, (unsigned long *)arg);
++		ret = get_user(val, (__u32 *)arg);
+ 		if (ret)
+ 			return ret;
  
 @@ -129,7 +129,7 @@ static int ir_lirc_ioctl(struct inode *n
-               break;
+ 		break;
  
-       case LIRC_SET_SEND_CARRIER:
--              ret = get_user(val, (unsigned long *)arg);
-+              ret = get_user(val, (__u32 *)arg);
-               if (ret)
-                       return ret;
+ 	case LIRC_SET_SEND_CARRIER:
+-		ret = get_user(val, (unsigned long *)arg);
++		ret = get_user(val, (__u32 *)arg);
+ 		if (ret)
+ 			return ret;
  
 @@ -141,11 +141,11 @@ static int ir_lirc_ioctl(struct inode *n
  
-       case LIRC_GET_SEND_MODE:
-               val = LIRC_CAN_SEND_PULSE & LIRC_CAN_SEND_MASK;
--              ret = put_user(val, (unsigned long *)arg);
-+              ret = put_user(val, (__u32 *)arg);
-               break;
+ 	case LIRC_GET_SEND_MODE:
+ 		val = LIRC_CAN_SEND_PULSE & LIRC_CAN_SEND_MASK;
+-		ret = put_user(val, (unsigned long *)arg);
++		ret = put_user(val, (__u32 *)arg);
+ 		break;
  
-       case LIRC_SET_SEND_MODE:
--              ret = get_user(val, (unsigned long *)arg);
-+              ret = get_user(val, (__u32 *)arg);
-               if (ret)
-                       return ret;
+ 	case LIRC_SET_SEND_MODE:
+-		ret = get_user(val, (unsigned long *)arg);
++		ret = get_user(val, (__u32 *)arg);
+ 		if (ret)
+ 			return ret;
  
 --- ../v4l-dvb/linux/drivers/media/IR/lirc_dev.c.orig
 +++ ../v4l-dvb/linux/drivers/media/IR/lirc_dev.c
@@ -80,32 +80,32 @@
  			result = -EINVAL;
  		/*
 @@ -563,7 +563,7 @@ int lirc_dev_fop_ioctl(struct inode *ino
-                */
-               break;
-       case LIRC_GET_LENGTH:
--              result = put_user(ir->d.code_length, (unsigned long *)arg);
-+              result = put_user(ir->d.code_length, (__u32 *)arg);
-               break;
-       case LIRC_GET_MIN_TIMEOUT:
-               if (!(ir->d.features & LIRC_CAN_SET_REC_TIMEOUT) ||
+ 		 */
+ 		break;
+ 	case LIRC_GET_LENGTH:
+-		result = put_user(ir->d.code_length, (unsigned long *)arg);
++		result = put_user(ir->d.code_length, (__u32 *)arg);
+ 		break;
+ 	case LIRC_GET_MIN_TIMEOUT:
+ 		if (!(ir->d.features & LIRC_CAN_SET_REC_TIMEOUT) ||
 @@ -572,7 +572,7 @@ int lirc_dev_fop_ioctl(struct inode *ino
-                       break;
-               }
+ 			break;
+ 		}
  
--              result = put_user(ir->d.min_timeout, (unsigned long *)arg);
-+              result = put_user(ir->d.min_timeout, (__u32 *)arg);
-               break;
-       case LIRC_GET_MAX_TIMEOUT:
-               if (!(ir->d.features & LIRC_CAN_SET_REC_TIMEOUT) ||
+-		result = put_user(ir->d.min_timeout, (unsigned long *)arg);
++		result = put_user(ir->d.min_timeout, (__u32 *)arg);
+ 		break;
+ 	case LIRC_GET_MAX_TIMEOUT:
+ 		if (!(ir->d.features & LIRC_CAN_SET_REC_TIMEOUT) ||
 @@ -581,7 +581,7 @@ int lirc_dev_fop_ioctl(struct inode *ino
-                       break;
-               }
+ 			break;
+ 		}
  
--              result = put_user(ir->d.max_timeout, (unsigned long *)arg);
-+              result = put_user(ir->d.max_timeout, (__u32 *)arg);
-               break;
-       default:
-               result = -EINVAL;
+-		result = put_user(ir->d.max_timeout, (unsigned long *)arg);
++		result = put_user(ir->d.max_timeout, (__u32 *)arg);
+ 		break;
+ 	default:
+ 		result = -EINVAL;
 --- ../v4l-dvb/linux/drivers/media/IR/lirc_dev.h.orig
 +++ ../v4l-dvb/linux/drivers/media/IR/lirc_dev.h
 @@ -128,7 +128,7 @@ struct lirc_driver {
