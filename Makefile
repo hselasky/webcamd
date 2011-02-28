@@ -773,6 +773,7 @@ SRCS+= stv0297.c
 SRCS+= stv0299.c
 SRCS+= stv0900_core.c
 SRCS+= stv0900_sw.c
+SRCS+= stv6110.c
 SRCS+= tda10023.c
 SRCS+= tda10048.c
 SRCS+= tda1004x.c
