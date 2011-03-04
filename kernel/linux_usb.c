@@ -406,6 +406,7 @@ found:
 		libusb20_be_free(pbe);
 		return (-ENOMEM);
 	}
+next_if:
 	ui = p_dev->bsd_iface_start + i;
 	ui->dev.driver_static.name = "webcamd";
 	ui->dev.driver = &ui->dev.driver_static;
@@ -419,6 +420,16 @@ found:
 	usb_linux_create_event_thread(p_dev);
 
 	if (udrv->probe(ui, id) != 0) {
+
+		/* try other interfaces */
+		i++;
+		if (i != pcfg->num_interface) {
+			pifc = pcfg->interface + i;
+			id = usb_linux_lookup_id(libusb20_dev_get_device_desc(pdev),
+			    &pifc->desc, udrv->id_table);
+			if (id != NULL)
+				goto next_if;
+		}
 		usb_linux_detach_sub(sc);
 		libusb20_be_free(pbe);
 		return (-ENXIO);
