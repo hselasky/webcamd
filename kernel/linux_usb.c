@@ -406,29 +406,30 @@ found:
 		libusb20_be_free(pbe);
 		return (-ENOMEM);
 	}
-next_if:
 	ui = p_dev->bsd_iface_start + i;
-	ui->dev.driver_static.name = "webcamd";
-	ui->dev.driver = &ui->dev.driver_static;
+	sc->ui = ui;
 
 	sc->udrv = udrv;
 	sc->p_dev = p_dev;
-	sc->ui = ui;
 	sc->pcfg = pcfg;
 	sc->pdev = pdev;
 
 	usb_linux_create_event_thread(p_dev);
 
-	if (udrv->probe(ui, id) != 0) {
+	while (udrv->probe(ui, id) != 0) {
 
 		/* try other interfaces */
 		i++;
 		if (i != pcfg->num_interface) {
 			pifc = pcfg->interface + i;
-			id = usb_linux_lookup_id(libusb20_dev_get_device_desc(pdev),
+			ui = p_dev->bsd_iface_start + i;
+			sc->ui = ui;
+
+			id = usb_linux_lookup_id(
+			    libusb20_dev_get_device_desc(pdev),
 			    &pifc->desc, udrv->id_table);
 			if (id != NULL)
-				goto next_if;
+				continue;
 		}
 		usb_linux_detach_sub(sc);
 		libusb20_be_free(pbe);
@@ -568,10 +569,11 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	    uhe->bsd_xfer[1]) {
 		/* we are ready! */
 
-		TAILQ_INSERT_TAIL(&uhe->bsd_urb_list, urb, bsd_urb_list);
-
-		urb->status = -EINPROGRESS;
-
+		/* check if URB is not already submitted */
+		if (urb->bsd_urb_list.tqe_prev == NULL) {
+			TAILQ_INSERT_TAIL(&uhe->bsd_urb_list, urb, bsd_urb_list);
+			urb->status = -EINPROGRESS;
+		}
 		/*
 		 * Check if this is a re-submit in context of a USB
 		 * callback. If that is the case, we should not start
@@ -1086,7 +1088,8 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 		id = pcfg->interface + i;
 
 		p_ud->bsd_config.interface[i] = p_ui;
-
+		p_ui->dev.driver_static.name = "webcamd";
+		p_ui->dev.driver = &p_ui->dev.driver_static;
 		p_ui->altsetting = p_uhi;
 		p_ui->cur_altsetting = p_uhi;
 		p_ui->num_altsetting = id->num_altsetting + 1;
