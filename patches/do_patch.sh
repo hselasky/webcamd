@@ -14,11 +14,11 @@ patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/pctv452e.c pctv452e.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/dib0700_devices.c dib0700_devices.c.diff
 patch $OPT ../v4l-dvb/linux/include/media/videobuf-dvb.h videobuf-dvb.h.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/af9015.c af9015.c.diff
-patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/pctv452e.c pctv452e.c.diff
 patch $OPT ../v4l-dvb/linux/include/linux/dvb/frontend.h frontend.h.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/dw2102.c dw2102.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/frontends/stb0899_algo.c stb0899_algo.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c dvb-ttusb-budget.c.diff
+patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/usb-urb.c usb-urb.c.diff
 cat lirc-patches.diff | patch $OPT
 cat af9013.c.diff | patch $OPT
 

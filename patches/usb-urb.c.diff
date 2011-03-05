@@ -1,0 +1,26 @@
+--- usb-urb.c.orig	2011-03-05 18:55:30.000000000 +0100
++++ usb-urb.c	2011-03-05 19:11:33.000000000 +0100
+@@ -228,8 +228,23 @@
+ 
+ 	switch (stream->props.type) {
+ 		case USB_BULK:
++			/* XXX override driver parameters */
++			stream->props.count = 2;
++			stream->props.u.bulk.buffersize = 16384;
+ 			return usb_bulk_urb_init(stream);
+ 		case USB_ISOC:
++			/* XXX override driver parameters */
++			switch (stream->udev->speed) {
++			case USB_SPEED_FULL:
++			case USB_SPEED_LOW:
++				stream->props.count = 2;
++				stream->props.u.isoc.framesperurb = 24;
++				break;
++			default:
++				stream->props.count = 2;
++				stream->props.u.isoc.framesperurb = 24 * 8;
++				break;
++			}
+ 			return usb_isoc_urb_init(stream);
+ 		default:
+ 			err("unknown URB-type for data transfer.");
