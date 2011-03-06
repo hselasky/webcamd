@@ -144,12 +144,19 @@ done:
 	return (NULL);
 }
 
+static void
+thread_io(int dummy)
+{
+}
+
 static void *
 usb_exec(void *arg)
 {
 	struct usb_linux_softc *sc = arg;
 	struct libusb20_device *dev = sc->p_dev->bsd_udev;
 	int err;
+
+	signal(SIGIO, &thread_io);
 
 	sc->thread_started = 1;
 

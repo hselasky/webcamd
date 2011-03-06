@@ -90,6 +90,11 @@ mod_timer(struct timer_list *timer, unsigned long expires)
 	atomic_unlock();
 }
 
+static void
+timer_io(int dummy)
+{
+}
+
 static void *
 timer_exec(void *arg)
 {
@@ -101,6 +106,8 @@ timer_exec(void *arg)
 #endif
 	struct timer_list *t;
 	uint32_t ms_delay = 0;
+
+	signal(SIGIO, &timer_io);
 
 	timer_thread_started = 1;
 
