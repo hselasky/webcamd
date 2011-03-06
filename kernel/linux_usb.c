@@ -1924,6 +1924,8 @@ usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
 	int retval;
 
 	init_completion(&ctx.done);
+	ctx.status = -ECONNRESET;
+
 	urb->context = &ctx;
 	urb->actual_length = 0;
 	retval = usb_submit_urb(urb, GFP_NOIO);

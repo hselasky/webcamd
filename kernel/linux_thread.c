@@ -375,13 +375,16 @@ wait_for_completion_timeout(struct completion *x,
 	__wait_get_timeout(ret, ts);
 
 	atomic_lock();
-	while (x->done == 0) {
+	while (1) {
+		if (x->done != 0) {
+			x->done--;
+			break;
+		}
 		if (__wait_event_timed(&x->wait, ts)) {
 			ret = 0;
 			break;
 		}
 	}
-	x->done--;
 	atomic_unlock();
 
 	return (ret);
