@@ -144,20 +144,12 @@ done:
 	return (NULL);
 }
 
-static void
-usb_exec_hup(int dummy)
-{
-
-}
-
 static void *
 usb_exec(void *arg)
 {
 	struct usb_linux_softc *sc = arg;
 	struct libusb20_device *dev = sc->p_dev->bsd_udev;
 	int err;
-
-	signal(SIGHUP, usb_exec_hup);
 
 	sc->thread_started = 1;
 
@@ -1468,7 +1460,7 @@ usb_linux_cleanup_interface(struct usb_device *dev,
 
 	while (sc->thread_started != 0) {
 		sc->thread_stopping = 1;
-		pthread_kill(sc->thread, SIGHUP);
+		pthread_kill(sc->thread, SIGIO);
 		schedule();
 	}
 

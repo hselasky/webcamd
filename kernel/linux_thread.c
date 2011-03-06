@@ -409,7 +409,7 @@ struct thread_wrapper {
 };
 
 static void
-thread_kill(int dummy)
+thread_urg(int dummy)
 {
 	struct thread_wrapper *pw;
 
@@ -439,7 +439,7 @@ kthread_wrapper(void *arg)
 
 	pthread_setspecific(wrapper_key, &wrapper);
 
-	signal(SIGKILL, thread_kill);
+	signal(SIGURG, thread_urg);
 
 	pthread_mutex_lock(&atomic_mutex);
 	((struct funcdata *)arg)->func = NULL;
@@ -496,7 +496,7 @@ kthread_stop(struct task_struct *k)
 {
 	pthread_t ptd = (pthread_t)k;
 
-	pthread_kill(ptd, SIGKILL);
+	pthread_kill(ptd, SIGURG);
 	pthread_join(ptd, NULL);
 
 	return (0);

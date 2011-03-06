@@ -90,12 +90,6 @@ mod_timer(struct timer_list *timer, unsigned long expires)
 	atomic_unlock();
 }
 
-static void
-timer_exec_hup(int dummy)
-{
-
-}
-
 static void *
 timer_exec(void *arg)
 {
@@ -107,8 +101,6 @@ timer_exec(void *arg)
 #endif
 	struct timer_list *t;
 	uint32_t ms_delay = 0;
-
-	signal(SIGHUP, timer_exec_hup);
 
 	timer_thread_started = 1;
 
@@ -200,7 +192,7 @@ need_timer(int flag)
 	atomic_unlock();
 
 	if (flag && timer_thread_started)
-		pthread_kill(timer_thread, SIGHUP);
+		pthread_kill(timer_thread, SIGIO);
 }
 
 module_init(timer_init);
