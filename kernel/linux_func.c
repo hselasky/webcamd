@@ -1241,7 +1241,7 @@ ktime_get(void)
 {
 	struct timespec ts;
 
-	clock_gettime(CLOCK_REALTIME, &ts);
+	clock_gettime(CLOCK_REALTIME_FAST, &ts);
 
 	return (ts);
 }
@@ -1260,13 +1260,13 @@ ktime_to_timeval(const struct timespec ts)
 void
 ktime_get_ts(struct timespec *ts)
 {
-	clock_gettime(CLOCK_MONOTONIC, ts);
+	clock_gettime(CLOCK_MONOTONIC_FAST, ts);
 }
 
 void
 ktime_get_real_ts(struct timespec *ts)
 {
-	clock_gettime(CLOCK_REALTIME, ts);
+	clock_gettime(CLOCK_REALTIME_FAST, ts);
 }
 
 int64_t

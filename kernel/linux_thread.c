@@ -183,7 +183,7 @@ __wait_get_timeout(uint64_t timeout, struct timespec *ts)
 	ts[0].tv_nsec = timeout % 1000000000ULL;
 	ts[0].tv_sec = timeout / 1000000000ULL;
 
-	clock_gettime(CLOCK_REALTIME, ts + 1);
+	clock_gettime(CLOCK_REALTIME_FAST, ts + 1);
 
 	ts[0].tv_sec += ts[1].tv_sec;
 	ts[0].tv_nsec += ts[1].tv_nsec;

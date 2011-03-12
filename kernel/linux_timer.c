@@ -23,8 +23,6 @@
  * SUCH DAMAGE.
  */
 
-static u64 jiffies64;			/* we use jiffies = milliseconds */
-
 #include <signal.h>
 
 TAILQ_HEAD(timer_head, timer_list);
@@ -33,6 +31,8 @@ static struct timer_head timer_head;
 static pthread_t timer_thread;
 static volatile int timer_thread_started;
 static int timer_needed;
+static struct timespec timer_last;
+static uint32_t timer_nsec_rem;
 
 int
 timer_pending(const struct timer_list *timer)
@@ -88,6 +88,8 @@ mod_timer(struct timer_list *timer, unsigned long expires)
 	timer->expires = expires;
 	retval = (timer->entry.tqe_prev != NULL);
 	atomic_unlock();
+
+	return (retval);
 }
 
 static void
@@ -98,12 +100,10 @@ timer_io(int dummy)
 static void *
 timer_exec(void *arg)
 {
+	uint64_t last_jiffies;
+	uint64_t last_check;
 	int64_t delta;
 
-#ifdef HAVE_WEBCAMD
-	uint64_t last_check = 0;
-
-#endif
 	struct timer_list *t;
 	uint32_t ms_delay = 0;
 
@@ -111,31 +111,33 @@ timer_exec(void *arg)
 
 	timer_thread_started = 1;
 
+	last_check = get_jiffies_64();
+
 	while (1) {
+
+		/* update last_jiffies */
+		last_jiffies = get_jiffies_64();
 
 		atomic_lock();
 
-#ifdef HAVE_WEBCAMD
-		delta = jiffies64 - last_check;
+		delta = last_jiffies - last_check;
 
 		if ((delta >= 1000) || (delta < 0)) {
 
-			last_check = jiffies64;
+			last_check = last_jiffies;
 
 			/* make sure signals gets delivered */
 			wake_up_all_internal();
 		}
-#endif
-		jiffies64 += ms_delay;	/* ms */
-
+		/* compute timeout for next timer check */
 		if (TAILQ_FIRST(&timer_head) || timer_needed)
-			ms_delay = 20;
+			ms_delay = 25;
 		else
-			ms_delay = 1000;/* relax it */
+			ms_delay = 500;	/* relax it */
 
 restart:
 		TAILQ_FOREACH(t, &timer_head, entry) {
-			delta = t->expires - jiffies64;
+			delta = t->expires - last_jiffies;
 			if (delta < 0) {
 				TAILQ_REMOVE(&timer_head, t, entry);
 				t->entry.tqe_prev = NULL;
@@ -156,12 +158,43 @@ restart:
 uint64_t
 get_jiffies_64(void)
 {
-	uint64_t i;
+	enum {
+		DIV = (1000000000 / HZ),
+	};
+	struct timespec ts;
+	int32_t delta;
+	uint64_t retval;
+	static u64 jiffies64;		/* we use jiffies = milliseconds */
 
 	atomic_lock();
-	i = jiffies64;
+
+	/* get last time */
+	clock_gettime(CLOCK_REALTIME_FAST, &ts);
+	delta = ts.tv_nsec - timer_last.tv_nsec;
+	timer_last = ts;
+
+	/* compute the delta */
+	if (delta < 0)
+		delta += 1000000000;
+	/* range check */
+	if (delta < 0)
+		delta = 0;
+	if (delta > 999999999)
+		delta = 999999999;
+
+	/* update remainder */
+	timer_nsec_rem += delta;
+
+	/* update jiffies64 */
+	delta = timer_nsec_rem / DIV;
+	if (delta > 0) {
+		timer_nsec_rem %= DIV;
+		jiffies64 += (int64_t)delta;
+	}
+	retval = jiffies64;
 	atomic_unlock();
-	return (i);
+
+	return (retval);
 }
 
 void
@@ -174,6 +207,8 @@ static int
 timer_init(void)
 {
 	TAILQ_INIT(&timer_head);
+
+	get_jiffies_64();
 
 	if (pthread_create(&timer_thread, NULL, timer_exec, NULL)) {
 		printf("Failed creating timer process\n");
