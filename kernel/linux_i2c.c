@@ -21,22 +21,21 @@
 int
 i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 {
-	unsigned long orig_jiffies;
-	int ret = 0;
-	int try = 3;			/* USB devices are sometimes buggy */
+	unsigned long end_jiffies;
+	int ret;
+	int try;
 
 	if (adap->algo->master_xfer) {
 
 		mutex_lock(&adap->bus_lock);
 
-		orig_jiffies = jiffies + (5 * HZ);
-		while (try--) {
+		end_jiffies = jiffies + adap->timeout;
+		for (ret = 0, try = 0; try <= adap->retries; try++) {
 			ret = adap->algo->master_xfer(adap, msgs, num);
-			if (ret > -1)
+			if (ret != -EAGAIN)
 				break;
-			if (time_after(jiffies, orig_jiffies))
+			if (time_after(jiffies, end_jiffies))
 				break;
-			usleep(4000);
 		}
 		mutex_unlock(&adap->bus_lock);
 
