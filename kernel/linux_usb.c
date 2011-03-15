@@ -1919,7 +1919,6 @@ static int
 usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
 {
 	struct api_context ctx;
-	uint64_t expire;
 	int retval;
 
 	init_completion(&ctx.done);
@@ -1927,18 +1926,12 @@ usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
 
 	urb->context = &ctx;
 	urb->actual_length = 0;
+	urb->timeout = timeout;
 	retval = usb_submit_urb(urb, GFP_NOIO);
-	if (retval)
-		goto out;
-
-	expire = timeout ? msecs_to_jiffies(timeout) : (120 * HZ);
-	if (!wait_for_completion_timeout(&ctx.done, expire)) {
-		usb_kill_urb(urb);
-		retval = (ctx.status == -ENOENT ? -ETIMEDOUT : ctx.status);
-
-	} else
+	if (retval == 0) {
+		wait_for_completion(&ctx.done);
 		retval = ctx.status;
-out:
+	}
 	if (actual_length)
 		*actual_length = urb->actual_length;
 
