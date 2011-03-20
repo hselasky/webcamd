@@ -1,0 +1,29 @@
+--- stb0899_drv.c.orig	2011-03-20 14:29:58.000000000 +0100
++++ stb0899_drv.c	2011-03-20 14:31:41.000000000 +0100
+@@ -682,6 +682,8 @@
+ 	u8 reg = 0;
+ 	unsigned long start = jiffies;
+ 
++	timeout = 500;	/* XXX userspace can sometimes require more time */
++
+ 	while (1) {
+ 		reg = stb0899_read_reg(state, STB0899_DISSTATUS);
+ 		if (!STB0899_GETFIELD(FIFOFULL, reg))
+@@ -726,6 +728,8 @@
+ 	u8 reg = 0;
+ 	unsigned long start = jiffies;
+ 
++	timeout = 500;	/* XXX userspace can sometimes require more time */
++
+ 	while (!STB0899_GETFIELD(RXEND, reg)) {
+ 		reg = stb0899_read_reg(state, STB0899_DISRX_ST0);
+ 		if (jiffies - start > timeout) {
+@@ -775,6 +779,8 @@
+ 	u8 reg = 0;
+ 	unsigned long start = jiffies;
+ 
++	timeout = 500;	/* XXX userspace can sometimes require more time */
++
+ 	while (!STB0899_GETFIELD(TXIDLE, reg)) {
+ 		reg = stb0899_read_reg(state, STB0899_DISSTATUS);
+ 		if (jiffies - start > timeout) {

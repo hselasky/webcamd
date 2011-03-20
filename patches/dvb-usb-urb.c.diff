@@ -1,0 +1,24 @@
+--- dvb-usb-urb.c.orig	2011-03-20 14:18:15.000000000 +0100
++++ dvb-usb-urb.c	2011-03-20 14:24:24.000000000 +0100
+@@ -24,6 +24,21 @@
+ 	if ((ret = mutex_lock_interruptible(&d->usb_mutex)))
+ 		return ret;
+ 
++	/*
++	 * Stability fix: Clear stall in both directions before
++	 * sending any commands. This fix makes the S2-3600
++	 * technotrend adapters work much better.
++	 */
++	ret = usb_clear_halt(d->udev, usb_sndbulkpipe(d->udev,
++	     d->props.generic_bulk_ctrl_endpoint));
++
++	if (!ret && rbuf && rlen) {
++		usb_clear_halt(d->udev, usb_rcvbulkpipe(d->udev,
++		    d->props.generic_bulk_ctrl_endpoint_response ?
++		    d->props.generic_bulk_ctrl_endpoint_response :
++		    d->props.generic_bulk_ctrl_endpoint));
++	}
++
+ 	deb_xfer(">>> ");
+ 	debug_dump(wbuf,wlen,deb_xfer);
+ 
