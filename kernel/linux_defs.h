@@ -108,10 +108,8 @@
 #define	MODULE_SUPPORTED_DEVICE(...)
 #define	MODULE_FIRMWARE(...)
 #define	THIS_MODULE (NULL)
-#define	module_param(...)
 #define	module_param_call(...)
 #define	module_param_array(...)
-#define	module_param_string(...)
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
 #else
@@ -234,7 +232,6 @@
 #define	VM_IO 0x0040
 #define	DMA_FROM_DEVICE 0x01
 #define	DMA_TO_DEVICE 0x02
-#define	module_param_named(...)
 #define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
 #define	__KERNEL__
 #define	capable(...) 1

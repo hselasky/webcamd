@@ -345,6 +345,8 @@ usage(void)
 	    "usage: webcamd -d [ugen]<unit>.<addr> -i 0 -v -1 -B\n"
 	    "	-d <USB device>\n"
 	    "	-i <interface number>\n"
+	    "	-m <parameter>=<value>\n"
+	    "	-s Show available parameters\n"
 	    "	-v <video device number>\n"
 	    "	-B Run in background\n"
 	    "	-f <firmware path> [%s]\n"
@@ -401,10 +403,12 @@ pidfile_create(int bus, int addr, int index)
 int
 main(int argc, char **argv)
 {
-	const char *ptr;
+	char *ptr;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "Bd:f:i:v:hHr")) != -1) {
+	linux_init();
+
+	while ((opt = getopt(argc, argv, "Bd:f:i:m:sv:hHr")) != -1) {
 		switch (opt) {
 		case 'd':
 			ptr = optarg;
@@ -422,6 +426,23 @@ main(int argc, char **argv)
 		case 'i':
 			u_index = atoi(optarg);
 			break;
+
+		case 'm':
+			ptr = strstr(optarg, "=");
+			if (ptr == NULL)
+				v4b_errx(1, "invalid parameter for -m option");
+			*ptr = 0;
+			if (mod_set_param(optarg, ptr + 1) < 0) {
+				fprintf(stderr, "cannot set module "
+				    "parameter '%s'='%s'\n", optarg, ptr + 1);
+				exit(1);
+			}
+			break;
+
+		case 's':
+			printf("List of available parameters:\n");
+			mod_show_params();
+			exit(0);
 
 		case 'v':
 			u_videodev = atoi(optarg);
@@ -489,7 +510,6 @@ main(int argc, char **argv)
 		if (sched_setscheduler(getpid(), SCHED_FIFO, &params) == -1)
 			printf("Cannot set realtime priority\n");
 	}
-	linux_init();
 
 	f_usb = usb_linux_probe_p(&u_unit, &u_addr, &u_index);
 	if (f_usb < 0)

@@ -191,6 +191,9 @@ SRCS+= linux_usb.c
 SRCS+= linux_firmware.c
 SRCS+= linux_i2c.c
 
+CFLAGS+= -DCURR_FILE_NAME=\"${.TARGET:C/.o//g}\"
+SRCS+= linux_mod_param.c
+
 #
 # Video4Linux specific files
 #

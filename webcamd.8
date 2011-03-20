@@ -36,6 +36,7 @@
 .Op Fl d Ar [ugen]<unit>.<addr>
 .Op Fl i Ar <interface number>
 .Op Fl v Ar <video device number>
+.Op Fl m Ar <parameter>=<value>
 .Op Fl B
 .Sh DESCRIPTION
 .Nm
@@ -77,10 +78,15 @@ The default firmware path is /boot/modules.
 Print help text showing available options.
 .It Fl H
 Register device by HAL daemon.
+.It Fl m
+Specify the value of a parameter.
+Note that escaping is not supported for strings.
 .It Fl i
 Specify the interface number to use.
 .It Fl r
 Do not set realtime priority.
+.It Fl s
+Show available parameters.
 .It Fl v
 Specify the video device number.
 .Sh EXAMPLES
