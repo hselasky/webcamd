@@ -32,44 +32,64 @@ struct mod_param {
 	TAILQ_ENTRY(mod_param) entry;
 	const char *name;
 	const char *type;
+	const char *desc;
 	void   *ptr;
 	uint16_t size;
 	uint16_t perm;
 };
 
 #define	module_param_string(id, var, _size, _perm)	\
-static void mod_param_##id##_init(void)			\
-{							\
-  static struct mod_param param = {			\
+static struct mod_param mod_param_##id = {		\
     .name = CURR_FILE_NAME "." #id,			\
     .ptr = &(var),					\
     .size = (_size),					\
     .type = "string",					\
     .perm = (_perm),					\
-  };							\
-  mod_param_register(&param);			        \
+};							\
+static int mod_param_##id##_init(void)			\
+{							\
+  mod_param_register(&mod_param_##id);			\
+  return (0);						\
 }							\
 module_init(mod_param_##id##_init)
 
 #define	module_param_named(id, var, _type, _perm)	\
-static void mod_param_##id##_init(void)			\
-{							\
-  static struct mod_param param = {			\
+static struct mod_param mod_param_##id = {		\
     .name = CURR_FILE_NAME "." #id,			\
     .ptr = &(var),					\
-    .size = sizeof(var),				\
     .type = #_type,					\
     .perm = (_perm),					\
-  };							\
-  mod_param_register(&param);				\
+};							\
+static int mod_param_##id##_init(void)			\
+{							\
+  mod_param_register(&mod_param_##id);			\
+  return (0);						\
 }							\
 module_init(mod_param_##id##_init)
 
-#define	module_param(name, type, perm)	\
+#define	module_param(name, type, perm)		\
     module_param_named(name, name, type, perm)
+
+#define	module_param_call(id, ...)		\
+static struct mod_param mod_param_##id;
+
+#define	module_param_array(id, ...)		\
+static struct mod_param mod_param_##id;
+
+#define	MODULE_PARM_DESC(id, desc)			\
+static int mod_param_##id##_init_desc(void)		\
+{							\
+	mod_param_register_desc(&mod_param_##id, desc);	\
+	return (0);					\
+}							\
+module_init(mod_param_##id##_init_desc)
+
+#define	___MODULE_STRING(x) #x
+#define	__MODULE_STRING(x) ___MODULE_STRING(x)
 
 int	mod_set_param(const char *name, const char *value);
 void	mod_show_params(void);
 void	mod_param_register(struct mod_param *p);
+void	mod_param_register_desc(struct mod_param *p, const char *desc);
 
 #endif					/* _LINUX_MOD_PARAM_H_ */

@@ -101,15 +101,12 @@
 #define	MODULE_DESCRIPTION(...)
 #define	MODULE_LICENSE(...)
 #define	MODULE_DEVICE_TABLE(...)
-#define	MODULE_PARM_DESC(...)
 #define	MODULE_VERSION(...)
 #define	MODULE_ALIAS(...)
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	MODULE_SUPPORTED_DEVICE(...)
 #define	MODULE_FIRMWARE(...)
 #define	THIS_MODULE (NULL)
-#define	module_param_call(...)
-#define	module_param_array(...)
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
 #else

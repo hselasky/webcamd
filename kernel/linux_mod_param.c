@@ -58,6 +58,33 @@ mod_set_param(const char *name, const char *value)
 	return (0);
 }
 
+static void
+mod_output_desc(const char *desc)
+{
+	if (desc == NULL)
+		return;
+
+	putchar('\t');
+	putchar('\t');
+	putchar('>');
+
+	while (*desc) {
+
+		if (*desc == '\n') {
+			putchar('\n');
+			putchar('\t');
+			putchar('\t');
+			putchar('>');
+		} else {
+			putchar(*desc);
+		}
+		desc++;
+	}
+
+	putchar('\n');
+	putchar('\n');
+}
+
 void
 mod_show_params(void)
 {
@@ -82,6 +109,7 @@ mod_show_params(void)
 		} else {
 			printf("\t%s=<unknown %s>\n", (const char *)p->name, (const char *)p->type);
 		}
+		mod_output_desc(p->desc);
 	}
 }
 
@@ -89,4 +117,10 @@ void
 mod_param_register(struct mod_param *p)
 {
 	TAILQ_INSERT_TAIL(&mod_param_head, p, entry);
+}
+
+void
+mod_param_register_desc(struct mod_param *p, const char *desc)
+{
+	p->desc = desc;
 }
