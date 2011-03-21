@@ -1,0 +1,20 @@
+--- v4l2-dev.c.orig	2011-03-21 12:38:20.000000000 +0100
++++ v4l2-dev.c	2011-03-21 12:38:46.000000000 +0100
+@@ -353,7 +353,7 @@
+ 	.get_unmapped_area = v4l2_get_unmapped_area,
+ 	.mmap = v4l2_mmap,
+ 	.unlocked_ioctl = v4l2_unlocked_ioctl,
+-#ifdef CONFIG_COMPAT
++#if 0
+ 	.compat_ioctl = v4l2_compat_ioctl32,
+ #endif
+ 	.release = v4l2_release,
+@@ -369,7 +369,7 @@
+ 	.get_unmapped_area = v4l2_get_unmapped_area,
+ 	.mmap = v4l2_mmap,
+ 	.ioctl = v4l2_ioctl,
+-#ifdef CONFIG_COMPAT
++#if 0
+ 	.compat_ioctl = v4l2_compat_ioctl32,
+ #endif
+ 	.release = v4l2_release,

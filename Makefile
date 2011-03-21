@@ -199,7 +199,7 @@ SRCS+= linux_mod_param.c
 #
 
 SRCS+= v4l2-common.c
-SRCS+= v4l2-compat-ioctl32.c
+#SRCS+= v4l2-compat-ioctl32.c
 SRCS+= v4l2-dev.c
 SRCS+= v4l2-device.c
 SRCS+= v4l2-int-device.c
@@ -618,6 +618,7 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/ttpci
 
 CFLAGS+= -DLINUX
 CFLAGS+= -DCONFIG_INPUT
+CFLAGS+= -DCONFIG_COMPAT
 CFLAGS+= -DCONFIG_VIDEO_V4L1_COMPAT
 CFLAGS+= -DCONFIG_DVB_DIB3000MC
 CFLAGS+= -DCONFIG_VIDEO_PVRUSB2_DVB
