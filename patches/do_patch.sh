@@ -21,7 +21,6 @@ patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/usb-urb.c usb-urb.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/dvb-usb/dvb-usb-urb.c dvb-usb-urb.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/frontends/stb0899_drv.c stb0899_drv.c.diff
 patch $OPT ../v4l-dvb/linux/drivers/media/dvb/frontends/cx24116.c cx24116.c.diff
-patch $OPT ../v4l-dvb/linux/drivers/media/video/v4l2-dev.c v4l2-dev.c.diff
 cat lirc-patches.diff | patch $OPT
 cat af9013.c.diff | patch $OPT
 
