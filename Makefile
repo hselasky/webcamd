@@ -102,12 +102,8 @@ MAN+=	man4/zc3xx.4
 MAN+=	man4/zr364xx.4
 .endif
 
-.if exists(%%PREFIX%%)
-PREFIX=		%%PREFIX%%
-.else
-PREFIX=		/usr/local
-.endif
-
+PREFIX?=	/usr/local
+LOCALBASE?=	/usr/local
 BINDIR=		${PREFIX}/sbin
 MANDIR=		${PREFIX}/man/man
 LIBDIR?=	${PREFIX}/lib
@@ -896,7 +892,7 @@ CFLAGS+= -include webcamd_global.h
 
 CFLAGS+= -Wall -Wno-pointer-sign
 
-CFLAGS+= -I${PREFIX}/include
+CFLAGS+= -I${LOCALBASE}/include
 
 LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd -lpthread -lutil
 
@@ -955,14 +951,14 @@ patch:
 
 install_headers:
 
-	[ -d ${PREFIX}/include/linux ] || mkdir -p ${PREFIX}/include/linux
+	[ -d ${LOCALBASE}/include/linux ] || mkdir -p ${LOCALBASE}/include/linux
 
 	cp -v 	${LINUXDIR}/include/linux/videodev.h \
 		${LINUXDIR}/include/linux/videodev2.h \
 		${LINUXDIR}/include/linux/types.h \
-		${PREFIX}/include/linux/
+		${LOCALBASE}/include/linux/
 
-	[ -d ${PREFIX}/include/linux/dvb ] || mkdir -p ${PREFIX}/include/linux/dvb
+	[ -d ${LOCALBASE}/include/linux/dvb ] || mkdir -p ${LOCALBASE}/include/linux/dvb
 
 	cp -v 	${LINUXDIR}/include/linux/dvb/audio.h \
 		${LINUXDIR}/include/linux/dvb/ca.h \
@@ -972,7 +968,7 @@ install_headers:
 		${LINUXDIR}/include/linux/dvb/osd.h \
 		${LINUXDIR}/include/linux/dvb/version.h \
 		${LINUXDIR}/include/linux/dvb/video.h \
-		${PREFIX}/include/linux/dvb/
+		${LOCALBASE}/include/linux/dvb/
 
 fetch_clean:
 
