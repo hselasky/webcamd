@@ -28,7 +28,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-VERSION=	0.1.22
+VERSION=	0.1.23
 PROG=		webcamd
 #
 # List of all manual pages
