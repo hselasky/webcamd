@@ -403,10 +403,11 @@ pidfile_create(int bus, int addr, int index)
 int
 main(int argc, char **argv)
 {
+	const char *params = "Bd:f:i:m:sv:hHr";
 	char *ptr;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "Bd:f:i:m:sv:hHr")) != -1) {
+	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
 		case 'd':
 			ptr = optarg;
@@ -499,7 +500,7 @@ main(int argc, char **argv)
 	optreset = 1;
 	optind = 1;
 
-	while ((opt = getopt(argc, argv, "m:s")) != -1) {
+	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
 		case 'm':
 			ptr = strstr(optarg, "=");
