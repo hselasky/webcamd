@@ -406,8 +406,6 @@ main(int argc, char **argv)
 	char *ptr;
 	int opt;
 
-	linux_init();
-
 	while ((opt = getopt(argc, argv, "Bd:f:i:m:sv:hHr")) != -1) {
 		switch (opt) {
 		case 'd':
@@ -428,21 +426,8 @@ main(int argc, char **argv)
 			break;
 
 		case 'm':
-			ptr = strstr(optarg, "=");
-			if (ptr == NULL)
-				v4b_errx(1, "invalid parameter for -m option");
-			*ptr = 0;
-			if (mod_set_param(optarg, ptr + 1) < 0) {
-				fprintf(stderr, "cannot set module "
-				    "parameter '%s'='%s'\n", optarg, ptr + 1);
-				exit(1);
-			}
-			break;
-
 		case 's':
-			printf("List of available parameters:\n");
-			mod_show_params();
-			exit(0);
+			break;
 
 		case 'v':
 			u_videodev = atoi(optarg);
@@ -484,11 +469,8 @@ main(int argc, char **argv)
 		}
 		if (daemon(0, 0) != 0)
 			v4b_errx(1, "Cannot daemonize");
-
-		atexit(&v4b_exit);
-	} else {
-		atexit(&v4b_exit);
 	}
+	atexit(&v4b_exit);
 
 	if (cuse_init() != 0) {
 		v4b_errx(1, "Could not open /dev/cuse. "
@@ -509,6 +491,34 @@ main(int argc, char **argv)
 
 		if (sched_setscheduler(getpid(), SCHED_FIFO, &params) == -1)
 			printf("Cannot set realtime priority\n");
+	}
+	linux_init();
+
+	/* process all module parameters, if any just after linux_init() */
+
+	optreset = 1;
+	optind = 1;
+
+	while ((opt = getopt(argc, argv, "m:s")) != -1) {
+		switch (opt) {
+		case 'm':
+			ptr = strstr(optarg, "=");
+			if (ptr == NULL)
+				v4b_errx(1, "invalid parameter for -m option");
+			*ptr = 0;
+			if (mod_set_param(optarg, ptr + 1) < 0) {
+				fprintf(stderr, "WARNING: cannot set module "
+				    "parameter '%s'='%s'\n", optarg, ptr + 1);
+			}
+			break;
+		case 's':
+			printf("List of available parameters:\n");
+			mod_show_params();
+			exit(0);
+			break;
+		default:
+			break;
+		}
 	}
 
 	f_usb = usb_linux_probe_p(&u_unit, &u_addr, &u_index);
