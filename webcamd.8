@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd December 4, 2010
+.Dd April 18, 2010
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -89,6 +89,16 @@ Do not set realtime priority.
 Show available parameters.
 .It Fl v
 Specify the video device number.
+.It Fl U
+Set the user identification for all character devices created by webcamd.
+Default value: webcamd
+.It Fl G
+Set the group identification for all character devices created by webcamd.
+Default value: webcamd
+.It Fl H
+Register device by the HAL daemon.
+.El
+
 .Sh EXAMPLES
 With the USB device connected, determine the [ugen]<unit>.<addr> values using 
 .Xr usbconfig 8 :
@@ -97,6 +107,8 @@ With the USB device connected, determine the [ugen]<unit>.<addr> values using
 usbconfig
 ugen7.2: <product 0x0991 vendor 0x046d> at usbus7, cfg=0 md=HOST spd=HIGH (480Mbps) pwr=ON
 .PP
+.Sh NOTES
+All character devices are created using the 0660 mode which gives the user and group read and write permissions.
 .Sh FILES
 .Bl -tag -compact
 .It Pa /usr/local/etc/devd/webcamd.conf

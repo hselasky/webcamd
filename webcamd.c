@@ -34,6 +34,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <sched.h>
+#include <grp.h>
+#include <pwd.h>
 
 #include <libutil.h>
 
@@ -83,11 +85,20 @@ static int do_fork = 0;
 static int do_realtime = 1;
 static int do_hal_register = 0;
 static struct pidfh *local_pid = NULL;
+static gid_t gid;
+static uid_t uid;
+static int gid_found;
+static int uid_found;
+
+#define	CHR_MODE 0660
 
 char	global_fw_prefix[128] = {"/boot/modules"};
 int	webcamd_unit;
 
-static void v4b_errx(int code, const char *str);
+#define	v4b_errx(code, fmt, ...) do {			\
+	fprintf(stderr, fmt "\n",## __VA_ARGS__);	\
+	exit(code);					\
+} while (0)
 
 static void
 v4b_work_exec_hup(int dummy)
@@ -319,8 +330,8 @@ v4b_create(int unit)
 			    (n % F_V4B_SUBDEV_MAX);
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
-			    0, 0 /* UID_ROOT */ , 5 /* GID_OPERATOR */ ,
-			    0600, devnames[n / F_V4B_SUBDEV_MAX], temp);
+			    0, uid, gid, CHR_MODE, devnames[n / F_V4B_SUBDEV_MAX],
+			    temp);
 
 			snprintf(buf, sizeof(buf), devnames[n / F_V4B_SUBDEV_MAX], temp);
 
@@ -361,13 +372,6 @@ usage(void)
 }
 
 static void
-v4b_errx(int code, const char *str)
-{
-	fprintf(stderr, "%s\n", str);
-	exit(code);
-}
-
-static void
 v4b_exit(void)
 {
 	if (local_pid != NULL) {
@@ -400,10 +404,44 @@ pidfile_create(int bus, int addr, int index)
 	return (0);
 }
 
+/*
+ * The following three functions were copied from FreeBSD's chown
+ * utility.
+ */
+static uid_t
+id(const char *name, const char *type)
+{
+	uid_t val;
+	char *ep;
+
+	val = strtoul(name, &ep, 10);
+	if (*ep != '\0')
+		v4b_errx(1, "%s: illegal %s name", name, type);
+	return (val);
+}
+
+static void
+a_gid(const char *s)
+{
+	struct group *gr;
+
+	gid = ((gr = getgrnam(s)) != NULL) ? gr->gr_gid : id(s, "group");
+	gid_found = 1;
+}
+
+static void
+a_uid(const char *s)
+{
+	struct passwd *pw;
+
+	uid = ((pw = getpwnam(s)) != NULL) ? pw->pw_uid : id(s, "user");
+	uid_found = 1;
+}
+
 int
 main(int argc, char **argv)
 {
-	const char *params = "Bd:f:i:m:sv:hHr";
+	const char *params = "Bd:f:i:m:sv:hHrU:G:";
 	char *ptr;
 	int opt;
 
@@ -451,11 +489,25 @@ main(int argc, char **argv)
 			do_hal_register = 1;
 			break;
 
+		case 'U':
+			a_uid(optarg);
+			break;
+
+		case 'G':
+			a_gid(optarg);
+			break;
+
 		default:
 			usage();
 			break;
 		}
 	}
+
+	if (!uid_found)
+		a_uid("webcamd");
+
+	if (!gid_found)
+		a_gid("webcamd");
 
 	if (do_fork) {
 		/* need to daemonise before creating any threads */
@@ -505,7 +557,7 @@ main(int argc, char **argv)
 		case 'm':
 			ptr = strstr(optarg, "=");
 			if (ptr == NULL)
-				v4b_errx(1, "invalid parameter for -m option");
+				v4b_errx(1, "invalid parameter for -m option: '%s'", optarg);
 			*ptr = 0;
 			if (mod_set_param(optarg, ptr + 1) < 0) {
 				fprintf(stderr, "WARNING: cannot set module "
