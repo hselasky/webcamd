@@ -1,0 +1,23 @@
+#
+# This makefile was automatically generated. Do not edit!
+#
+
+MAKE?=make
+
+MAKE_ARGS?=
+
+all:
+	cd obj-y; ${MAKE} LIB=obj-y ${MAKE_ARGS} all
+
+clean:
+	cd obj-y; ${MAKE} LIB=obj-y ${MAKE_ARGS} clean
+
+cleandepend:
+	cd obj-y; ${MAKE} LIB=obj-y ${MAKE_ARGS} cleandepend
+
+depend:
+	cd obj-y; ${MAKE} LIB=obj-y ${MAKE_ARGS} depend
+
+install:
+	[ -d modules] || mkdir modules
+	cp -v build/obj-y/obj-y{.a,.so} modules/
