@@ -630,7 +630,7 @@ print_source(char *name)
 }
 
 static void
-output_makefile(char *name, int is_module)
+output_makefile(char *name)
 {
 	struct node *n0;
 	struct node *n1;
@@ -639,18 +639,9 @@ output_makefile(char *name, int is_module)
 	printf("#\n"
 	    "# This makefile was automatically generated. Do not edit!\n"
 	    "#\n"
-	    "\n"
+	    "\n");
 
-	    "LIB=\t\t" "%s" "\n"
-	    "%s"
-
-	    "\n"
-	    ".include \"${.CURDIR}/../../Makefile.inc\"\n"
-	    "\n",
-	    name,
-	    is_module ? "MODULE=YES\n" : "");
-
-	printf(".PATH: \\\n");
+	printf("SRCPATHS+= \\\n");
 
 	TAILQ_FOREACH(dir, &rootDirectory, entry) {
 		int c;
@@ -664,16 +655,14 @@ output_makefile(char *name, int is_module)
 		if (c == '/')
 			dir->name[len-1] = 0;
 
-		printf("%s%s \\\n",
-		    (dir->name[0] == '/') ? "" : "${SRCBASE}/",
-		    dir->name);
+		printf("%s \\\n", dir->name);
 
 		if (c == '/')
 			dir->name[len-1] = c;
 	}
 
 	printf("\n"
-	    "SRCS= \\\n");
+	    "SRCS+= \\\n");
 
 	n0 = add_node(&rootNode, strcatdup(name, ""));
 
@@ -683,7 +672,9 @@ output_makefile(char *name, int is_module)
 
 	printf("\n");
 
-	printf(".include <bsd.lib.mk>\n");
+	printf(".if defined(LIB)\n"
+	       ".include \"${.CURDIR}/../../Makefile.lib\"\n"
+	       ".endif\n");
 }
 
 static void
@@ -743,6 +734,14 @@ usage(void)
 	exit(EX_USAGE);
 }
 
+static const char *targets[] = {
+	"all",
+	"clean",
+	"cleandepend",
+	"depend",
+	NULL
+};
+
 int
 main(int argc, char **argv)
 {
@@ -794,7 +793,7 @@ main(int argc, char **argv)
 
 	new_makefile(strcatdup(opt_output, "obj-y"));
 
-	output_makefile("obj-y", 0);
+	output_makefile("obj-y");
 
 	n0 = add_node(&rootNode, strcatdup("obj-m", ""));
 
@@ -806,7 +805,8 @@ main(int argc, char **argv)
 		temp = strcatdup(n1->name, "");
 		len = strlen(temp);
 
-		if ((len >= 2) && (temp[len - 2] == '.' && temp[len - 1] == 'o')) {
+		if ((len >= 2) && (temp[len - 2] == '.' &&
+		    temp[len - 1] == 'o')) {
 			temp[len - 2] = 0;
 			len -= 2;
 		}
@@ -823,7 +823,7 @@ main(int argc, char **argv)
 
 		new_makefile(strcatdup(temp, ""));
 
-		output_makefile(temp + strlen(opt_output), 1);
+		output_makefile(temp + strlen(opt_output));
 
 		free(temp);
 	}
@@ -837,27 +837,23 @@ main(int argc, char **argv)
 	printf("\nMAKE?=make\n");
 	printf("\nMAKE_ARGS?=\n");
 
-	printf("\nall:\n");
-	TAILQ_FOREACH(m0, &rootMakefile, entry)
-	    printf("\tcd %s; ${MAKE} ${MAKE_ARGS} all\n", fname(m0->name));
-
-	printf("\ndepend:\n");
-	TAILQ_FOREACH(m0, &rootMakefile, entry)
-	    printf("\tcd %s; ${MAKE} ${MAKE_ARGS} depend\n", fname(m0->name));
-
-	printf("\nclean:\n");
-	printf("\trm -rf modules\n");
-	TAILQ_FOREACH(m0, &rootMakefile, entry)
-	    printf("\tcd %s; ${MAKE} ${MAKE_ARGS} clean\n", fname(m0->name));
-
-	printf("\ncleandepend:\n");
-	TAILQ_FOREACH(m0, &rootMakefile, entry)
-	    printf("\tcd %s; ${MAKE} ${MAKE_ARGS} cleandepend\n", fname(m0->name));
+	for (c = 0; targets[c]; c++) {
+		printf("\n%s:\n", targets[c]);
+		TAILQ_FOREACH(m0, &rootMakefile, entry) {
+			char *ptr;
+			ptr = fname(m0->name);
+			printf("\tcd %s; ${MAKE} LIB=%s%s ${MAKE_ARGS} %s\n",
+			    ptr, ptr, strcmp(ptr, "obj-y") ?
+			    " MODULE=YES" : "", targets[c]);
+		}
+	}
 
 	printf("\ninstall:\n");
 	printf("\t[ -d modules] || mkdir modules\n");
-	TAILQ_FOREACH(m0, &rootMakefile, entry)
-	  printf("\tcp -v %s/%s.so modules/\n", m0->name, fname(m0->name));
+	TAILQ_FOREACH(m0, &rootMakefile, entry) {
+	    printf("\tcp -v %s/%s{.a,.so} modules/\n",
+	        m0->name, fname(m0->name));
+	}
 
 	set_stdout(strcatdup(opt_output, "config.h"));
 
