@@ -191,7 +191,6 @@ SRCS+= \
 	adv7170.c \
 	adv7175.c \
 	adv7343.c \
-	vpx3220.c \
 	bt819.c \
 	bt856.c \
 	bt866.c \
@@ -251,7 +250,6 @@ SRCS+= \
 	pvrusb2-cs53l32a.c \
 	pvrusb2-dvb.c \
 	pvrusb2-sysfs.c \
-	pvrusb2-debugifc.c \
 	cpia2_v4l.c \
 	cpia2_usb.c \
 	cpia2_core.c \
@@ -357,8 +355,6 @@ SRCS+= \
 	uvc_status.c \
 	uvc_isight.c \
 	ir-kbd-i2c.c \
-	radio-typhoon.c \
-	radio-miropcm20.c \
 	dsbr100.c \
 	radio-mr800.c \
 	radio-tea5764.c \
@@ -388,11 +384,8 @@ SRCS+= \
 	dib3000mc.c \
 	dibx000_common.c \
 	dib7000m.c \
-	dibx000_common.c \
 	dib7000p.c \
-	dibx000_common.c \
 	dib8000.c \
-	dibx000_common.c \
 	mt312.c \
 	ves1820.c \
 	ves1x93.c \
@@ -483,13 +476,9 @@ SRCS+= \
 	dtt200u-fe.c \
 	dibusb-common.c \
 	a800.c \
-	dibusb-common.c \
 	dibusb-mb.c \
-	dibusb-common.c \
 	dibusb-mc.c \
-	dibusb-common.c \
 	nova-t-usb2.c \
-	dibusb-common.c \
 	umt-010.c \
 	m920x.c \
 	gl861.c \
@@ -521,7 +510,6 @@ SRCS+= \
 	smsir.c \
 	smsdvb.c \
 	smsusb.c \
-	smssdio.c \
 
 .if defined(LIB)
 .include "${.CURDIR}/../../Makefile.lib"

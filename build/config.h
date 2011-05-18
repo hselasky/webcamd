@@ -26,6 +26,7 @@
 #define	CONFIG_DVB_DIB8000 /* y */
 #define	CONFIG_DVB_DS3000 /* y */
 #define	CONFIG_DVB_DUMMY_FE /* y */
+#undef	CONFIG_DVB_DYNAMIC_MINORS /* n */
 #define	CONFIG_DVB_EC100 /* y */
 #define	CONFIG_DVB_ISL6405 /* y */
 #define	CONFIG_DVB_ISL6421 /* y */
@@ -153,15 +154,12 @@
 #define	CONFIG_MEDIA_TUNER_TEA5767 /* y */
 #define	CONFIG_MEDIA_TUNER_XC2028 /* y */
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */
-#define	CONFIG_RADIO_MIROPCM20 /* y */
 #define	CONFIG_RADIO_SAA7706H /* y */
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
-#define	CONFIG_RADIO_TYPHOON /* y */
 #define	CONFIG_RC_CORE /* y */
 #define	CONFIG_RC_LOOPBACK /* y */
 #define	CONFIG_RC_MAP /* y */
-#define	CONFIG_SMS_SDIO_DRV /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
 #define	CONFIG_TTPCI_EEPROM /* y */
@@ -247,7 +245,6 @@
 #define	CONFIG_VIDEO_MT9V011 /* y */
 #define	CONFIG_VIDEO_OV7670 /* y */
 #define	CONFIG_VIDEO_PVRUSB2 /* y */
-#define	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* y */
 #define	CONFIG_VIDEO_PVRUSB2_DVB /* y */
 #define	CONFIG_VIDEO_PVRUSB2_SYSFS /* y */
 #define	CONFIG_VIDEO_SAA6588 /* y */
@@ -277,7 +274,6 @@
 #define	CONFIG_VIDEO_V4L1_COMPAT /* y */
 #define	CONFIG_VIDEO_V4L2_COMMON /* y */
 #define	CONFIG_VIDEO_VP27SMPX /* y */
-#define	CONFIG_VIDEO_VPX3220 /* y */
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
@@ -286,6 +282,7 @@
 #undef	CONFIG_IR_ENE /* n */
 #undef	CONFIG_IR_WINBOND_CIR /* n */
 #undef	CONFIG_VIDEO_ADV7180 /* n */
+#undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
@@ -310,6 +307,7 @@
 #undef	CONFIG_VIDEO_CX88 /* n */
 #undef	CONFIG_VIDEO_TLG2300 /* n */
 #undef	CONFIG_VIDEO_CX231XX /* n */
+#undef	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* n */
 #undef	CONFIG_VIDEO_MXB /* n */
 #undef	CONFIG_VIDEO_HEXIUM_ORION /* n */
 #undef	CONFIG_VIDEO_HEXIUM_GEMINI /* n */
@@ -353,6 +351,7 @@
 #undef	CONFIG_RADIO_SF16FMI /* n */
 #undef	CONFIG_RADIO_SF16FMR2 /* n */
 #undef	CONFIG_RADIO_CADET /* n */
+#undef	CONFIG_RADIO_TYPHOON /* n */
 #undef	CONFIG_RADIO_TERRATEC /* n */
 #undef	CONFIG_RADIO_MAXIRADIO /* n */
 #undef	CONFIG_RADIO_RTRACK /* n */
@@ -362,6 +361,7 @@
 #undef	CONFIG_I2C_SI4713 /* n */
 #undef	CONFIG_RADIO_SI4713 /* n */
 #undef	CONFIG_RADIO_MAESTRO /* n */
+#undef	CONFIG_RADIO_MIROPCM20 /* n */
 #undef	CONFIG_RADIO_SI470X /* n */
 #undef	CONFIG_RADIO_TIMBERDALE /* n */
 #undef	CONFIG_RADIO_WL1273 /* n */
@@ -375,6 +375,7 @@
 #undef	CONFIG_DVB_B2C2_FLEXCOP_PCI /* n */
 #undef	CONFIG_DVB_BT8XX /* n */
 #undef	CONFIG_DVB_PLUTO2 /* n */
+#undef	CONFIG_SMS_SDIO_DRV /* n */
 #undef	CONFIG_DVB_DM1105 /* n */
 #undef	CONFIG_DVB_PT1 /* n */
 #undef	CONFIG_MANTIS_CORE /* n */
