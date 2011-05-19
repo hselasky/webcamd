@@ -122,8 +122,8 @@ BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./lo
 #
 # List of source paths
 #
-SRCSPATHS+= ${.CURDIR}/kernel
-SRCSPATHS+= ${LINUXDIR}/kernel
+SRCPATHS+= ${.CURDIR}/kernel
+SRCPATHS+= ${LINUXDIR}/kernel
 
 .PATH: ${.CURDIR} ${SRCPATHS}
 

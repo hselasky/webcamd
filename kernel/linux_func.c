@@ -1662,6 +1662,12 @@ div64_u64(uint64_t rem, uint64_t div)
 	return (rem / div);
 }
 
+uint64_t
+div_u64(uint64_t rem, uint32_t div)
+{
+	return (rem / (uint64_t)div);
+}
+
 int
 nonseekable_open(struct inode *inode, struct file *file)
 {

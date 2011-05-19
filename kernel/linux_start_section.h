@@ -50,7 +50,7 @@ struct module_exit_struct {
 #define	module_exit(func) static struct module_exit_struct \
   __attribute__((__section__("linux_exit_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_EXIT_MAGIC };
 
-#define	late_initcall(x) module_init(x)		/* XXX FIXME LATER */
+#define	late_initcall(x) module_init(x)	/* XXX FIXME LATER */
 
 void	linux_init(void);
 void	linux_exit(void);

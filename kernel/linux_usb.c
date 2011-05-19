@@ -2131,7 +2131,7 @@ usb_maxpacket(struct usb_device *dev, int endpoint, int is_out)
 	return (le16_to_cpu(ep->desc.wMaxPacketSize));
 }
 
-void 
+void
 usb_enable_autosuspend(struct usb_device *udev)
 {
 }
