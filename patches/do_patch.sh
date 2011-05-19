@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OPT='-N -s -l'
+OPT='-Nslf'
 
 #
 # driver patches - mostly to improve usability

@@ -3727,7 +3727,7 @@ new file mode 100644
 index 0000000..3dedb3c
 --- /dev/null
 +++ b/../media_tree/drivers/media/dvb/as102/as10x_types.h
-@@ -0,1 +1,198 @@
+@@ -0,0 +1,198 @@
 +/*
 + * Abilis Systems Single DVB-T Receiver
 + * Copyright (C) 2008 Pierrick Hascoet <pierrick.hascoet@abilis.com>
