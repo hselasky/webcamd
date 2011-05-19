@@ -212,7 +212,7 @@ fetch:
 # Fetch latest Video4Linux:
 #
 
-	[ -s media_tree ] || [ -d media_tree ] || (git clone git://linuxtv.org/media_tree.git media_tree)
+	[ -L media_tree ] || [ -d media_tree ] || (git clone git://linuxtv.org/media_tree.git media_tree)
 
 	cd media_tree ; git pull
 
