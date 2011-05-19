@@ -111,7 +111,7 @@ LOCALBASE?=	/usr/local
 BINDIR=		${PREFIX}/sbin
 MANDIR=		${PREFIX}/man/man
 LIBDIR?=	${PREFIX}/lib
-LINUXDIR=	${.CURDIR}/media_tree
+LINUXDIR=	media_tree
 MKLINT=		no
 NOGCCERROR=
 MLINKS=
@@ -122,7 +122,7 @@ BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./lo
 #
 # List of source paths
 #
-SRCPATHS+= ${.CURDIR}/kernel
+SRCPATHS+= kernel
 SRCPATHS+= ${LINUXDIR}/kernel
 
 .PATH: ${.CURDIR} ${SRCPATHS}
@@ -228,18 +228,20 @@ package:
 
 	@make clean cleandepend HAVE_MAN=YES
 
-	tar -jcvf temp.tar.bz2 --exclude="*~" --exclude="*#" --exclude=".git" --exclude=".svn" \
+	[ -d ${LINUXDIR}/drivers/media/dvb/as102 ] || mkdir ${LINUXDIR}/drivers/media/dvb/as102
+
+	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" --exclude=".svn" \
 		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
-		${SRCPATHS} media_tree/include \
+		${SRCPATHS} build/ media_tree/include \
 		patches/do_patch.sh patches/*.diff
 
 	rm -rf webcamd-${VERSION}
 
 	mkdir webcamd-${VERSION}
 
-	tar -jxvf temp.tar.bz2 -C webcamd-${VERSION}
+	tar -xvf temp.tar -C webcamd-${VERSION}
 
-	rm -rf temp.tar.bz2
+	rm -rf temp.tar
 
 	tar -jcvf webcamd-${VERSION}.tar.bz2 webcamd-${VERSION}
 
