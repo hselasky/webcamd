@@ -167,6 +167,7 @@ void	mutex_unlock(struct mutex *m);
 #define	mutex_init(m) sema_init(&(m)->sem, 1)
 #define	mutex_destroy(m) sema_uninit(&(m)->sem)
 #define	mutex_lock_interruptible(m) (mutex_lock(m),0)
+#define	mutex_is_locked(x) ((x)->sem.owner == pthread_self())
 
 #define	init_MUTEX(s) sema_init(s,1)
 #define	init_MUTEX_LOCKED(s) sema_init(s, 0)
@@ -214,5 +215,16 @@ extern struct task_struct linux_task;
 int	check_signal(void);
 void	wake_up_all_internal(void);
 void	poll_wakeup_internal(void);
+
+/*
+ * RT-mutex variant
+ */
+#define	rt_mutex mutex
+#define	rt_mutex_init(x) mutex_init(x)
+#define	rt_mutex_destroy(x) mutex_destroy(x)
+#define	rt_mutex_lock(x) mutex_lock(x)
+#define	rt_mutex_unlock(x) mutex_unlock(x)
+#define	DEFINE_RT_MUTEX(x) DEFINE_MUTEX(x)
+#define	rt_mutex_is_locked(x) mutex_is_locked(x)
 
 #endif					/* _LINUX_THREAD_H_ */

@@ -24,3 +24,7 @@
  */
 
 struct device_attribute dev_attr_protocols;
+struct device_attribute dev_attr_imon_clock;
+struct device_attribute dev_attr_associate_remote;
+struct device_attribute dev_attr_name;
+struct device_attribute dev_attr_modalias;

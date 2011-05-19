@@ -33,6 +33,8 @@
 #ifndef _LINUX_USB_H_
 #define	_LINUX_USB_H_
 
+#include <include/linux/pm.h>
+
 #ifndef __packed
 #define	__packed __attribute__((__packed__))
 #endif
@@ -45,13 +47,10 @@ struct usb_device_id;
 struct input_id;
 struct urb;
 
-typedef struct pm_message {
-	int	event;
-} pm_message_t;
-
 typedef void (*usb_complete_t)(struct urb *);
 
 #define	USB_LINUX_IFACE_MAX 32
+#define	USB_MAXIADS	(USB_LINUX_IFACE_MAX / 2)
 
 #define	USB_MAX_FULL_SPEED_ISOC_FRAMES (60 * 1)
 #define	USB_MAX_HIGH_SPEED_ISOC_FRAMES (60 * 8)
@@ -258,6 +257,18 @@ struct usb_interface_descriptor {
 	uint8_t	bInterfaceSubClass;
 	uint8_t	bInterfaceProtocol;
 	uint8_t	iInterface;
+} __packed;
+
+struct usb_interface_assoc_descriptor {
+	uint8_t	bLength;
+	uint8_t	bDescriptorType;
+
+	uint8_t	bFirstInterface;
+	uint8_t	bInterfaceCount;
+	uint8_t	bFunctionClass;
+	uint8_t	bFunctionSubClass;
+	uint8_t	bFunctionProtocol;
+	uint8_t	iFunction;
 } __packed;
 
 /*
@@ -469,6 +480,7 @@ struct usb_interface {
 struct usb_config {
 	struct usb_config_descriptor desc;
 	struct usb_interface *interface[USB_LINUX_IFACE_MAX];
+	struct usb_interface_assoc_descriptor *intf_assoc[USB_MAXIADS];
 };
 
 struct usb_device {
@@ -704,6 +716,7 @@ int	usb_reset_device(struct usb_device *dev);
 uint8_t	usb_pipetype(unsigned int);
 void	usb_to_input_id(const struct usb_device *dev, struct input_id *id);
 uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
+void	usb_enable_autosuspend(struct usb_device *udev);
 
 #define	usb_alloc_coherent(...) usb_buffer_alloc(__VA_ARGS__)
 #define	usb_free_coherent(...) usb_buffer_free(__VA_ARGS__)

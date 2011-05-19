@@ -1,0 +1,34 @@
+From 74eef6e545a1b5222d94a1e82c091d73de2ef405 Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <hselasky@c2i.net>
+Date: Thu, 19 May 2011 02:32:58 +0200
+Subject: [PATCH] Tune gspca driver.
+
+---
+ ../media_tree/drivers/media/video/gspca/gspca.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/../media_tree/drivers/media/video/gspca/gspca.c b/../media_tree/drivers/media/video/gspca/gspca.c
+index f21f2a2..726b755 100644
+--- a/../media_tree/drivers/media/video/gspca/gspca.c
++++ b/../media_tree/drivers/media/video/gspca/gspca.c
+@@ -46,7 +46,7 @@
+ #endif
+ 
+ /* global values */
+-#define DEF_NURBS 3		/* default number of URBs */
++#define DEF_NURBS 2		/* default number of URBs */
+ #if DEF_NURBS > MAX_NURBS
+ #error "DEF_NURBS too big"
+ #endif
+@@ -1871,7 +1871,7 @@ static int vidioc_dqbuf(struct file *file, void *priv,
+ 		/* wait till a frame is ready */
+ 		ret = wait_event_interruptible_timeout(gspca_dev->wq,
+ 			frame_ready(gspca_dev, file, v4l2_buf->memory),
+-			msecs_to_jiffies(3000));
++			msecs_to_jiffies(5000));
+ 		if (ret < 0)
+ 			return ret;
+ 		if (ret == 0)
+-- 
+1.7.1.1
+

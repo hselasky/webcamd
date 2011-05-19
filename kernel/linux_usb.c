@@ -169,12 +169,10 @@ usb_exec(void *arg)
 		/* check for USB events */
 		if (err != 0) {
 			/* check if device is detached */
-#ifdef HAVE_WEBCAMD
 			err = 1;
 			err = ioctl(libusb20_dev_get_fd(dev), FIONBIO, &err);
 			if (err != 0)
 				exit(0);
-#endif
 			if (sc->thread_stopping)
 				break;
 			else
@@ -389,7 +387,7 @@ found:
 	*p_bus = libusb20_dev_get_bus_number(pdev);
 	*p_addr = libusb20_dev_get_address(pdev);
 	*p_index = index_copy;
-#ifdef HAVE_WEBCAMD
+
 	if (pidfile_create(*p_bus, *p_addr, index_copy)) {
 		fprintf(stderr, "Webcamd is already running for "
 		    "ugen%d.%d.%d\n",
@@ -398,7 +396,6 @@ found:
 		    index_copy);
 		exit(1);
 	}
-#endif
 	p_dev = usb_linux_create_usb_device(sc, pdev, pcfg, addr);
 	if (p_dev == NULL) {
 		free(pcfg);
@@ -2132,4 +2129,9 @@ usb_maxpacket(struct usb_device *dev, int endpoint, int is_out)
 	if (ep == NULL)
 		return (0);
 	return (le16_to_cpu(ep->desc.wMaxPacketSize));
+}
+
+void 
+usb_enable_autosuspend(struct usb_device *udev)
+{
 }

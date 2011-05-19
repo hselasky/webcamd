@@ -23,33 +23,15 @@
  * SUCH DAMAGE.
  */
 
-static int
-linux_module_init_start(void)
-{
-	return (0);
-}
-
-static void
-linux_module_exit_start(void)
-{
-}
-
-module_init(linux_module_init_start);
-module_exit(linux_module_exit_start);
-
-extern struct module_init_struct linux_init_mod;
-extern struct module_exit_struct linux_exit_mod;
+extern struct module_init_struct __start_linux_init_mod;
+extern struct module_exit_struct __start_linux_exit_mod;
 
 void
 linux_init(void)
 {
-	struct module_init_struct *t = &linux_init_mod;
+	struct module_init_struct *t = &__start_linux_init_mod;
 
 	thread_init();
-
-	while ((t - 1)->magic == MODULE_INIT_MAGIC) {
-		t--;
-	}
 
 	while (t->magic == MODULE_INIT_MAGIC) {
 		t->func();
@@ -60,11 +42,7 @@ linux_init(void)
 void
 linux_exit(void)
 {
-	struct module_exit_struct *t = &linux_exit_mod;
-
-	while ((t - 1)->magic == MODULE_EXIT_MAGIC) {
-		t--;
-	}
+	struct module_exit_struct *t = &__start_linux_exit_mod;
 
 	while (t->magic == MODULE_EXIT_MAGIC) {
 		t->func();

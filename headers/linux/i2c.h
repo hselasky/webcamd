@@ -275,6 +275,7 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info);
 extern struct i2c_client *
 i2c_new_probed_device(struct i2c_adapter *adap,
 		      struct i2c_board_info *info,
+		      const unsigned short *probe_attrs,
 		      unsigned short const *addr_list);
 
 /* For devices that use several addresses, use i2c_new_dummy() to make

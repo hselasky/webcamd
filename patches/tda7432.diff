@@ -1,0 +1,26 @@
+From 0e135fa9cd9cb377bd8930253a547d6d9ae6d01b Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <hselasky@c2i.net>
+Date: Thu, 19 May 2011 02:46:40 +0200
+Subject: [PATCH] Parameter description should be after parameter.
+
+---
+ ../media_tree/drivers/media/video/tda7432.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/../media_tree/drivers/media/video/tda7432.c b/../media_tree/drivers/media/video/tda7432.c
+index 3941f95..398b9fb 100644
+--- a/../media_tree/drivers/media/video/tda7432.c
++++ b/../media_tree/drivers/media/video/tda7432.c
+@@ -50,8 +50,8 @@ static int loudness; /* disable loudness by default */
+ static int debug;	 /* insmod parameter */
+ module_param(debug, int, S_IRUGO | S_IWUSR);
+ module_param(loudness, int, S_IRUGO);
+-MODULE_PARM_DESC(maxvol,"Set maximium volume to +20db (0), default is 0db(1)");
+ module_param(maxvol, int, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(maxvol,"Set maximium volume to +20db (0), default is 0db(1)");
+ 
+ 
+ 
+-- 
+1.7.1.1
+

@@ -7,6 +7,7 @@
 
 #define	CONFIG_AS102_USB /* y */
 #define	CONFIG_DVB_AF9013 /* y */
+#define	CONFIG_DVB_AS102 /* y */
 #define	CONFIG_DVB_AT76C651 /* y */
 #define	CONFIG_DVB_ATBM8830 /* y */
 #define	CONFIG_DVB_AU8522 /* y */
@@ -365,6 +366,7 @@
 #undef	CONFIG_RADIO_SI470X /* n */
 #undef	CONFIG_RADIO_TIMBERDALE /* n */
 #undef	CONFIG_RADIO_WL1273 /* n */
+#undef	CONFIG_DVB_NET /* n */
 #undef	CONFIG_DVB_DRX397XD /* n */
 #undef	CONFIG_DVB_BUDGET_CORE /* n */
 #undef	CONFIG_DVB_BUDGET /* n */

@@ -41,7 +41,6 @@ struct module {
 };
 
 struct kobject {
-
 };
 
 struct kref {
@@ -123,6 +122,7 @@ struct device {
 	struct device_driver *driver;
 	struct device *parent;
 	struct device_type *type;
+	void   *platform_data;
 	void   *driver_data;
 	const struct file_operations *fops;
 	struct cdev *cdev;
@@ -228,6 +228,7 @@ struct cdev {
 	struct module *owner;
 	dev_t	mm_start;
 	dev_t	mm_end;
+	struct kobject kobj;
 	uint8_t	is_alloced;
 };
 
@@ -248,5 +249,9 @@ struct scatterlist {
 };
 
 extern struct device_attribute dev_attr_protocols;
+extern struct device_attribute dev_attr_imon_clock;
+extern struct device_attribute dev_attr_associate_remote;
+extern struct device_attribute dev_attr_name;
+extern struct device_attribute dev_attr_modalias;
 
 #endif					/* _LINUX_STRUCT_H_ */

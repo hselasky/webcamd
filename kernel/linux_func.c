@@ -25,7 +25,11 @@
 
 /* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
 
-#include <linux/input.h>
+#include <include/media/v4l2-dev.h>
+#include <include/linux/input.h>
+
+#include <drivers/media/dvb/dvb-core/dvbdev.h>
+#include <drivers/media/dvb/dvb-core/dvb_net.h>
 
 int
 printk_nop()
@@ -416,23 +420,6 @@ hweight64(uint64_t w)
 	}
 }
 
-#ifndef HAVE_WEBCAMD
-unsigned long
-copy_to_user(void *to, const void *from, unsigned long n)
-{
-	memcpy(to, from, n);
-	return (0);
-}
-
-unsigned long
-copy_from_user(void *to, const void *from, unsigned long n)
-{
-	memcpy(to, from, n);
-	return (0);
-}
-
-#endif
-
 struct cdev *
 cdev_alloc(void)
 {
@@ -620,17 +607,11 @@ void
 kref_get(struct kref *kref)
 {
 	atomic_inc(&kref->refcount);
-#ifndef HAVE_WEBCAMD
-	printf("KrefGet: %p = %u\n", kref, kref->refcount.counter);
-#endif
 }
 
 int
 kref_put(struct kref *kref, void (*release) (struct kref *kref))
 {
-#ifndef HAVE_WEBCAMD
-	printf("KrefPut: %p = %u\n", kref, kref->refcount.counter);
-#endif
 	if (atomic_dec(&kref->refcount) == 0) {
 		release(kref);
 		return 1;
@@ -684,9 +665,6 @@ int
 device_add(struct device *dev)
 {
 	/* TODO */
-#ifndef HAVE_WEBCAMD
-	printf("Added device %p\n", dev);
-#endif
 	get_device(dev);
 	return (0);
 }
@@ -695,9 +673,6 @@ void
 device_del(struct device *dev)
 {
 	/* TODO */
-#ifndef HAVE_WEBCAMD
-	printf("Deleted device %p\n", dev);
-#endif
 	put_device(dev);
 }
 
@@ -1059,6 +1034,17 @@ vmalloc(size_t size)
 	return (malloc_vm(size));
 }
 
+void   *
+vzalloc(size_t size)
+{
+	void *ptr = malloc_vm(size);
+
+	if (ptr != NULL)
+		memset(ptr, 0, size);
+
+	return (ptr);
+}
+
 long
 __get_free_page(int flags)
 {
@@ -1356,7 +1342,7 @@ msleep_interruptible(uint32_t ms)
 }
 
 void
-request_module(const char *ptr)
+request_module(const char *ptr,...)
 {
 }
 
@@ -1368,6 +1354,11 @@ device_can_wakeup(struct device *dev)
 
 void
 device_init_wakeup(struct device *dev, int flags)
+{
+}
+
+void
+device_initialize(struct device *dev)
 {
 }
 
@@ -1435,12 +1426,6 @@ scnprintf(char *buf, size_t size, const char *fmt,...)
 	return ((retval >= size) ? (size - 1) : retval);
 }
 
-uint64_t
-div64_u64(uint64_t rem, uint64_t div)
-{
-	return (rem / div);
-}
-
 #undef do_div
 
 uint32_t
@@ -1473,6 +1458,31 @@ input_event(struct input_dev *dev,
 	printf("Input event: %d.%d.%d\n", type, code, value);
 }
 
+
+int
+input_scancode_to_scalar(const struct input_keymap_entry *ke,
+    unsigned int *scancode)
+{
+	switch (ke->len) {
+	case 1:
+		*scancode = *((u8 *) ke->scancode);
+		break;
+
+	case 2:
+		*scancode = *((u16 *) ke->scancode);
+		break;
+
+	case 4:
+		*scancode = *((u32 *) ke->scancode);
+		break;
+
+	default:
+		return (-EINVAL);
+	}
+
+	return (0);
+}
+
 int
 input_register_device(struct input_dev *dev)
 {
@@ -1501,6 +1511,33 @@ void
 input_free_device(struct input_dev *dev)
 {
 	free(dev);
+}
+
+void
+input_alloc_absinfo(struct input_dev *dev)
+{
+	if (!dev->absinfo)
+		dev->absinfo = kcalloc(ABS_CNT, sizeof(struct input_absinfo),
+		    GFP_KERNEL);
+}
+
+void
+input_set_abs_params(struct input_dev *dev, unsigned int axis,
+    int min, int max, int fuzz, int flat)
+{
+	struct input_absinfo *absinfo;
+
+	input_alloc_absinfo(dev);
+	if (!dev->absinfo)
+		return;
+
+	absinfo = &dev->absinfo[axis];
+	absinfo->minimum = min;
+	absinfo->maximum = max;
+	absinfo->fuzz = fuzz;
+	absinfo->flat = flat;
+
+	dev->absbit[BIT_WORD(axis)] |= BIT_MASK(axis);
 }
 
 void   *
@@ -1617,4 +1654,22 @@ skip_spaces(const char *str)
 	while (isspace(*str))
 		str++;
 	return ((const char *)str);
+}
+
+uint64_t
+div64_u64(uint64_t rem, uint64_t div)
+{
+	return (rem / div);
+}
+
+int
+nonseekable_open(struct inode *inode, struct file *file)
+{
+	return (0);
+}
+
+int
+kobject_set_name(struct kobject *kobj, const char *fmt,...)
+{
+	return (0);
 }

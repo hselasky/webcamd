@@ -5,7 +5,6 @@
 
 #define	device_create_file(...) 0
 #define	device_remove_file(...) __nop
-#define	DPM_ORDER_NONE 0
 
 int	printk_nop(void);
 
@@ -75,7 +74,11 @@ int	test_bit(int nr, const void *addr);
 int	test_and_set_bit(int nr, volatile unsigned long *addr);
 int	test_and_clear_bit(int nr, volatile unsigned long *addr);
 void	set_bit(int nr, volatile unsigned long *addr);
+
+#define	__set_bit(a,b) set_bit(a,b)
 void	clear_bit(int nr, volatile unsigned long *addr);
+
+#define	__clear_bit(a,b) clear_bit(a,b)
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
@@ -118,6 +121,7 @@ void	sort(void *base, size_t num, size_t size, int (*cmp) (const void *, const v
 u32	crc32_le(u32 crc, unsigned char const *p, size_t len);
 u32	crc32_be(u32 crc, unsigned char const *p, size_t len);
 void   *vmalloc(size_t size);
+void   *vzalloc(size_t size);
 void   *kcalloc(size_t n, size_t size, int flags);
 long	__get_free_page(int);
 void	free_page(long);
@@ -148,9 +152,10 @@ int64_t	ktime_to_ns(const struct timespec ts);
 struct timespec ktime_sub(const struct timespec a, const struct timespec b);
 void	msleep(uint32_t ms);
 uint32_t msleep_interruptible(uint32_t ms);
-void	request_module(const char *ptr);
+void	request_module(const char *fmt,...);
 int	device_can_wakeup(struct device *dev);
 void	device_init_wakeup(struct device *dev, int flags);
+void	device_initialize(struct device *dev);
 int	dmi_check_system(const struct dmi_system_id *list);
 void	swab16s(uint16_t *ptr);
 uint16_t swab16(uint16_t temp);
@@ -161,7 +166,6 @@ struct timespec current_kernel_time(void);
 int64_t	timespec_to_ns(const struct timespec *ts);
 struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
-uint64_t div64_u64(uint64_t, uint64_t);
 uint32_t do_div(uint64_t *rem, uint32_t div);
 
 #define	do_div(r,d) do_div(&(r),(d))
@@ -178,15 +182,9 @@ int	usb_register_dev(struct usb_interface *, struct usb_class_driver *);
 void	usb_deregister_dev(struct usb_interface *, struct usb_class_driver *);
 struct usb_interface *usb_find_interface(struct usb_driver *, int);
 
-#ifdef HAVE_WEBCAMD
 void   *malloc_vm(size_t);
 void	free_vm(void *);
 int	pidfile_create(int bus, int addr, int index);
-
-#else
-#define	malloc_vm(x) malloc(x)
-#define	free_vm(x) free(x)
-#endif
 
 void   *kmemdup(const void *src, size_t len, gfp_t gfp);
 void   *memdup_user(const void *src, size_t len);
@@ -194,5 +192,9 @@ void   *memdup_user(const void *src, size_t len);
 unsigned long rounddown_pow_of_two(unsigned long);
 unsigned long roundup_pow_of_two(unsigned long);
 const char *skip_spaces(const char *str);
+
+int	kobject_set_name(struct kobject *kobj, const char *fmt,...);
+
+int	nonseekable_open(struct inode *inode, struct file *filp);
 
 #endif					/* _LINUX_FUNC_H_ */

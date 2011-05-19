@@ -26,6 +26,8 @@
 #ifndef _WEBCAMD_GLOBAL_H_
 #define	_WEBCAMD_GLOBAL_H_
 
+#include <build/config.h>
+
 #include <machine/param.h>
 
 #include <sys/types.h>
@@ -41,9 +43,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
-#define	sync(...) bsd_sync(__VA_ARGS__)
 #include <unistd.h>
-#undef sync
 #include <stdio.h>
 #include <poll.h>
 #include <string.h>
@@ -65,49 +65,18 @@
 #include <kernel/linux_thread.h>
 #include <kernel/linux_usb.h>
 #include <kernel/linux_start_section.h>
-#include <kernel/linux_end_section.h>
 #include <kernel/linux_input.h>
 #include <kernel/linux_firmware.h>
 #include <kernel/linux_mod_param.h>
 
-#define	HAVE_LINUX_INTEGER_TYPES
-
+#include <include/linux/mod_devicetable.h>
 #include <include/linux/videodev2.h>
 #include <include/linux/videodev.h>
-#include <include/linux/dvb/version.h>
-#include <include/linux/dvb/dmx.h>
-#include <include/linux/dvb/frontend.h>
-
-#include <include/media/v4l2-chip-ident.h>
-#include <include/media/v4l2-common.h>
-#include <include/media/v4l2-dev.h>
-#include <include/media/v4l2-device.h>
-#include <include/media/v4l2-int-device.h>
-#include <include/media/v4l2-ioctl.h>
-#include <include/media/v4l2-subdev.h>
-#include <include/media/videobuf-core.h>
-#include <include/media/videobuf-dma-contig.h>
-#include <include/media/videobuf-dma-sg.h>
-
-#include <drivers/media/dvb/dvb-core/dmxdev.h>
-#include <drivers/media/dvb/dvb-core/demux.h>
-#include <drivers/media/dvb/dvb-core/dvb_demux.h>
-#include <drivers/media/dvb/dvb-core/dvb_net.h>
-#include <drivers/media/dvb/dvb-core/dvb_frontend.h>
-
-#include <drivers/media/dvb/frontends/dvb-pll.h>
-#include <drivers/media/dvb/frontends/af9013.h>
-
-#include <include/media/videobuf-dvb.h>
-#include <include/media/videobuf-vmalloc.h>
-
-#include <drivers/media/video/uvc/uvcvideo.h>
-
-#include <include/media/tuner.h>
-#include <include/media/msp3400.h>
-
-#include <headers/linux/input.h>
 
 extern int webcamd_unit;
+
+#define getmode __getmode
+#define setmode __setmode
+#define sync __sync
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */

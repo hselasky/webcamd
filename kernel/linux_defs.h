@@ -147,7 +147,6 @@
 #define	sg_set_page(...) __nop
 #define	sg_next(...) NULL
 #define	sysfs_attr_init(x) __nop
-#define	kobject_set_name(...) __nop
 #define	kobject_get_path(...) strdup("webcamd")
 #define	kobject_put(...) __nop
 #define	kobject_get(...) __nop
@@ -187,6 +186,7 @@
 #define	EXIT_DEAD               32
 #define	TASK_NONINTERACTIVE     64
 #define	no_llseek	NULL
+#define	default_llseek	NULL
 #define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
 #define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #define	BITS_PER_BYTE 8
@@ -196,7 +196,7 @@
 #define	BITS_TO_LONGS(n) (((n) + BITS_PER_LONG - 1) / BITS_PER_LONG)
 #define	BIT(n) (1UL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 37)
+#define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 38)
 #define	BUS_ID_SIZE 32
 #define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
 #define	MKDEV(maj,min) ((dev_t)((((maj) & 0xFFFFUL) << 16)|((min) & 0xFFFFUL)))
@@ -256,7 +256,8 @@
 #define	BUG(...) __nop
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
-#define	WARN(...) __nop
+#define	WARN(x,...) (x)
+#define	UINT_MAX ((unsigned int)-1)
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -292,6 +293,7 @@
 #define	__devinitconst
 #define	__devinit
 #define	__devexit
+#define	__devexit_p
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
 #define	set_current_state(...) __nop
@@ -300,17 +302,25 @@
 #define	time_before(a,b) time_after(b,a)
 #define	time_before_eq(a,b) time_after_eq(b,a)
 #define	time_is_after_eq_jiffies(a) time_before_eq(jiffies,a)
+#define	time_is_before_eq_jiffies(a) time_after_eq(jiffies,a)
 #define	__attribute_const__
 #define	noinline
+#define	__cpu_to_be32(x) cpu_to_be32(x)
+#define	__cpu_to_be16(x) cpu_to_be16(x)
 #define	__cpu_to_le32(x) cpu_to_le32(x)
 #define	__cpu_to_le16(x) cpu_to_le16(x)
 #define	__le32_to_cpu(x) le32_to_cpu(x)
 #define	__le16_to_cpu(x) le16_to_cpu(x)
 #define	__le32_to_cpus(p) le32_to_cpus(p)
 #define	__le16_to_cpus(p) le16_to_cpus(p)
+#define	__be32_to_cpu(x) be32_to_cpu(x)
+#define	__be16_to_cpu(x) be16_to_cpu(x)
+#define	__be32_to_cpus(p) be32_to_cpus(p)
+#define	__be16_to_cpus(p) be16_to_cpus(p)
 #define	NSEC_PER_USEC	1000
 #define	simple_strtoul strtoul
 #define	simple_strtol strtol
+#define	noop_llseek 0
 #define	ETIME ETIMEDOUT
 #define	ENOSR ENOBUFS
 #define	ENOTSUPP ENOTSUP

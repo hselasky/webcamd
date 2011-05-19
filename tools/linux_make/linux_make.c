@@ -315,6 +315,28 @@ add_child(struct node *parent, char *name)
 }
 
 static void
+remove_duplicate(node_head_t *head)
+{
+	struct node *n0;
+	struct node *n1;
+	struct node *n2;
+
+	TAILQ_FOREACH(n0, head, entry) {
+
+		TAILQ_FOREACH_SAFE(n1, head, entry, n2) {
+
+			if (n0 == n1)
+				continue;
+
+			if (strcmp(n0->name, n1->name) == 0) {
+				TAILQ_REMOVE(head, n1, entry);
+				free_node(n1);
+			}
+		}
+	}
+}
+
+static void
 resolve_nodes(void)
 {
 	struct node *n0;
@@ -356,6 +378,9 @@ resolve_nodes(void)
 			}
 		}
 	}
+
+	TAILQ_FOREACH(n0, &rootNode, entry)
+		remove_duplicate(&n0->children);
 }
 
 static void

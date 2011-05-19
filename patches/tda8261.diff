@@ -1,0 +1,24 @@
+From 7191938e7da088ccb5e8bad36e99ca495e53d206 Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <hselasky@c2i.net>
+Date: Thu, 19 May 2011 02:56:48 +0200
+Subject: [PATCH] Remove invalid parameter description.
+
+---
+ ../media_tree/drivers/media/dvb/frontends/tda8261.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/../media_tree/drivers/media/dvb/frontends/tda8261.c b/../media_tree/drivers/media/dvb/frontends/tda8261.c
+index 1742056..53c7d8f 100644
+--- a/../media_tree/drivers/media/dvb/frontends/tda8261.c
++++ b/../media_tree/drivers/media/dvb/frontends/tda8261.c
+@@ -224,7 +224,6 @@ exit:
+ }
+ 
+ EXPORT_SYMBOL(tda8261_attach);
+-MODULE_PARM_DESC(verbose, "Set verbosity level");
+ 
+ MODULE_AUTHOR("Manu Abraham");
+ MODULE_DESCRIPTION("TDA8261 8PSK/QPSK Tuner");
+-- 
+1.7.1.1
+

@@ -40,6 +40,7 @@ media_tree/drivers/media/dvb/dm1105 \
 media_tree/drivers/media/dvb/pt1 \
 media_tree/drivers/media/dvb/mantis \
 media_tree/drivers/media/dvb/ngene \
+media_tree/drivers/media/dvb/as102 \
 
 SRCS+= \
 	tuner-xc2028.c \
@@ -366,7 +367,6 @@ SRCS+= \
 	dvb_filter.c \
 	dvb_ca_en50221.c \
 	dvb_frontend.c \
-	dvb_net.c \
 	dvb_ringbuffer.c \
 	dvb_math.c \
 	dvb-pll.c \
@@ -510,6 +510,13 @@ SRCS+= \
 	smsir.c \
 	smsdvb.c \
 	smsusb.c \
+	as102_drv.c \
+	as102_fw.c \
+	as10x_cmd.c \
+	as10x_cmd_stream.c \
+	as102_fe.c \
+	as102_usb_drv.c \
+	as10x_cmd_cfg.c \
 
 .if defined(LIB)
 .include "${.CURDIR}/../../Makefile.lib"

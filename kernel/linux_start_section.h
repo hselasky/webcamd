@@ -23,7 +23,39 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _LINUX_START_SECTION_H_
-#define	_LINUX_START_SECTION_H_
+#ifndef _LINUX_END_SECTION_H_
+#define	_LINUX_END_SECTION_H_
 
-#endif					/* _LINUX_START_SECTION_H_ */
+#define	MODULE_INIT_MAGIC ((uint8_t *)0 + 0x123468AC)
+#define	MODULE_EXIT_MAGIC ((uint8_t *)0 + 0x1246789F)
+
+typedef int (module_init_t)(void);
+typedef void (module_exit_t)(void);
+
+struct module_init_struct {
+	module_init_t *func;
+	uint8_t *magic;
+};
+
+struct module_exit_struct {
+	module_exit_t *func;
+	uint8_t *magic;
+};
+
+#define	subsys_initcall(f) module_init(f)
+
+#define	module_init(func) static struct module_init_struct \
+  __attribute__((__section__("linux_init_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_INIT_MAGIC };
+
+#define	module_exit(func) static struct module_exit_struct \
+  __attribute__((__section__("linux_exit_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_EXIT_MAGIC };
+
+#define	late_initcall(x) module_init(x)		/* XXX FIXME LATER */
+
+void	linux_init(void);
+void	linux_exit(void);
+
+int	linux_module_init_end(void);
+void	linux_module_exit_end(void);
+
+#endif					/* _LINUX_END_SECTION_H_ */
