@@ -393,8 +393,10 @@ objs_exec(char *ptr, void (*fn) (char *name))
 	char *temp;
 	int len;
 
-	if (recurse > 64)
-		errx(EX_SOFTWARE, "Recursive limit of 64 exceeded.");
+	if (recurse > 64) {
+		errx(EX_SOFTWARE, "Recursive object "
+		    "execute limit of 64 exceeded for '%s'.", ptr);
+	}
 
 	recurse++;
 
@@ -407,7 +409,16 @@ objs_exec(char *ptr, void (*fn) (char *name))
 	}
 	TAILQ_FOREACH(n0, &rootNode, entry) {
 		if (strstr(n0->name, temp) == n0->name) {
-			if (n0->name[len] == '-') {
+
+			if (opt_verbose > 1) {
+				fprintf(stderr, "matching %s "
+				    "= %s\n", temp, n0->name);
+			}
+			/* Expecting: <match>-<y/n/m/objs><null> */
+			if (strcmp(n0->name + len, "-y") == 0 ||
+			    strcmp(n0->name + len, "-n") == 0 ||
+			    strcmp(n0->name + len, "-m") == 0 ||
+			    strcmp(n0->name + len, "-objs") == 0) {
 				TAILQ_FOREACH(n1, &n0->children, entry) {
 					objs_exec(n1->name, fn);
 				}
@@ -542,8 +553,10 @@ parse_makefile(char *path)
 	int line;
 	char c;
 
-	if (recurse > 64)
-		errx(EX_SOFTWARE, "Recursive limit of 64 exceeded.");
+	if (recurse > 64) {
+		errx(EX_SOFTWARE, "Recursive parse Makefile "
+		    "limit of 64 exceeded in '%s'.", path);
+	}
 
 	recurse++;
 
@@ -724,12 +737,12 @@ set_stdout(char *name)
 }
 
 static char *
-add_slash(char *ptr)
+add_slashdup(char *ptr)
 {
 	int len = strlen(ptr);
-	if (len && (ptr[len-1] != '/'))
+	if (len && (ptr[len - 1] != '/'))
 		return (strcatdup(ptr, "/"));
-	return (ptr);
+	return (strcatdup(ptr, ""));
 }
 
 static char *
@@ -749,7 +762,7 @@ static void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: linux_make -c config -o . -i linux/\n"
+	    "usage: linux_make -c config -o . -i linuxA/ -i linuxB/\n"
 	    "	-c <config-file>\n"
 	    "	-i <input-directory>\n"
 	    "	-o <output-directory>\n"
@@ -770,13 +783,14 @@ static const char *targets[] = {
 int
 main(int argc, char **argv)
 {
+	const char *params = "c:i:o:hv";
 	struct node *n0;
 	struct node *n1;
 	struct makefile *m0;
 	struct config *c0;
 	int c;
 
-        while ((c = getopt(argc, argv, "c:i:o:hv")) != -1) {
+        while ((c = getopt(argc, argv, params)) != -1) {
                 switch (c) {
                 case 'c':
 			opt_config = optarg;
@@ -799,20 +813,33 @@ main(int argc, char **argv)
 	if (opt_input == NULL || opt_output == NULL)
 		usage();
 
-	opt_input = add_slash(opt_input);
-	opt_output = add_slash(opt_output);
+	opt_output = add_slashdup(opt_output);
 
 	parse_config(opt_config);
 
-	parse_makefile(strcatdup(opt_input, ""));
+	optreset = 1;
+	optind = 1;
+
+        while ((c = getopt(argc, argv, params)) != -1) {
+                switch (c) {
+                case 'i':
+			opt_input = add_slashdup(optarg);
+			parse_makefile(opt_input);
+			opt_input = NULL;
+                        break;
+                default:
+                        break;
+                }
+        }
 
 	resolve_nodes();
 
 	if (opt_verbose > 1)
 		dump_nodes(&rootNode);
 
-	if (mkdir(strcatdup(opt_output, "obj-y"), 0755) != 0 && errno != EEXIST)
-		err(EX_NOINPUT, "Could not create directory.");
+	if (mkdir(strcatdup(opt_output, "obj-y"), 0755) != 0 &&
+	    errno != EEXIST)
+		err(EX_NOINPUT, "Could not create output directory.");
 
 	set_stdout(strcatdup(opt_output, "obj-y/Makefile"));
 
@@ -842,7 +869,7 @@ main(int argc, char **argv)
 		free(name);
 
 		if (mkdir(temp, 0755) != 0 && errno != EEXIST)
-			err(EX_NOINPUT, "Could not create directory.");
+			err(EX_NOINPUT, "Could not create output directory.");
 
 		set_stdout(strcatdup(temp, "/Makefile"));
 
