@@ -1,16 +1,5 @@
-From 74eef6e545a1b5222d94a1e82c091d73de2ef405 Mon Sep 17 00:00:00 2001
-From: Hans Petter Selasky <hselasky@c2i.net>
-Date: Thu, 19 May 2011 02:32:58 +0200
-Subject: [PATCH] Tune gspca driver.
-
----
- ../media_tree/drivers/media/video/gspca/gspca.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/../media_tree/drivers/media/video/gspca/gspca.c b/../media_tree/drivers/media/video/gspca/gspca.c
-index f21f2a2..726b755 100644
---- a/../media_tree/drivers/media/video/gspca/gspca.c
-+++ b/../media_tree/drivers/media/video/gspca/gspca.c
+--- a/gspca.c
++++ b/gspca.c
 @@ -46,7 +46,7 @@
  #endif
  
@@ -29,6 +18,4 @@ index f21f2a2..726b755 100644
  		if (ret < 0)
  			return ret;
  		if (ret == 0)
--- 
-1.7.1.1
 
