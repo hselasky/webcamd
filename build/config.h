@@ -127,6 +127,7 @@
 #define	CONFIG_I2C /* y */
 #define	CONFIG_I2C_SI470X /* y */
 #define	CONFIG_INPUT /* y */
+#define	CONFIG_INPUT_EVDEV /* y */
 #define	CONFIG_IR_CORE /* y */
 #define	CONFIG_IR_IMON /* y */
 #define	CONFIG_IR_JVC_DECODER /* y */
@@ -162,7 +163,6 @@
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
 #define	CONFIG_RC_CORE /* y */
-#define	CONFIG_RC_LOOPBACK /* y */
 #define	CONFIG_RC_MAP /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
@@ -279,6 +279,19 @@
 #define	CONFIG_VIDEO_VP27SMPX /* y */
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
+#undef	CONFIG_INPUT_FF_MEMLESS /* n */
+#undef	CONFIG_INPUT_POLLDEV /* n */
+#undef	CONFIG_INPUT_SPARSEKMAP /* n */
+#undef	CONFIG_INPUT_MOUSEDEV /* n */
+#undef	CONFIG_INPUT_JOYDEV /* n */
+#undef	CONFIG_INPUT_EVBUG /* n */
+#undef	CONFIG_INPUT_KEYBOARD /* n */
+#undef	CONFIG_INPUT_MOUSE /* n */
+#undef	CONFIG_INPUT_JOYSTICK /* n */
+#undef	CONFIG_INPUT_TABLET /* n */
+#undef	CONFIG_INPUT_TOUCHSCREEN /* n */
+#undef	CONFIG_INPUT_MISC /* n */
+#undef	CONFIG_INPUT_APMPOWER /* n */
 #undef	CONFIG_MEDIA_SUPPORT /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
@@ -286,6 +299,7 @@
 #undef	CONFIG_IR_NUVOTON /* n */
 #undef	CONFIG_IR_ENE /* n */
 #undef	CONFIG_IR_WINBOND_CIR /* n */
+#undef	CONFIG_RC_LOOPBACK /* n */
 #undef	CONFIG_VIDEO_ADV7180 /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */

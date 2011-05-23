@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	0.2.0
+VERSION=	0.2.1
 PROG=		webcamd
 
 #
@@ -185,7 +185,6 @@ SRCS+= linux_thread.c
 SRCS+= linux_defs.c
 SRCS+= linux_func.c
 SRCS+= linux_file.c
-SRCS+= linux_input.c
 SRCS+= linux_struct.c
 SRCS+= linux_task.c
 SRCS+= linux_timer.c

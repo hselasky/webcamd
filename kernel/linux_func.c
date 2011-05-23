@@ -26,10 +26,10 @@
 /* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
 
 #include <include/media/v4l2-dev.h>
-#include <include/linux/input.h>
+
+#include <linux/major.h>
 
 #include <drivers/media/dvb/dvb-core/dvbdev.h>
-#include <drivers/media/dvb/dvb-core/dvb_net.h>
 
 int
 printk_nop()
@@ -365,6 +365,17 @@ clear_bit(int nr, volatile unsigned long *addr)
 	atomic_unlock();
 }
 
+void
+change_bit(int nr, volatile unsigned long *addr)
+{
+	unsigned long mask = BIT_MASK(nr);
+	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
+
+	atomic_lock();
+	*p ^= mask;
+	atomic_unlock();
+}
+
 uint8_t
 bitrev8(uint8_t a)
 {
@@ -438,7 +449,8 @@ done:
 	return (cdev);
 }
 
-#define	LIRC_MAJOR 13
+#define	LIRC_MAJOR 14
+#define	EVDEV_MINOR_BASE 64
 
 static struct cdev *cdev_registry[F_V4B_MAX][F_V4B_SUBDEV_MAX];
 static uint32_t cdev_mm[F_V4B_MAX][F_V4B_SUBDEV_MAX];
@@ -450,10 +462,25 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 	uint8_t id;
 
 	switch (mm & 0xFFFF0000U) {
+	case MKDEV(INPUT_MAJOR, 0):
+		switch (mm & 0xFFE0) {
+		case EVDEV_MINOR_BASE:
+			subdev = mm & 0x1F;
+			if (subdev >= F_V4B_SUBDEV_MAX)
+				break;
+			cdev_registry[F_V4B_EVDEV][subdev] = cdev;
+			cdev_mm[F_V4B_EVDEV][subdev] = mm;
+			break;
+		default:
+			subdev = 0;
+			goto error;
+		}
+		break;
+
 	case MKDEV(LIRC_MAJOR, 0):
 		subdev = mm & 0xFF;
 		if (subdev >= F_V4B_SUBDEV_MAX)
-			goto error;
+			break;
 		cdev_registry[F_V4B_LIRC][subdev] = cdev;
 		cdev_mm[F_V4B_LIRC][subdev] = mm;
 		break;
@@ -576,6 +603,38 @@ cdev_add(struct cdev *cdev, dev_t mm, unsigned count)
 	}
 
 	return (0);
+}
+
+int
+register_chrdev(dev_t mm, const char *desc, const struct file_operations *fops)
+{
+	struct cdev *cdev;
+
+	switch (mm) {
+	case INPUT_MAJOR:
+		cdev = cdev_alloc();
+		if (cdev == NULL)
+			goto error;
+		cdev->ops = fops;
+		cdev_add(cdev, MKDEV(mm, EVDEV_MINOR_BASE), 32);
+		break;
+	default:
+		goto error;
+	}
+	return (0);
+
+error:
+	printf("Cannot register character "
+	    "device mm=0x%08x and desc='%s'.\n", mm, desc);
+	return (-1);
+}
+
+int
+unregister_chrdev(dev_t mm, const char *desc)
+{
+	printf("Cannot unregister character "
+	    "device mm=0x%08x and desc='%s'.\n", mm, desc);
+	return (-1);
 }
 
 void
@@ -1169,18 +1228,6 @@ do_gettimeofday(struct timeval *tp)
 }
 
 void
-dvb_net_release(struct dvb_net *dvbnet)
-{
-}
-
-int
-dvb_net_init(struct dvb_adapter *adap, struct dvb_net *dvbnet, struct dmx_demux *dmx)
-{
-	/* not supported */
-	return 0;
-}
-
-void
 poll_initwait(struct poll_wqueues *pwq)
 {
 	memset(pwq, 0, sizeof(*pwq));
@@ -1449,95 +1496,6 @@ void
 sysfs_remove_group(struct kobject *kobj,
     const struct attribute_group *grp)
 {
-}
-
-void
-input_event(struct input_dev *dev,
-    unsigned int type, unsigned int code, int value)
-{
-	printf("Input event: %d.%d.%d\n", type, code, value);
-}
-
-
-int
-input_scancode_to_scalar(const struct input_keymap_entry *ke,
-    unsigned int *scancode)
-{
-	switch (ke->len) {
-	case 1:
-		*scancode = *((u8 *) ke->scancode);
-		break;
-
-	case 2:
-		*scancode = *((u16 *) ke->scancode);
-		break;
-
-	case 4:
-		*scancode = *((u32 *) ke->scancode);
-		break;
-
-	default:
-		return (-EINVAL);
-	}
-
-	return (0);
-}
-
-int
-input_register_device(struct input_dev *dev)
-{
-	return (0);			/* XXX */
-}
-
-void
-input_unregister_device(struct input_dev *dev)
-{
-
-}
-
-struct input_dev *
-input_allocate_device(void)
-{
-	struct input_dev *dev;
-
-	dev = malloc(sizeof(*dev));
-	if (dev) {
-		memset(dev, 0, sizeof(*dev));
-	}
-	return (dev);
-}
-
-void
-input_free_device(struct input_dev *dev)
-{
-	free(dev);
-}
-
-void
-input_alloc_absinfo(struct input_dev *dev)
-{
-	if (!dev->absinfo)
-		dev->absinfo = kcalloc(ABS_CNT, sizeof(struct input_absinfo),
-		    GFP_KERNEL);
-}
-
-void
-input_set_abs_params(struct input_dev *dev, unsigned int axis,
-    int min, int max, int fuzz, int flat)
-{
-	struct input_absinfo *absinfo;
-
-	input_alloc_absinfo(dev);
-	if (!dev->absinfo)
-		return;
-
-	absinfo = &dev->absinfo[axis];
-	absinfo->minimum = min;
-	absinfo->maximum = max;
-	absinfo->fuzz = fuzz;
-	absinfo->flat = flat;
-
-	dev->absbit[BIT_WORD(axis)] |= BIT_MASK(axis);
 }
 
 void   *

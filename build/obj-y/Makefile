@@ -3,6 +3,7 @@
 #
 
 SRCPATHS+= \
+media_tree/drivers/input \
 media_tree/drivers/media \
 media_tree/drivers/media/common \
 media_tree/drivers/media/common/tuners \
@@ -43,6 +44,11 @@ media_tree/drivers/media/dvb/ngene \
 media_tree/drivers/media/dvb/as102 \
 
 SRCS+= \
+	input.c \
+	input-compat.c \
+	input-mt.c \
+	ff-core.c \
+	evdev.c \
 	tuner-xc2028.c \
 	tuner-simple.c \
 	tuner-types.c \
@@ -166,7 +172,6 @@ SRCS+= \
 	imon.c \
 	mceusb.c \
 	streamzap.c \
-	rc-loopback.c \
 	v4l2-dev.c \
 	v4l2-ioctl.c \
 	v4l2-device.c \

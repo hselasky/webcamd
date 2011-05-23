@@ -70,18 +70,33 @@ int	atomic_add(int i, atomic_t *v);
 void	atomic_set(atomic_t *v, int i);
 int	atomic_read(const atomic_t *v);
 int	atomic_dec_and_test(atomic_t *v);
+
+/* Bit-operations */
 int	test_bit(int nr, const void *addr);
+
+#define	__test_bit(a,b) test_bit(a,b)
 int	test_and_set_bit(int nr, volatile unsigned long *addr);
+
+#define	__test_and_set_bit(a,b) test_and_set_bit(a,b)
 int	test_and_clear_bit(int nr, volatile unsigned long *addr);
+
+#define	__test_and_clear_bit(a,b) test_and_clear_bit(a,b)
 void	set_bit(int nr, volatile unsigned long *addr);
 
 #define	__set_bit(a,b) set_bit(a,b)
 void	clear_bit(int nr, volatile unsigned long *addr);
 
 #define	__clear_bit(a,b) clear_bit(a,b)
+void	change_bit(int nr, volatile unsigned long *addr);
+
+#define	__change_bit(a,b) change_bit(a,b)
+
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
+int	register_chrdev(dev_t mm, const char *desc, const struct file_operations *fops);
+int	unregister_chrdev(dev_t mm, const char *desc);
+
 uint8_t	bitrev8(uint8_t a);
 unsigned int hweight8(unsigned int w);
 unsigned int hweight16(unsigned int w);

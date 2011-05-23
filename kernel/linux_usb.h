@@ -714,7 +714,6 @@ int	usb_lock_device_for_reset(struct usb_device *udev, const struct usb_interfac
 void	usb_unlock_device(struct usb_device *udev);
 int	usb_reset_device(struct usb_device *dev);
 uint8_t	usb_pipetype(unsigned int);
-void	usb_to_input_id(const struct usb_device *dev, struct input_id *id);
 uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
 void	usb_enable_autosuspend(struct usb_device *udev);
 

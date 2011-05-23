@@ -114,11 +114,13 @@
 #endif
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
+#define	printk_timed_ratelimit(...) printk_nop()
 #define	pr_err(...) __nop
 #define	pr_info(...) __nop
 #define	pr_dbg(...) __nop
 #define	pr_debug(...) __nop
 #define	pr_warn(...) __nop
+#define	pr_warning(...) __nop
 #define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt, dev_name(dev),## __VA_ARGS__)
@@ -218,6 +220,8 @@
 #define	_IOC_NONE IOC_VOID
 #define	_IOC_READ IOC_OUT
 #define	_IOC_WRITE IOC_IN
+#define	_IOC_SIZEMASK IOCPARM_MASK
+#define	_IOC_SIZESHIFT 16
 #define	__OLD_VIDIOC_
 #define	down_read(...) __nop
 #define	up_read(...) __nop
@@ -363,6 +367,22 @@
 })
 #undef errno
 #define	errno errno_v4l
+
+/* rcu - support */
+#define	rcu_read_lock() atomic_lock()
+#define	rcu_read_unlock() atomic_unlock()
+#define	rcu_dereference(p) (p)
+#define	rcu_assign_pointer(a,b) do { a = (b); } while (0)
+#define	list_for_each_entry_rcu(a,b,c) list_for_each_entry(a,b,c)
+#define	list_add_rcu(a,b) list_add(a,b)
+#define	list_add_tail_rcu(a,b) list_add_tail(a,b)
+#define	list_del_rcu(a) list_del(a)
+#define	synchronize_rcu() __nop
+
+#define	add_input_randomness(...) __nop
+
+#define	kill_fasync(...) __nop
+#define	fasync_helper(...) (0)
 
 #define	ATOMIC_INIT(x) { (x) }
 

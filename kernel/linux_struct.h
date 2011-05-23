@@ -43,6 +43,11 @@ struct module {
 struct kobject {
 };
 
+struct kobj_uevent_env {
+	char	buf[512];
+	int	buflen;
+};
+
 struct kref {
 	atomic_t refcount;
 };
@@ -135,6 +140,7 @@ struct device {
 };
 
 typedef unsigned long pgprot_t;
+typedef unsigned long fl_owner_t;
 
 struct vm_fault {
 	void   *virtual_address;
@@ -172,11 +178,15 @@ struct file_operations {
 	long    (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 	int     (*mmap) (struct file *, struct vm_area_struct *);
 	int     (*open) (struct inode *, struct file *);
-	int     (*flush) (struct file *);
+	int     (*flush) (struct file *, fl_owner_t);
+	int     (*fasync) (int, struct file *, int);
 	int     (*release) (struct inode *, struct file *);
 	int     (*check_flags) (int);
 	int     (*dir_notify) (struct file *filp, unsigned long arg);
 	unsigned long (*get_unmapped_area) (struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+};
+
+struct fasync_struct {
 };
 
 struct dentry {
@@ -213,6 +223,7 @@ enum {
 	F_V4B_DVB_SEC,
 	F_V4B_DVB_VIDEO,
 	F_V4B_LIRC,
+	F_V4B_EVDEV,
 	F_V4B_MAX,
 };
 
@@ -248,10 +259,26 @@ struct usb_class_driver {
 struct scatterlist {
 };
 
-extern struct device_attribute dev_attr_protocols;
-extern struct device_attribute dev_attr_imon_clock;
+extern struct device_attribute dev_attr_abs;
 extern struct device_attribute dev_attr_associate_remote;
-extern struct device_attribute dev_attr_name;
+extern struct device_attribute dev_attr_bustype;
+extern struct device_attribute dev_attr_ev;
+extern struct device_attribute dev_attr_ff;
+extern struct device_attribute dev_attr_imon_clock;
+extern struct device_attribute dev_attr_key;
+extern struct device_attribute dev_attr_led;
 extern struct device_attribute dev_attr_modalias;
+extern struct device_attribute dev_attr_msc;
+extern struct device_attribute dev_attr_name;
+extern struct device_attribute dev_attr_phys;
+extern struct device_attribute dev_attr_product;
+extern struct device_attribute dev_attr_properties;
+extern struct device_attribute dev_attr_protocols;
+extern struct device_attribute dev_attr_rel;
+extern struct device_attribute dev_attr_snd;
+extern struct device_attribute dev_attr_sw;
+extern struct device_attribute dev_attr_uniq;
+extern struct device_attribute dev_attr_vendor;
+extern struct device_attribute dev_attr_version;
 
 #endif					/* _LINUX_STRUCT_H_ */

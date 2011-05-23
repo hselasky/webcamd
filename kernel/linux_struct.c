@@ -23,8 +23,24 @@
  * SUCH DAMAGE.
  */
 
-struct device_attribute dev_attr_protocols;
-struct device_attribute dev_attr_imon_clock;
+struct device_attribute dev_attr_abs;
 struct device_attribute dev_attr_associate_remote;
-struct device_attribute dev_attr_name;
+struct device_attribute dev_attr_bustype;
+struct device_attribute dev_attr_ev;
+struct device_attribute dev_attr_ff;
+struct device_attribute dev_attr_imon_clock;
+struct device_attribute dev_attr_key;
+struct device_attribute dev_attr_led;
 struct device_attribute dev_attr_modalias;
+struct device_attribute dev_attr_msc;
+struct device_attribute dev_attr_name;
+struct device_attribute dev_attr_phys;
+struct device_attribute dev_attr_product;
+struct device_attribute dev_attr_properties;
+struct device_attribute dev_attr_protocols;
+struct device_attribute dev_attr_rel;
+struct device_attribute dev_attr_snd;
+struct device_attribute dev_attr_sw;
+struct device_attribute dev_attr_uniq;
+struct device_attribute dev_attr_vendor;
+struct device_attribute dev_attr_version;

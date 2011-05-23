@@ -65,7 +65,6 @@
 #include <kernel/linux_thread.h>
 #include <kernel/linux_usb.h>
 #include <kernel/linux_start_section.h>
-#include <kernel/linux_input.h>
 #include <kernel/linux_firmware.h>
 #include <kernel/linux_mod_param.h>
 
@@ -75,8 +74,8 @@
 
 extern int webcamd_unit;
 
-#define getmode __getmode
-#define setmode __setmode
-#define sync __sync
+#define	getmode __getmode
+#define	setmode __setmode
+#define	sync __sync
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */

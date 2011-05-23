@@ -2087,15 +2087,6 @@ usb_pipetype(unsigned int pipe)
 	return ((pipe >> 30) & 3);
 }
 
-void
-usb_to_input_id(const struct usb_device *dev, struct input_id *id)
-{
-	id->bustype = BUS_USB;
-	id->vendor = le16_to_cpu(dev->descriptor.idVendor);
-	id->product = le16_to_cpu(dev->descriptor.idProduct);
-	id->version = le16_to_cpu(dev->descriptor.bcdDevice);
-}
-
 int
 usb_autopm_get_interface(struct usb_interface *intf)
 {
