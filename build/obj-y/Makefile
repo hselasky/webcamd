@@ -104,7 +104,6 @@ SRCS+= \
 	rc-gadmei-rm008z.c \
 	rc-genius-tvgo-a11mce.c \
 	rc-gotview7135.c \
-	rc-hauppauge-new.c \
 	rc-imon-mce.c \
 	rc-imon-pad.c \
 	rc-iodata-bctv7e.c \
@@ -135,14 +134,15 @@ SRCS+= \
 	rc-proteus-2309.c \
 	rc-purpletv.c \
 	rc-pv951.c \
-	rc-rc5-hauppauge-new.c \
-	rc-rc5-tv.c \
+	rc-hauppauge.c \
 	rc-rc6-mce.c \
 	rc-real-audio-220-32-keys.c \
 	rc-streamzap.c \
 	rc-tbs-nec.c \
+	rc-technisat-usb2.c \
 	rc-terratec-cinergy-xs.c \
 	rc-terratec-slim.c \
+	rc-terratec-slim-2.c \
 	rc-tevii-nec.c \
 	rc-total-media-in-hand.c \
 	rc-trekstor.c \
@@ -173,6 +173,7 @@ SRCS+= \
 	v4l2-fh.c \
 	v4l2-event.c \
 	v4l2-ctrls.c \
+	v4l2-subdev.c \
 	v4l2-int-device.c \
 	v4l2-compat-ioctl32.c \
 	v4l2-common.c \
@@ -221,6 +222,7 @@ SRCS+= \
 	tveeprom.c \
 	mt9v011.c \
 	sr030pc30.c \
+	ov9740.c \
 	em28xx-video.c \
 	em28xx-i2c.c \
 	em28xx-cards.c \
@@ -386,6 +388,7 @@ SRCS+= \
 	dib7000m.c \
 	dib7000p.c \
 	dib8000.c \
+	dib9000.c \
 	mt312.c \
 	ves1820.c \
 	ves1x93.c \
@@ -446,6 +449,7 @@ SRCS+= \
 	mb86a16.c \
 	mb86a20s.c \
 	ix2505v.c \
+	stv0367.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \
@@ -504,6 +508,7 @@ SRCS+= \
 	ec168.c \
 	az6027.c \
 	lmedm04.c \
+	technisat-usb2.c \
 	smscoreapi.c \
 	sms-cards.c \
 	smsendian.c \

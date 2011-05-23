@@ -25,6 +25,7 @@
 #define	CONFIG_DVB_DIB7000M /* y */
 #define	CONFIG_DVB_DIB7000P /* y */
 #define	CONFIG_DVB_DIB8000 /* y */
+#define	CONFIG_DVB_DIB9000 /* y */
 #define	CONFIG_DVB_DS3000 /* y */
 #define	CONFIG_DVB_DUMMY_FE /* y */
 #undef	CONFIG_DVB_DYNAMIC_MINORS /* n */
@@ -64,6 +65,7 @@
 #define	CONFIG_DVB_STV0288 /* y */
 #define	CONFIG_DVB_STV0297 /* y */
 #define	CONFIG_DVB_STV0299 /* y */
+#define	CONFIG_DVB_STV0367 /* y */
 #define	CONFIG_DVB_STV0900 /* y */
 #define	CONFIG_DVB_STV090x /* y */
 #define	CONFIG_DVB_STV6110 /* y */
@@ -111,6 +113,7 @@
 #define	CONFIG_DVB_USB_M920X /* y */
 #define	CONFIG_DVB_USB_NOVA_T_USB2 /* y */
 #define	CONFIG_DVB_USB_OPERA1 /* y */
+#define	CONFIG_DVB_USB_TECHNISAT_USB2 /* y */
 #define	CONFIG_DVB_USB_TTUSB2 /* y */
 #define	CONFIG_DVB_USB_UMT_010 /* y */
 #define	CONFIG_DVB_USB_VP702X /* y */
@@ -163,6 +166,7 @@
 #define	CONFIG_RC_MAP /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
+#define	CONFIG_SOC_CAMERA_OV9740 /* y */
 #define	CONFIG_TTPCI_EEPROM /* y */
 #define	CONFIG_USB_DSBR /* y */
 #define	CONFIG_USB_ET61X251 /* y */
@@ -277,14 +281,17 @@
 #define	CONFIG_VIDEO_VP27SMPX /* y */
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
+#undef	CONFIG_MEDIA_SUPPORT /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
+#undef	CONFIG_IR_ITE_CIR /* n */
 #undef	CONFIG_IR_NUVOTON /* n */
 #undef	CONFIG_IR_ENE /* n */
 #undef	CONFIG_IR_WINBOND_CIR /* n */
 #undef	CONFIG_VIDEO_ADV7180 /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */
+#undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M111 /* n */
@@ -315,9 +322,17 @@
 #undef	CONFIG_VIDEO_TIMBERDALE /* n */
 #undef	CONFIG_VIDEOBUF_DMA_SG /* n */
 #undef	CONFIG_VIDEOBUF_DMA_CONTIG /* n */
+#undef	CONFIG_VIDEOBUF2_CORE /* n */
+#undef	CONFIG_VIDEOBUF2_MEMOPS /* n */
+#undef	CONFIG_VIDEOBUF2_VMALLOC /* n */
+#undef	CONFIG_VIDEOBUF2_DMA_CONTIG /* n */
+#undef	CONFIG_VIDEOBUF2_DMA_SG /* n */
 #undef	CONFIG_VIDEO_M32R_AR_M64278 /* n */
 #undef	CONFIG_VIDEO_CAFE_CCIC /* n */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
+#undef	CONFIG_VIDEO_OMAP3 /* n */
+#undef	CONFIG_USB_GSPCA_NW80X /* n */
+#undef	CONFIG_USB_GSPCA_VICAM /* n */
 #undef	CONFIG_VIDEO_IVTV /* n */
 #undef	CONFIG_VIDEO_CX18 /* n */
 #undef	CONFIG_VIDEO_VIU /* n */
@@ -366,6 +381,7 @@
 #undef	CONFIG_RADIO_SI470X /* n */
 #undef	CONFIG_RADIO_TIMBERDALE /* n */
 #undef	CONFIG_RADIO_WL1273 /* n */
+#undef	CONFIG_RADIO_WL128X /* n */
 #undef	CONFIG_DVB_NET /* n */
 #undef	CONFIG_DVB_DRX397XD /* n */
 #undef	CONFIG_DVB_BUDGET_CORE /* n */
