@@ -155,6 +155,7 @@
 #define	kstrdup(a,b) strdup(a)
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
+#define	usleep_range(_min,_max) usleep(_min)
 #define	__GFP_WAIT 0
 #define	__GFP_HIGH 0
 #define	__GFP_IO 0
@@ -256,7 +257,7 @@
 #define	BUG(...) __nop
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
-#define	WARN(x,...) (x)
+#define	WARN(...) __nop
 #define	UINT_MAX ((unsigned int)-1)
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop

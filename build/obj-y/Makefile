@@ -222,7 +222,6 @@ SRCS+= \
 	tveeprom.c \
 	mt9v011.c \
 	sr030pc30.c \
-	ov9740.c \
 	em28xx-video.c \
 	em28xx-i2c.c \
 	em28xx-cards.c \
@@ -260,7 +259,6 @@ SRCS+= \
 	videobuf-vmalloc.c \
 	videobuf-dvb.c \
 	btcx-risc.c \
-	v4l2-mem2mem.c \
 	cx2341x.c \
 	zr364xx.c \
 	stk-webcam.c \

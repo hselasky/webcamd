@@ -166,7 +166,6 @@
 #define	CONFIG_RC_MAP /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
-#define	CONFIG_SOC_CAMERA_OV9740 /* y */
 #define	CONFIG_TTPCI_EEPROM /* y */
 #define	CONFIG_USB_DSBR /* y */
 #define	CONFIG_USB_ET61X251 /* y */
@@ -219,7 +218,6 @@
 #undef	CONFIG_USB_STV06XX /* n */
 #define	CONFIG_USB_VIDEO_CLASS /* y */
 #define	CONFIG_USB_ZR364XX /* y */
-#define	CONFIG_V4L2_MEM2MEM_DEV /* y */
 #define	CONFIG_VIDEOBUF_DVB /* y */
 #define	CONFIG_VIDEOBUF_GEN /* y */
 #define	CONFIG_VIDEOBUF_VMALLOC /* y */
@@ -302,6 +300,7 @@
 #undef	CONFIG_SOC_CAMERA_OV6650 /* n */
 #undef	CONFIG_SOC_CAMERA_OV772X /* n */
 #undef	CONFIG_SOC_CAMERA_OV9640 /* n */
+#undef	CONFIG_SOC_CAMERA_OV9740 /* n */
 #undef	CONFIG_SOC_CAMERA_RJ54N1 /* n */
 #undef	CONFIG_SOC_CAMERA_TW9910 /* n */
 #undef	CONFIG_VIDEO_BT848 /* n */
@@ -327,6 +326,7 @@
 #undef	CONFIG_VIDEOBUF2_VMALLOC /* n */
 #undef	CONFIG_VIDEOBUF2_DMA_CONTIG /* n */
 #undef	CONFIG_VIDEOBUF2_DMA_SG /* n */
+#undef	CONFIG_V4L2_MEM2MEM_DEV /* n */
 #undef	CONFIG_VIDEO_M32R_AR_M64278 /* n */
 #undef	CONFIG_VIDEO_CAFE_CCIC /* n */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
