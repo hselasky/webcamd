@@ -216,14 +216,6 @@ fetch:
 
 	cd media_tree ; git pull
 
-#
-# Fetch latest Linux PCTV 74E driver
-#
-
-#
-# Fetch latest PCTV 452E driver
-#
-
 package:
 
 	@make clean cleandepend HAVE_MAN=YES
@@ -255,4 +247,4 @@ help:
 	@echo "#"
 
 configure:
-	linux_make -c config -i media_tree/drivers/media/ -o build/
+	linux_make -c config -i media_tree/drivers/input -i media_tree/drivers/media -o build/
