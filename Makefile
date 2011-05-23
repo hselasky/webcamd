@@ -221,7 +221,8 @@ package:
 
 	[ -d ${LINUXDIR}/drivers/media/dvb/as102 ] || mkdir ${LINUXDIR}/drivers/media/dvb/as102
 
-	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" --exclude=".svn" \
+	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" \
+		--exclude=".svn" --exclude="*.orig" --exclude="*.rej" \
 		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
 		${SRCPATHS} build/ media_tree/include \
 		patches/do_patch.sh patches/*.diff
