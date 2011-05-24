@@ -415,6 +415,7 @@ SRCS+= \
 	lgdt3305.c \
 	cx24123.c \
 	lnbp21.c \
+	lnbp22.c \
 	isl6405.c \
 	isl6421.c \
 	tda10086.c \
@@ -503,6 +504,7 @@ SRCS+= \
 	dw2102.c \
 	dtv5100.c \
 	af9015.c \
+	pctv452e.c \
 	cinergyT2-core.c \
 	cinergyT2-fe.c \
 	ce6230.c \

@@ -113,6 +113,7 @@
 #define	CONFIG_DVB_USB_M920X /* y */
 #define	CONFIG_DVB_USB_NOVA_T_USB2 /* y */
 #define	CONFIG_DVB_USB_OPERA1 /* y */
+#define	CONFIG_DVB_USB_PCTV452E /* y */
 #define	CONFIG_DVB_USB_TECHNISAT_USB2 /* y */
 #define	CONFIG_DVB_USB_TTUSB2 /* y */
 #define	CONFIG_DVB_USB_UMT_010 /* y */
