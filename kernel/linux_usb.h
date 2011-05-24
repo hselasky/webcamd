@@ -395,25 +395,25 @@ struct usb_endpoint_descriptor {
  * is a pointer to "struct usb_device".
  */
 #define	usb_sndctrlpipe(dev,endpoint) \
-  usb_create_host_endpoint(dev, PIPE_CONTROL, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_CONTROL, (endpoint) & ~USB_DIR_IN)
 
 #define	usb_rcvctrlpipe(dev,endpoint) \
   usb_create_host_endpoint(dev, PIPE_CONTROL, (endpoint) | USB_DIR_IN)
 
 #define	usb_sndisocpipe(dev,endpoint) \
-  usb_create_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) & ~USB_DIR_IN)
 
 #define	usb_rcvisocpipe(dev,endpoint) \
   usb_create_host_endpoint(dev, PIPE_ISOCHRONOUS, (endpoint) | USB_DIR_IN)
 
 #define	usb_sndbulkpipe(dev,endpoint) \
-  usb_create_host_endpoint(dev, PIPE_BULK, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_BULK, (endpoint) & ~USB_DIR_IN)
 
 #define	usb_rcvbulkpipe(dev,endpoint) \
   usb_create_host_endpoint(dev, PIPE_BULK, (endpoint) | USB_DIR_IN)
 
 #define	usb_sndintpipe(dev,endpoint) \
-  usb_create_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_OUT)
+  usb_create_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) & ~USB_DIR_IN)
 
 #define	usb_rcvintpipe(dev,endpoint) \
   usb_create_host_endpoint(dev, PIPE_INTERRUPT, (endpoint) | USB_DIR_IN)

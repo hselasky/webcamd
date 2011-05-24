@@ -266,7 +266,7 @@ usb_linux_fill_ep_info(struct usb_device *udev,
 		ea = uhe->desc.bEndpointAddress;
 
 		/* skip any bogus control endpoints */
-		if ((ea & 15) == 0)
+		if ((ea & USB_ENDPOINT_NUMBER_MASK) == 0)
 			continue;
 
 		if (ea & USB_ENDPOINT_DIR_MASK)
@@ -868,11 +868,11 @@ usb_setup_endpoint(struct usb_device *dev,
 		/* transfer already setup */
 		return (0);
 	}
-	uhe->bsd_xfer[0] = libusb20_tr_get_pointer(dev->bsd_udev, ep_index + 0);
-	uhe->bsd_xfer[1] = libusb20_tr_get_pointer(dev->bsd_udev, ep_index + 1);
-
 	if (type == USB_ENDPOINT_XFER_CONTROL)
 		return (-EINVAL);
+
+	uhe->bsd_xfer[0] = libusb20_tr_get_pointer(dev->bsd_udev, ep_index + 0);
+	uhe->bsd_xfer[1] = libusb20_tr_get_pointer(dev->bsd_udev, ep_index + 1);
 
 	if (type == USB_ENDPOINT_XFER_ISOC) {
 
@@ -1068,6 +1068,8 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ud->ep0.desc.bDescriptorType = 5;	/* endpoint descriptor */
 	p_ud->ep0.desc.bEndpointAddress = 0;
 	p_ud->ep0.desc.bmAttributes = USB_ENDPOINT_XFER_CONTROL;
+	TAILQ_INIT(&p_ud->ep0.bsd_urb_list);
+
 	p_ud->ep_in[0] = &p_ud->ep0;
 	p_ud->ep_out[0] = &p_ud->ep0;
 
