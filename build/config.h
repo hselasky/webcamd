@@ -138,6 +138,7 @@
 #define	CONFIG_IR_RC5_DECODER /* y */
 #define	CONFIG_IR_RC5_SZ_DECODER /* y */
 #define	CONFIG_IR_RC6_DECODER /* y */
+#define	CONFIG_IR_REDRAT3 /* y */
 #define	CONFIG_IR_SONY_DECODER /* y */
 #define	CONFIG_IR_STREAMZAP /* y */
 #define	CONFIG_LIRC /* y */
@@ -151,6 +152,7 @@
 #define	CONFIG_MEDIA_TUNER_MXL5007T /* y */
 #define	CONFIG_MEDIA_TUNER_QT1010 /* y */
 #define	CONFIG_MEDIA_TUNER_SIMPLE /* y */
+#define	CONFIG_MEDIA_TUNER_TDA18212 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18218 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18271 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA827X /* y */
@@ -178,6 +180,7 @@
 #define	CONFIG_USB_GSPCA_ETOMS /* y */
 #define	CONFIG_USB_GSPCA_FINEPIX /* y */
 #define	CONFIG_USB_GSPCA_JEILINJ /* y */
+#define	CONFIG_USB_GSPCA_KINECT /* y */
 #define	CONFIG_USB_GSPCA_KONICA /* y */
 #define	CONFIG_USB_GSPCA_MARS /* y */
 #define	CONFIG_USB_GSPCA_MR97310A /* y */
@@ -293,7 +296,7 @@
 #undef	CONFIG_INPUT_TOUCHSCREEN /* n */
 #undef	CONFIG_INPUT_MISC /* n */
 #undef	CONFIG_INPUT_APMPOWER /* n */
-#undef	CONFIG_MEDIA_SUPPORT /* n */
+#undef	CONFIG_MEDIA_CONTROLLER /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
 #undef	CONFIG_IR_ITE_CIR /* n */
@@ -301,6 +304,7 @@
 #undef	CONFIG_IR_ENE /* n */
 #undef	CONFIG_IR_WINBOND_CIR /* n */
 #undef	CONFIG_RC_LOOPBACK /* n */
+#undef	CONFIG_COMPAT /* n */
 #undef	CONFIG_VIDEO_ADV7180 /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */

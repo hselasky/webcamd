@@ -180,7 +180,6 @@ SRCS+= \
 	v4l2-ctrls.c \
 	v4l2-subdev.c \
 	v4l2-int-device.c \
-	v4l2-compat-ioctl32.c \
 	v4l2-common.c \
 	tuner-core.c \
 	tvaudio.c \
