@@ -58,7 +58,6 @@ void
 style_fix()
 {
 }
-
 #endif
 
 struct node {
@@ -380,7 +379,7 @@ resolve_nodes(void)
 	}
 
 	TAILQ_FOREACH(n0, &rootNode, entry)
-		remove_duplicate(&n0->children);
+	    remove_duplicate(&n0->children);
 }
 
 static void
@@ -397,7 +396,6 @@ objs_exec(char *ptr, void (*fn) (char *name))
 		errx(EX_SOFTWARE, "Recursive object "
 		    "execute limit of 64 exceeded for '%s'.", ptr);
 	}
-
 	recurse++;
 
 	temp = strcatdup(ptr, "");
@@ -475,6 +473,30 @@ get_config_entry(const char *what)
 }
 
 static void
+variable_substitute(char *operator)
+{
+	char *pt;
+	int len;
+
+	if (operator == NULL)
+		return;
+
+	pt = operator;
+	len = strlen(pt);
+
+	if (operator[1] == '(') {
+		operator += 2;
+		len -= 2;
+	}
+	if ((len != 0) && (operator[len - 1] == ')')) {
+		len--;
+		operator[len] = 0;
+	}
+	pt[0] = get_config_entry(operator);
+	pt[1] = 0;
+}
+
+static void
 parse_config(char *path)
 {
 	char *file;
@@ -500,7 +522,7 @@ parse_config(char *path)
 
 		/* get next word */
 		temp = ptr;
-		skip_until(&temp, "\t\r =");
+		skip_until(&temp, "\t\r =#");
 		if (temp == ptr)
 			continue;
 
@@ -529,7 +551,8 @@ parse_config(char *path)
 			new_config(keyword, 'n');
 			break;
 		default:
-			errx(EX_NOINPUT, "Invalid configuration value '%c' at line %d.", temp[0], line);
+			errx(EX_NOINPUT, "Invalid configuration "
+			    "value '%c' at line %d.", temp[0], line);
 			break;
 		}
 	}
@@ -548,16 +571,15 @@ parse_makefile(char *path)
 	char *temp;
 	char *parent;
 	char *child;
-	char *operator;
 	struct directory *dir;
 	int line;
+	int skip = 0;
 	char c;
 
 	if (recurse > 64) {
 		errx(EX_SOFTWARE, "Recursive parse Makefile "
 		    "limit of 64 exceeded in '%s'.", path);
 	}
-
 	recurse++;
 
 	dir = new_directory();
@@ -583,7 +605,7 @@ parse_makefile(char *path)
 
 		/* get next word */
 		temp = ptr;
-		skip_until(&temp, "\t\r :+=");
+		skip_until(&temp, "\t\r :+=#");
 		if (temp == ptr)
 			continue;
 
@@ -593,27 +615,141 @@ parse_makefile(char *path)
 		parent = strcatdup(ptr, "");
 		*temp = c;
 
-		/* perform any variable substitution */
-		operator = strchr(parent, '$');
-		if (operator != NULL) {
+		/* test for ifdef */
+		if (strcmp(parent, "ifdef") == 0 ||
+		    strcmp(parent, "ifndef") == 0) {
 
-			char *pt;
-			int len;
+			char *a;
+			char b;
 
-			pt = operator;
-			len = strlen(pt);
-
-			if (operator[1] == '(') {
-				operator += 2;
-				len -= 2;
+			if (opt_verbose > 2) {
+				fprintf(stderr, "Found %s at line "
+				    "%d level %d\n", parent, line, skip);
 			}
-			if ((len != 0) && (operator[len - 1] == ')')) {
-				len--;
-				operator[len] = 0;
+
+			if (skip) {
+				skip++;
+				free(parent);
+				continue;
 			}
-			pt[0] = get_config_entry(operator);
-			pt[1] = 0;
+			/* pass all ifdefs */
+
+			/* very simple expression matcher */
+
+			ptr = temp;
+			skip_while(&ptr, "\t\r ");
+
+			a = ptr;
+
+			skip_until(&ptr, "\t\r #");
+
+			c = *ptr;
+			*ptr = 0;
+			a = strcatdup(a, "");
+			*ptr = c;
+
+			b = get_config_entry(a);
+
+			if (opt_verbose > 2) {
+				fprintf(stderr, "Testing %s %c\n",
+				    parent, b);
+			}
+
+			if (strcmp(parent, "ifdef") == 0) {
+				if (b == 'n')
+					skip++;
+			} else {
+				if (b != 'n')
+					skip++;
+			}
+
+			free(a);
+			free(parent);
+			continue;
 		}
+		/* test for ifeq and ifneq */
+		if (strcmp(parent, "ifeq") == 0 ||
+		    strcmp(parent, "ifneq") == 0) {
+
+			char *a;
+			char *b;
+
+			if (opt_verbose > 2) {
+				fprintf(stderr, "Found %s at line "
+				    "%d level %d\n", parent, line, skip);
+			}
+
+			if (skip) {
+				skip++;
+				free(parent);
+				continue;
+			}
+			/* very simple expression matcher */
+
+			ptr = temp;
+			skip_while(&ptr, "\t\r( ");
+
+			a = ptr;
+
+			skip_until(&ptr, ",#");
+
+			c = *ptr;
+			*ptr = 0;
+			a = strcatdup(a, "");
+			*ptr = c;
+
+			skip_while(&ptr, "\t\r ,");
+			b = ptr;
+
+			skip_until(&ptr, "\t\r )#");
+
+			c = *ptr;
+			*ptr = 0;
+			b = strcatdup(b, "");
+			*ptr = c;
+
+			variable_substitute(strchr(a, '$'));
+			variable_substitute(strchr(b, '$'));
+
+			if (opt_verbose > 2) {
+				fprintf(stderr, "Comparing %s(%s,%s)\n",
+				    parent, a, b);
+			}
+
+			if (strcmp(parent, "ifeq") == 0) {
+				if (strcmp(a, b) != 0)
+					skip++;
+			} else {
+				if (strcmp(a, b) == 0)
+					skip++;
+			}
+			free(parent);
+			free(a);
+			free(b);
+			continue;
+		}
+		/* test for ifeq and ifneq */
+		if (strcmp(parent, "endif") == 0) {
+
+			if (opt_verbose > 2) {
+				fprintf(stderr, "Found endif at line "
+				    "%d level %d\n", line, skip);
+			}
+
+			if (skip)
+				skip--;
+
+			free(parent);
+			continue;
+		}
+		/* check if inside conditional */
+		if (skip) {
+			free(parent);
+			continue;
+		}
+		/* perform any variable substitution */
+		variable_substitute(strchr(parent, '$'));
+
 		/* get next operator, if any */
 		ptr = temp;
 		skip_while(&ptr, "\t\r ");
@@ -632,7 +768,7 @@ parse_makefile(char *path)
 			ptr = temp;
 			skip_while(&ptr, "\t\r ");
 			temp = ptr;
-			skip_until(&temp, "\t\r ");
+			skip_until(&temp, "\t\r #");
 			if (temp == ptr)
 				break;
 
@@ -684,19 +820,20 @@ output_makefile(char *name)
 	TAILQ_FOREACH(dir, &rootDirectory, entry) {
 		int c;
 		int len;
+
 		len = strlen(dir->name);
 		if (len > 0)
-			c = dir->name[len-1];
+			c = dir->name[len - 1];
 		else
 			c = 0;
 
 		if (c == '/')
-			dir->name[len-1] = 0;
+			dir->name[len - 1] = 0;
 
 		printf("%s \\\n", dir->name);
 
 		if (c == '/')
-			dir->name[len-1] = c;
+			dir->name[len - 1] = c;
 	}
 
 	printf("\n"
@@ -711,8 +848,8 @@ output_makefile(char *name)
 	printf("\n");
 
 	printf(".if defined(LIB)\n"
-	       ".include \"${.CURDIR}/../../Makefile.lib\"\n"
-	       ".endif\n");
+	    ".include \"${.CURDIR}/../../Makefile.lib\"\n"
+	    ".endif\n");
 }
 
 static void
@@ -740,6 +877,7 @@ static char *
 add_slashdup(char *ptr)
 {
 	int len = strlen(ptr);
+
 	if (len && (ptr[len - 1] != '/'))
 		return (strcatdup(ptr, "/"));
 	return (strcatdup(ptr, ""));
@@ -790,25 +928,25 @@ main(int argc, char **argv)
 	struct config *c0;
 	int c;
 
-        while ((c = getopt(argc, argv, params)) != -1) {
-                switch (c) {
-                case 'c':
+	while ((c = getopt(argc, argv, params)) != -1) {
+		switch (c) {
+		case 'c':
 			opt_config = optarg;
-                        break;
-                case 'i':
+			break;
+		case 'i':
 			opt_input = optarg;
-                        break;
-                case 'o':
+			break;
+		case 'o':
 			opt_output = optarg;
-                        break;
+			break;
 		case 'v':
 			opt_verbose++;
 			break;
-                default:
-                        usage();
-                        break;
-                }
-        }
+		default:
+			usage();
+			break;
+		}
+	}
 
 	if (opt_input == NULL || opt_output == NULL)
 		usage();
@@ -820,17 +958,17 @@ main(int argc, char **argv)
 	optreset = 1;
 	optind = 1;
 
-        while ((c = getopt(argc, argv, params)) != -1) {
-                switch (c) {
-                case 'i':
+	while ((c = getopt(argc, argv, params)) != -1) {
+		switch (c) {
+		case 'i':
 			opt_input = add_slashdup(optarg);
 			parse_makefile(opt_input);
 			opt_input = NULL;
-                        break;
-                default:
-                        break;
-                }
-        }
+			break;
+		default:
+			break;
+		}
+	}
 
 	resolve_nodes();
 
@@ -893,6 +1031,7 @@ main(int argc, char **argv)
 		printf("\n%s:\n", targets[c]);
 		TAILQ_FOREACH(m0, &rootMakefile, entry) {
 			char *ptr;
+
 			ptr = fname(m0->name);
 			printf("\tcd %s; ${MAKE} LIB=%s%s ${MAKE_ARGS} %s\n",
 			    ptr, ptr, strcmp(ptr, "obj-y") ?
@@ -903,8 +1042,8 @@ main(int argc, char **argv)
 	printf("\ninstall:\n");
 	printf("\t[ -d modules] || mkdir modules\n");
 	TAILQ_FOREACH(m0, &rootMakefile, entry) {
-	    printf("\tcp -v %s/%s{.a,.so} modules/\n",
-	        m0->name, fname(m0->name));
+		printf("\tcp -v %s/%s{.a,.so} modules/\n",
+		    m0->name, fname(m0->name));
 	}
 
 	set_stdout(strcatdup(opt_output, "config.h"));
