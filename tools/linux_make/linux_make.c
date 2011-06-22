@@ -285,6 +285,32 @@ skip_until(char **ptr, char *what)
 	}
 }
 
+static void
+skip_until_tp(char **ptr, char *what)
+{
+	int c;
+	int tp = 0;
+
+	while (1) {
+		c = **ptr;
+		if (c == '(')
+			tp++;
+		if (c == ')')
+			tp--;
+		if (c != 0) {
+			if (tp > 0) {
+				(*ptr)++;
+				continue;
+			}
+			if (strchr(what, c) == NULL) {
+				(*ptr)++;
+				continue;
+			}
+		}
+		break;
+	}
+}
+
 static struct node *
 add_node(node_head_t *head, char *name)
 {
@@ -687,11 +713,22 @@ parse_makefile(char *path)
 			/* very simple expression matcher */
 
 			ptr = temp;
-			skip_while(&ptr, "\t\r( ");
+			skip_while(&ptr, "\t\r ");
+			if (ptr[0] != '(') {
+				if (opt_verbose > 2) {
+					fprintf(stderr, "Syntax error %s "
+					    "at line %d level %d\n",
+					    parent, line, skip);
+				}
+				skip++;
+				free(parent);
+				continue;
+			}
+
+			ptr++;
 
 			a = ptr;
-
-			skip_until(&ptr, ",#");
+			skip_until_tp(&ptr, "\t\r ,");
 
 			c = *ptr;
 			*ptr = 0;
@@ -701,7 +738,7 @@ parse_makefile(char *path)
 			skip_while(&ptr, "\t\r ,");
 			b = ptr;
 
-			skip_until(&ptr, "\t\r )#");
+			skip_until_tp(&ptr, "\t\r )");
 
 			c = *ptr;
 			*ptr = 0;
