@@ -183,6 +183,7 @@
 #define	CONFIG_USB_GSPCA_KINECT /* y */
 #define	CONFIG_USB_GSPCA_KONICA /* y */
 #define	CONFIG_USB_GSPCA_MARS /* y */
+#define	CONFIG_USB_GSPCA_NW80X /* y */
 #define	CONFIG_USB_GSPCA_MR97310A /* y */
 #define	CONFIG_USB_GSPCA_OV519 /* y */
 #define	CONFIG_USB_GSPCA_OV534 /* y */
@@ -350,7 +351,6 @@
 #undef	CONFIG_VIDEO_CAFE_CCIC /* n */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
-#undef	CONFIG_USB_GSPCA_NW80X /* n */
 #undef	CONFIG_USB_GSPCA_VICAM /* n */
 #undef	CONFIG_VIDEO_IVTV /* n */
 #undef	CONFIG_VIDEO_CX18 /* n */

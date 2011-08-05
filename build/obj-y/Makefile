@@ -301,6 +301,7 @@ SRCS+= \
 	konica.c \
 	mars.c \
 	mr97310a.c \
+	nw80x.c \
 	ov519.c \
 	ov534.c \
 	ov534_9.c \
