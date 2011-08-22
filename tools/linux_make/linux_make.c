@@ -1095,10 +1095,10 @@ main(int argc, char **argv)
 	TAILQ_FOREACH(c0, &rootConfig, entry) {
 
 		if (c0->value == 'm') {
-			printf("#define\t%s_MODULE 1 /* %c */\n",
+			printf("#define\t%s_MODULE /* %c */\n",
 			    c0->name, c0->value);
 		} else if (c0->value == 'y') {
-			printf("#define\t%s 1 /* %c */\n",
+			printf("#define\t%s /* %c */\n",
 			    c0->name, c0->value);
 		} else {
 			printf("#undef\t%s /* %c */\n",
