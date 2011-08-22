@@ -53,8 +53,8 @@ hal_add_device(const char *devname)
 
 #else
 
+/* Include V4L1 header file from the local system folder: */
 #include <linux/videodev.h>
-#include <linux/videodev2.h>
 
 #include <libhal.h>
 

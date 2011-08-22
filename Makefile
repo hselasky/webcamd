@@ -225,7 +225,9 @@ package:
 		--exclude=".svn" --exclude="*.orig" --exclude="*.rej" \
 		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
 		${SRCPATHS} build/ media_tree/include \
-		patches/do_patch.sh patches/*.diff
+		patches/do_patch.sh patches/*.diff \
+		tools/linux_make/*.[ch] \
+		tools/linux_make/Makefile
 
 	rm -rf webcamd-${VERSION}
 
