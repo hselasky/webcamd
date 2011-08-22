@@ -33,7 +33,7 @@
 #ifndef _LINUX_USB_H_
 #define	_LINUX_USB_H_
 
-#include <include/linux/pm.h>
+#include <linux/pm.h>
 
 #ifndef __packed
 #define	__packed __attribute__((__packed__))

@@ -25,11 +25,11 @@
 
 /* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
 
-#include <include/media/v4l2-dev.h>
+#include <media/v4l2-dev.h>
 
 #include <linux/major.h>
 
-#include <drivers/media/dvb/dvb-core/dvbdev.h>
+#include <dvbdev.h>
 
 int
 printk_nop()

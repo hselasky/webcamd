@@ -68,9 +68,8 @@
 #include <kernel/linux_firmware.h>
 #include <kernel/linux_mod_param.h>
 
-#include <include/linux/mod_devicetable.h>
-#include <include/linux/videodev2.h>
-#include <include/linux/videodev.h>
+#include <media_tree/include/linux/mod_devicetable.h>
+#include <media_tree/include/linux/videodev2.h>
 
 extern int webcamd_unit;
 

@@ -25,7 +25,7 @@
 
 /* NOTE: This code derives from i2c-core.c in Linux */
 
-#include <include/linux/i2c.h>
+#include <linux/i2c.h>
 
 int
 i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
@@ -109,8 +109,8 @@ i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 struct i2c_client *
 i2c_new_probed_device(struct i2c_adapter *adapt,
     struct i2c_board_info *info,
-    unsigned short const *addr_list,
-    int (*probe) (struct i2c_adapter *, unsigned short addr))
+    const unsigned short *probe_attrs,
+    unsigned short const *addr_list)
 {
 	return (i2c_new_device(adapt, info));
 }
@@ -121,7 +121,7 @@ i2c_unregister_device(struct i2c_client *client)
 }
 
 int
-i2c_master_send(const struct i2c_client *client, const char *buf, int count)
+i2c_master_send(struct i2c_client *client, const char *buf, int count)
 {
 	int ret;
 	struct i2c_adapter *adap = client->adapter;
@@ -138,7 +138,7 @@ i2c_master_send(const struct i2c_client *client, const char *buf, int count)
 }
 
 int
-i2c_master_recv(const struct i2c_client *client, char *buf, int count)
+i2c_master_recv(struct i2c_client *client, char *buf, int count)
 {
 	struct i2c_adapter *adap = client->adapter;
 	struct i2c_msg msg;
@@ -219,7 +219,7 @@ i2c_smbus_check_pec(u8 cpec, struct i2c_msg *msg)
 }
 
 int
-i2c_smbus_read_byte(const struct i2c_client *client)
+i2c_smbus_read_byte(struct i2c_client *client)
 {
 	union i2c_smbus_data data;
 	int status;
@@ -231,14 +231,14 @@ i2c_smbus_read_byte(const struct i2c_client *client)
 }
 
 int
-i2c_smbus_write_byte(const struct i2c_client *client, u8 value)
+i2c_smbus_write_byte(struct i2c_client *client, u8 value)
 {
 	return i2c_smbus_xfer(client->adapter, client->addr, client->flags,
 	    I2C_SMBUS_WRITE, value, I2C_SMBUS_BYTE, NULL);
 }
 
 int
-i2c_smbus_read_byte_data(const struct i2c_client *client, u8 command)
+i2c_smbus_read_byte_data(struct i2c_client *client, u8 command)
 {
 	union i2c_smbus_data data;
 	int status;
@@ -250,7 +250,7 @@ i2c_smbus_read_byte_data(const struct i2c_client *client, u8 command)
 }
 
 int
-i2c_smbus_write_byte_data(const struct i2c_client *client, u8 command,
+i2c_smbus_write_byte_data(struct i2c_client *client, u8 command,
     u8 value)
 {
 	union i2c_smbus_data data;
@@ -262,7 +262,7 @@ i2c_smbus_write_byte_data(const struct i2c_client *client, u8 command,
 }
 
 int
-i2c_smbus_read_word_data(const struct i2c_client *client, u8 command)
+i2c_smbus_read_word_data(struct i2c_client *client, u8 command)
 {
 	union i2c_smbus_data data;
 	int status;
@@ -274,7 +274,7 @@ i2c_smbus_read_word_data(const struct i2c_client *client, u8 command)
 }
 
 int
-i2c_smbus_write_word_data(const struct i2c_client *client, u8 command,
+i2c_smbus_write_word_data(struct i2c_client *client, u8 command,
     u16 value)
 {
 	union i2c_smbus_data data;
@@ -286,7 +286,7 @@ i2c_smbus_write_word_data(const struct i2c_client *client, u8 command,
 }
 
 int
-i2c_smbus_process_call(const struct i2c_client *client, u8 command,
+i2c_smbus_process_call(struct i2c_client *client, u8 command,
     u16 value)
 {
 	union i2c_smbus_data data;
@@ -301,7 +301,7 @@ i2c_smbus_process_call(const struct i2c_client *client, u8 command,
 }
 
 int
-i2c_smbus_read_block_data(const struct i2c_client *client, u8 command,
+i2c_smbus_read_block_data(struct i2c_client *client, u8 command,
     u8 * values)
 {
 	union i2c_smbus_data data;
@@ -318,7 +318,7 @@ i2c_smbus_read_block_data(const struct i2c_client *client, u8 command,
 }
 
 int
-i2c_smbus_write_block_data(const struct i2c_client *client, u8 command,
+i2c_smbus_write_block_data(struct i2c_client *client, u8 command,
     u8 length, const u8 * values)
 {
 	union i2c_smbus_data data;
@@ -333,7 +333,7 @@ i2c_smbus_write_block_data(const struct i2c_client *client, u8 command,
 }
 
 int
-i2c_smbus_read_i2c_block_data(const struct i2c_client *client, u8 command,
+i2c_smbus_read_i2c_block_data(struct i2c_client *client, u8 command,
     u8 length, u8 * values)
 {
 	union i2c_smbus_data data;
@@ -353,7 +353,7 @@ i2c_smbus_read_i2c_block_data(const struct i2c_client *client, u8 command,
 }
 
 int
-i2c_smbus_write_i2c_block_data(const struct i2c_client *client, u8 command,
+i2c_smbus_write_i2c_block_data(struct i2c_client *client, u8 command,
     u8 length, const u8 * values)
 {
 	union i2c_smbus_data data;
