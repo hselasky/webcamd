@@ -172,6 +172,7 @@
 #define	CONFIG_MEDIA_TUNER_XC2028 /* y */
 #define	CONFIG_MEDIA_TUNER_XC4000 /* y */
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */
+#define	CONFIG_MMU /* y */
 #define	CONFIG_RADIO_SAA7706H /* y */
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
