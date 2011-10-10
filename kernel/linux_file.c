@@ -190,6 +190,9 @@ linux_mmap(struct cdev_handle *handle, int fflags,
 	if (handle == NULL)
 		return (MAP_FAILED);
 
+	if (handle->fixed_file.f_op->mmap == NULL)
+		return (MAP_FAILED);
+
 	/* sanity checks */
 	if (len == 0)
 		return (MAP_FAILED);

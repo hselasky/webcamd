@@ -3,7 +3,7 @@
 
 #include <sys/endian.h>
 
-int zero_nop(void);
+int	zero_nop(void);
 
 #define	device_create_file(...) zero_nop()
 #define	device_remove_file(...) zero_nop()

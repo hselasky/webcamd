@@ -32,7 +32,7 @@ int	linux_ioctl(struct cdev_handle *, int fflags, unsigned int cmd, void *arg);
 ssize_t	linux_read(struct cdev_handle *, int fflags, char *ptr, size_t len);
 ssize_t	linux_write(struct cdev_handle *, int fflags, char *ptr, size_t len);
 void   *linux_mmap(struct cdev_handle *, int fflags, uint8_t *addr, size_t len, off_t offset);
-int	linux_poll(struct cdev_handle *handle);
+int	linux_poll(struct cdev_handle *);
 int	linux_get_user_pages(unsigned long start, int npages, int write, int force, struct page **ppages, struct vm_area_struct **pvm);
 
 struct cdev_handle *get_current_cdev_handle(void);

@@ -326,6 +326,7 @@ v4b_create(int unit)
 		handle = linux_open(n, O_RDONLY);
 
 		if (handle != NULL) {
+
 			linux_close(handle);
 
 			temp = (unit * F_V4B_SUBDEV_MAX) +
@@ -610,15 +611,23 @@ copy_from_user(void *to, const void *from, unsigned long n)
 	return ((error != 0) ? n : 0);
 }
 
+static uint32_t zero_alloc[1];
+
 void   *
 malloc_vm(size_t size)
 {
+	if (size == 0)
+		return (zero_alloc);
+
 	return (cuse_vmalloc(size));
 }
 
 void
 free_vm(void *ptr)
 {
+	if (ptr == zero_alloc)
+		return;
+
 	cuse_vmfree(ptr);
 }
 
