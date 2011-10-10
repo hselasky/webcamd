@@ -3,11 +3,13 @@
 
 #include <sys/endian.h>
 
-#define	device_create_file(...) 0
-#define	device_remove_file(...) __nop
-#define	device_set_wakeup_enable(...) 0
-#define	device_set_wakeup_capable(...) 0
-#define	device_set_wakeup_disable(...) 0
+int zero_nop(void);
+
+#define	device_create_file(...) zero_nop()
+#define	device_remove_file(...) zero_nop()
+#define	device_set_wakeup_enable(...) zero_nop()
+#define	device_set_wakeup_capable(...) zero_nop()
+#define	device_set_wakeup_disable(...) zero_nop()
 
 int	printk_nop(void);
 

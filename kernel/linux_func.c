@@ -1658,3 +1658,9 @@ kobject_set_name(struct kobject *kobj, const char *fmt,...)
 {
 	return (0);
 }
+
+int
+zero_nop(void)
+{
+	return (0);
+}
