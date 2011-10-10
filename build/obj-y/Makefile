@@ -4,6 +4,7 @@
 
 SRCPATHS+= \
 media_tree/drivers/input \
+media_tree/drivers/input/tablet \
 media_tree/drivers/media \
 media_tree/drivers/media/common \
 media_tree/drivers/media/common/tuners \
@@ -49,6 +50,13 @@ SRCS+= \
 	input-mt.c \
 	ff-core.c \
 	evdev.c \
+	acecad.c \
+	aiptek.c \
+	gtco.c \
+	hanwang.c \
+	kbtab.c \
+	wacom_wac.c \
+	wacom_sys.c \
 	tuner-xc2028.c \
 	tuner-simple.c \
 	tuner-types.c \

@@ -284,6 +284,13 @@
 #define	CONFIG_VIDEO_VP27SMPX /* y */
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
+#define	CONFIG_INPUT_TABLET /* y */
+#define	CONFIG_TABLET_USB_WACOM /* y */
+#define	CONFIG_TABLET_USB_ACECAD /* y */
+#define	CONFIG_TABLET_USB_AIPTEK /* y */
+#define	CONFIG_TABLET_USB_GTCO /* y */
+#define	CONFIG_TABLET_USB_HANWANG /* y */
+#define	CONFIG_TABLET_USB_KBTAB /* y */
 #undef	CONFIG_INPUT_FF_MEMLESS /* n */
 #undef	CONFIG_INPUT_POLLDEV /* n */
 #undef	CONFIG_INPUT_SPARSEKMAP /* n */
@@ -293,7 +300,6 @@
 #undef	CONFIG_INPUT_KEYBOARD /* n */
 #undef	CONFIG_INPUT_MOUSE /* n */
 #undef	CONFIG_INPUT_JOYSTICK /* n */
-#undef	CONFIG_INPUT_TABLET /* n */
 #undef	CONFIG_INPUT_TOUCHSCREEN /* n */
 #undef	CONFIG_INPUT_MISC /* n */
 #undef	CONFIG_INPUT_APMPOWER /* n */
