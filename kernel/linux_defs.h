@@ -115,6 +115,8 @@
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	printk_timed_ratelimit(...) printk_nop()
+#define	pr_err_ratelimited(...) __nop
+#define	pr_cont(...) __nop
 #define	pr_err(...) __nop
 #define	pr_info(...) __nop
 #define	pr_dbg(...) __nop
@@ -213,6 +215,7 @@
 	temp_ptr;				\
 })
 #define	DEFAULT_POLLMASK POLLNVAL
+#define	POLL_ERR POLLERR
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
 #define	_IOC_NR(cmd) ((cmd) & 0xFF)
@@ -262,7 +265,6 @@
 #define	BUG_ON(...) __nop
 #define	WARN_ON(...) __nop
 #define	WARN(...) __nop
-#define	UINT_MAX ((unsigned int)-1)
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -275,7 +277,8 @@
 #define	atomic_inc_return atomic_inc
 #define	atomic_dec_return atomic_dec
 #define	assert_spin_locked(...) __nop
-#define	IS_ERR_VALUE(x) ((x) >= (unsigned long)-(1<<14))
+#define	IS_ERR_VALUE(x) ((unsigned long)(x) >= (unsigned long)-(1<<14))
+#define	IS_ERR_OR_NULL(x) ((unsigned long)(x) == 0 || IS_ERR_VALUE(x))
 #define	find_first_bit(addr, size) find_next_bit((addr), (size), 0)
 #define	find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
 #define	signal_pending(...) check_signal()

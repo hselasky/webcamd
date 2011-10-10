@@ -259,6 +259,11 @@ struct usb_class_driver {
 struct scatterlist {
 };
 
+struct va_format {
+	const char *fmt;
+	va_list *va;
+};
+
 extern struct device_attribute dev_attr_abs;
 extern struct device_attribute dev_attr_associate_remote;
 extern struct device_attribute dev_attr_bustype;

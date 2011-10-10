@@ -6,6 +6,7 @@
 #define	_ROOT_CONFIG_H_
 
 #define	CONFIG_AS102_USB /* y */
+#define	CONFIG_DVB_A8293 /* y */
 #define	CONFIG_DVB_AF9013 /* y */
 #define	CONFIG_DVB_AS102 /* y */
 #define	CONFIG_DVB_AT76C651 /* y */
@@ -20,12 +21,14 @@
 #define	CONFIG_DVB_CX24110 /* y */
 #define	CONFIG_DVB_CX24116 /* y */
 #define	CONFIG_DVB_CX24123 /* y */
+#define	CONFIG_DVB_CXD2820R /* y */
 #define	CONFIG_DVB_DIB3000MB /* y */
 #define	CONFIG_DVB_DIB3000MC /* y */
 #define	CONFIG_DVB_DIB7000M /* y */
 #define	CONFIG_DVB_DIB7000P /* y */
 #define	CONFIG_DVB_DIB8000 /* y */
 #define	CONFIG_DVB_DIB9000 /* y */
+#define	CONFIG_DVB_DRXD /* y */
 #define	CONFIG_DVB_DS3000 /* y */
 #define	CONFIG_DVB_DUMMY_FE /* y */
 #undef	CONFIG_DVB_DYNAMIC_MINORS /* n */
@@ -33,6 +36,7 @@
 #define	CONFIG_DVB_ISL6405 /* y */
 #define	CONFIG_DVB_ISL6421 /* y */
 #define	CONFIG_DVB_ISL6423 /* y */
+#define	CONFIG_DVB_IT913X_FE /* y */
 #define	CONFIG_DVB_IX2505V /* y */
 #define	CONFIG_DVB_L64781 /* y */
 #define	CONFIG_DVB_LGDT3304 /* y */
@@ -74,7 +78,9 @@
 #define	CONFIG_DVB_TDA10023 /* y */
 #define	CONFIG_DVB_TDA10048 /* y */
 #define	CONFIG_DVB_TDA1004X /* y */
+#define	CONFIG_DVB_TDA10071 /* y */
 #define	CONFIG_DVB_TDA10086 /* y */
+#define	CONFIG_DVB_TDA18271C2DD /* y */
 #define	CONFIG_DVB_TDA665x /* y */
 #define	CONFIG_DVB_TDA8083 /* y */
 #define	CONFIG_DVB_TDA80XX /* y */
@@ -109,8 +115,10 @@
 #define	CONFIG_DVB_USB_FRIIO /* y */
 #define	CONFIG_DVB_USB_GL861 /* y */
 #define	CONFIG_DVB_USB_GP8PSK /* y */
+#define	CONFIG_DVB_USB_IT913X /* y */
 #define	CONFIG_DVB_USB_LME2510 /* y */
 #define	CONFIG_DVB_USB_M920X /* y */
+#define	CONFIG_DVB_USB_MXL111SF /* y */
 #define	CONFIG_DVB_USB_NOVA_T_USB2 /* y */
 #define	CONFIG_DVB_USB_OPERA1 /* y */
 #define	CONFIG_DVB_USB_PCTV452E /* y */
@@ -129,6 +137,7 @@
 #define	CONFIG_I2C_SI470X /* y */
 #define	CONFIG_INPUT /* y */
 #define	CONFIG_INPUT_EVDEV /* y */
+#define	CONFIG_INPUT_TABLET /* y */
 #define	CONFIG_IR_CORE /* y */
 #define	CONFIG_IR_IMON /* y */
 #define	CONFIG_IR_JVC_DECODER /* y */
@@ -161,6 +170,7 @@
 #define	CONFIG_MEDIA_TUNER_TEA5761 /* y */
 #define	CONFIG_MEDIA_TUNER_TEA5767 /* y */
 #define	CONFIG_MEDIA_TUNER_XC2028 /* y */
+#define	CONFIG_MEDIA_TUNER_XC4000 /* y */
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */
 #define	CONFIG_RADIO_SAA7706H /* y */
 #define	CONFIG_RADIO_TEA5764 /* y */
@@ -169,6 +179,12 @@
 #define	CONFIG_RC_MAP /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
+#define	CONFIG_TABLET_USB_ACECAD /* y */
+#define	CONFIG_TABLET_USB_AIPTEK /* y */
+#define	CONFIG_TABLET_USB_GTCO /* y */
+#define	CONFIG_TABLET_USB_HANWANG /* y */
+#define	CONFIG_TABLET_USB_KBTAB /* y */
+#define	CONFIG_TABLET_USB_WACOM /* y */
 #define	CONFIG_TTPCI_EEPROM /* y */
 #define	CONFIG_USB_DSBR /* y */
 #define	CONFIG_USB_ET61X251 /* y */
@@ -183,14 +199,15 @@
 #define	CONFIG_USB_GSPCA_KINECT /* y */
 #define	CONFIG_USB_GSPCA_KONICA /* y */
 #define	CONFIG_USB_GSPCA_MARS /* y */
-#define	CONFIG_USB_GSPCA_NW80X /* y */
 #define	CONFIG_USB_GSPCA_MR97310A /* y */
+#define	CONFIG_USB_GSPCA_NW80X /* y */
 #define	CONFIG_USB_GSPCA_OV519 /* y */
 #define	CONFIG_USB_GSPCA_OV534 /* y */
 #define	CONFIG_USB_GSPCA_OV534_9 /* y */
 #define	CONFIG_USB_GSPCA_PAC207 /* y */
 #define	CONFIG_USB_GSPCA_PAC7302 /* y */
 #define	CONFIG_USB_GSPCA_PAC7311 /* y */
+#define	CONFIG_USB_GSPCA_SE401 /* y */
 #define	CONFIG_USB_GSPCA_SN9C2028 /* y */
 #define	CONFIG_USB_GSPCA_SN9C20X /* y */
 #define	CONFIG_USB_GSPCA_SONIXB /* y */
@@ -223,6 +240,9 @@
 #undef	CONFIG_USB_STV06XX /* n */
 #define	CONFIG_USB_VIDEO_CLASS /* y */
 #define	CONFIG_USB_ZR364XX /* y */
+#define	CONFIG_VIDEOBUF2_CORE /* y */
+#define	CONFIG_VIDEOBUF2_MEMOPS /* y */
+#define	CONFIG_VIDEOBUF2_VMALLOC /* y */
 #define	CONFIG_VIDEOBUF_DVB /* y */
 #define	CONFIG_VIDEOBUF_GEN /* y */
 #define	CONFIG_VIDEOBUF_VMALLOC /* y */
@@ -284,13 +304,6 @@
 #define	CONFIG_VIDEO_VP27SMPX /* y */
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
-#define	CONFIG_INPUT_TABLET /* y */
-#define	CONFIG_TABLET_USB_WACOM /* y */
-#define	CONFIG_TABLET_USB_ACECAD /* y */
-#define	CONFIG_TABLET_USB_AIPTEK /* y */
-#define	CONFIG_TABLET_USB_GTCO /* y */
-#define	CONFIG_TABLET_USB_HANWANG /* y */
-#define	CONFIG_TABLET_USB_KBTAB /* y */
 #undef	CONFIG_INPUT_FF_MEMLESS /* n */
 #undef	CONFIG_INPUT_POLLDEV /* n */
 #undef	CONFIG_INPUT_SPARSEKMAP /* n */
@@ -306,7 +319,9 @@
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
+#undef	CONFIG_IR_MCE_KBD_DECODER /* n */
 #undef	CONFIG_IR_ITE_CIR /* n */
+#undef	CONFIG_IR_FINTEK /* n */
 #undef	CONFIG_IR_NUVOTON /* n */
 #undef	CONFIG_IR_ENE /* n */
 #undef	CONFIG_IR_WINBOND_CIR /* n */
@@ -315,7 +330,12 @@
 #undef	CONFIG_VIDEO_ADV7180 /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */
+#undef	CONFIG_VIDEO_MT9P031 /* n */
+#undef	CONFIG_VIDEO_MT9T001 /* n */
+#undef	CONFIG_VIDEO_MT9V032 /* n */
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
+#undef	CONFIG_VIDEO_M5MOLS /* n */
+#undef	CONFIG_VIDEO_ADP1653 /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M111 /* n */
@@ -323,6 +343,7 @@
 #undef	CONFIG_SOC_CAMERA_MT9T112 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9V022 /* n */
 #undef	CONFIG_SOC_CAMERA_OV2640 /* n */
+#undef	CONFIG_SOC_CAMERA_OV5642 /* n */
 #undef	CONFIG_SOC_CAMERA_OV6650 /* n */
 #undef	CONFIG_SOC_CAMERA_OV772X /* n */
 #undef	CONFIG_SOC_CAMERA_OV9640 /* n */
@@ -338,6 +359,7 @@
 #undef	CONFIG_VIDEO_MEYE /* n */
 #undef	CONFIG_VIDEO_SAA7134 /* n */
 #undef	CONFIG_VIDEO_CX88 /* n */
+#undef	CONFIG_VIDEO_EM28XX_RC /* n */
 #undef	CONFIG_VIDEO_TLG2300 /* n */
 #undef	CONFIG_VIDEO_CX231XX /* n */
 #undef	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* n */
@@ -347,14 +369,12 @@
 #undef	CONFIG_VIDEO_TIMBERDALE /* n */
 #undef	CONFIG_VIDEOBUF_DMA_SG /* n */
 #undef	CONFIG_VIDEOBUF_DMA_CONTIG /* n */
-#undef	CONFIG_VIDEOBUF2_CORE /* n */
-#undef	CONFIG_VIDEOBUF2_MEMOPS /* n */
-#undef	CONFIG_VIDEOBUF2_VMALLOC /* n */
 #undef	CONFIG_VIDEOBUF2_DMA_CONTIG /* n */
 #undef	CONFIG_VIDEOBUF2_DMA_SG /* n */
 #undef	CONFIG_V4L2_MEM2MEM_DEV /* n */
 #undef	CONFIG_VIDEO_M32R_AR_M64278 /* n */
 #undef	CONFIG_VIDEO_CAFE_CCIC /* n */
+#undef	CONFIG_VIDEO_MMP_CAMERA /* n */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
 #undef	CONFIG_USB_GSPCA_VICAM /* n */
@@ -374,7 +394,10 @@
 #undef	CONFIG_VIDEO_SH_MOBILE_CSI2 /* n */
 #undef	CONFIG_VIDEO_SH_MOBILE_CEU /* n */
 #undef	CONFIG_VIDEO_OMAP1 /* n */
+#undef	CONFIG_VIDEO_ATMEL_ISI /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_FIMC /* n */
+#undef	CONFIG_VIDEO_SAMSUNG_S5P_MFC /* n */
+#undef	CONFIG_VIDEO_SAMSUNG_S5P_TV /* n */
 #undef	CONFIG_ARCH_DAVINCI /* n */
 #undef	CONFIG_VIDEO_SH_VOU /* n */
 #undef	CONFIG_VIDEO_SAA7164 /* n */
@@ -386,6 +409,8 @@
 #undef	CONFIG_VIDEO_DM6446_CCDC /* n */
 #undef	CONFIG_VIDEO_DM355_CCDC /* n */
 #undef	CONFIG_VIDEO_ISIF /* n */
+#undef	CONFIG_VIDEO_DM644X_VPBE /* n */
+#undef	CONFIG_VIDEO_VPBE_DISPLAY /* n */
 #undef	CONFIG_ARCH_OMAP /* n */
 #undef	CONFIG_RADIO_AZTECH /* n */
 #undef	CONFIG_RADIO_RTRACK2 /* n */
@@ -401,14 +426,13 @@
 #undef	CONFIG_RADIO_TRUST /* n */
 #undef	CONFIG_I2C_SI4713 /* n */
 #undef	CONFIG_RADIO_SI4713 /* n */
-#undef	CONFIG_RADIO_MAESTRO /* n */
 #undef	CONFIG_RADIO_MIROPCM20 /* n */
 #undef	CONFIG_RADIO_SI470X /* n */
 #undef	CONFIG_RADIO_TIMBERDALE /* n */
 #undef	CONFIG_RADIO_WL1273 /* n */
 #undef	CONFIG_RADIO_WL128X /* n */
 #undef	CONFIG_DVB_NET /* n */
-#undef	CONFIG_DVB_DRX397XD /* n */
+#undef	CONFIG_DVB_DRXK /* n */
 #undef	CONFIG_DVB_BUDGET_CORE /* n */
 #undef	CONFIG_DVB_BUDGET /* n */
 #undef	CONFIG_DVB_BUDGET_AV /* n */
@@ -425,6 +449,7 @@
 #undef	CONFIG_DVB_MANTIS /* n */
 #undef	CONFIG_DVB_HOPPER /* n */
 #undef	CONFIG_DVB_NGENE /* n */
+#undef	CONFIG_DVB_DDBRIDGE /* n */
 #undef	CONFIG_DVB_FIREDTV /* n */
 
 #endif			/* _ROOT_CONFIG_H_ */

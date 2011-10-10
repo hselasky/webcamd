@@ -196,6 +196,9 @@ struct usb_driver {
 
 	void    (*shutdown) (struct usb_interface *intf);
 
+	int     (*pre_reset) (struct usb_interface *);
+	int     (*post_reset) (struct usb_interface *);
+
 	LIST_ENTRY(usb_driver) linux_driver_list;
 
 	uint8_t	supports_autosuspend;

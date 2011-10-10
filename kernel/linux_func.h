@@ -5,6 +5,9 @@
 
 #define	device_create_file(...) 0
 #define	device_remove_file(...) __nop
+#define	device_set_wakeup_enable(...) 0
+#define	device_set_wakeup_capable(...) 0
+#define	device_set_wakeup_disable(...) 0
 
 int	printk_nop(void);
 

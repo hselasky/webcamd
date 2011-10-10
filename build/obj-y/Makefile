@@ -42,6 +42,7 @@ media_tree/drivers/media/dvb/dm1105 \
 media_tree/drivers/media/dvb/pt1 \
 media_tree/drivers/media/dvb/mantis \
 media_tree/drivers/media/dvb/ngene \
+media_tree/drivers/media/dvb/ddbridge \
 media_tree/drivers/media/dvb/as102 \
 
 SRCS+= \
@@ -70,6 +71,7 @@ SRCS+= \
 	tda18271-common.c \
 	tda18271-fe.c \
 	xc5000.c \
+	xc4000.c \
 	mt2060.c \
 	mt2266.c \
 	qt1010.c \
@@ -79,6 +81,7 @@ SRCS+= \
 	mc44s803.c \
 	max2165.c \
 	tda18218.c \
+	tda18212.c \
 	rc-adstech-dvb-t-pci.c \
 	rc-alink-dtu-m.c \
 	rc-anysee.c \
@@ -158,6 +161,7 @@ SRCS+= \
 	rc-terratec-slim.c \
 	rc-terratec-slim-2.c \
 	rc-tevii-nec.c \
+	rc-tivo.c \
 	rc-total-media-in-hand.c \
 	rc-trekstor.c \
 	rc-tt-1500.c \
@@ -179,6 +183,7 @@ SRCS+= \
 	ir-lirc-codec.c \
 	imon.c \
 	mceusb.c \
+	redrat3.c \
 	streamzap.c \
 	v4l2-dev.c \
 	v4l2-ioctl.c \
@@ -238,7 +243,6 @@ SRCS+= \
 	em28xx-i2c.c \
 	em28xx-cards.c \
 	em28xx-core.c \
-	em28xx-input.c \
 	em28xx-vbi.c \
 	em28xx-dvb.c \
 	usbvision-core.c \
@@ -271,6 +275,9 @@ SRCS+= \
 	videobuf-vmalloc.c \
 	videobuf-dvb.c \
 	btcx-risc.c \
+	videobuf2-core.c \
+	videobuf2-memops.c \
+	videobuf2-vmalloc.c \
 	cx2341x.c \
 	zr364xx.c \
 	stk-webcam.c \
@@ -306,6 +313,7 @@ SRCS+= \
 	etoms.c \
 	finepix.c \
 	jeilinj.c \
+	kinect.c \
 	konica.c \
 	mars.c \
 	mr97310a.c \
@@ -316,6 +324,7 @@ SRCS+= \
 	pac207.c \
 	pac7302.c \
 	pac7311.c \
+	se401.c \
 	sn9c2028.c \
 	sn9c20x.c \
 	sonixb.c \
@@ -411,6 +420,8 @@ SRCS+= \
 	zl10039.c \
 	zl10353.c \
 	cx22702.c \
+	drxd_firm.c \
+	drxd_hard.c \
 	tda10021.c \
 	tda10023.c \
 	stv0297.c \
@@ -462,6 +473,14 @@ SRCS+= \
 	mb86a20s.c \
 	ix2505v.c \
 	stv0367.c \
+	cxd2820r_core.c \
+	cxd2820r_c.c \
+	cxd2820r_t.c \
+	cxd2820r_t2.c \
+	tda18271c2dd.c \
+	it913x-fe.c \
+	a8293.c \
+	tda10071.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \
@@ -522,6 +541,12 @@ SRCS+= \
 	az6027.c \
 	lmedm04.c \
 	technisat-usb2.c \
+	it913x.c \
+	mxl111sf.c \
+	mxl111sf-phy.c \
+	mxl111sf-i2c.c \
+	mxl111sf-gpio.c \
+	mxl111sf-tuner.c \
 	smscoreapi.c \
 	sms-cards.c \
 	smsendian.c \
