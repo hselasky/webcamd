@@ -26,7 +26,7 @@
 TAILQ_HEAD(work_head, work_struct);
 
 static struct work_struct *work_curr;
-static struct work_head work_head;
+static struct work_head work_head = TAILQ_HEAD_INITIALIZER(work_head);
 static pthread_t work_thread;
 static pthread_cond_t work_cond;
 
@@ -194,8 +194,6 @@ create_singlethread_workqueue(const char *name)
 static int
 work_init(void)
 {
-	TAILQ_INIT(&work_head);
-
 	pthread_cond_init(&work_cond, NULL);
 
 	if (pthread_create(&work_thread, NULL, work_exec, NULL)) {

@@ -324,7 +324,9 @@
 #define	__be16_to_cpus(p) be16_to_cpus(p)
 #define	NSEC_PER_USEC	1000
 #define	simple_strtoul strtoul
+#define	strict_strtoul(a,b,c) ({char *_pp; *(c) = strtoul(a,&_pp,b); _pp;})
 #define	simple_strtol strtol
+#define	strict_strtol(a,b,c) ({char *_pp; *(c) = strtol(a,&_pp,b); _pp;})
 #define	noop_llseek 0
 #define	ETIME ETIMEDOUT
 #define	ENOSR ENOBUFS
@@ -386,6 +388,9 @@
 
 #define	ATOMIC_INIT(x) { (x) }
 
+#define	IRQ_NONE 0
+#define	IRQ_HANDLED 1
+
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #ifndef __LITTLE_ENDIAN
@@ -427,6 +432,7 @@ typedef unsigned int __le32;
 typedef unsigned short __be16;
 typedef unsigned int __be32;
 typedef unsigned int uint;
+typedef int irqreturn_t;
 
 #ifndef __GLIBC__
 typedef long long loff_t;

@@ -36,6 +36,8 @@ typedef struct work_struct {
 	work_func_t func;
 } work_t;
 
+#define	DECLARE_WORK(name, fn) struct work_struct name = { .func = fn }
+
 struct tasklet_struct {
 	struct work_struct work;	/* must be first */
 	void    (*func) (unsigned long);

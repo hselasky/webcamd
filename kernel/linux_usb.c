@@ -2128,3 +2128,28 @@ void
 usb_enable_autosuspend(struct usb_device *udev)
 {
 }
+
+int
+__usb_get_extra_descriptor(char *buffer, unsigned size,
+    unsigned char type, void **ptr)
+{
+	struct usb_descriptor_header *header;
+
+	while (size >= sizeof(struct usb_descriptor_header)) {
+		header = (struct usb_descriptor_header *)buffer;
+
+		if (header->bLength < 2)
+			return (-1);
+
+		if (header->bLength < size)
+			return (-1);
+
+		if (header->bDescriptorType == type) {
+			*ptr = header;
+			return (0);
+		}
+		buffer += header->bLength;
+		size -= header->bLength;
+	}
+	return (-1);
+}

@@ -202,6 +202,14 @@ struct usb_driver {
 };
 
 /*
+ * Generic USB descriptor header.
+ */
+struct usb_descriptor_header {
+	uint8_t	bLength;
+	uint8_t	bDescriptorType;
+} __packed;
+
+/*
  * The following structure is the same as "usb_device_descriptor_t"
  * except that 16-bit values are "uint16_t" and not an array of "uint8_t".
  * It is used by Linux USB device drivers.
@@ -471,6 +479,7 @@ struct usb_interface {
 
 	uint8_t	num_altsetting;		/* number of alternate settings */
 	uint8_t	bsd_iface_index;
+	uint8_t	needs_remote_wakeup;
 
 	void   *align[0];
 };
@@ -716,6 +725,11 @@ int	usb_reset_device(struct usb_device *dev);
 uint8_t	usb_pipetype(unsigned int);
 uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
 void	usb_enable_autosuspend(struct usb_device *udev);
+int	__usb_get_extra_descriptor(char *, unsigned, unsigned char, void **);
+
+#define	usb_get_extra_descriptor(desc, type, ptr) \
+	__usb_get_extra_descriptor((desc)->extra, \
+        (desc)->extralen, type, (void *)(ptr))
 
 #define	usb_alloc_coherent(...) usb_buffer_alloc(__VA_ARGS__)
 #define	usb_free_coherent(...) usb_buffer_free(__VA_ARGS__)

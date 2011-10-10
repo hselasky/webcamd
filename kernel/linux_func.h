@@ -48,10 +48,12 @@ void	le16_to_cpus(uint16_t *p);
 void	le32_to_cpus(uint32_t *p);
 
 void	put_unaligned_le32(uint32_t, void *);
+void	put_unaligned_be16(uint16_t, void *);
 void	put_unaligned_le16(uint16_t, void *);
 
 uint64_t get_unaligned_le64(const void *);
 uint32_t get_unaligned_le32(const void *);
+uint16_t get_unaligned_be16(const void *);
 uint16_t get_unaligned_le16(const void *);
 
 void   *dev_get_drvdata(const struct device *dev);

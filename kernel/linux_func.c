@@ -150,6 +150,15 @@ put_unaligned_le32(uint32_t val, void *_ptr)
 }
 
 void
+put_unaligned_be16(uint16_t val, void *_ptr)
+{
+	uint8_t *ptr = _ptr;
+
+	ptr[0] = (val >> 8) & 0xFF;
+	ptr[1] = val & 0xFF;
+}
+
+void
 put_unaligned_le16(uint16_t val, void *_ptr)
 {
 	uint8_t *ptr = _ptr;
@@ -196,6 +205,18 @@ get_unaligned_le32(const void *_ptr)
 	val |= ptr[1];
 	val <<= 8;
 	val |= ptr[0];
+	return (val);
+}
+
+uint16_t
+get_unaligned_be16(const void *_ptr)
+{
+	const uint8_t *ptr = _ptr;
+	uint16_t val;
+
+	val = ptr[0];
+	val <<= 8;
+	val |= ptr[1];
 	return (val);
 }
 
