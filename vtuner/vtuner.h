@@ -22,6 +22,7 @@
 #include <linux/dvb/dmx.h>
 
 #define	VTUNER_MAGIC 0x76543210
+#define	VTUNER_MAX_PID	30
 
 #define	VT_NULL 0x00
 #define	VT_S   0x01
@@ -108,7 +109,7 @@ struct vtuner_message {
 		v8	voltage;
 		struct diseqc_master_cmd diseqc_master_cmd;
 		v8	burst;
-		v16	pidlist[30];
+		v16	pidlist[VTUNER_MAX_PID];
 		v8	pad  [72];
 		v32	type_changed;
 	}	body;

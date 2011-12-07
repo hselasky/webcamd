@@ -27,8 +27,8 @@
 #include "dvb_net.h"
 #include "dvbdev.h"
 
-#include <vtuner/vtuner_client.h>
 #include <vtuner/vtuner.h>
+#include <vtuner/vtuner_client.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -62,7 +62,7 @@ pidtab_find_index(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++) {
+	for (i = 0; i < (VTUNER_MAX_PID - 1); i++) {
 		if (pidtab[i] == pid)
 			return (i);
 	}
@@ -75,7 +75,7 @@ pidtab_add_pid(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++)
+	for (i = 0; i < (VTUNER_MAX_PID - 1); i++)
 		if (pidtab[i] == PID_UNKNOWN ||
 		    pidtab[i] == pid) {
 			pidtab[i] = pid;
@@ -89,7 +89,7 @@ pidtab_del_pid(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++) {
+	for (i = 0; i < (VTUNER_MAX_PID - 1); i++) {
 		if (pidtab[i] == pid) {
 			pidtab[i] = PID_UNKNOWN;
 			return 0;
@@ -105,7 +105,7 @@ pidtab_copy_to_msg(struct vtunerc_ctx *ctx,
 {
 	int i;
 
-	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++)
+	for (i = 0; i < (VTUNER_MAX_PID - 1); i++)
 		msg->body.pidlist[i] = ctx->pidtab[i];
 	msg->body.pidlist[i] = 0;
 }
@@ -1007,8 +1007,8 @@ vtunerc_init(void)
 		memset(&ctx->demux, 0, sizeof(ctx->demux));
 		dvbdemux = &ctx->demux;
 		dvbdemux->priv = ctx;
-		dvbdemux->filternum = MAX_PIDTAB_LEN;
-		dvbdemux->feednum = MAX_PIDTAB_LEN;
+		dvbdemux->filternum = VTUNER_MAX_PID;
+		dvbdemux->feednum = VTUNER_MAX_PID;
 		dvbdemux->start_feed = vtunerc_start_feed;
 		dvbdemux->stop_feed = vtunerc_stop_feed;
 		dvbdemux->dmx.capabilities = 0;
@@ -1020,7 +1020,7 @@ vtunerc_init(void)
 
 		ctx->hw_frontend.source = DMX_FRONTEND_0;
 		ctx->mem_frontend.source = DMX_MEMORY_FE;
-		ctx->dmxdev.filternum = MAX_PIDTAB_LEN;
+		ctx->dmxdev.filternum = VTUNER_MAX_PID;
 		ctx->dmxdev.demux = dmx;
 
 		ret = dvb_dmxdev_init(&ctx->dmxdev, &ctx->dvb_adapter);
@@ -1042,7 +1042,7 @@ vtunerc_init(void)
 		sema_init(&ctx->xchange_sem, 1);
 
 		/* init pid table */
-		for (i = 0; i < MAX_PIDTAB_LEN; i++)
+		for (i = 0; i < VTUNER_MAX_PID; i++)
 			ctx->pidtab[i] = PID_UNKNOWN;
 
 		/* setup frontend */

@@ -17,7 +17,6 @@
 #ifndef _VTUNER_CLIENT_PRIV_H
 #define	_VTUNER_CLIENT_PRIV_H
 
-#define	MAX_PIDTAB_LEN 30
 #define	MAX_VTUNER_BUFFER (4 * 65536)
 #define	VTUNER_TS_ALIGN 188
 
@@ -47,7 +46,7 @@ struct vtunerc_ctx {
 	u32	buffer[MAX_VTUNER_BUFFER - (MAX_VTUNER_BUFFER % VTUNER_TS_ALIGN)];
 
 	/* Internals */
-	u16	pidtab[MAX_PIDTAB_LEN];
+	u16	pidtab[VTUNER_MAX_PID];
 
 	u8	vtype;
 

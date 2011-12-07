@@ -687,6 +687,10 @@ copy_to_user(void *to, const void *from, unsigned long n)
 {
 	int error;
 
+	if (vtuner_server != 0) {
+		memcpy(to, from, n);
+		return (0);
+	}
 	error = cuse_copy_out(from, to, (int)n);
 
 	return ((error != 0) ? n : 0);
@@ -697,6 +701,10 @@ copy_from_user(void *to, const void *from, unsigned long n)
 {
 	int error;
 
+	if (vtuner_server != 0) {
+		memcpy(to, from, n);
+		return (0);
+	}
 	error = cuse_copy_in(from, to, (int)n);
 
 	return ((error != 0) ? n : 0);

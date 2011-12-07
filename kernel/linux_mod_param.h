@@ -88,6 +88,7 @@ module_parm_init(mod_param_##id##_init_desc)
 #define	__MODULE_STRING(x) ___MODULE_STRING(x)
 
 int	mod_set_param(const char *name, const char *value);
+int	mod_get_int_param(const char *name);
 void	mod_show_params(void);
 void	mod_param_register(struct mod_param *p);
 void	mod_param_register_desc(struct mod_param *p, const char *desc);
