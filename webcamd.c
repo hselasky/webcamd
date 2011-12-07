@@ -610,7 +610,7 @@ main(int argc, char **argv)
 			    mod_set_param("vtuner_client.host", host) < 0 ||
 			    mod_set_param("vtuner_client.cport", cport) < 0) {
 				v4b_errx(1, "Cannot set all module "
-				    "parameters for vTuner client.\n");
+				    "parameters for vTuner client.");
 			}
 			break;
 
@@ -636,7 +636,7 @@ main(int argc, char **argv)
 			    mod_set_param("vtuner_server.host", host) < 0 ||
 			    mod_set_param("vtuner_server.cport", cport) < 0) {
 				v4b_errx(1, "Cannot set all module "
-				    "parameters for vTuner server.\n");
+				    "parameters for vTuner server.");
 			}
 			break;
 
