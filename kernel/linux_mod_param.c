@@ -85,6 +85,33 @@ mod_output_desc(const char *desc)
 	putchar('\n');
 }
 
+int
+mod_get_int_param(const char *name)
+{
+	struct mod_param *p;
+
+	TAILQ_FOREACH(p, &mod_param_head, entry) {
+		if (strcmp(p->name, name) == 0) {
+			if (strcmp(p->type, "string") == 0) {
+				return (atoi((const char *)p->ptr));
+			} else if (strcmp(p->type, "bool") == 0) {
+				return (*((bool *) p->ptr));
+			} else if (strcmp(p->type, "int") == 0) {
+				return (*((int *)p->ptr));
+			} else if (strcmp(p->type, "uint") == 0) {
+				return (*((unsigned int *)p->ptr));
+			} else if (strcmp(p->type, "short") == 0) {
+				return (*((short *)p->ptr));
+			} else if (strcmp(p->type, "ushort") == 0) {
+				return (*((unsigned short *)p->ptr));
+			} else {
+				break;
+			}
+		}
+	}
+	return (-1);
+}
+
 void
 mod_show_params(void)
 {

@@ -82,7 +82,6 @@ static int u_unit = 0;
 static int u_addr = 0;
 static int u_index = 0;
 static int u_videodev = -1;
-static int f_usb = -1;
 static int do_fork = 0;
 static int do_realtime = 1;
 static int do_hal_register = 0;
@@ -91,6 +90,8 @@ static gid_t gid;
 static uid_t uid;
 static int gid_found;
 static int uid_found;
+static int vtuner_client;
+static int vtuner_server;
 
 #define	CHR_MODE 0660
 
@@ -365,9 +366,9 @@ usage(void)
 	    "	-B Run in background\n"
 	    "	-f <firmware path> [%s]\n"
 	    "	-r Do not set realtime priority\n"
-#ifdef HAVE_HAL
 	    "	-H Register device by HAL daemon\n"
-#endif
+	    "	-D <host:port:ndev:type> Connect to remote host instead of USB\n"
+	    "	-L <host:port:ndev> Make USB device available on TCP/IP instead of Cuse4BSD\n"
 	    "	-h Print help\n",
 	    global_fw_prefix
 	);
@@ -444,7 +445,7 @@ a_uid(const char *s)
 int
 main(int argc, char **argv)
 {
-	const char *params = "Bd:f:i:m:sv:hHrU:G:";
+	const char *params = "Bd:f:i:m:sv:hHrU:G:D:L:";
 	char *ptr;
 	int opt;
 
@@ -467,6 +468,8 @@ main(int argc, char **argv)
 			u_index = atoi(optarg);
 			break;
 
+		case 'D':
+		case 'L':
 		case 'm':
 		case 's':
 			break;
@@ -548,46 +551,134 @@ main(int argc, char **argv)
 		if (sched_setscheduler(getpid(), SCHED_FIFO, &params) == -1)
 			printf("Cannot set realtime priority\n");
 	}
-	linux_init();
+	/* get all module parameters registered */
 
-	/* process all module parameters, if any just after linux_init() */
+	linux_parm();
+
+	/* process all module parameters */
 
 	optreset = 1;
 	optind = 1;
 
 	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
+			char *ndev;
+			char *type;
+			char *host;
+			char *cport;
+
 		case 'm':
 			ptr = strstr(optarg, "=");
-			if (ptr == NULL)
-				v4b_errx(1, "invalid parameter for -m option: '%s'", optarg);
+			if (ptr == NULL) {
+				v4b_errx(1, "invalid parameter for "
+				    "-m option: '%s'", optarg);
+			}
 			*ptr = 0;
 			if (mod_set_param(optarg, ptr + 1) < 0) {
 				fprintf(stderr, "WARNING: cannot set module "
 				    "parameter '%s'='%s'\n", optarg, ptr + 1);
 			}
 			break;
+
+		case 'D':
+			host = optarg;
+			cport = strstr(host, ":");
+			if (cport == NULL) {
+				v4b_errx(1, "invalid syntax for "
+				    "-D option: '%s'", optarg);
+			}
+			*cport++ = 0;
+			ndev = strstr(cport, ":");
+			if (ndev == NULL) {
+				v4b_errx(1, "invalid syntax for "
+				    "-D option: '%s'", cport);
+			}
+			*ndev++ = 0;
+			type = strstr(ndev, ":");
+			if (type == NULL) {
+				v4b_errx(1, "invalid syntax for "
+				    "-D option: '%s'", ndev);
+			}
+			*type++ = 0;
+
+			ptr = strstr(type, ":");
+			if (ptr != NULL)
+				*ptr = 0;
+
+			if (mod_set_param("vtuner_client.devices", ndev) < 0 ||
+			    mod_set_param("vtuner_client.type", type) < 0 ||
+			    mod_set_param("vtuner_client.host", host) < 0 ||
+			    mod_set_param("vtuner_client.cport", cport) < 0) {
+				v4b_errx(1, "Cannot set all module "
+				    "parameters for vTuner client.\n");
+			}
+			break;
+
+		case 'L':
+			host = optarg;
+			cport = strstr(host, ":");
+			if (cport == NULL) {
+				v4b_errx(1, "invalid syntax for "
+				    "-L option: '%s'", optarg);
+			}
+			*cport++ = 0;
+			ndev = strstr(cport, ":");
+			if (ndev == NULL) {
+				v4b_errx(1, "invalid syntax for "
+				    "-L option: '%s'", cport);
+			}
+			*ndev++ = 0;
+			ptr = strstr(ndev, ":");
+			if (ptr != NULL)
+				*ptr = 0;
+
+			if (mod_set_param("vtuner_server.devices", ndev) < 0 ||
+			    mod_set_param("vtuner_server.host", host) < 0 ||
+			    mod_set_param("vtuner_server.cport", cport) < 0) {
+				v4b_errx(1, "Cannot set all module "
+				    "parameters for vTuner server.\n");
+			}
+			break;
+
 		case 's':
 			printf("List of available parameters:\n");
 			mod_show_params();
 			exit(0);
 			break;
+
 		default:
 			break;
 		}
 	}
 
-	f_usb = usb_linux_probe_p(&u_unit, &u_addr, &u_index);
-	if (f_usb < 0)
-		v4b_errx(1, "Cannot find USB device");
+	if (mod_get_int_param("vtuner_client.devices") > 0)
+		vtuner_client = 1;
 
-	if (do_hal_register)
-		hal_init(u_unit, u_addr, u_index);
+	if (mod_get_int_param("vtuner_server.devices") > 0)
+		vtuner_server = 1;
 
-	v4b_create(u_videodev);
+	if (vtuner_client && vtuner_server)
+		v4b_errx(1, "Cannot specify both vTuner server and client");
 
-	v4b_work(NULL);
+	/* run rest of Linux init code */
 
+	linux_init();
+
+	if (vtuner_client == 0) {
+		if (usb_linux_probe_p(&u_unit, &u_addr, &u_index) < 0)
+			v4b_errx(1, "Cannot find USB device");
+	}
+	if (vtuner_server == 0) {
+		if (do_hal_register)
+			hal_init(u_unit, u_addr, u_index);
+
+		v4b_create(u_videodev);
+
+		v4b_work(NULL);
+	} else {
+		while (1)
+			pause();
+	}
 	return (0);
 }
 

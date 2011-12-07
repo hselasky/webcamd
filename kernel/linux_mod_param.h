@@ -51,7 +51,7 @@ static int mod_param_##id##_init(void)			\
   mod_param_register(&mod_param_##id);			\
   return (0);						\
 }							\
-module_init(mod_param_##id##_init)
+module_parm_init(mod_param_##id##_init)
 
 #define	module_param_named(id, var, _type, _perm)	\
 static struct mod_param mod_param_##id = {		\
@@ -65,7 +65,7 @@ static int mod_param_##id##_init(void)			\
   mod_param_register(&mod_param_##id);			\
   return (0);						\
 }							\
-module_init(mod_param_##id##_init)
+module_parm_init(mod_param_##id##_init)
 
 #define	module_param(name, type, perm)		\
     module_param_named(name, name, type, perm)
@@ -82,7 +82,7 @@ static int mod_param_##id##_init_desc(void)		\
 	mod_param_register_desc(&mod_param_##id, desc);	\
 	return (0);					\
 }							\
-module_init(mod_param_##id##_init_desc)
+module_parm_init(mod_param_##id##_init_desc)
 
 #define	___MODULE_STRING(x) #x
 #define	__MODULE_STRING(x) ___MODULE_STRING(x)

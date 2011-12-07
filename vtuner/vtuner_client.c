@@ -60,12 +60,11 @@ vtunerc_do_message(struct vtunerc_ctx *ctx,
 static int
 pidtab_find_index(u16 * pidtab, int pid)
 {
-	int i = 0;
+	int i;
 
-	while (i < MAX_PIDTAB_LEN) {
+	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++) {
 		if (pidtab[i] == pid)
-			return i;
-		i++;
+			return (i);
 	}
 
 	return -1;
@@ -76,8 +75,9 @@ pidtab_add_pid(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < MAX_PIDTAB_LEN; i++)
-		if (pidtab[i] == PID_UNKNOWN) {
+	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++)
+		if (pidtab[i] == PID_UNKNOWN ||
+		    pidtab[i] == pid) {
 			pidtab[i] = pid;
 			return 0;
 		}
@@ -89,7 +89,7 @@ pidtab_del_pid(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < MAX_PIDTAB_LEN; i++) {
+	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++) {
 		if (pidtab[i] == pid) {
 			pidtab[i] = PID_UNKNOWN;
 			return 0;
@@ -107,7 +107,7 @@ pidtab_copy_to_msg(struct vtunerc_ctx *ctx,
 
 	for (i = 0; i < (MAX_PIDTAB_LEN - 1); i++)
 		msg->body.pidlist[i] = ctx->pidtab[i];
-	msg->body.pidlist[MAX_PIDTAB_LEN - 1] = 0;
+	msg->body.pidlist[i] = 0;
 }
 
 static int
@@ -1116,7 +1116,7 @@ module_param_string(host, vtuner_host, sizeof(vtuner_host), 0644);
 MODULE_PARM_DESC(host, "Hostname at which to connect (default is 127.0.0.1)");
 
 module_param_string(cport, vtuner_cport, sizeof(vtuner_cport), 0644);
-MODULE_PARM_DESC(cport, "Control port at host (default is 5100 + (2 * unit))");
+MODULE_PARM_DESC(cport, "Control port at host (default is 5100)");
 
 MODULE_AUTHOR("Honza Petrous");
 MODULE_DESCRIPTION("Virtual DVB device");

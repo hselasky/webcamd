@@ -23,8 +23,20 @@
  * SUCH DAMAGE.
  */
 
+extern struct module_init_struct __start_linux_parm_mod;
 extern struct module_init_struct __start_linux_init_mod;
 extern struct module_exit_struct __start_linux_exit_mod;
+
+void
+linux_parm(void)
+{
+	struct module_init_struct *t = &__start_linux_parm_mod;
+
+	while (t->magic == MODULE_PARM_MAGIC) {
+		t->func();
+		t++;
+	}
+}
 
 void
 linux_init(void)

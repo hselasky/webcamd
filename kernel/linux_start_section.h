@@ -26,8 +26,9 @@
 #ifndef _LINUX_END_SECTION_H_
 #define	_LINUX_END_SECTION_H_
 
-#define	MODULE_INIT_MAGIC ((uint8_t *)0 + 0x123468AC)
-#define	MODULE_EXIT_MAGIC ((uint8_t *)0 + 0x1246789F)
+#define	MODULE_PARM_MAGIC ((uint8_t *)0x123468CAU)
+#define	MODULE_INIT_MAGIC ((uint8_t *)0x123468ACU)
+#define	MODULE_EXIT_MAGIC ((uint8_t *)0x1246789FU)
 
 typedef int (module_init_t)(void);
 typedef void (module_exit_t)(void);
@@ -44,6 +45,9 @@ struct module_exit_struct {
 
 #define	subsys_initcall(f) module_init(f)
 
+#define	module_parm_init(func) static struct module_init_struct \
+  __attribute__((__section__("linux_parm_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_PARM_MAGIC };
+
 #define	module_init(func) static struct module_init_struct \
   __attribute__((__section__("linux_init_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_INIT_MAGIC };
 
@@ -52,6 +56,7 @@ struct module_exit_struct {
 
 #define	late_initcall(x) module_init(x)	/* XXX FIXME LATER */
 
+void	linux_parm(void);
 void	linux_init(void);
 void	linux_exit(void);
 
