@@ -21,6 +21,8 @@
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
 
+#define	VTUNER_MAGIC 0x76543210
+
 #define	VT_NULL 0x00
 #define	VT_S   0x01
 #define	VT_C   0x02
@@ -112,4 +114,4 @@ struct vtuner_message {
 	}	body;
 };
 
-#endif
+#endif					/* _VTUNER_H_ */

@@ -49,16 +49,15 @@ static int vtuner_max_unit = 0;
 static int vtuner_type = 0;
 static char vtuner_host[64] = {"127.0.0.1"};
 static char vtuner_cport[16] = {"5100"};
-static char vtuner_dport[16] = {"5200"};
 
-static int 
+static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
     struct vtuner_message *msg, int do_wait);
 
 /*------------------------------------------------------------------------*
  * PID table management
  *------------------------------------------------------------------------*/
-static int 
+static int
 pidtab_find_index(u16 * pidtab, int pid)
 {
 	int i = 0;
@@ -72,7 +71,7 @@ pidtab_find_index(u16 * pidtab, int pid)
 	return -1;
 }
 
-static int 
+static int
 pidtab_add_pid(u16 * pidtab, int pid)
 {
 	int i;
@@ -85,7 +84,7 @@ pidtab_add_pid(u16 * pidtab, int pid)
 	return -1;
 }
 
-static int 
+static int
 pidtab_del_pid(u16 * pidtab, int pid)
 {
 	int i;
@@ -100,7 +99,7 @@ pidtab_del_pid(u16 * pidtab, int pid)
 	return -1;
 }
 
-static void 
+static void
 pidtab_copy_to_msg(struct vtunerc_ctx *ctx,
     struct vtuner_message *msg)
 {
@@ -111,7 +110,7 @@ pidtab_copy_to_msg(struct vtunerc_ctx *ctx,
 	msg->body.pidlist[MAX_PIDTAB_LEN - 1] = 0;
 }
 
-static int 
+static int
 vtunerc_start_feed(struct dvb_demux_feed *feed)
 {
 	struct dvb_demux *demux = feed->demux;
@@ -147,7 +146,7 @@ vtunerc_start_feed(struct dvb_demux_feed *feed)
 	return 0;
 }
 
-static int 
+static int
 vtunerc_stop_feed(struct dvb_demux_feed *feed)
 {
 	struct dvb_demux *demux = feed->demux;
@@ -178,7 +177,7 @@ struct dvb_proxyfe_state {
 	struct vtunerc_ctx *ctx;
 };
 
-static void 
+static void
 vtunerc_tryconnect(struct vtunerc_ctx *ctx)
 {
 	struct addrinfo hints;
@@ -260,14 +259,14 @@ vtunerc_tryconnect(struct vtunerc_ctx *ctx)
 	ctx->fd_data = s;
 }
 
-static int 
+static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
     struct vtuner_message *msg, int do_wait)
 {
 	down(&ctx->xchange_sem);
 
 	/* stamp the byte order we are using */
-	msg->magic = 0x76543210;
+	msg->magic = VTUNER_MAGIC;
 
 retry:
 	if (ctx->fd_control < 0 || ctx->fd_data < 0) {
@@ -354,7 +353,7 @@ vtuner_reader_thread(void *arg)
 	return (NULL);
 }
 
-static int 
+static int
 dvb_proxyfe_read_status(struct dvb_frontend *fe, fe_status_t *status)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -371,7 +370,7 @@ dvb_proxyfe_read_status(struct dvb_frontend *fe, fe_status_t *status)
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_read_ber(struct dvb_frontend *fe, u32 * ber)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -388,7 +387,7 @@ dvb_proxyfe_read_ber(struct dvb_frontend *fe, u32 * ber)
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_read_signal_strength(struct dvb_frontend *fe,
     u16 * strength)
 {
@@ -406,7 +405,7 @@ dvb_proxyfe_read_signal_strength(struct dvb_frontend *fe,
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_read_snr(struct dvb_frontend *fe, u16 * snr)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -423,7 +422,7 @@ dvb_proxyfe_read_snr(struct dvb_frontend *fe, u16 * snr)
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_read_ucblocks(struct dvb_frontend *fe, u32 * ucblocks)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -440,7 +439,7 @@ dvb_proxyfe_read_ucblocks(struct dvb_frontend *fe, u32 * ucblocks)
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_get_frontend(struct dvb_frontend *fe,
     struct dvb_frontend_parameters *p)
 {
@@ -495,7 +494,7 @@ dvb_proxyfe_get_frontend(struct dvb_frontend *fe,
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_set_frontend(struct dvb_frontend *fe,
     struct dvb_frontend_parameters *p)
 {
@@ -634,31 +633,31 @@ dvb_proxyfe_set_frontend(struct dvb_frontend *fe,
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_get_property(struct dvb_frontend *fe, struct dtv_property *tvp)
 {
 	return 0;
 }
 
-static enum dvbfe_algo 
+static enum dvbfe_algo
 dvb_proxyfe_get_frontend_algo(struct dvb_frontend *fe)
 {
 	return DVBFE_ALGO_SW;
 }
 
-static int 
+static int
 dvb_proxyfe_sleep(struct dvb_frontend *fe)
 {
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_init(struct dvb_frontend *fe)
 {
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_set_tone(struct dvb_frontend *fe, fe_sec_tone_mode_t tone)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -674,7 +673,7 @@ dvb_proxyfe_set_tone(struct dvb_frontend *fe, fe_sec_tone_mode_t tone)
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_set_voltage(struct dvb_frontend *fe, fe_sec_voltage_t voltage)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -690,7 +689,7 @@ dvb_proxyfe_set_voltage(struct dvb_frontend *fe, fe_sec_voltage_t voltage)
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_send_diseqc_msg(struct dvb_frontend *fe, struct dvb_diseqc_master_cmd *cmd)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -706,7 +705,7 @@ dvb_proxyfe_send_diseqc_msg(struct dvb_frontend *fe, struct dvb_diseqc_master_cm
 	return 0;
 }
 
-static int 
+static int
 dvb_proxyfe_send_diseqc_burst(struct dvb_frontend *fe, fe_sec_mini_cmd_t burst)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -722,7 +721,7 @@ dvb_proxyfe_send_diseqc_burst(struct dvb_frontend *fe, fe_sec_mini_cmd_t burst)
 	return 0;
 }
 
-static void 
+static void
 dvb_proxyfe_release(struct dvb_frontend *fe)
 {
 	struct dvb_proxyfe_state *state = fe->demodulator_priv;
@@ -911,7 +910,7 @@ static struct dvb_frontend_ops dvb_proxyfe_qpsk_ops = {
 
 };
 
-static int 
+static int
 vtunerc_frontend_init(struct vtunerc_ctx *ctx, int vtype)
 {
 	int ret = 0;
@@ -950,7 +949,7 @@ vtunerc_frontend_init(struct vtunerc_ctx *ctx, int vtype)
 	return ret;
 }
 
-static int 
+static int
 vtunerc_frontend_clear(struct vtunerc_ctx *ctx)
 {
 	return ctx->fe ? dvb_unregister_frontend(ctx->fe) : 0;
@@ -960,7 +959,7 @@ vtunerc_frontend_clear(struct vtunerc_ctx *ctx)
  * VTuner init and uninit
  *------------------------------------------------------------------------*/
 
-static int __init 
+static int __init
 vtunerc_init(void)
 {
 	struct vtunerc_ctx *ctx = NULL;
@@ -990,10 +989,10 @@ vtunerc_init(void)
 		ctx->fd_data = -1;
 
 		snprintf(ctx->cport, sizeof(ctx->cport),
-		    "%u", atoi(vtuner_cport) + u);
+		    "%u", atoi(vtuner_cport) + 2*u);
 
 		snprintf(ctx->dport, sizeof(ctx->dport),
-		    "%u", atoi(vtuner_dport) + u);
+		    "%u", atoi(vtuner_cport) + (2*u) + 1);
 
 		/* DVB */
 
@@ -1073,7 +1072,7 @@ err_kfree:
 	goto out;
 }
 
-static void __exit 
+static void __exit
 vtunerc_exit(void)
 {
 	struct dvb_demux *dvbdemux;
@@ -1108,19 +1107,16 @@ module_init(vtunerc_init);
 module_exit(vtunerc_exit);
 
 module_param_named(devices, vtuner_max_unit, int, 0644);
-MODULE_PARM_DESC(devices, "Number of virtual adapters (default is 0)");
+MODULE_PARM_DESC(devices, "Number of clients (default is 0, disabled)");
 
 module_param_named(type, vtuner_type, int, 0644);
-MODULE_PARM_DESC(type, "Type of virtual adapters (S=1,C=2,T=4,S2=8, default is 0)");
+MODULE_PARM_DESC(type, "Type of adapters (S=1,C=2,T=4,S2=8, default is 0)");
 
 module_param_string(host, vtuner_host, sizeof(vtuner_host), 0644);
 MODULE_PARM_DESC(host, "Hostname at which to connect (default is 127.0.0.1)");
 
 module_param_string(cport, vtuner_cport, sizeof(vtuner_cport), 0644);
-MODULE_PARM_DESC(cport, "Control port at host (default is 5100 + unit)");
-
-module_param_string(dport, vtuner_dport, sizeof(vtuner_dport), 0644);
-MODULE_PARM_DESC(dport, "Data port at host (default is 5200 + unit)");
+MODULE_PARM_DESC(cport, "Control port at host (default is 5100 + (2 * unit))");
 
 MODULE_AUTHOR("Honza Petrous");
 MODULE_DESCRIPTION("Virtual DVB device");
