@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.1.0.3
+VERSION=	3.1.0.4
 PROG=		webcamd
 
 #
@@ -123,6 +123,7 @@ BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./lo
 # List of source paths
 #
 SRCPATHS+= kernel
+SRCPATHS+= vtuner
 SRCPATHS+= ${LINUXDIR}/kernel
 
 .PATH: ${.CURDIR} ${SRCPATHS}
@@ -195,6 +196,10 @@ SRCS+= linux_mod_param.c
 
 SRCS+= webcamd.c
 SRCS+= webcamd_hal.c
+
+.if defined(HAVE_VTUNER_CLIENT)
+SRCS+= vtuner_client.c
+.endif
 
 .include <bsd.prog.mk>
 
