@@ -67,22 +67,39 @@ static void
 hw_free(struct vtuners_ctx *hw)
 {
 
-	if (hw->frontend_fd)
+	if (hw->frontend_fd != NULL) {
 		linux_close(hw->frontend_fd);
-
-	if (hw->streaming_fd)
+		hw->frontend_fd = NULL;
+	}
+	if (hw->streaming_fd != NULL) {
 		linux_close(hw->streaming_fd);
-
-	if (hw->demux_fd)
+		hw->streaming_fd = NULL;
+	}
+	down(&hw->writer_sem);
+	if (hw->demux_fd != NULL) {
 		linux_close(hw->demux_fd);
+		hw->demux_fd = NULL;
+	}
+	up(&hw->writer_sem);
 }
 
 static int
-hw_init(struct vtuners_ctx *hw, int adapter)
+hw_init(struct vtuners_ctx *hw)
 {
-	memset(hw, 0, sizeof(*hw));
+	int adapter;
 
-	hw->adapter = adapter;
+	/* reset some fields to attach default */
+	memset(&hw->fe_info, 0, sizeof(hw->fe_info));
+	memset(&hw->fe_params, 0, sizeof(hw->fe_params));
+	memset(&hw->msgbuf, 0, sizeof(hw->msgbuf));
+	memset(&hw->buffer, 0, sizeof(hw->buffer));
+	memset(&hw->pids, 0, sizeof(hw->pids));
+	memset(&hw->props, 0, sizeof(hw->props));
+
+	hw->skip_set_frontend = 0;
+	hw->num_props = 0;
+
+	adapter = hw->unit;
 
 	hw->frontend_fd = linux_open((F_V4B_SUBDEV_MAX * adapter) +
 	    F_V4B_DVB_FRONTEND, O_RDWR);
@@ -113,7 +130,7 @@ hw_init(struct vtuners_ctx *hw, int adapter)
 		goto error;
 	}
 
-	printk(KERN_INFO, "FE_GET_INFO dvb-type:%d vtuner-type:%d\n", hw->fe_info.type, hw->type);
+	printk(KERN_INFO "FE_GET_INFO dvb-type:%d vtuner-type:%d\n", hw->fe_info.type, hw->type);
 
 	hw->streaming_fd = linux_open((F_V4B_SUBDEV_MAX * adapter) +
 	    F_V4B_DVB_DVR, O_RDONLY);
@@ -121,14 +138,19 @@ hw_init(struct vtuners_ctx *hw, int adapter)
 	if (hw->streaming_fd == NULL)
 		goto error;
 
+	down(&hw->writer_sem);
 	hw->demux_fd = linux_open((F_V4B_SUBDEV_MAX * adapter) +
 	    F_V4B_DVB_DEMUX, O_RDWR | O_NONBLOCK);
-	if (hw->demux_fd == NULL)
+	if (hw->demux_fd == NULL) {
+		up(&hw->writer_sem);
 		goto error;
-
+	}
 	if (linux_ioctl(hw->demux_fd, 0, DMX_SET_BUFFER_SIZE,
-	    (void *)sizeof(hw->buffer)) != 0)
+	    (void *)sizeof(hw->buffer)) != 0) {
+		up(&hw->writer_sem);
 		goto error;
+	}
+	up(&hw->writer_sem);
 
 	return 0;
 
@@ -276,6 +298,8 @@ hw_set_frontend(struct vtuners_ctx *hw, struct dvb_frontend_parameters *fe_param
 	default:
 		WARN(MSG_NET, "tuning not implemented for HW-type:%d (S:%d, S2:%d C:%d T:%d)\n",
 		    hw->type, VT_S, VT_S2, VT_C, VT_T);
+		ret = -EINVAL;
+		break;
 	}
 	if (ret != 0)
 		WARN(MSG_NET, "FE_SET_FRONTEND failed %s - %m\n", msg);
@@ -662,7 +686,7 @@ vtuners_connect_control(struct vtuners_ctx *hw)
 	hints.ai_flags |= AI_NUMERICHOST;
 
 	printk(KERN_INFO "vTuner: Listening to %s:%s (control)\n",
-	    vtuner_host, ctx->cport);
+	    vtuner_host, hw->cport);
 
 	if ((error = getaddrinfo(vtuner_host, hw->cport, &hints, &res)))
 		return;
@@ -724,7 +748,7 @@ vtuners_connect_data(struct vtuners_ctx *hw)
 	hints.ai_flags |= AI_NUMERICHOST;
 
 	printk(KERN_INFO "vTuner: Listening to %s:%s (data)\n",
-	    vtuner_host, ctx->dport);
+	    vtuner_host, hw->dport);
 
 	if ((error = getaddrinfo(vtuner_host, hw->dport, &hints, &res)))
 		return;
@@ -778,14 +802,25 @@ vtuners_writer_thread(void *arg)
 
 		while (hw->fd_data < 0) {
 			vtuners_connect_data(hw);
-			if (hw->fd_data < 0)
+			if (hw->fd_data < 0) {
 				usleep(1000000);
+				continue;
+			}
 		}
 
-		len = linux_read(hw->demux_fd, 0,
-		    (u8 *) hw->buffer, sizeof(hw->buffer));
+		down(&hw->writer_sem);
+		if (hw->demux_fd == NULL) {
+			len = -EWOULDBLOCK;
+		} else {
+			len = linux_read(hw->demux_fd, -1,
+			    (u8 *) hw->buffer, sizeof(hw->buffer));
+		}
+		up(&hw->writer_sem);
 
-		if (len <= 0) {
+		if (len == -EWOULDBLOCK) {
+			usleep(2000);
+			continue;
+		} else if (len <= 0) {
 			close(hw->fd_data);
 			hw->fd_data = -1;
 			continue;
@@ -809,8 +844,15 @@ vtuners_control_thread(void *arg)
 
 		while (hw->fd_control < 0) {
 			vtuners_connect_control(hw);
-			if (hw->fd_control < 0)
+			if (hw->fd_control < 0) {
 				usleep(1000000);
+				continue;
+			}
+			if (hw_init(hw) < 0) {
+				close(hw->fd_control);
+				hw->fd_control = -1;
+				continue;
+			}
 		}
 
 		len = sizeof(hw->msgbuf);
@@ -818,10 +860,12 @@ vtuners_control_thread(void *arg)
 		if (read(hw->fd_control, &hw->msgbuf, len) != len) {
 			close(hw->fd_control);
 			hw->fd_control = -1;
+			hw_free(hw);
 		} else {
 			if (vtuners_process_msg(hw, &hw->msgbuf) < 0) {
 				close(hw->fd_control);
 				hw->fd_control = -1;
+				hw_free(hw);
 			}
 		}
 	}
@@ -850,6 +894,9 @@ vtuners_init(void)
 
 		hw->fd_data = -1;
 		hw->fd_control = -1;
+		hw->unit = u;
+
+		sema_init(&hw->writer_sem, 1);
 
 		snprintf(hw->cport, sizeof(hw->cport),
 		    "%u", atoi(vtuner_cport) + (2 * u));
@@ -857,11 +904,6 @@ vtuners_init(void)
 		snprintf(hw->dport, sizeof(hw->dport),
 		    "%u", atoi(vtuner_cport) + (2 * u) + 1);
 
-		if (hw_init(hw, u) < 0) {
-			kfree(hw);
-			vtuners_tbl[u] = NULL;
-			break;
-		}
 		/* create writer thread */
 		pthread_create(&hw->writer_thread, NULL, vtuners_writer_thread, hw);
 

@@ -22,6 +22,7 @@
 struct vtuners_ctx {
 
 	int	type;
+	int	unit;
 
 	struct dvb_frontend_info fe_info;
 	struct dvb_frontend_parameters fe_params;
@@ -29,6 +30,8 @@ struct vtuners_ctx {
 	struct cdev_handle *frontend_fd;
 	struct cdev_handle *demux_fd;
 	struct cdev_handle *streaming_fd;
+
+	struct semaphore writer_sem;
 
 	pthread_t writer_thread;
 	pthread_t control_thread;
@@ -39,7 +42,6 @@ struct vtuners_ctx {
 
 	u16	pids[VTUNER_MAX_PID];
 
-	int	adapter;
 	int	fd_data;
 	int	fd_control;
 	int	skip_set_frontend;

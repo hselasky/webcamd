@@ -654,10 +654,10 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (mod_get_int_param("vtuner_client.devices") > 0)
+	if (mod_get_int_param("vtuner_client.devices") != 0)
 		vtuner_client = 1;
 
-	if (mod_get_int_param("vtuner_server.devices") > 0)
+	if (mod_get_int_param("vtuner_server.devices") != 0)
 		vtuner_server = 1;
 
 	if (vtuner_client && vtuner_server)

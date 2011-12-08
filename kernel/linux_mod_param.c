@@ -109,7 +109,7 @@ mod_get_int_param(const char *name)
 			}
 		}
 	}
-	return (-1);
+	return (0);
 }
 
 void
