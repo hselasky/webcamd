@@ -38,8 +38,12 @@
 
 #define	VTUNER_BSWAP32(x) x = bswap32(x)
 #define	VTUNER_BSWAP16(x) x = bswap16(x)
+#define	VTUNERC_MODULE_VERSION "1.2p1-hps"
 
 static struct vtuners_ctx *vtuners_tbl[CONFIG_DVB_MAX_ADAPTERS];
+static int vtuner_max_unit = 0;
+static char vtuner_host[64] = {"127.0.0.1"};
+static char vtuner_cport[16] = {VTUNER_DEFAULT_PORT};
 
 static int
 hw_frontend_ioctl(struct vtuners_ctx *hw, unsigned int cmd, void *arg, const char *debug)
@@ -122,7 +126,8 @@ hw_init(struct vtuners_ctx *hw, int adapter)
 	if (hw->demux_fd == NULL)
 		goto error;
 
-	if (linux_ioctl(hw->demux_fd, 0, DMX_SET_BUFFER_SIZE, 1024 * 16) != 0)
+	if (linux_ioctl(hw->demux_fd, 0, DMX_SET_BUFFER_SIZE,
+	    (void *)sizeof(hw->buffer)) != 0)
 		goto error;
 
 	return 0;
@@ -174,7 +179,8 @@ hw_set_frontend(struct vtuners_ctx *hw, struct dvb_frontend_parameters *fe_param
 	case VT_S2:
 		cmdseq.num = 9;
 		cmdseq.props = S;
-		if ((hw->type == VT_S || hw->type == VT_S2) && fe_params->u.qpsk.fec_inner > FEC_AUTO) {
+		if ((hw->type == VT_S || hw->type == VT_S2) &&
+		    (fe_params->u.qpsk.fec_inner > FEC_AUTO)) {
 			cmdseq.props[0].u.data = SYS_DVBS2;
 			switch (fe_params->u.qpsk.fec_inner) {
 			case 19:
@@ -222,6 +228,9 @@ hw_set_frontend(struct vtuners_ctx *hw, struct dvb_frontend_parameters *fe_param
 			case 18:
 				cmdseq.props[4].u.data = FEC_9_10;
 				break;
+			default:
+				WARN(MSG_NET, "FEC unknown\n");
+				break;
 			}
 			switch (fe_params->inversion & 0x0c) {
 			case 0:
@@ -252,10 +261,11 @@ hw_set_frontend(struct vtuners_ctx *hw, struct dvb_frontend_parameters *fe_param
 			}
 			cmdseq.props[5].u.data &= 0x04;
 		}
-		DEBUGHW("S2API tuning SYS:%d MOD:%d FEC:%d INV:%d ROLLOFF:%d PILOT:%d\n",
+#if 0
+		printk(KERN_INFO "S2API tuning SYS:%d MOD:%d FEC:%d INV:%d ROLLOFF:%d PILOT:%d\n",
 		    cmdseq.props[0].u.data, cmdseq.props[2].u.data, cmdseq.props[4].u.data,
 		    cmdseq.props[5].u.data, cmdseq.props[6].u.data, cmdseq.props[7].u.data);
-
+#endif
 		ret = hw_frontend_ioctl(hw, FE_SET_PROPERTY, &cmdseq);
 		break;
 	case VT_C:
@@ -347,17 +357,17 @@ hw_read_status(struct vtuners_ctx *hw, u32 * status)
 int
 hw_set_tone(struct vtuners_ctx *hw, u8 tone)
 {
-	return (hw_frontend_ioctl(hw, FE_SET_TONE, (int)tone))
+	return (hw_frontend_ioctl(hw, FE_SET_TONE, (void *)(long)tone));
 }
 
 int
 hw_set_voltage(struct vtuners_ctx *hw, u8 voltage)
 {
-	return (hw_frontend_ioctl(hw, FE_SET_VOLTAGE, (int)voltage));
+	return (hw_frontend_ioctl(hw, FE_SET_VOLTAGE, (void *)(long)voltage));
 }
 
 int
-hw_send_diseq_msg(struct vtuners_ctx *hw, diseqc_master_cmd_t *cmd)
+hw_send_diseq_msg(struct vtuners_ctx *hw, struct diseqc_master_cmd *cmd)
 {
 	return (hw_frontend_ioctl(hw, FE_DISEQC_SEND_MASTER_CMD, cmd));
 }
@@ -365,7 +375,7 @@ hw_send_diseq_msg(struct vtuners_ctx *hw, diseqc_master_cmd_t *cmd)
 int
 hw_send_diseq_burst(struct vtuners_ctx *hw, u8 burst)
 {
-	return (hw_frontend_ioctl(hw, FE_DISEQC_SEND_BURST, burst));
+	return (hw_frontend_ioctl(hw, FE_DISEQC_SEND_BURST, (void *)(long)burst));
 }
 
 int
@@ -383,7 +393,7 @@ hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 
 	for (i = 0; i < VTUNER_MAX_PID; i++) {
 		if (hw->pids[i] != pidlist[i]) {
-			if (hw->pidlist[i] != PID_UNKNOWN) {
+			if (hw->pids[i] != VTUNER_PID_UNKNOWN) {
 				/*
 				 * Need to stop the demuxer:
 				 * A PID was changed.
@@ -396,7 +406,7 @@ hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 
 	for (i = 0; i < VTUNER_MAX_PID; i++) {
 		if (hw->pids[i] != pidlist[i]) {
-			if (pidlist[i] != PID_UNKNOWN) {
+			if (pidlist[i] != VTUNER_PID_UNKNOWN) {
 				flt.pid = pidlist[i];
 				flt.input = DMX_IN_FRONTEND;
 				flt.pes_type = DMX_PES_OTHER;
@@ -411,32 +421,32 @@ hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 }
 
 void
-vtuners_get_dvb_fe_param(struct dvb_frontend_parameters *hfe, vtuner_message_t *netmsg, vtuner_type_t type)
+vtuners_get_dvb_fe_param(struct dvb_frontend_parameters *hfe, struct vtuner_message *msg, int type)
 {
 	memset(hfe, 0, sizeof(hfe));
 
-	hfe->frequency = netmsg->body.fe_params.frequency;
-	hfe->inversion = netmsg->body.fe_params.inversion;
+	hfe->frequency = msg->body.fe_params.frequency;
+	hfe->inversion = msg->body.fe_params.inversion;
 
 	switch (type) {
 	case VT_S:
 	case VT_S2:
-		hfe->u.qpsk.symbol_rate = netmsg->body.fe_params.u.qpsk.symbol_rate;
-		hfe->u.qpsk.fec_inner = netmsg->body.fe_params.u.qpsk.fec_inner;
+		hfe->u.qpsk.symbol_rate = msg->body.fe_params.u.qpsk.symbol_rate;
+		hfe->u.qpsk.fec_inner = msg->body.fe_params.u.qpsk.fec_inner;
 		break;
 	case VT_C:
-		hfe->u.qam.symbol_rate = netmsg->body.fe_params.u.qam.symbol_rate;
-		hfe->u.qam.fec_inner = netmsg->body.fe_params.u.qam.fec_inner;
-		hfe->u.qam.modulation = netmsg->body.fe_params.u.qam.modulation;
+		hfe->u.qam.symbol_rate = msg->body.fe_params.u.qam.symbol_rate;
+		hfe->u.qam.fec_inner = msg->body.fe_params.u.qam.fec_inner;
+		hfe->u.qam.modulation = msg->body.fe_params.u.qam.modulation;
 		break;
 	case VT_T:
-		hfe->u.ofdm.bandwidth = netmsg->body.fe_params.u.ofdm.bandwidth;
-		hfe->u.ofdm.code_rate_HP = netmsg->body.fe_params.u.ofdm.code_rate_HP;
-		hfe->u.ofdm.code_rate_LP = netmsg->body.fe_params.u.ofdm.code_rate_LP;
-		hfe->u.ofdm.constellation = netmsg->body.fe_params.u.ofdm.constellation;
-		hfe->u.ofdm.transmission_mode = netmsg->body.fe_params.u.ofdm.transmission_mode;
-		hfe->u.ofdm.guard_interval = netmsg->body.fe_params.u.ofdm.guard_interval;
-		hfe->u.ofdm.hierarchy_information = netmsg->body.fe_params.u.ofdm.hierarchy_information;
+		hfe->u.ofdm.bandwidth = msg->body.fe_params.u.ofdm.bandwidth;
+		hfe->u.ofdm.code_rate_HP = msg->body.fe_params.u.ofdm.code_rate_HP;
+		hfe->u.ofdm.code_rate_LP = msg->body.fe_params.u.ofdm.code_rate_LP;
+		hfe->u.ofdm.constellation = msg->body.fe_params.u.ofdm.constellation;
+		hfe->u.ofdm.transmission_mode = msg->body.fe_params.u.ofdm.transmission_mode;
+		hfe->u.ofdm.guard_interval = msg->body.fe_params.u.ofdm.guard_interval;
+		hfe->u.ofdm.hierarchy_information = msg->body.fe_params.u.ofdm.hierarchy_information;
 		break;
 	default:
 		break;
@@ -444,30 +454,30 @@ vtuners_get_dvb_fe_param(struct dvb_frontend_parameters *hfe, vtuner_message_t *
 }
 
 void
-vtuners_set_dvb_fe_param(vtuner_message_t *netmsg, struct dvb_frontend_parameters *hfe, vtuner_type_t type)
+vtuners_set_dvb_fe_param(struct vtuner_message *msg, struct dvb_frontend_parameters *hfe, int type)
 {
-	netmsg->body.fe_params.frequency = hfe->frequency;
-	netmsg->body.fe_params.inversion = hfe->inversion;
+	msg->body.fe_params.frequency = hfe->frequency;
+	msg->body.fe_params.inversion = hfe->inversion;
 
 	switch (type) {
 	case VT_S:
 	case VT_S2:
-		netmsg->body.fe_params.u.qpsk.symbol_rate = hfe->u.qpsk.symbol_rate;
-		netmsg->body.fe_params.u.qpsk.fec_inner = hfe->u.qpsk.fec_inner;
+		msg->body.fe_params.u.qpsk.symbol_rate = hfe->u.qpsk.symbol_rate;
+		msg->body.fe_params.u.qpsk.fec_inner = hfe->u.qpsk.fec_inner;
 		break;
 	case VT_C:
-		netmsg->body.fe_params.u.qam.symbol_rate = hfe->u.qam.symbol_rate;
-		netmsg->body.fe_params.u.qam.fec_inner = hfe->u.qam.fec_inner;
-		netmsg->body.fe_params.u.qam.modulation = hfe->u.qam.modulation;
+		msg->body.fe_params.u.qam.symbol_rate = hfe->u.qam.symbol_rate;
+		msg->body.fe_params.u.qam.fec_inner = hfe->u.qam.fec_inner;
+		msg->body.fe_params.u.qam.modulation = hfe->u.qam.modulation;
 		break;
 	case VT_T:
-		netmsg->body.fe_params.u.ofdm.bandwidth = hfe->u.ofdm.bandwidth;
-		netmsg->body.fe_params.u.ofdm.code_rate_HP = hfe->u.ofdm.code_rate_HP;
-		netmsg->body.fe_params.u.ofdm.code_rate_LP = hfe->u.ofdm.code_rate_LP;
-		netmsg->body.fe_params.u.ofdm.constellation = hfe->u.ofdm.constellation;
-		netmsg->body.fe_params.u.ofdm.transmission_mode = hfe->u.ofdm.transmission_mode;
-		netmsg->body.fe_params.u.ofdm.guard_interval = hfe->u.ofdm.guard_interval;
-		netmsg->body.fe_params.u.ofdm.hierarchy_information = hfe->u.ofdm.hierarchy_information;
+		msg->body.fe_params.u.ofdm.bandwidth = hfe->u.ofdm.bandwidth;
+		msg->body.fe_params.u.ofdm.code_rate_HP = hfe->u.ofdm.code_rate_HP;
+		msg->body.fe_params.u.ofdm.code_rate_LP = hfe->u.ofdm.code_rate_LP;
+		msg->body.fe_params.u.ofdm.constellation = hfe->u.ofdm.constellation;
+		msg->body.fe_params.u.ofdm.transmission_mode = hfe->u.ofdm.transmission_mode;
+		msg->body.fe_params.u.ofdm.guard_interval = hfe->u.ofdm.guard_interval;
+		msg->body.fe_params.u.ofdm.hierarchy_information = hfe->u.ofdm.hierarchy_information;
 		break;
 	default:
 		break;
@@ -475,7 +485,7 @@ vtuners_set_dvb_fe_param(vtuner_message_t *netmsg, struct dvb_frontend_parameter
 }
 
 static void
-vtuners_byteswap(vtuner_net_message_t *msg, vtuner_type_t type)
+vtuners_byteswap(struct vtuner_message *msg, int type)
 {
 	int i;
 
@@ -546,12 +556,13 @@ vtuners_byteswap(vtuner_net_message_t *msg, vtuner_type_t type)
 }
 
 static int
-vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg, vtuner_type_t type)
+vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg)
 {
 	int swapped;
+	int ret;
 
 	if (msg->msg_magic != VTUNER_MAGIC) {
-		vtuners_byteswap(msg, type);
+		vtuners_byteswap(msg, hw->type);
 		if (msg->msg_magic != VTUNER_MAGIC)
 			return (-1);
 		swapped = 1;
@@ -561,16 +572,18 @@ vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg, vtuner_t
 
 	switch (msg->msg_type) {
 	case MSG_SET_FRONTEND:
-		vtuners_get_dvb_fe_param(&fe_params, &msg->u.vtuner, hw->type);
-		if (skip_set_frontend) {
+		memset(&hw->fe_params, 0, sizeof(hw->fe_params));
+		vtuners_get_dvb_fe_param(&hw->fe_params, msg, hw->type);
+		if (hw->skip_set_frontend) {
 			ret = 0;
 		} else {
-			ret = hw_set_frontend(hw, &fe_params);
+			ret = hw_set_frontend(hw, &hw->fe_params);
 		}
 		break;
 	case MSG_GET_FRONTEND:
-		ret = hw_get_frontend(hw, &fe_params);
-		vtuners_set_dvb_fe_param(&msg->u.vtuner, &fe_params, hw->type);
+		memset(&hw->fe_params, 0, sizeof(hw->fe_params));
+		ret = hw_get_frontend(hw, &hw->fe_params);
+		vtuners_set_dvb_fe_param(msg, &hw->fe_params, hw->type);
 		break;
 	case MSG_READ_STATUS:
 		ret = hw_read_status(hw, &msg->body.status);
@@ -608,7 +621,7 @@ vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg, vtuner_t
 		 * In case the call was successful, we have to skip
 		 * the next call to SET_FRONTEND
 		 */
-		skip_set_frontend = (ret == 0);
+		hw->skip_set_frontend = (ret == 0);
 		break;
 	case MSG_GET_PROPERTY:
 		ret = hw_get_property(hw, &msg->body.prop);
@@ -626,22 +639,207 @@ vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg, vtuner_t
 		msg->msg_error = ret;
 		if (swapped)
 			vtuners_byteswap(msg, hw->type);
-		if (write(ctrl_fd, &msg, sizeof(msg)) != sizoef(msg))
-			error();
+		if (write(hw->fd_control, &msg, sizeof(*msg)) != sizeof(*msg))
+			return (-1);
 	}
+	return (0);
+}
+
+static void
+vtuners_connect_control(struct vtuners_ctx *hw)
+{
+	struct addrinfo hints;
+	struct addrinfo *res;
+	struct addrinfo *res0;
+	int error;
+	int flag;
+	int s;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags |= AI_NUMERICHOST;
+
+	printk(KERN_INFO "vTuner: Listening to %s:%s (control)\n",
+	    vtuner_host, ctx->cport);
+
+	if ((error = getaddrinfo(vtuner_host, hw->cport, &hints, &res)))
+		return;
+
+	res0 = res;
+
+	do {
+		if ((s = socket(res0->ai_family, res0->ai_socktype,
+		    res0->ai_protocol)) < 0)
+			continue;
+
+		flag = 1;
+		setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &flag, (int)sizeof(flag));
+
+		if (bind(s, res0->ai_addr, res0->ai_addrlen) == 0) {
+			if (listen(s, 1) == 0)
+				break;
+		}
+		close(s);
+		s = -1;
+	} while ((res0 = res0->ai_next) != NULL);
+
+	freeaddrinfo(res);
+
+	if (s < 0)
+		return;
+
+	hw->fd_control = accept(s, NULL, NULL);
+
+	close(s);
+
+	s = hw->fd_control;
+
+	if (s < 0)
+		return;
+
+	flag = sizeof(struct vtuner_message);
+	setsockopt(s, SOL_SOCKET, SO_SNDBUF, &flag, (int)sizeof(flag));
+	setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, (int)sizeof(flag));
+
+	flag = 1;
+	setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
+}
+
+static void
+vtuners_connect_data(struct vtuners_ctx *hw)
+{
+	struct addrinfo hints;
+	struct addrinfo *res;
+	struct addrinfo *res0;
+	int error;
+	int flag;
+	int s;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags |= AI_NUMERICHOST;
+
+	printk(KERN_INFO "vTuner: Listening to %s:%s (data)\n",
+	    vtuner_host, ctx->dport);
+
+	if ((error = getaddrinfo(vtuner_host, hw->dport, &hints, &res)))
+		return;
+
+	res0 = res;
+
+	do {
+		if ((s = socket(res0->ai_family, res0->ai_socktype,
+		    res0->ai_protocol)) < 0)
+			continue;
+
+		flag = 1;
+		setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
+
+		if (bind(s, res0->ai_addr, res0->ai_addrlen) == 0) {
+			if (listen(s, 1) == 0)
+				break;
+		}
+		close(s);
+		s = -1;
+	} while ((res0 = res0->ai_next) != NULL);
+
+	freeaddrinfo(res);
+
+	if (s < 0)
+		return;
+
+	hw->fd_data = accept(s, NULL, NULL);
+
+	close(s);
+
+	s = hw->fd_data;
+
+	if (s < 0)
+		return;
+
+	flag = 2 * sizeof(hw->buffer);
+	setsockopt(s, SOL_SOCKET, SO_SNDBUF, &flag, sizeof(flag));
+
+	flag = 1;
+	setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
+}
+
+static void *
+vtuners_writer_thread(void *arg)
+{
+	struct vtuners_ctx *hw = arg;
+	int len;
+
+	while (1) {
+
+		while (hw->fd_data < 0) {
+			vtuners_connect_data(hw);
+			if (hw->fd_data < 0)
+				usleep(1000000);
+		}
+
+		len = linux_read(hw->demux_fd, 0,
+		    (u8 *) hw->buffer, sizeof(hw->buffer));
+
+		if (len <= 0) {
+			close(hw->fd_data);
+			hw->fd_data = -1;
+			continue;
+		}
+		if (write(hw->fd_data, hw->buffer, len) != len) {
+			close(hw->fd_data);
+			hw->fd_data = -1;
+			continue;
+		}
+	}
+	return (NULL);
+}
+
+static void *
+vtuners_control_thread(void *arg)
+{
+	struct vtuners_ctx *hw = arg;
+	int len;
+
+	while (1) {
+
+		while (hw->fd_control < 0) {
+			vtuners_connect_control(hw);
+			if (hw->fd_control < 0)
+				usleep(1000000);
+		}
+
+		len = sizeof(hw->msgbuf);
+
+		if (read(hw->fd_control, &hw->msgbuf, len) != len) {
+			close(hw->fd_control);
+			hw->fd_control = -1;
+		} else {
+			if (vtuners_process_msg(hw, &hw->msgbuf) < 0) {
+				close(hw->fd_control);
+				hw->fd_control = -1;
+			}
+		}
+	}
+	return (NULL);
 }
 
 static int __init
 vtuners_init(void)
 {
 	struct vtuners_ctx *hw = NULL;
-
 	int u;
 
-	if (vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
+	if (vtuner_max_unit < 0 || vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
 		vtuner_max_unit = CONFIG_DVB_MAX_ADAPTERS;
-	else if (vtuner_max_unit < 0)
-		vtuner_max_unit = 0;
+
+	printk(KERN_INFO "virtual DVB server adapter driver, version "
+	    VTUNERC_MODULE_VERSION
+	    ", (c) 2010-11 Honza Petrous, SmartImp.cz\n");
 
 	for (u = 0; u < vtuner_max_unit; u++) {
 		hw = kzalloc(sizeof(struct vtuners_ctx), GFP_KERNEL);
@@ -650,8 +848,25 @@ vtuners_init(void)
 
 		vtuners_tbl[u] = hw;
 
-		if (hw_init(hw, u) < 0)
+		hw->fd_data = -1;
+		hw->fd_control = -1;
+
+		snprintf(hw->cport, sizeof(hw->cport),
+		    "%u", atoi(vtuner_cport) + (2 * u));
+
+		snprintf(hw->dport, sizeof(hw->dport),
+		    "%u", atoi(vtuner_cport) + (2 * u) + 1);
+
+		if (hw_init(hw, u) < 0) {
+			kfree(hw);
+			vtuners_tbl[u] = NULL;
 			break;
+		}
+		/* create writer thread */
+		pthread_create(&hw->writer_thread, NULL, vtuners_writer_thread, hw);
+
+		/* create control thread */
+		pthread_create(&hw->control_thread, NULL, vtuners_control_thread, hw);
 	}
 
 	return (0);

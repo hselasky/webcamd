@@ -17,10 +17,7 @@
 #ifndef _VTUNER_CLIENT_PRIV_H
 #define	_VTUNER_CLIENT_PRIV_H
 
-#define	MAX_VTUNER_BUFFER (4 * 65536)
-#define	VTUNER_TS_ALIGN 188
-
-#define	PID_UNKNOWN 0x0FFFF
+#define	MAX_VTUNER_BUFFER (2 * 65536)
 
 struct vtuner_message;
 

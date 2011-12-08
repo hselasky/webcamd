@@ -46,7 +46,7 @@ static struct vtunerc_ctx *vtunerc_tbl[CONFIG_DVB_MAX_ADAPTERS];
 static int vtuner_max_unit = 0;
 static int vtuner_type = 0;
 static char vtuner_host[64] = {"127.0.0.1"};
-static char vtuner_cport[16] = {"5100"};
+static char vtuner_cport[16] = {VTUNER_DEFAULT_PORT};
 
 static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
@@ -74,7 +74,7 @@ pidtab_add_pid(u16 * pidtab, int pid)
 	int i;
 
 	for (i = 0; i < (VTUNER_MAX_PID - 1); i++)
-		if (pidtab[i] == PID_UNKNOWN ||
+		if (pidtab[i] == VTUNER_PID_UNKNOWN ||
 		    pidtab[i] == pid) {
 			pidtab[i] = pid;
 			return 0;
@@ -89,7 +89,7 @@ pidtab_del_pid(u16 * pidtab, int pid)
 
 	for (i = 0; i < (VTUNER_MAX_PID - 1); i++) {
 		if (pidtab[i] == pid) {
-			pidtab[i] = PID_UNKNOWN;
+			pidtab[i] = VTUNER_PID_UNKNOWN;
 			return 0;
 		}
 	}
@@ -180,7 +180,7 @@ struct dvb_proxyfe_state {
 };
 
 static void
-vtunerc_tryconnect(struct vtunerc_ctx *ctx)
+vtunerc_connect_control(struct vtunerc_ctx *ctx)
 {
 	struct addrinfo hints;
 	struct addrinfo *res;
@@ -194,6 +194,9 @@ vtunerc_tryconnect(struct vtunerc_ctx *ctx)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 
+	printk(KERN_INFO "vTuner: Trying to connect to %s:%s (control)\n",
+	    vtuner_host, ctx->cport);
+
 	if ((error = getaddrinfo(vtuner_host, ctx->cport, &hints, &res)))
 		return;
 
@@ -203,6 +206,59 @@ vtunerc_tryconnect(struct vtunerc_ctx *ctx)
 		if ((s = socket(res0->ai_family, res0->ai_socktype,
 		    res0->ai_protocol)) < 0)
 			continue;
+
+		flag = 1;
+		setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, (int)sizeof(flag));
+
+		flag = sizeof(struct vtuner_message);
+		setsockopt(s, SOL_SOCKET, SO_SNDBUF, &flag, (int)sizeof(flag));
+		setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, (int)sizeof(flag));
+
+		if (connect(s, res0->ai_addr, res0->ai_addrlen) == 0)
+			break;
+
+		close(s);
+		s = -1;
+	} while ((res0 = res0->ai_next) != NULL);
+
+	freeaddrinfo(res);
+
+	if (s < 0)
+		return;
+
+	ctx->fd_control = s;
+}
+
+static void
+vtunerc_connect_data(struct vtunerc_ctx *ctx)
+{
+	struct addrinfo hints;
+	struct addrinfo *res;
+	struct addrinfo *res0;
+	int error;
+	int flag;
+	int s;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	printk(KERN_INFO "vTuner: Trying to connect to %s:%s (data)\n",
+	    vtuner_host, ctx->dport);
+
+	if ((error = getaddrinfo(vtuner_host, ctx->dport, &hints, &res)))
+		return;
+
+	res0 = res;
+
+	do {
+		if ((s = socket(res0->ai_family, res0->ai_socktype,
+		    res0->ai_protocol)) < 0)
+			continue;
+
+		flag = 2 * sizeof(ctx->buffer);
+		setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, sizeof(flag));
 
 		flag = 1;
 		setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
@@ -219,45 +275,6 @@ vtunerc_tryconnect(struct vtunerc_ctx *ctx)
 	if (s < 0)
 		return;
 
-	ctx->fd_control = s;
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-
-	if ((error = getaddrinfo(vtuner_host, ctx->cport, &hints, &res))) {
-		close(ctx->fd_control);
-		ctx->fd_control = -1;
-		return;
-	}
-	res0 = res;
-
-	do {
-		if ((s = socket(res0->ai_family, res0->ai_socktype,
-		    res0->ai_protocol)) < 0)
-			continue;
-
-		flag = sizeof(ctx->buffer);
-		setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, sizeof(flag));
-
-		flag = 1;
-		setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
-
-		if (connect(s, res0->ai_addr, res0->ai_addrlen) == 0)
-			break;
-
-		close(s);
-		s = -1;
-	} while ((res0 = res0->ai_next) != NULL);
-
-	freeaddrinfo(res);
-
-	if (s < 0) {
-		close(ctx->fd_control);
-		ctx->fd_control = -1;
-		return;
-	}
 	ctx->fd_data = s;
 }
 
@@ -275,15 +292,17 @@ vtunerc_do_message(struct vtunerc_ctx *ctx,
 	msg->msg_error = do_wait ? -1U : 0U;
 
 retry:
-	if (ctx->fd_control < 0 || ctx->fd_data < 0) {
-		up(&ctx->xchange_sem);
-		return -ENXIO;
+	if (ctx->fd_control < 0) {
+		vtunerc_connect_control(ctx);
+		if (ctx->fd_control < 0) {
+			up(&ctx->xchange_sem);
+			return (-ENXIO);
+		}
 	}
 	if (write(ctx->fd_control, msg, sizeof(struct vtuner_message)) !=
 	    sizeof(struct vtuner_message)) {
 		close(ctx->fd_control);
 		ctx->fd_control = -1;
-		pthread_kill(ctx->reader_thread, SIGURG);
 		goto retry;
 	}
 	if (do_wait) {
@@ -291,7 +310,6 @@ retry:
 		    sizeof(struct vtuner_message)) {
 			close(ctx->fd_control);
 			ctx->fd_control = -1;
-			pthread_kill(ctx->reader_thread, SIGURG);
 			goto retry;
 		}
 		ret = msg->msg_error;
@@ -308,22 +326,10 @@ vtuner_reader_thread(void *arg)
 
 	while (1) {
 
-		while (ctx->fd_control < 0 || ctx->fd_data < 0) {
-			down(&ctx->xchange_sem);
-			if (ctx->fd_control >= 0) {
-				close(ctx->fd_control);
-				ctx->fd_control = -1;
-			}
-			if (ctx->fd_data >= 0) {
-				close(ctx->fd_data);
-				ctx->fd_data = -1;
-			}
-			vtunerc_tryconnect(ctx);
-
-			if (ctx->fd_control < 0 || ctx->fd_data < 0)
+		while (ctx->fd_data < 0) {
+			vtunerc_connect_data(ctx);
+			if (ctx->fd_data < 0)
 				usleep(1000000);
-
-			up(&ctx->xchange_sem);
 		}
 
 		if (ctx->trailsize != 0)
@@ -997,14 +1003,12 @@ vtunerc_init(void)
 	int i;
 	int u;
 
-	printk(KERN_INFO "virtual DVB adapter driver, version "
+	printk(KERN_INFO "virtual DVB client adapter driver, version "
 	    VTUNERC_MODULE_VERSION
 	    ", (c) 2010-11 Honza Petrous, SmartImp.cz\n");
 
-	if (vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
+	if (vtuner_max_unit < 0 || vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
 		vtuner_max_unit = CONFIG_DVB_MAX_ADAPTERS;
-	else if (vtuner_max_unit < 0)
-		vtuner_max_unit = 0;
 
 	for (u = 0; u < vtuner_max_unit; u++) {
 		ctx = kzalloc(sizeof(struct vtunerc_ctx), GFP_KERNEL);
@@ -1071,7 +1075,7 @@ vtunerc_init(void)
 
 		/* init pid table */
 		for (i = 0; i < VTUNER_MAX_PID; i++)
-			ctx->pidtab[i] = PID_UNKNOWN;
+			ctx->pidtab[i] = VTUNER_PID_UNKNOWN;
 
 		/* setup frontend */
 		if (vtunerc_frontend_init(ctx, vtuner_type) != 0)

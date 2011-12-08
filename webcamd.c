@@ -366,9 +366,11 @@ usage(void)
 	    "	-B Run in background\n"
 	    "	-f <firmware path> [%s]\n"
 	    "	-r Do not set realtime priority\n"
+	    "	-U <user> Set user for character devices\n"
+	    "	-G <group> Set group for character devices\n"
 	    "	-H Register device by HAL daemon\n"
 	    "	-D <host:port:ndev:type> Connect to remote host instead of USB\n"
-	    "	-L <host:port:ndev> Make USB device available on TCP/IP instead of Cuse4BSD\n"
+	    "	-L <host:port:ndev> Make DVB device available from TCP/IP\n"
 	    "	-h Print help\n",
 	    global_fw_prefix
 	);
