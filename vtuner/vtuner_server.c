@@ -718,6 +718,8 @@ vtuners_connect_control(struct vtuners_ctx *hw)
 
 	hw->fd_control = accept(s, NULL, NULL);
 
+	printk(KERN_INFO "vTuner accepted %d\n", hw->fd_control);
+
 	close(s);
 
 	s = hw->fd_control;
