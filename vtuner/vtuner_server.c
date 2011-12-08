@@ -663,8 +663,10 @@ vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg)
 		msg->msg_error = ret;
 		if (swapped)
 			vtuners_byteswap(msg, hw->type);
-		if (write(hw->fd_control, &msg, sizeof(*msg)) != sizeof(*msg))
+		if ((ret = write(hw->fd_control, msg, sizeof(*msg))) != sizeof(*msg)) {
+			printk(KERN_INFO "vTuner Write error %d\n", ret);
 			return (-1);
+		}
 	}
 	return (0);
 }
@@ -801,7 +803,12 @@ vtuners_writer_thread(void *arg)
 	while (1) {
 
 		while (hw->fd_data < 0) {
-			vtuners_connect_data(hw);
+			down(&hw->writer_sem);
+			len = (hw->demux_fd != NULL);
+			up(&hw->writer_sem);
+
+			if (len != 0)
+				vtuners_connect_data(hw);
 			if (hw->fd_data < 0) {
 				usleep(1000000);
 				continue;
@@ -858,11 +865,13 @@ vtuners_control_thread(void *arg)
 		len = sizeof(hw->msgbuf);
 
 		if (read(hw->fd_control, &hw->msgbuf, len) != len) {
+			printk(KERN_INFO "vTuner read error %d\n", len);
 			close(hw->fd_control);
 			hw->fd_control = -1;
 			hw_free(hw);
 		} else {
 			if (vtuners_process_msg(hw, &hw->msgbuf) < 0) {
+				printk(KERN_INFO "vTuner process error\n");
 				close(hw->fd_control);
 				hw->fd_control = -1;
 				hw_free(hw);

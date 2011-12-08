@@ -227,6 +227,8 @@ vtunerc_connect_control(struct vtunerc_ctx *ctx)
 		return;
 
 	ctx->fd_control = s;
+
+	printk(KERN_INFO "vTuner: Connected, fd=%d (control)\n", s);
 }
 
 static void
@@ -276,13 +278,15 @@ vtunerc_connect_data(struct vtunerc_ctx *ctx)
 		return;
 
 	ctx->fd_data = s;
+
+	printk(KERN_INFO "vTuner: Connected, fd=%d (data)\n", s);
 }
 
 static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
     struct vtuner_message *msg, int do_wait)
 {
-	int ret = 0;
+	int ret;
 
 	down(&ctx->xchange_sem);
 
@@ -299,20 +303,24 @@ retry:
 			return (-ENXIO);
 		}
 	}
-	if (write(ctx->fd_control, msg, sizeof(struct vtuner_message)) !=
+	if ((ret = write(ctx->fd_control, msg, sizeof(struct vtuner_message))) !=
 	    sizeof(struct vtuner_message)) {
+		printk(KERN_INFO "vTuner: Write failed %d\n", ret);
 		close(ctx->fd_control);
 		ctx->fd_control = -1;
 		goto retry;
 	}
 	if (do_wait) {
-		if (read(ctx->fd_control, msg, sizeof(struct vtuner_message)) !=
+		if ((ret = read(ctx->fd_control, msg, sizeof(struct vtuner_message))) !=
 		    sizeof(struct vtuner_message)) {
+			printk(KERN_INFO "vTuner: Read failed %d\n", ret);
 			close(ctx->fd_control);
 			ctx->fd_control = -1;
 			goto retry;
 		}
 		ret = msg->msg_error;
+	} else {
+		ret = 0;
 	}
 	up(&ctx->xchange_sem);
 	return ret;
@@ -327,7 +335,8 @@ vtuner_reader_thread(void *arg)
 	while (1) {
 
 		while (ctx->fd_data < 0) {
-			vtunerc_connect_data(ctx);
+			if (ctx->fd_control > -1)
+				vtunerc_connect_data(ctx);
 			if (ctx->fd_data < 0)
 				usleep(1000000);
 		}
