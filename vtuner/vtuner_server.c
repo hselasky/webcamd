@@ -50,7 +50,7 @@ hw_frontend_ioctl(struct vtuners_ctx *hw, unsigned int cmd, void *arg, const cha
 {
 	int ret;
 
-	ret = linux_ioctl(hw->frontend_fd, 0, cmd, arg);
+	ret = linux_ioctl(hw->frontend_fd, -1, cmd, arg);
 
 	if (ret != 0) {
 		WARN(MSG_NET "vTuner frontend IOCTL "
@@ -145,7 +145,7 @@ hw_init(struct vtuners_ctx *hw)
 		up(&hw->writer_sem);
 		goto error;
 	}
-	if (linux_ioctl(hw->demux_fd, 0, DMX_SET_BUFFER_SIZE,
+	if (linux_ioctl(hw->demux_fd, -1, DMX_SET_BUFFER_SIZE,
 	    (void *)sizeof(hw->buffer)) != 0) {
 		up(&hw->writer_sem);
 		goto error;
@@ -422,7 +422,7 @@ hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 				 * Need to stop the demuxer:
 				 * A PID was changed.
 				 */
-				linux_ioctl(hw->demux_fd, 0, DMX_STOP, 0);
+				linux_ioctl(hw->demux_fd, -1, DMX_STOP, 0);
 				break;
 			}
 		}
@@ -436,7 +436,7 @@ hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 				flt.pes_type = DMX_PES_OTHER;
 				flt.output = DMX_OUT_TS_TAP;
 				flt.flags = DMX_IMMEDIATE_START;
-				linux_ioctl(hw->demux_fd, 0, DMX_SET_PES_FILTER, &flt);
+				linux_ioctl(hw->demux_fd, -1, DMX_SET_PES_FILTER, &flt);
 			}
 			hw->pids[i] = pidlist[i];
 		}
