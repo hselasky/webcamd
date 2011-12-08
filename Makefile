@@ -135,6 +135,7 @@ CFLAGS+= -D_GNU_SOURCE
 CFLAGS+= -DCURR_FILE_NAME=\"${.TARGET:C/\.o//g}\"
 CFLAGS+= -DBITS_PER_LONG=${BITS_PER_LONG}
 CFLAGS+= -DLINUX
+CFLAGS+= -DCONFIG_DVB_MAX_ADAPTERS=8
 CFLAGS+= -Wall -Wno-pointer-sign -Wno-unused-variable
 
 CFLAGS+= -I${.CURDIR}
@@ -199,6 +200,10 @@ SRCS+= webcamd_hal.c
 
 .if defined(HAVE_VTUNER_CLIENT)
 SRCS+= vtuner_client.c
+.endif
+
+.if defined(HAVE_VTUNER_SERVER)
+SRCS+= vtuner_server.c
 .endif
 
 .include <bsd.prog.mk>

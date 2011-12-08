@@ -21,6 +21,8 @@
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
 
+#define	VTUNER_VERSION_00030001 0x00030001
+#define	VTUNER_VERSION VTUNER_VERSION_00030001
 #define	VTUNER_MAGIC 0x76543210
 #define	VTUNER_MAX_PID	30
 
@@ -69,8 +71,10 @@ struct diseqc_master_cmd {
 };
 
 struct vtuner_message {
-	t32	type;
-	u32	magic;
+	t32	msg_type;
+	u32	msg_magic;
+	u32	msg_version;
+	u32	msg_error;
 	union {
 		struct {
 			v32	frequency;

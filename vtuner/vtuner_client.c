@@ -42,9 +42,7 @@ DVB_DEFINE_MOD_OPT_ADAPTER_NR(adapter_nr);
 
 #define	DRIVER_NAME		"vTuner proxy"
 
-#define	VTUNERC_MAX_ADAPTERS	8
-
-static struct vtunerc_ctx *vtunerc_tbl[VTUNERC_MAX_ADAPTERS] = {NULL};
+static struct vtunerc_ctx *vtunerc_tbl[CONFIG_DVB_MAX_ADAPTERS];
 static int vtuner_max_unit = 0;
 static int vtuner_type = 0;
 static char vtuner_host[64] = {"127.0.0.1"};
@@ -117,6 +115,8 @@ vtunerc_start_feed(struct dvb_demux_feed *feed)
 	struct vtunerc_ctx *ctx = demux->priv;
 	struct vtuner_message msg;
 
+	memset(&msg, 0, sizeof(msg));
+
 	switch (feed->type) {
 	case DMX_TYPE_TS:
 		break;
@@ -138,7 +138,7 @@ vtunerc_start_feed(struct dvb_demux_feed *feed)
 
 		pidtab_copy_to_msg(ctx, &msg);
 
-		msg.type = MSG_PIDLIST;
+		msg.msg_type = MSG_PIDLIST;
 
 		if (vtunerc_do_message(ctx, &msg, 0) < 0)
 			return -ENXIO;
@@ -153,6 +153,8 @@ vtunerc_stop_feed(struct dvb_demux_feed *feed)
 	struct vtunerc_ctx *ctx = demux->priv;
 	struct vtuner_message msg;
 
+	memset(&msg, 0, sizeof(msg));
+
 	/* organize PID list table */
 
 	if (pidtab_find_index(ctx->pidtab, feed->pid) > -1) {
@@ -160,7 +162,7 @@ vtunerc_stop_feed(struct dvb_demux_feed *feed)
 
 		pidtab_copy_to_msg(ctx, &msg);
 
-		msg.type = MSG_PIDLIST;
+		msg.msg_type = MSG_PIDLIST;
 
 		if (vtunerc_do_message(ctx, &msg, 0) < 0)
 			return -ENXIO;
@@ -263,10 +265,14 @@ static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
     struct vtuner_message *msg, int do_wait)
 {
+	int ret = 0;
+
 	down(&ctx->xchange_sem);
 
-	/* stamp the byte order we are using */
-	msg->magic = VTUNER_MAGIC;
+	/* stamp the byte order and version */
+	msg->msg_magic = VTUNER_MAGIC;
+	msg->msg_version = VTUNER_VERSION;
+	msg->msg_error = do_wait ? -1U : 0U;
 
 retry:
 	if (ctx->fd_control < 0 || ctx->fd_data < 0) {
@@ -288,9 +294,10 @@ retry:
 			pthread_kill(ctx->reader_thread, SIGURG);
 			goto retry;
 		}
+		ret = msg->msg_error;
 	}
 	up(&ctx->xchange_sem);
-	return 0;
+	return ret;
 }
 
 static void *
@@ -360,7 +367,9 @@ dvb_proxyfe_read_status(struct dvb_frontend *fe, fe_status_t *status)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
-	msg.type = MSG_READ_STATUS;
+	memset(&msg, 0, sizeof(msg));
+
+	msg.msg_type = MSG_READ_STATUS;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
 		*status = 0;
@@ -377,7 +386,9 @@ dvb_proxyfe_read_ber(struct dvb_frontend *fe, u32 * ber)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
-	msg.type = MSG_READ_BER;
+	memset(&msg, 0, sizeof(msg));
+
+	msg.msg_type = MSG_READ_BER;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
 		*ber = 0;
@@ -395,7 +406,9 @@ dvb_proxyfe_read_signal_strength(struct dvb_frontend *fe,
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
-	msg.type = MSG_READ_SIGNAL_STRENGTH;
+	memset(&msg, 0, sizeof(msg));
+
+	msg.msg_type = MSG_READ_SIGNAL_STRENGTH;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
 		*strength = 0;
@@ -412,7 +425,9 @@ dvb_proxyfe_read_snr(struct dvb_frontend *fe, u16 * snr)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
-	msg.type = MSG_READ_SNR;
+	memset(&msg, 0, sizeof(msg));
+
+	msg.msg_type = MSG_READ_SNR;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
 		*snr = 0;
@@ -429,7 +444,9 @@ dvb_proxyfe_read_ucblocks(struct dvb_frontend *fe, u32 * ucblocks)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
-	msg.type = MSG_READ_UCBLOCKS;
+	memset(&msg, 0, sizeof(msg));
+
+	msg.msg_type = MSG_READ_UCBLOCKS;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
 		*ucblocks = 0;
@@ -447,7 +464,9 @@ dvb_proxyfe_get_frontend(struct dvb_frontend *fe,
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
-	msg.type = MSG_GET_FRONTEND;
+	memset(&msg, 0, sizeof(msg));
+
+	msg.msg_type = MSG_GET_FRONTEND;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0)
 		return -ENXIO;
@@ -503,6 +522,7 @@ dvb_proxyfe_set_frontend(struct dvb_frontend *fe,
 	struct vtuner_message msg;
 
 	memset(&msg, 0, sizeof(msg));
+
 	msg.body.fe_params.frequency = p->frequency;
 	msg.body.fe_params.inversion = p->inversion;
 
@@ -625,7 +645,7 @@ dvb_proxyfe_set_frontend(struct dvb_frontend *fe,
 		return -EINVAL;
 	}
 
-	msg.type = MSG_SET_FRONTEND;
+	msg.msg_type = MSG_SET_FRONTEND;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0)
 		return -ENXIO;
@@ -664,8 +684,10 @@ dvb_proxyfe_set_tone(struct dvb_frontend *fe, fe_sec_tone_mode_t tone)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
+	memset(&msg, 0, sizeof(msg));
+
 	msg.body.tone = tone;
-	msg.type = MSG_SET_TONE;
+	msg.msg_type = MSG_SET_TONE;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0)
 		return -ENXIO;
@@ -680,8 +702,10 @@ dvb_proxyfe_set_voltage(struct dvb_frontend *fe, fe_sec_voltage_t voltage)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
+	memset(&msg, 0, sizeof(msg));
+
 	msg.body.voltage = voltage;
-	msg.type = MSG_SET_VOLTAGE;
+	msg.msg_type = MSG_SET_VOLTAGE;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0)
 		return -ENXIO;
@@ -696,8 +720,10 @@ dvb_proxyfe_send_diseqc_msg(struct dvb_frontend *fe, struct dvb_diseqc_master_cm
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
+	memset(&msg, 0, sizeof(msg));
+
 	memcpy(&msg.body.diseqc_master_cmd, cmd, sizeof(struct dvb_diseqc_master_cmd));
-	msg.type = MSG_SEND_DISEQC_MSG;
+	msg.msg_type = MSG_SEND_DISEQC_MSG;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0)
 		return -ENXIO;
@@ -712,8 +738,10 @@ dvb_proxyfe_send_diseqc_burst(struct dvb_frontend *fe, fe_sec_mini_cmd_t burst)
 	struct vtunerc_ctx *ctx = state->ctx;
 	struct vtuner_message msg;
 
+	memset(&msg, 0, sizeof(msg));
+
 	msg.body.burst = burst;
-	msg.type = MSG_SEND_DISEQC_BURST;
+	msg.msg_type = MSG_SEND_DISEQC_BURST;
 
 	if (vtunerc_do_message(ctx, &msg, 1) < 0)
 		return -ENXIO;
@@ -973,8 +1001,8 @@ vtunerc_init(void)
 	    VTUNERC_MODULE_VERSION
 	    ", (c) 2010-11 Honza Petrous, SmartImp.cz\n");
 
-	if (vtuner_max_unit > VTUNERC_MAX_ADAPTERS)
-		vtuner_max_unit = VTUNERC_MAX_ADAPTERS;
+	if (vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
+		vtuner_max_unit = CONFIG_DVB_MAX_ADAPTERS;
 	else if (vtuner_max_unit < 0)
 		vtuner_max_unit = 0;
 
@@ -989,10 +1017,10 @@ vtunerc_init(void)
 		ctx->fd_data = -1;
 
 		snprintf(ctx->cport, sizeof(ctx->cport),
-		    "%u", atoi(vtuner_cport) + 2*u);
+		    "%u", atoi(vtuner_cport) + (2 * u));
 
 		snprintf(ctx->dport, sizeof(ctx->dport),
-		    "%u", atoi(vtuner_cport) + (2*u) + 1);
+		    "%u", atoi(vtuner_cport) + (2 * u) + 1);
 
 		/* DVB */
 
@@ -1119,6 +1147,6 @@ module_param_string(cport, vtuner_cport, sizeof(vtuner_cport), 0644);
 MODULE_PARM_DESC(cport, "Control port at host (default is 5100)");
 
 MODULE_AUTHOR("Honza Petrous");
-MODULE_DESCRIPTION("Virtual DVB device");
+MODULE_DESCRIPTION("Virtual DVB device client");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(VTUNERC_MODULE_VERSION);
