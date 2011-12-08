@@ -370,6 +370,7 @@ usage(void)
 	    "	-G <group> Set group for character devices\n"
 	    "	-H Register device by HAL daemon\n"
 	    "	-D <host:port:ndev:type> Connect to remote host instead of USB\n"
+	    "	   Type values: DVB-S=1,DVB-C=2,DVB-T=4,DVB-S2=8\n"
 	    "	-L <host:port:ndev> Make DVB device available from TCP/IP\n"
 	    "	-h Print help\n",
 	    global_fw_prefix
