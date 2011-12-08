@@ -1,5 +1,5 @@
 /*
- * vtunerc: Virtual adapter driver
+ * vtunerc: Virtual adapter client driver
  *
  * Copyright (C) 2010-11 Honza Petrous <jpetrous@smartimp.cz>
  * [Created 2010-03-23]
