@@ -307,14 +307,14 @@ hw_set_frontend(struct vtuners_ctx *hw, struct dvb_frontend_parameters *fe_param
 }
 
 int
-hw_get_property(struct vtuners_ctx *hw, struct dtv_property *prop)
+hw_get_property(struct vtuners_ctx *hw, struct vtuner_property *prop)
 {
 	WARN(MSG_NET, "FE_GET_PROPERTY: not implemented %d\n", prop->cmd);
 	return 0;
 }
 
 int
-hw_set_property(struct vtuners_ctx *hw, struct dtv_property *prop)
+hw_set_property(struct vtuners_ctx *hw, struct vtuner_property *prop)
 {
 	struct dtv_properties cmdseq;
 	int ret = 0;

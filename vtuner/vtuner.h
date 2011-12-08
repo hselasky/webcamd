@@ -73,6 +73,18 @@ struct diseqc_master_cmd {
 	v8	msg_len;
 };
 
+struct vtuner_property {
+	v32	cmd;
+	union {
+		v32	data;
+		struct {
+			v8	data [32];
+			v32	len;
+		}	buffer;
+	}	u;
+	t32	result;
+};
+
 struct vtuner_message {
 	t32	msg_type;
 	u32	msg_magic;
@@ -106,7 +118,7 @@ struct vtuner_message {
 				}	vsb;
 			}	u;
 		}	fe_params;
-		struct dtv_property prop;
+		struct vtuner_property prop;
 		v32	status;
 		v32	ber;
 		v16	ss;
