@@ -727,7 +727,7 @@ vtuners_connect_control(struct vtuners_ctx *hw)
 	if (s < 0)
 		return;
 
-	flag = sizeof(struct vtuner_message);
+	flag = 2 * sizeof(struct vtuner_message);
 	setsockopt(s, SOL_SOCKET, SO_SNDBUF, &flag, (int)sizeof(flag));
 	setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, (int)sizeof(flag));
 
@@ -845,6 +845,21 @@ vtuners_writer_thread(void *arg)
 	return (NULL);
 }
 
+static int
+vtuners_read(int fd, char *ptr, int len)
+{
+	int off = 0;
+	int err;
+
+	while (off < len) {
+		err = read(fd, ptr + off, len - off);
+		if (err <= 0)
+			return (err);
+		off += err;
+	}
+	return (off);
+}
+
 static void *
 vtuners_control_thread(void *arg)
 {
@@ -870,7 +885,7 @@ vtuners_control_thread(void *arg)
 
 		len = sizeof(hw->msgbuf);
 
-		if (read(hw->fd_control, &hw->msgbuf, len) != len) {
+		if (vtuners_read(hw->fd_control, (u8 *) & hw->msgbuf, len) != len) {
 			printk(KERN_INFO "vTuner read error %d\n", len);
 			close(hw->fd_control);
 			hw->fd_control = -1;

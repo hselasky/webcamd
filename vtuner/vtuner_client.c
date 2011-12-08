@@ -210,7 +210,7 @@ vtunerc_connect_control(struct vtunerc_ctx *ctx)
 		flag = 1;
 		setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, (int)sizeof(flag));
 
-		flag = sizeof(struct vtuner_message);
+		flag = 2 * sizeof(struct vtuner_message);
 		setsockopt(s, SOL_SOCKET, SO_SNDBUF, &flag, (int)sizeof(flag));
 		setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, (int)sizeof(flag));
 
@@ -326,6 +326,21 @@ retry:
 	return ret;
 }
 
+static int
+vtunerc_read(int fd, char *ptr, int len)
+{
+	int off = 0;
+	int err;
+
+	while (off < len) {
+		err = read(fd, ptr + off, len - off);
+		if (err <= 0)
+			return (err);
+		off += err;
+	}
+	return (off);
+}
+
 static void *
 vtuner_reader_thread(void *arg)
 {
@@ -344,7 +359,7 @@ vtuner_reader_thread(void *arg)
 		if (ctx->trailsize != 0)
 			memcpy(ctx->buffer, ctx->trailbuf, ctx->trailsize);
 
-		len = read(ctx->fd_data, ((u8 *) ctx->buffer) + ctx->trailsize,
+		len = vtunerc_read(ctx->fd_data, ((u8 *) ctx->buffer) + ctx->trailsize,
 		    sizeof(ctx->buffer) - ctx->trailsize);
 		if (len <= 0) {
 			close(ctx->fd_data);
