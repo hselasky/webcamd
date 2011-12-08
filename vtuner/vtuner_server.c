@@ -101,8 +101,8 @@ hw_init(struct vtuners_ctx *hw)
 
 	adapter = hw->unit;
 
-	hw->frontend_fd = linux_open((F_V4B_SUBDEV_MAX * adapter) +
-	    F_V4B_DVB_FRONTEND, O_RDWR);
+	hw->frontend_fd = linux_open((F_V4B_SUBDEV_MAX *
+	    F_V4B_DVB_FRONTEND) + adapter, O_RDWR);
 
 	if (hw->frontend_fd == NULL)
 		goto error;
@@ -132,15 +132,15 @@ hw_init(struct vtuners_ctx *hw)
 
 	printk(KERN_INFO "FE_GET_INFO dvb-type:%d vtuner-type:%d\n", hw->fe_info.type, hw->type);
 
-	hw->streaming_fd = linux_open((F_V4B_SUBDEV_MAX * adapter) +
-	    F_V4B_DVB_DVR, O_RDONLY);
+	hw->streaming_fd = linux_open(
+	    (F_V4B_SUBDEV_MAX * F_V4B_DVB_DVR) + adapter, O_RDONLY);
 
 	if (hw->streaming_fd == NULL)
 		goto error;
 
 	down(&hw->writer_sem);
-	hw->demux_fd = linux_open((F_V4B_SUBDEV_MAX * adapter) +
-	    F_V4B_DVB_DEMUX, O_RDWR | O_NONBLOCK);
+	hw->demux_fd = linux_open(
+	    (F_V4B_SUBDEV_MAX * F_V4B_DVB_DEMUX) + adapter, O_RDWR | O_NONBLOCK);
 	if (hw->demux_fd == NULL) {
 		up(&hw->writer_sem);
 		goto error;
@@ -718,7 +718,7 @@ vtuners_connect_control(struct vtuners_ctx *hw)
 
 	hw->fd_control = accept(s, NULL, NULL);
 
-	printk(KERN_INFO "vTuner accepted %d\n", hw->fd_control);
+	printk(KERN_INFO "vTuner accepted %d (control)\n", hw->fd_control);
 
 	close(s);
 
@@ -781,6 +781,8 @@ vtuners_connect_data(struct vtuners_ctx *hw)
 		return;
 
 	hw->fd_data = accept(s, NULL, NULL);
+
+	printk(KERN_INFO "vTuner accepted %d (data)\n", hw->fd_data);
 
 	close(s);
 
@@ -858,8 +860,10 @@ vtuners_control_thread(void *arg)
 				continue;
 			}
 			if (hw_init(hw) < 0) {
+				printk(KERN_INFO "vTuner hardware init failed\n");
 				close(hw->fd_control);
 				hw->fd_control = -1;
+				usleep(1000000);
 				continue;
 			}
 		}
