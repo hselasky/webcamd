@@ -283,6 +283,36 @@ vtunerc_connect_data(struct vtunerc_ctx *ctx)
 }
 
 static int
+vtunerc_read(int fd, u8 * ptr, int len)
+{
+	int off = 0;
+	int err;
+
+	while (off < len) {
+		err = read(fd, ptr + off, len - off);
+		if (err <= 0)
+			return (err);
+		off += err;
+	}
+	return (off);
+}
+
+static int
+vtunerc_write(int fd, const u8 * ptr, int len)
+{
+	int off = 0;
+	int err;
+
+	while (off < len) {
+		err = write(fd, ptr + off, len - off);
+		if (err <= 0)
+			return (err);
+		off += err;
+	}
+	return (off);
+}
+
+static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
     struct vtuner_message *msg, int do_wait)
 {
@@ -303,7 +333,7 @@ retry:
 			return (-ENXIO);
 		}
 	}
-	if ((ret = write(ctx->fd_control, msg, sizeof(struct vtuner_message))) !=
+	if ((ret = vtunerc_write(ctx->fd_control, (u8 *) msg, sizeof(struct vtuner_message))) !=
 	    sizeof(struct vtuner_message)) {
 		printk(KERN_INFO "vTuner: Write failed %d\n", ret);
 		close(ctx->fd_control);
@@ -311,7 +341,7 @@ retry:
 		goto retry;
 	}
 	if (do_wait) {
-		if ((ret = read(ctx->fd_control, msg, sizeof(struct vtuner_message))) !=
+		if ((ret = vtunerc_read(ctx->fd_control, (u8 *) msg, sizeof(struct vtuner_message))) !=
 		    sizeof(struct vtuner_message)) {
 			printk(KERN_INFO "vTuner: Read failed %d\n", ret);
 			close(ctx->fd_control);
@@ -324,21 +354,6 @@ retry:
 	}
 	up(&ctx->xchange_sem);
 	return ret;
-}
-
-static int
-vtunerc_read(int fd, char *ptr, int len)
-{
-	int off = 0;
-	int err;
-
-	while (off < len) {
-		err = read(fd, ptr + off, len - off);
-		if (err <= 0)
-			return (err);
-		off += err;
-	}
-	return (off);
 }
 
 static void *
@@ -359,7 +374,7 @@ vtuner_reader_thread(void *arg)
 		if (ctx->trailsize != 0)
 			memcpy(ctx->buffer, ctx->trailbuf, ctx->trailsize);
 
-		len = vtunerc_read(ctx->fd_data, ((u8 *) ctx->buffer) + ctx->trailsize,
+		len = read(ctx->fd_data, ((u8 *) ctx->buffer) + ctx->trailsize,
 		    sizeof(ctx->buffer) - ctx->trailsize);
 		if (len <= 0) {
 			close(ctx->fd_data);

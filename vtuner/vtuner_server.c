@@ -580,6 +580,36 @@ vtuners_byteswap(struct vtuner_message *msg, int type)
 }
 
 static int
+vtuners_read(int fd, u8 * ptr, int len)
+{
+	int off = 0;
+	int err;
+
+	while (off < len) {
+		err = read(fd, ptr + off, len - off);
+		if (err <= 0)
+			return (err);
+		off += err;
+	}
+	return (off);
+}
+
+static int
+vtuners_write(int fd, const u8 * ptr, int len)
+{
+	int off = 0;
+	int err;
+
+	while (off < len) {
+		err = write(fd, ptr + off, len - off);
+		if (err <= 0)
+			return (err);
+		off += err;
+	}
+	return (off);
+}
+
+static int
 vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg)
 {
 	int swapped;
@@ -663,7 +693,8 @@ vtuners_process_msg(struct vtuners_ctx *hw, struct vtuner_message *msg)
 		msg->msg_error = ret;
 		if (swapped)
 			vtuners_byteswap(msg, hw->type);
-		if ((ret = write(hw->fd_control, msg, sizeof(*msg))) != sizeof(*msg)) {
+		if ((ret = vtuners_write(hw->fd_control,
+		    (u8 *) msg, sizeof(*msg))) != sizeof(*msg)) {
 			printk(KERN_INFO "vTuner Write error %d\n", ret);
 			return (-1);
 		}
@@ -836,28 +867,14 @@ vtuners_writer_thread(void *arg)
 			hw->fd_data = -1;
 			continue;
 		}
-		if (write(hw->fd_data, hw->buffer, len) != len) {
+		if (vtuners_write(hw->fd_data,
+		    (u8 *) hw->buffer, len) != len) {
 			close(hw->fd_data);
 			hw->fd_data = -1;
 			continue;
 		}
 	}
 	return (NULL);
-}
-
-static int
-vtuners_read(int fd, char *ptr, int len)
-{
-	int off = 0;
-	int err;
-
-	while (off < len) {
-		err = read(fd, ptr + off, len - off);
-		if (err <= 0)
-			return (err);
-		off += err;
-	}
-	return (off);
 }
 
 static void *
