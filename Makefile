@@ -198,6 +198,10 @@ SRCS+= linux_mod_param.c
 SRCS+= webcamd.c
 SRCS+= webcamd_hal.c
 
+.if defined(HAVE_VTUNER_CLIENT) || defined(HAVE_VTUNER_SERVER)
+SRCS+= vtuner_common.c
+.endif
+
 .if defined(HAVE_VTUNER_CLIENT)
 SRCS+= vtuner_client.c
 .endif

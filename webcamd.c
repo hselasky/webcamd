@@ -84,7 +84,6 @@ static int u_index = 0;
 static int u_videodev = -1;
 static int do_fork = 0;
 static int do_realtime = 1;
-static int do_hal_register = 0;
 static struct pidfh *local_pid = NULL;
 static gid_t gid;
 static uid_t uid;
@@ -97,6 +96,7 @@ static int vtuner_server;
 
 char	global_fw_prefix[128] = {"/boot/modules"};
 int	webcamd_unit;
+int	webcamd_hal_register;
 
 #define	v4b_errx(code, fmt, ...) do {			\
 	fprintf(stderr, fmt "\n",## __VA_ARGS__);	\
@@ -347,10 +347,28 @@ v4b_create(int unit)
 				}
 			}
 
-			if (do_hal_register)
+			if (webcamd_hal_register)
 				hal_add_device(buf);
 		}
 	}
+}
+
+uid_t
+v4b_get_uid(void)
+{
+	return (uid);
+}
+
+gid_t
+v4b_get_gid(void)
+{
+	return (gid);
+}
+
+int
+v4b_get_perm(void)
+{
+	return (CHR_MODE);
 }
 
 static void
@@ -369,8 +387,7 @@ usage(void)
 	    "	-U <user> Set user for character devices\n"
 	    "	-G <group> Set group for character devices\n"
 	    "	-H Register device by HAL daemon\n"
-	    "	-D <host:port:ndev:type> Connect to remote host instead of USB\n"
-	    "	   Type values: DVB-S=1,DVB-C=2,DVB-T=4,DVB-S2=8\n"
+	    "	-D <host:port:ndev> Connect to remote host instead of USB\n"
 	    "	-L <host:port:ndev> Make DVB device available from TCP/IP\n"
 	    "	-h Print help\n",
 	    global_fw_prefix
@@ -495,7 +512,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'H':
-			do_hal_register = 1;
+			webcamd_hal_register = 1;
 			break;
 
 		case 'U':
@@ -597,19 +614,11 @@ main(int argc, char **argv)
 				    "-D option: '%s'", cport);
 			}
 			*ndev++ = 0;
-			type = strstr(ndev, ":");
-			if (type == NULL) {
-				v4b_errx(1, "invalid syntax for "
-				    "-D option: '%s'", ndev);
-			}
-			*type++ = 0;
-
-			ptr = strstr(type, ":");
+			ptr = strstr(ndev, ":");
 			if (ptr != NULL)
 				*ptr = 0;
 
 			if (mod_set_param("vtuner_client.devices", ndev) < 0 ||
-			    mod_set_param("vtuner_client.type", type) < 0 ||
 			    mod_set_param("vtuner_client.host", host) < 0 ||
 			    mod_set_param("vtuner_client.cport", cport) < 0) {
 				v4b_errx(1, "Cannot set all module "
@@ -672,7 +681,7 @@ main(int argc, char **argv)
 			v4b_errx(1, "Cannot find USB device");
 	}
 	if (vtuner_server == 0) {
-		if (do_hal_register)
+		if (webcamd_hal_register)
 			hal_init(u_unit, u_addr, u_index);
 
 		v4b_create(u_videodev);

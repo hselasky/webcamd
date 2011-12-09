@@ -72,6 +72,13 @@ vtuner_struct_size(int type)
 }
 
 void
+vtuner_data_hdr_byteswap(struct vtuner_data_hdr *msg)
+{
+	VTUNER_BSWAP32(msg->magic);
+	VTUNER_BSWAP32(msg->length);
+}
+
+void
 vtuner_hdr_byteswap(struct vtuner_message *msg)
 {
 	VTUNER_BSWAP32(msg->hdr.mtype);
@@ -157,7 +164,7 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 		break;
 	case MSG_STRUCT_DTV_PROPERTIES:
 		VTUNER_BSWAP32(msg->body.dtv_properties.num);
-		for (i = 0; i != VTUNER_MAX_PROP; i++) {
+		for (i = 0; i != VTUNER_PROP_MAX; i++) {
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].cmd);
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[0]);
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[1]);

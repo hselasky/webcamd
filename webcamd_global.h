@@ -73,6 +73,11 @@
 #include <media_tree/include/linux/videodev2.h>
 
 extern int webcamd_unit;
+extern int webcamd_hal_register;
+
+extern uid_t v4b_get_uid(void);
+extern gid_t v4b_get_gid(void);
+extern int v4b_get_perm(void);
 
 #define	getmode __getmode
 #define	setmode __setmode

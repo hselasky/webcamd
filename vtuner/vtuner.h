@@ -37,12 +37,13 @@
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
 
-#define	VTUNER_VERSION_00030001 0x00030001
-#define	VTUNER_VERSION VTUNER_VERSION_00030001
-#define	VTUNER_MAGIC 0x76543210U
+#define	VTUNER_VERSION_00010001 0x00010001
+#define	VTUNER_VERSION VTUNER_VERSION_00010001
+#define	VTUNER_MAGIC 0x5654554EU	/* 'VTUN' */
 #define	VTUNER_TS_ALIGN 188
 #define	VTUNER_DEFAULT_PORT "5100"
-#define	VTUNER_MAX_PROP 64
+#define	VTUNER_BUFFER_MAX (2 * 65536)
+#define	VTUNER_PROP_MAX 32
 
 enum {
 	MSG_UNDEFINED = 0,
@@ -82,8 +83,7 @@ enum {
 	MSG_FE_GET_EVENT,
 	MSG_FE_DISHNETWORK_SEND_LEGACY_CMD,
 
-	MSG_STRUCT_DMX_FILTER = 64,
-	MSG_STRUCT_DMX_SCT_FILTER_PARAMS,
+	MSG_STRUCT_DMX_SCT_FILTER_PARAMS = 64,
 	MSG_STRUCT_DMX_PES_FILTER_PARAMS,
 	MSG_STRUCT_DMX_PES_PID,
 	MSG_STRUCT_DMX_CAPS,
@@ -106,6 +106,15 @@ typedef uint8_t v8 __aligned(1);
 typedef uint16_t v16 __aligned(2);
 typedef uint32_t v32 __aligned(4);
 typedef uint64_t v64 __aligned(8);
+
+/*
+ * ==== DMX data header ====
+ */
+
+struct vtuner_data_hdr {
+	v32	magic;			/* VTUNER_MAGIC */
+	v32	length;			/* must be <= VTUNER_BUFFER_MAX */
+};
 
 /*
  * ==== DMX device structures ====
@@ -241,12 +250,12 @@ struct vtuner_dtv_property {
 
 struct vtuner_dtv_properties {
 	v32	num;
-	struct vtuner_dtv_property props[VTUNER_MAX_PROP];
+	struct vtuner_dtv_property props[VTUNER_PROP_MAX];
 };
 
 struct vtuner_message {
 	struct {
-		v32	magic;
+		v32	magic;		/* VTUNER_MAGIC */
 		v32	mtype;
 		v32	rx_struct;
 		v32	tx_struct;
@@ -255,7 +264,6 @@ struct vtuner_message {
 	union {
 		v32	value32;
 		v16	value16;
-		struct vtuner_dmx_filter dmx_filter;
 		struct vtuner_dmx_sct_filter_params dmx_sct_filter_params;
 		struct vtuner_dmx_pes_filter_params dmx_pes_filter_params;
 		struct vtuner_dmx_pes_pid dmx_pes_pid;
@@ -274,7 +282,9 @@ struct vtuner_message {
 union vtuner_dvb_message {
 	u32	value32;
 	u16	value16;
-	struct dmx_filter dmx_filter;
+	struct {
+		u16	pids[5];
+	}	dmx_pes_pid;
 	struct dmx_sct_filter_params dmx_sct_filter_params;
 	struct dmx_pes_filter_params dmx_pes_filter_params;
 	struct dmx_caps dmx_caps;

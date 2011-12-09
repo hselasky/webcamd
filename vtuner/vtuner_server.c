@@ -35,12 +35,8 @@
 #include <linux/init.h>
 #include <linux/i2c.h>
 
-#include "demux.h"
-#include "dmxdev.h"
 #include "dvb_demux.h"
 #include "dvb_frontend.h"
-#include "dvb_net.h"
-#include "dvbdev.h"
 
 #include <vtuner/vtuner.h>
 #include <vtuner/vtuner_server.h>
@@ -738,6 +734,10 @@ vtuners_control_thread(void *arg)
 	return (NULL);
 }
 
+/*------------------------------------------------------------------------*
+ * vTuner server init and exit
+ *------------------------------------------------------------------------*/
+
 static int __init
 vtuners_init(void)
 {
@@ -809,4 +809,4 @@ MODULE_PARM_DESC(cport, "Control port at host (default is 5100)");
 MODULE_AUTHOR("Hans Petter Selasky");
 MODULE_DESCRIPTION("Virtual DVB device server");
 MODULE_LICENSE("BSD");
-MODULE_VERSION(VTUNERS_MODULE_VERSION);
+MODULE_VERSION(VTUNER_MODULE_VERSION);

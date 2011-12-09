@@ -1,18 +1,33 @@
+/*-
+ * Copyright (c) 2011 Hans Petter Selasky. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 /*
- * vtunerc: Virtual adapter client driver
+ * BSD vTuner Client API
  *
- * Copyright (C) 2010-11 Honza Petrous <jpetrous@smartimp.cz>
- * [Created 2010-03-23]
- * Sponsored by Smartimp s.r.o. for its NessieDVB.com box
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation version 2.
- *
- * This program is distributed WITHOUT ANY WARRANTY of any
- * kind, whether express or implied; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Inspired by code written by:
+ * Honza Petrous <jpetrous@smartimp.cz>
  */
 
 #include <linux/module.h>
@@ -20,170 +35,67 @@
 #include <linux/init.h>
 #include <linux/i2c.h>
 
-#include "demux.h"
-#include "dmxdev.h"
 #include "dvb_demux.h"
 #include "dvb_frontend.h"
-#include "dvb_net.h"
-#include "dvbdev.h"
 
 #include <vtuner/vtuner.h>
+#include <vtuner/vtuner_common.h>
 #include <vtuner/vtuner_client.h>
 
+#include <sys/filio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <signal.h>
 
-#define	VTUNERC_MODULE_VERSION "1.2p1-hps"
+#include <cuse4bsd.h>
 
-DVB_DEFINE_MOD_OPT_ADAPTER_NR(adapter_nr);
+#include <webcamd_hal.h>
 
-#define	DRIVER_NAME		"vTuner proxy"
+#define	VTUNER_MODULE_VERSION "1.0-hps"
+
+#define	VTUNER_LOCAL_MEMSET(a,b,c) \
+    memset(a,b,sizeof(*(a)))
+
+#define	VTUNER_PEER_MEMSET(a,b,c) do {			\
+    static const u8 dummyz[sizeof(*(a))] __aligned(4);	\
+    extern int dummy[(b) ? -1 : 1];			\
+    if (copy_to_user(a,dummyz,sizeof(*(a))) != 0)	\
+	*c |= -1U;					\
+} while (0)
+
+#define	VTUNER_PEER_MEMCPY(a,b,c,d) do {				\
+    extern int dummy[(sizeof(*(a.c)) != sizeof(*(b.c))) ? -1 : 1];	\
+    if (copy_to_user(a.c,b.c,sizeof(*(a.c))) != 0)			\
+	*d |= -1U;							\
+} while (0)
+
+#define	VTUNER_LOCAL_MEMCPY(a,b,c,d) do {				\
+    extern int dummy[(sizeof(*(a.c)) != sizeof(*(b.c))) ? -1 : 1];	\
+    if (copy_from_user(a.c,b.c,sizeof(*(a.c))) != 0)		\
+	*d |= -1U;							\
+} while (0)
 
 static struct vtunerc_ctx *vtunerc_tbl[CONFIG_DVB_MAX_ADAPTERS];
 static int vtuner_max_unit = 0;
-static int vtuner_type = 0;
 static char vtuner_host[64] = {"127.0.0.1"};
 static char vtuner_cport[16] = {VTUNER_DEFAULT_PORT};
 
-static int
-vtunerc_do_message(struct vtunerc_ctx *ctx,
-    struct vtuner_message *msg, int do_wait);
+static cuse_open_t vtunerc_open;
+static cuse_close_t vtunerc_close;
+static cuse_read_t vtunerc_read;
+static cuse_write_t vtunerc_write;
+static cuse_ioctl_t vtunerc_ioctl;
+static cuse_poll_t vtunerc_poll;
 
-/*------------------------------------------------------------------------*
- * PID table management
- *------------------------------------------------------------------------*/
-static int
-pidtab_find_index(u16 * pidtab, int pid)
-{
-	int i;
-
-	for (i = 0; i < VTUNER_MAX_PID; i++) {
-		if (pidtab[i] == pid)
-			return (i);
-	}
-
-	return -1;
-}
-
-static int
-pidtab_add_pid(u16 * pidtab, int pid)
-{
-	int i;
-
-	for (i = 0; i < VTUNER_MAX_PID; i++)
-		if (pidtab[i] == VTUNER_PID_UNKNOWN ||
-		    pidtab[i] == pid) {
-			pidtab[i] = pid;
-			return 0;
-		}
-	return -1;
-}
-
-static int
-pidtab_del_pid(u16 * pidtab, int pid)
-{
-	int i;
-
-	for (i = 0; i < VTUNER_MAX_PID; i++) {
-		if (pidtab[i] == pid) {
-			pidtab[i] = VTUNER_PID_UNKNOWN;
-			return 0;
-		}
-	}
-
-	return -1;
-}
-
-static void
-pidtab_copy_to_msg(struct vtunerc_ctx *ctx,
-    struct vtuner_message *msg)
-{
-	int i;
-
-	for (i = 0; i < VTUNER_MAX_PID; i++)
-		msg->body.pidlist[i] = ctx->pidtab[i];
-}
-
-static int
-vtunerc_start_feed(struct dvb_demux_feed *feed)
-{
-	struct dvb_demux *demux = feed->demux;
-	struct vtunerc_ctx *ctx = demux->priv;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	printk(KERN_ERR "vtunerc: Start feed type %d pid %d\n",
-	    feed->type, feed->pid);
-
-#if 0
-	switch (feed->type) {
-	case DMX_TYPE_TS:
-		break;
-	case DMX_TYPE_SEC:
-		break;
-	case DMX_TYPE_PES:
-		printk(KERN_ERR "vtunerc: feed type PES is not supported\n");
-		return -EINVAL;
-	default:
-		printk(KERN_ERR "vtunerc: feed type %d is not supported\n",
-		    feed->type);
-		return -EINVAL;
-	}
-#endif
-
-	/* organize PID list table */
-
-	if (pidtab_find_index(ctx->pidtab, feed->pid) < 0) {
-		pidtab_add_pid(ctx->pidtab, feed->pid);
-
-		pidtab_copy_to_msg(ctx, &msg);
-
-		msg.msg_type = MSG_PIDLIST;
-
-		if (vtunerc_do_message(ctx, &msg, 0) < 0)
-			return -ENXIO;
-	}
-	return 0;
-}
-
-static int
-vtunerc_stop_feed(struct dvb_demux_feed *feed)
-{
-	struct dvb_demux *demux = feed->demux;
-	struct vtunerc_ctx *ctx = demux->priv;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	printk(KERN_ERR "vtunerc: Stop feed type %d pid %d\n",
-	    feed->type, feed->pid);
-
-	/* organize PID list table */
-
-	if (pidtab_find_index(ctx->pidtab, feed->pid) > -1) {
-		pidtab_del_pid(ctx->pidtab, feed->pid);
-
-		pidtab_copy_to_msg(ctx, &msg);
-
-		msg.msg_type = MSG_PIDLIST;
-
-		if (vtunerc_do_message(ctx, &msg, 0) < 0)
-			return -ENXIO;
-	}
-	return 0;
-}
-
-/*------------------------------------------------------------------------*
- * DVB frontend proxy
- *------------------------------------------------------------------------*/
-
-struct dvb_proxyfe_state {
-	struct dvb_frontend frontend;
-	struct vtunerc_ctx *ctx;
+static struct cuse_methods vtunerc_methods = {
+	.cm_open = vtunerc_open,
+	.cm_close = vtunerc_close,
+	.cm_read = vtunerc_read,
+	.cm_write = vtunerc_write,
+	.cm_ioctl = vtunerc_ioctl,
+	.cm_poll = vtunerc_poll,
 };
 
 static void
@@ -290,7 +202,7 @@ vtunerc_connect_data(struct vtunerc_ctx *ctx)
 }
 
 static int
-vtunerc_read(int fd, u8 * ptr, int len)
+vtunerc_fd_read(int fd, u8 * ptr, int len)
 {
 	int off = 0;
 	int err;
@@ -305,7 +217,7 @@ vtunerc_read(int fd, u8 * ptr, int len)
 }
 
 static int
-vtunerc_write(int fd, const u8 * ptr, int len)
+vtunerc_fd_write(int fd, const u8 * ptr, int len)
 {
 	int off = 0;
 	int err;
@@ -321,16 +233,20 @@ vtunerc_write(int fd, const u8 * ptr, int len)
 
 static int
 vtunerc_do_message(struct vtunerc_ctx *ctx,
-    struct vtuner_message *msg, int do_wait)
+    struct vtuner_message *msg, int mtype, int rx_struct, int tx_struct)
 {
 	int ret;
+	int len;
 
 	down(&ctx->xchange_sem);
 
 	/* stamp the byte order and version */
-	msg->msg_magic = VTUNER_MAGIC;
-	msg->msg_version = VTUNER_VERSION;
-	msg->msg_error = do_wait ? -1U : 0U;
+
+	msg->hdr.magic = VTUNER_MAGIC;
+	msg->hdr.mtype = mtype;
+	msg->hdr.rx_struct = rx_struct;
+	msg->hdr.tx_struct = tx_struct;
+	msg->hdr.error = 0;
 
 retry:
 	if (ctx->fd_control < 0) {
@@ -340,25 +256,30 @@ retry:
 			return (-ENXIO);
 		}
 	}
-	if ((ret = vtunerc_write(ctx->fd_control, (u8 *) msg, sizeof(struct vtuner_message))) !=
-	    sizeof(struct vtuner_message)) {
-		printk(KERN_INFO "vTuner: Write failed %d\n", ret);
+	len = vtuner_struct_size(rx_struct);
+	if (len < 0)
+		goto tx_error;
+
+	len += sizeof(msg->hdr);
+
+	if (vtunerc_fd_write(ctx->fd_control, (u8 *) msg, len) != len)
+		goto tx_error;
+
+	len = vtuner_struct_size(tx_struct);
+	if (len < 0)
+		goto tx_error;
+
+	len += sizeof(msg->hdr);
+
+	if (vtunerc_fd_read(ctx->fd_control, (u8 *) msg, len) != len) {
+tx_error:
+		printk(KERN_INFO "vTuner: Do message failed\n");
 		close(ctx->fd_control);
 		ctx->fd_control = -1;
 		goto retry;
 	}
-	if (do_wait) {
-		if ((ret = vtunerc_read(ctx->fd_control, (u8 *) msg, sizeof(struct vtuner_message))) !=
-		    sizeof(struct vtuner_message)) {
-			printk(KERN_INFO "vTuner: Read failed %d\n", ret);
-			close(ctx->fd_control);
-			ctx->fd_control = -1;
-			goto retry;
-		}
-		ret = msg->msg_error;
-	} else {
-		ret = 0;
-	}
+	ret = (s32) msg->hdr.error;
+
 	up(&ctx->xchange_sem);
 	return ret;
 }
@@ -378,683 +299,703 @@ vtuner_reader_thread(void *arg)
 				usleep(1000000);
 		}
 
-		if (ctx->trailsize != 0)
-			memcpy(ctx->buffer, ctx->trailbuf, ctx->trailsize);
+		wait_event(ctx->rd_queue, ctx->buffer_rem == 0);
 
-		len = read(ctx->fd_data, ((u8 *) ctx->buffer) + ctx->trailsize,
-		    sizeof(ctx->buffer) - ctx->trailsize);
-		if (len <= 0) {
+		if (vtunerc_fd_read(ctx->fd_data, (u8 *) & ctx->buffer_hdr,
+		    sizeof(ctx->buffer_hdr)) != sizeof(ctx->buffer_hdr))
+			goto rx_error;
+
+		if (ctx->buffer_hdr.magic != VTUNER_MAGIC) {
+			vtuner_data_hdr_byteswap(&ctx->buffer_hdr);
+			if (ctx->buffer_hdr.magic != VTUNER_MAGIC)
+				goto rx_error;
+		}
+		if (ctx->buffer_hdr.length > VTUNER_BUFFER_MAX)
+			goto rx_error;
+
+		len = ctx->buffer_hdr.length;
+
+		if (vtunerc_fd_read(ctx->fd_data, (u8 *) ctx->buffer, len) != len) {
+	rx_error:
+
+			down(&ctx->rd_sem);
+			ctx->buffer_rem = 0;
+			ctx->buffer_off = 0;
+			up(&ctx->rd_sem);
+
 			close(ctx->fd_data);
 			ctx->fd_data = -1;
-			ctx->trailsize = 0;
 		} else {
-			int actlen;
-			int rem;
 
-			len += ctx->trailsize;
+			down(&ctx->rd_sem);
+			ctx->buffer_rem = len;
+			ctx->buffer_off = 0;
+			up(&ctx->rd_sem);
 
-			rem = len % VTUNER_TS_ALIGN;
-			actlen = len - rem;
-
-			if (rem != 0) {
-				memcpy(ctx->trailbuf, ((u8 *) ctx->buffer) + actlen, rem);
-				ctx->trailsize = rem;
-			} else {
-				ctx->trailsize = 0;
-			}
-
-			if (actlen >= VTUNER_TS_ALIGN) {
-				dvb_dmx_swfilter_packets(&ctx->demux,
-				    (u8 *) ctx->buffer, actlen / VTUNER_TS_ALIGN);
-			}
+			wake_up_all(&ctx->rd_queue);
+			cuse_poll_wakeup();
 		}
+
 	}
 	return (NULL);
 }
 
 static int
-dvb_proxyfe_read_status(struct dvb_frontend *fe, fe_status_t *status)
+vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dvb_message *dvb)
 {
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
+	int ret = 0;
+	u32 i;
+	u32 max;
 
-	memset(&msg, 0, sizeof(msg));
-
-	msg.msg_type = MSG_READ_STATUS;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
-		*status = 0;
-		return -ENXIO;
-	}
-	*status = msg.body.status;
-	return 0;
-}
-
-static int
-dvb_proxyfe_read_ber(struct dvb_frontend *fe, u32 * ber)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.msg_type = MSG_READ_BER;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
-		*ber = 0;
-		return -ENXIO;
-	}
-	*ber = msg.body.ber;
-	return 0;
-}
-
-static int
-dvb_proxyfe_read_signal_strength(struct dvb_frontend *fe,
-    u16 * strength)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.msg_type = MSG_READ_SIGNAL_STRENGTH;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
-		*strength = 0;
-		return -ENXIO;
-	}
-	*strength = msg.body.ss;
-	return 0;
-}
-
-static int
-dvb_proxyfe_read_snr(struct dvb_frontend *fe, u16 * snr)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.msg_type = MSG_READ_SNR;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
-		*snr = 0;
-		return -ENXIO;
-	}
-	*snr = msg.body.snr;
-	return 0;
-}
-
-static int
-dvb_proxyfe_read_ucblocks(struct dvb_frontend *fe, u32 * ucblocks)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.msg_type = MSG_READ_UCBLOCKS;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0) {
-		*ucblocks = 0;
-		return -ENXIO;
-	}
-	*ucblocks = msg.body.ucb;
-	return 0;
-}
-
-static int
-dvb_proxyfe_get_frontend(struct dvb_frontend *fe,
-    struct dvb_frontend_parameters *p)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.msg_type = MSG_GET_FRONTEND;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0)
-		return -ENXIO;
-
-	switch (ctx->vtype) {
-	case VT_S:
-	case VT_S2:
-		{
-			struct dvb_qpsk_parameters *op = &p->u.qpsk;
-
-			op->symbol_rate = msg.body.fe_params.u.qpsk.symbol_rate;
-			op->fec_inner = msg.body.fe_params.u.qpsk.fec_inner;
-		}
+	switch (cmd) {
+	case DMX_START:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_START,
+		    MSG_STRUCT_NULL, MSG_STRUCT_NULL);
 		break;
-	case VT_T:
-		{
-			struct dvb_ofdm_parameters *op = &p->u.ofdm;
-
-			op->bandwidth = msg.body.fe_params.u.ofdm.bandwidth;
-			op->code_rate_HP = msg.body.fe_params.u.ofdm.code_rate_HP;
-			op->code_rate_LP = msg.body.fe_params.u.ofdm.code_rate_LP;
-			op->constellation = msg.body.fe_params.u.ofdm.constellation;
-			op->transmission_mode = msg.body.fe_params.u.ofdm.transmission_mode;
-			op->guard_interval = msg.body.fe_params.u.ofdm.guard_interval;
-			op->hierarchy_information = msg.body.fe_params.u.ofdm.hierarchy_information;
-		}
+	case DMX_STOP:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_STOP,
+		    MSG_STRUCT_NULL, MSG_STRUCT_NULL);
 		break;
-	case VT_C:
-		{
-			struct dvb_qam_parameters *op = &p->u.qam;
-
-			op->symbol_rate = msg.body.fe_params.u.qam.symbol_rate;
-			op->fec_inner = msg.body.fe_params.u.qam.fec_inner;
-			op->modulation = msg.body.fe_params.u.qam.modulation;
-		}
+	case DMX_SET_FILTER:
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_sct_filter_params, 0, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_sct_filter_params.pid, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_sct_filter_params.filter, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_sct_filter_params.timeout, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_sct_filter_params.flags, &ret);
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_SET_FILTER,
+		    MSG_STRUCT_DMX_SCT_FILTER_PARAMS,
+		    MSG_STRUCT_NULL);
 		break;
-	default:
-		printk(KERN_ERR "vtunerc unrecognized tuner vtype = %d\n",
-		    ctx->vtype);
-		return -EINVAL;
-	}
-	p->frequency = msg.body.fe_params.frequency;
-	p->inversion = msg.body.fe_params.inversion;
-	return 0;
-}
+	case DMX_SET_PES_FILTER:
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_pes_filter_params, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_pes_filter_params.pid, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_pes_filter_params.input, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_pes_filter_params.output, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_pes_filter_params.pes_type, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_pes_filter_params.flags, &ret);
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_SET_PES_FILTER,
+		    MSG_STRUCT_DMX_PES_FILTER_PARAMS,
+		    MSG_STRUCT_NULL);
+		break;
+	case DMX_SET_BUFFER_SIZE:
+		ctx->msgbuf.body.value32 = (long)dvb;
 
-static int
-dvb_proxyfe_set_frontend(struct dvb_frontend *fe,
-    struct dvb_frontend_parameters *p)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_SET_BUFFER_SIZE,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
+		break;
+	case DMX_GET_PES_PIDS:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_GET_PES_PIDS,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_DMX_PES_PID);
 
-	memset(&msg, 0, sizeof(msg));
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_pes_pid.pids, &ret);
+		break;
+	case DMX_GET_CAPS:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_GET_CAPS,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_DMX_CAPS);
 
-	msg.body.fe_params.frequency = p->frequency;
-	msg.body.fe_params.inversion = p->inversion;
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_caps.caps, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_caps.num_decoders, &ret);
+		break;
+	case DMX_SET_SOURCE:
+		ctx->msgbuf.body.value32 = dvb->value32;
 
-	switch (ctx->vtype) {
-	case VT_S:
-	case VT_S2:
-		{
-			struct dvb_qpsk_parameters *op = &p->u.qpsk;
-			struct dtv_frontend_properties *props = &fe->dtv_property_cache;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_SET_SOURCE,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
+		break;
+	case DMX_GET_STC:
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_stc, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_stc.num, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_stc.base, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dmx_stc.stc, &ret);
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_GET_STC,
+		    MSG_STRUCT_DMX_STC,
+		    MSG_STRUCT_DMX_STC);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_stc.num, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_stc.base, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_stc.stc, &ret);
+		break;
+	case DMX_ADD_PID:
+		ctx->msgbuf.body.value16 = dvb->value16;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_ADD_PID,
+		    MSG_STRUCT_U16,
+		    MSG_STRUCT_NULL);
+		break;
+	case DMX_REMOVE_PID:
+		ctx->msgbuf.body.value16 = dvb->value16;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_REMOVE_PID,
+		    MSG_STRUCT_U16,
+		    MSG_STRUCT_NULL);
+		break;
 
-			msg.body.fe_params.u.qpsk.symbol_rate = op->symbol_rate;
-			msg.body.fe_params.u.qpsk.fec_inner = op->fec_inner;
+	case FE_SET_PROPERTY:
 
-			if (ctx->vtype == VT_S2 && props->delivery_system == SYS_DVBS2) {
-				/* DELIVERY SYSTEM: S2 delsys in use */
-				msg.body.fe_params.u.qpsk.fec_inner = 9;
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dtv_properties, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dtv_properties.num, &ret);
 
-				/* MODULATION */
-				if (props->modulation == PSK_8)
-					/* signal PSK_8 modulation used */
-					msg.body.fe_params.u.qpsk.fec_inner += 9;
+		max = ctx->msgbuf.body.dtv_properties.num;
+		if (max > VTUNER_PROP_MAX) {
+			ret |= -ENOMEM;
+			break;
+		}
+		for (i = 0; i != max; i++) {
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			    dtv_properties.props[i].cmd, &ret);
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			    dtv_properties.props[i].reserved[0], &ret);
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			    dtv_properties.props[i].reserved[1], &ret);
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			    dtv_properties.props[i].reserved[2], &ret);
 
-				/* FEC */
-				switch (props->fec_inner) {
-				case FEC_1_2:
-					msg.body.fe_params.u.qpsk.fec_inner += 1;
-					break;
-				case FEC_2_3:
-					msg.body.fe_params.u.qpsk.fec_inner += 2;
-					break;
-				case FEC_3_4:
-					msg.body.fe_params.u.qpsk.fec_inner += 3;
-					break;
-				case FEC_4_5:
-					msg.body.fe_params.u.qpsk.fec_inner += 8;
-					break;
-				case FEC_5_6:
-					msg.body.fe_params.u.qpsk.fec_inner += 4;
-					break;
-					/*
-					 * case FEC_6_7: // undefined
-					 * msg.body.fe_params.u.qpsk.fec_inne
-					 * r += 2; break;
-					 */
-				case FEC_7_8:
-					msg.body.fe_params.u.qpsk.fec_inner += 5;
-					break;
-				case FEC_8_9:
-					msg.body.fe_params.u.qpsk.fec_inner += 6;
-					break;
-					/*
-					 * case FEC_AUTO: // undefined
-					 * msg.body.fe_params.u.qpsk.fec_inne
-					 * r += 2; break;
-					 */
-				case FEC_3_5:
-					msg.body.fe_params.u.qpsk.fec_inner += 7;
-					break;
-				case FEC_9_10:
-					msg.body.fe_params.u.qpsk.fec_inner += 9;
-					break;
-				default:
-					;	/* FIXME: what now? */
-					break;
-				}
+			if (ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
+			    ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+				    dtv_properties.props[i].u.data, &ret);
+			} else {
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+				    dtv_properties.props[i].u.buffer.len, &ret);
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+				    dtv_properties.props[i].u.buffer.data, &ret);
+			}
+		}
 
-				/* ROLLOFF */
-				switch (props->rolloff) {
-				case ROLLOFF_20:
-					msg.body.fe_params.inversion |= 0x08;
-					break;
-				case ROLLOFF_25:
-					msg.body.fe_params.inversion |= 0x04;
-					break;
-				case ROLLOFF_35:
-				default:
-					break;
-				}
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_SET_PROPERTY,
+		    MSG_STRUCT_DTV_PROPERTIES,
+		    MSG_STRUCT_NULL);
+		break;
 
-				/* PILOT */
-				switch (props->pilot) {
-				case PILOT_ON:
-					msg.body.fe_params.inversion |= 0x10;
-					break;
-				case PILOT_AUTO:
-					msg.body.fe_params.inversion |= 0x20;
-					break;
-				case PILOT_OFF:
-				default:
-					break;
-				}
+	case FE_GET_PROPERTY:
+
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dtv_properties, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dtv_properties.num, &ret);
+
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_GET_PROPERTY,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_DTV_PROPERTIES);
+
+		max = ctx->msgbuf.body.dtv_properties.num;
+		if (max > VTUNER_PROP_MAX) {
+			max = VTUNER_PROP_MAX;
+			ctx->msgbuf.body.dtv_properties.num = VTUNER_PROP_MAX;
+		}
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.num, &ret);
+
+		for (i = 0; i != max; i++) {
+			VTUNER_PEER_MEMSET(&(*dvb).dtv_properties.props[i], 0, &ret);
+			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].cmd, &ret);
+			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].reserved[0], &ret);
+			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].reserved[1], &ret);
+			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].reserved[2], &ret);
+
+			if (ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
+			    ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
+				VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].u.data, &ret);
+			} else {
+				VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.len, &ret);
+				VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.data, &ret);
 			}
 		}
 		break;
-	case VT_T:
-		{
-			struct dvb_ofdm_parameters *op = &p->u.ofdm;
 
-			msg.body.fe_params.u.ofdm.bandwidth = op->bandwidth;
-			msg.body.fe_params.u.ofdm.code_rate_HP = op->code_rate_HP;
-			msg.body.fe_params.u.ofdm.code_rate_LP = op->code_rate_LP;
-			msg.body.fe_params.u.ofdm.constellation = op->constellation;
-			msg.body.fe_params.u.ofdm.transmission_mode = op->transmission_mode;
-			msg.body.fe_params.u.ofdm.guard_interval = op->guard_interval;
-			msg.body.fe_params.u.ofdm.hierarchy_information = op->hierarchy_information;
-		}
+	case FE_GET_INFO:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_GET_INFO,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_DVB_FRONTEND_INFO);
+		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_info, 0, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.name, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.type, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.frequency_min, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.frequency_max, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.frequency_stepsize, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.frequency_tolerance, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.symbol_rate_min, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.symbol_rate_max, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.symbol_rate_tolerance, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.notifier_delay, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_info.caps, &ret);
 		break;
-	case VT_C:
-		{
-			struct dvb_qam_parameters *op = &p->u.qam;
-
-			msg.body.fe_params.u.qam.symbol_rate = op->symbol_rate;
-			msg.body.fe_params.u.qam.fec_inner = op->fec_inner;
-			msg.body.fe_params.u.qam.modulation = op->modulation;
-		}
+	case FE_DISEQC_RESET_OVERLOAD:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_DISEQC_RESET_OVERLOAD,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_NULL);
 		break;
-	default:
-		printk(KERN_ERR "vtunerc: unrecognized tuner vtype = %d\n",
-		    ctx->vtype);
-		return -EINVAL;
-	}
-
-	msg.msg_type = MSG_SET_FRONTEND;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0)
-		return -ENXIO;
-
-	return 0;
-}
-
-static int
-dvb_proxyfe_get_property(struct dvb_frontend *fe, struct dtv_property *tvp)
-{
-	return 0;
-}
-
-static enum dvbfe_algo
-dvb_proxyfe_get_frontend_algo(struct dvb_frontend *fe)
-{
-	return DVBFE_ALGO_SW;
-}
-
-static int
-dvb_proxyfe_sleep(struct dvb_frontend *fe)
-{
-	return 0;
-}
-
-static int
-dvb_proxyfe_init(struct dvb_frontend *fe)
-{
-	return 0;
-}
-
-static int
-dvb_proxyfe_set_tone(struct dvb_frontend *fe, fe_sec_tone_mode_t tone)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.body.tone = tone;
-	msg.msg_type = MSG_SET_TONE;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0)
-		return -ENXIO;
-
-	return 0;
-}
-
-static int
-dvb_proxyfe_set_voltage(struct dvb_frontend *fe, fe_sec_voltage_t voltage)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.body.voltage = voltage;
-	msg.msg_type = MSG_SET_VOLTAGE;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0)
-		return -ENXIO;
-
-	return 0;
-}
-
-static int
-dvb_proxyfe_send_diseqc_msg(struct dvb_frontend *fe, struct dvb_diseqc_master_cmd *cmd)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	memcpy(&msg.body.diseqc_master_cmd, cmd, sizeof(struct dvb_diseqc_master_cmd));
-	msg.msg_type = MSG_SEND_DISEQC_MSG;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0)
-		return -ENXIO;
-
-	return 0;
-}
-
-static int
-dvb_proxyfe_send_diseqc_burst(struct dvb_frontend *fe, fe_sec_mini_cmd_t burst)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-	struct vtunerc_ctx *ctx = state->ctx;
-	struct vtuner_message msg;
-
-	memset(&msg, 0, sizeof(msg));
-
-	msg.body.burst = burst;
-	msg.msg_type = MSG_SEND_DISEQC_BURST;
-
-	if (vtunerc_do_message(ctx, &msg, 1) < 0)
-		return -ENXIO;
-
-	return 0;
-}
-
-static void
-dvb_proxyfe_release(struct dvb_frontend *fe)
-{
-	struct dvb_proxyfe_state *state = fe->demodulator_priv;
-
-	kfree(state);
-}
-
-static struct dvb_frontend_ops dvb_proxyfe_ofdm_ops;
-
-static struct dvb_frontend *
-dvb_proxyfe_ofdm_attach(struct vtunerc_ctx *ctx)
-{
-	struct dvb_frontend *fe = ctx->fe;
-
-	if (!fe) {
-		struct dvb_proxyfe_state *state = NULL;
-
-		/* allocate memory for the internal state */
-		state = kmalloc(sizeof(struct dvb_proxyfe_state), GFP_KERNEL);
-		if (state == NULL) {
-			return NULL;
-		}
-		fe = &state->frontend;
-		fe->demodulator_priv = state;
-		state->ctx = ctx;
-	}
-	memcpy(&fe->ops, &dvb_proxyfe_ofdm_ops, sizeof(struct dvb_frontend_ops));
-
-	return fe;
-}
-
-static struct dvb_frontend_ops dvb_proxyfe_qpsk_ops;
-
-static struct dvb_frontend *
-dvb_proxyfe_qpsk_attach(struct vtunerc_ctx *ctx, int can_2g_modulation)
-{
-	struct dvb_frontend *fe = ctx->fe;
-
-	if (!fe) {
-		struct dvb_proxyfe_state *state = NULL;
-
-		/* allocate memory for the internal state */
-		state = kmalloc(sizeof(struct dvb_proxyfe_state), GFP_KERNEL);
-		if (state == NULL) {
-			return NULL;
-		}
-		fe = &state->frontend;
-		fe->demodulator_priv = state;
-		state->ctx = ctx;
-	}
-	memcpy(&fe->ops, &dvb_proxyfe_qpsk_ops, sizeof(struct dvb_frontend_ops));
-	if (can_2g_modulation) {
-		fe->ops.info.caps |= FE_CAN_2G_MODULATION;
-		strcpy(fe->ops.info.name, "vTuner proxyFE DVB-S2");
-	}
-	return fe;
-}
-
-static struct dvb_frontend_ops dvb_proxyfe_qam_ops;
-
-static struct dvb_frontend *
-dvb_proxyfe_qam_attach(struct vtunerc_ctx *ctx)
-{
-	struct dvb_frontend *fe = ctx->fe;
-
-	if (!fe) {
-		struct dvb_proxyfe_state *state = NULL;
-
-		/* allocate memory for the internal state */
-		state = kmalloc(sizeof(struct dvb_proxyfe_state), GFP_KERNEL);
-		if (state == NULL) {
-			return NULL;
-		}
-		fe = &state->frontend;
-		fe->demodulator_priv = state;
-		state->ctx = ctx;
-	}
-	memcpy(&fe->ops, &dvb_proxyfe_qam_ops, sizeof(struct dvb_frontend_ops));
-
-	return fe;
-}
-
-static struct dvb_frontend_ops dvb_proxyfe_ofdm_ops = {
-
-	.info = {
-		.name = "vTuner proxyFE DVB-T",
-		.type = FE_OFDM,
-		.frequency_min = 51000000,
-		.frequency_max = 863250000,
-		.frequency_stepsize = 62500,
-		.caps = FE_CAN_FEC_1_2 | FE_CAN_FEC_2_3 | FE_CAN_FEC_3_4 |
-		FE_CAN_FEC_4_5 | FE_CAN_FEC_5_6 | FE_CAN_FEC_6_7 |
-		FE_CAN_FEC_7_8 | FE_CAN_FEC_8_9 | FE_CAN_FEC_AUTO |
-		FE_CAN_QAM_16 | FE_CAN_QAM_64 | FE_CAN_QAM_AUTO |
-		FE_CAN_TRANSMISSION_MODE_AUTO |
-		FE_CAN_GUARD_INTERVAL_AUTO |
-		FE_CAN_HIERARCHY_AUTO,
-	},
-
-	.release = dvb_proxyfe_release,
-
-	.init = dvb_proxyfe_init,
-	.sleep = dvb_proxyfe_sleep,
-
-	.set_frontend = dvb_proxyfe_set_frontend,
-	.get_frontend = dvb_proxyfe_get_frontend,
-
-	.read_status = dvb_proxyfe_read_status,
-	.read_ber = dvb_proxyfe_read_ber,
-	.read_signal_strength = dvb_proxyfe_read_signal_strength,
-	.read_snr = dvb_proxyfe_read_snr,
-	.read_ucblocks = dvb_proxyfe_read_ucblocks,
-};
-
-static struct dvb_frontend_ops dvb_proxyfe_qam_ops = {
-
-	.info = {
-		.name = "vTuner proxyFE DVB-C",
-		.type = FE_QAM,
-		.frequency_stepsize = 62500,
-		.frequency_min = 51000000,
-		.frequency_max = 858000000,
-		/* SACLK/64 == (XIN/2)/64 */
-		.symbol_rate_min = (57840000 / 2) / 64,
-		/* SACLK/4 */
-		.symbol_rate_max = (57840000 / 2) / 4,
-		.caps = FE_CAN_QAM_16 | FE_CAN_QAM_32 | FE_CAN_QAM_64 |
-		FE_CAN_QAM_128 | FE_CAN_QAM_256 |
-		FE_CAN_FEC_AUTO | FE_CAN_INVERSION_AUTO
-	},
-
-	.release = dvb_proxyfe_release,
-
-	.init = dvb_proxyfe_init,
-	.sleep = dvb_proxyfe_sleep,
-
-	.set_frontend = dvb_proxyfe_set_frontend,
-	.get_frontend = dvb_proxyfe_get_frontend,
-
-	.read_status = dvb_proxyfe_read_status,
-	.read_ber = dvb_proxyfe_read_ber,
-	.read_signal_strength = dvb_proxyfe_read_signal_strength,
-	.read_snr = dvb_proxyfe_read_snr,
-	.read_ucblocks = dvb_proxyfe_read_ucblocks,
-};
-
-static struct dvb_frontend_ops dvb_proxyfe_qpsk_ops = {
-
-	.info = {
-		.name = "vTuner proxyFE DVB-S",
-		.type = FE_QPSK,
-		.frequency_min = 950000,
-		.frequency_max = 2150000,
-		/* kHz for QPSK frontends */
-		.frequency_stepsize = 250,
-		.frequency_tolerance = 29500,
-		.symbol_rate_min = 1000000,
-		.symbol_rate_max = 45000000,
-		.caps = FE_CAN_INVERSION_AUTO |
-		FE_CAN_FEC_1_2 | FE_CAN_FEC_2_3 | FE_CAN_FEC_3_4 |
-		FE_CAN_FEC_5_6 | FE_CAN_FEC_7_8 | FE_CAN_FEC_AUTO |
-		FE_CAN_QPSK
-	},
-
-	.release = dvb_proxyfe_release,
-
-	.init = dvb_proxyfe_init,
-	.sleep = dvb_proxyfe_sleep,
-
-	.get_frontend = dvb_proxyfe_get_frontend,
-	.get_property = dvb_proxyfe_get_property,
-	.get_frontend_algo = dvb_proxyfe_get_frontend_algo,
-	.set_frontend = dvb_proxyfe_set_frontend,
-
-	.read_status = dvb_proxyfe_read_status,
-	.read_ber = dvb_proxyfe_read_ber,
-	.read_signal_strength = dvb_proxyfe_read_signal_strength,
-	.read_snr = dvb_proxyfe_read_snr,
-	.read_ucblocks = dvb_proxyfe_read_ucblocks,
-
-	.set_voltage = dvb_proxyfe_set_voltage,
-	.set_tone = dvb_proxyfe_set_tone,
-
-	.diseqc_send_master_cmd = dvb_proxyfe_send_diseqc_msg,
-	.diseqc_send_burst = dvb_proxyfe_send_diseqc_burst,
-
-};
-
-static int
-vtunerc_frontend_init(struct vtunerc_ctx *ctx, int vtype)
-{
-	int ret = 0;
-
-	if (ctx->fe && vtype == ctx->vtype) {
-		printk(KERN_NOTICE "vtunerc: frontend already "
-		    "initialized as type=%d\n",
-		    ctx->vtype);
-		return 0;
-	}
-	switch (vtype) {
-	case VT_S:
-		ctx->fe = dvb_proxyfe_qpsk_attach(ctx, 0);
+	case FE_DISEQC_SEND_MASTER_CMD:
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dvb_diseqc_master_cmd, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb), dvb_diseqc_master_cmd.msg, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb), dvb_diseqc_master_cmd.msg_len, &ret);
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_DISEQC_SEND_MASTER_CMD,
+		    MSG_STRUCT_DVB_DISEQC_MASTER_CMD,
+		    MSG_STRUCT_NULL);
 		break;
-	case VT_S2:
-		ctx->fe = dvb_proxyfe_qpsk_attach(ctx, 1);
+	case FE_DISEQC_RECV_SLAVE_REPLY:
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dvb_diseqc_slave_reply, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_diseqc_slave_reply.timeout, &ret);
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_DISEQC_RECV_SLAVE_REPLY,
+		    MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY,
+		    MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dvb_diseqc_slave_reply.msg, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dvb_diseqc_slave_reply.msg_len, &ret);
 		break;
-	case VT_T:
-		ctx->fe = dvb_proxyfe_ofdm_attach(ctx);
+	case FE_DISEQC_SEND_BURST:
+		ctx->msgbuf.body.value32 = (long)dvb;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_DISEQC_SEND_BURST,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
 		break;
-	case VT_C:
-		ctx->fe = dvb_proxyfe_qam_attach(ctx);
+	case FE_SET_TONE:
+		ctx->msgbuf.body.value32 = (long)dvb;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_SET_TONE,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
+		break;
+	case FE_SET_VOLTAGE:
+		ctx->msgbuf.body.value32 = (long)dvb;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_SET_VOLTAGE,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
+		break;
+	case FE_ENABLE_HIGH_LNB_VOLTAGE:
+		ctx->msgbuf.body.value32 = (long)dvb;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_ENABLE_HIGH_LNB_VOLTAGE,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
+		break;
+	case FE_READ_STATUS:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_READ_STATUS,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_U32);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value32, &ret);
+		break;
+	case FE_READ_BER:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_READ_BER,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_U32);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value32, &ret);
+		break;
+	case FE_READ_SIGNAL_STRENGTH:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_READ_SIGNAL_STRENGTH,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_U16);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value16, &ret);
+		break;
+	case FE_READ_SNR:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_READ_SNR,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_U16);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value16, &ret);
+		break;
+	case FE_READ_UNCORRECTED_BLOCKS:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_READ_UNCORRECTED_BLOCKS,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_U32);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value32, &ret);
+		break;
+	case FE_SET_FRONTEND:
+		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dvb_frontend_parameters, 0,
+		    &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.frequency, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.inversion, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.bandwidth, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.code_rate_HP, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.code_rate_LP, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.constellation, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.transmission_mode, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.guard_interval, &ret);
+		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+		    dvb_frontend_parameters.u.ofdm.hierarchy_information, &ret);
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_SET_FRONTEND,
+		    MSG_STRUCT_DVB_FRONTEND_PARAMETERS,
+		    MSG_STRUCT_NULL);
+		break;
+	case FE_GET_FRONTEND:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_GET_FRONTEND,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_DVB_FRONTEND_PARAMETERS);
+
+		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_parameters, 0, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.frequency, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.inversion, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.bandwidth, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.code_rate_HP, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.code_rate_LP, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.constellation, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.transmission_mode, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.guard_interval, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_parameters.u.ofdm.hierarchy_information, &ret);
+		break;
+	case FE_SET_FRONTEND_TUNE_MODE:
+		ctx->msgbuf.body.value32 = (long)dvb;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_SET_FRONTEND_TUNE_MODE,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
+		break;
+	case FE_GET_EVENT:
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_GET_EVENT,
+		    MSG_STRUCT_NULL,
+		    MSG_STRUCT_DVB_FRONTEND_EVENT);
+		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_event, 0, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.status, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.frequency, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.inversion, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.bandwidth, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.code_rate_HP, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.code_rate_LP, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.constellation, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.transmission_mode, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.guard_interval, &ret);
+		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
+		    dvb_frontend_event.parameters.u.ofdm.hierarchy_information, &ret);
+		break;
+	case FE_DISHNETWORK_SEND_LEGACY_CMD:
+		ctx->msgbuf.body.value32 = (long)dvb;
+		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_DISHNETWORK_SEND_LEGACY_CMD,
+		    MSG_STRUCT_U32,
+		    MSG_STRUCT_NULL);
 		break;
 	default:
-		printk(KERN_ERR "vtunerc: unregognized tuner vtype = %d\n",
-		    ctx->vtype);
-		return -EINVAL;
+		ret |= -1U;
+		break;
 	}
-
-	/* register frontend if vtype is zero */
-	if (ctx->vtype == VT_NULL)
-		ret = dvb_register_frontend(&ctx->dvb_adapter, ctx->fe);
-
-	ctx->vtype = vtype;
-
-	return ret;
-}
-
-static int
-vtunerc_frontend_clear(struct vtunerc_ctx *ctx)
-{
-	return ctx->fe ? dvb_unregister_frontend(ctx->fe) : 0;
+	return (ret);
 }
 
 /*------------------------------------------------------------------------*
- * VTuner init and uninit
+ * vTuner client Cuse4BSD interface
+ *------------------------------------------------------------------------*/
+static void
+vtunerc_work_exec_hup(int dummy)
+{
+
+}
+
+static void *
+vtunerc_work(void *arg)
+{
+	signal(SIGHUP, vtunerc_work_exec_hup);
+
+	while (1) {
+		if (cuse_wait_and_process() != 0)
+			break;
+	}
+
+	exit(0);			/* we are done */
+
+	return (NULL);
+}
+
+static int
+vtunerc_convert_error(int error)
+{
+	;				/* indent fix */
+	if (error < 0) {
+		switch (error) {
+		case -EBUSY:
+			error = CUSE_ERR_BUSY;
+			break;
+		case -EWOULDBLOCK:
+			error = CUSE_ERR_WOULDBLOCK;
+			break;
+		case -EINVAL:
+			error = CUSE_ERR_INVALID;
+			break;
+		case -ENOMEM:
+			error = CUSE_ERR_NO_MEMORY;
+			break;
+		case -EFAULT:
+			error = CUSE_ERR_FAULT;
+			break;
+		case -EINTR:
+			error = CUSE_ERR_SIGNAL;
+			break;
+		default:
+			error = CUSE_ERR_OTHER;
+			break;
+		}
+	}
+	return (error);
+}
+
+static int
+vtunerc_open(struct cuse_dev *cdev, int fflags)
+{
+	struct vtunerc_ctx *ctx;
+	long devtype;
+
+	ctx = cuse_dev_get_priv0(cdev);
+	devtype = (long)cuse_dev_get_priv1(cdev);
+
+	switch (devtype) {
+	case VTUNERC_DT_FRONTEND:
+		if (ctx->frontend_opened)
+			return (CUSE_ERR_BUSY);
+		ctx->frontend_opened = 1;
+		break;
+	case VTUNERC_DT_DMX:
+		if (ctx->dmx_opened)
+			return (CUSE_ERR_BUSY);
+		ctx->dmx_opened = 1;
+		break;
+	case VTUNERC_DT_DVR:
+		if (ctx->dvr_opened)
+			return (CUSE_ERR_BUSY);
+		ctx->dvr_opened = 1;
+		break;
+	default:
+		return (CUSE_ERR_INVALID);
+	}
+
+	return (0);
+}
+
+static int
+vtunerc_close(struct cuse_dev *cdev, int fflags)
+{
+	struct vtunerc_ctx *ctx;
+	long devtype;
+
+	ctx = cuse_dev_get_priv0(cdev);
+	devtype = (long)cuse_dev_get_priv1(cdev);
+
+	switch (devtype) {
+	case VTUNERC_DT_FRONTEND:
+		ctx->frontend_opened = 0;
+		break;
+	case VTUNERC_DT_DMX:
+		ctx->dmx_opened = 0;
+		break;
+	case VTUNERC_DT_DVR:
+		ctx->dvr_opened = 0;
+		break;
+	default:
+		break;
+	}
+	return (0);
+}
+
+static int
+vtunerc_read(struct cuse_dev *cdev, int fflags,
+    void *peer_ptr, int len)
+{
+	struct vtunerc_ctx *ctx;
+	long devtype;
+	int delta;
+	int off;
+
+	ctx = cuse_dev_get_priv0(cdev);
+	devtype = (long)cuse_dev_get_priv1(cdev);
+
+	if (devtype != VTUNERC_DT_DMX)
+		return (CUSE_ERR_INVALID);
+
+	off = 0;
+
+repeat:
+	delta = len;
+
+	down(&ctx->rd_sem);
+	if ((u32) delta > ctx->buffer_rem)
+		delta = ctx->buffer_rem;
+	up(&ctx->rd_sem);
+
+	if (delta != 0) {
+
+		if (copy_to_user(((u8 *) peer_ptr) + off, ((u8 *) ctx->buffer) +
+		    ctx->buffer_off, delta) != 0)
+			return (CUSE_ERR_FAULT);
+
+		down(&ctx->rd_sem);
+		ctx->buffer_off += delta;
+		ctx->buffer_rem -= delta;
+		up(&ctx->rd_sem);
+		len -= delta;
+		off += delta;
+
+		wake_up_all(&ctx->rd_queue);
+	}
+	if (len) {
+		if (fflags & CUSE_FFLAG_NONBLOCK) {
+			delta = wait_event_interruptible(ctx->rd_queue,
+			    ctx->buffer_rem != 0);
+			if (delta)
+				return (CUSE_ERR_SIGNAL);
+			else
+				goto repeat;
+		} else {
+			if (delta == 0)
+				return (CUSE_ERR_WOULDBLOCK);
+		}
+	}
+	return (off);
+}
+
+static int
+vtunerc_write(struct cuse_dev *cdev, int fflags,
+    const void *peer_ptr, int len)
+{
+	return (CUSE_ERR_INVALID);
+}
+
+static int
+vtunerc_ioctl(struct cuse_dev *cdev, int fflags,
+    unsigned long cmd, void *peer_data)
+{
+	struct vtunerc_ctx *ctx;
+	long devtype;
+	int error;
+
+	ctx = cuse_dev_get_priv0(cdev);
+	devtype = (long)cuse_dev_get_priv1(cdev);
+
+	/* we support blocking/non-blocking I/O */
+	if (cmd == FIONBIO || cmd == FIOASYNC)
+		return (0);
+
+	down(&ctx->ioctl_sem);
+	error = vtunerc_process_ioctl(ctx, cmd, peer_data);
+	up(&ctx->ioctl_sem);
+
+	return (vtunerc_convert_error(error));
+}
+
+static int
+vtunerc_poll(struct cuse_dev *cdev, int fflags, int events)
+{
+	struct vtunerc_ctx *ctx;
+	long devtype;
+	int revents;
+
+	ctx = cuse_dev_get_priv0(cdev);
+	devtype = (long)cuse_dev_get_priv1(cdev);
+
+	if (devtype != VTUNERC_DT_DMX)
+		return (0);
+
+	revents = 0;
+
+	down(&ctx->rd_sem);
+	if (ctx->buffer_rem != 0)
+		revents |= events & CUSE_POLL_READ;
+	up(&ctx->rd_sem);
+
+#if 0
+	if (error & (POLLOUT | POLLWRNORM))
+		revents |= events & CUSE_POLL_WRITE;
+
+	/* currently we mask away any poll errors */
+	if (error & (POLLHUP | POLLNVAL | POLLERR))
+		revents |= events & CUSE_POLL_ERROR;
+#endif
+	return (revents);
+}
+
+/*------------------------------------------------------------------------*
+ * vTuner client init and exit
  *------------------------------------------------------------------------*/
 
 static int __init
 vtunerc_init(void)
 {
 	struct vtunerc_ctx *ctx = NULL;
-	struct dvb_demux *dvbdemux;
-	struct dmx_demux *dmx;
-	int ret = -EINVAL;
-	int i;
+	char buf[64];
 	int u;
-
-	printk(KERN_INFO "virtual DVB client adapter driver, version "
-	    VTUNERC_MODULE_VERSION
-	    ", (c) 2010-11 Honza Petrous, SmartImp.cz\n");
+	int p;
 
 	if (vtuner_max_unit < 0 || vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
 		vtuner_max_unit = CONFIG_DVB_MAX_ADAPTERS;
+
+	printk(KERN_INFO "virtual DVB client adapter driver, version "
+	    VTUNER_MODULE_VERSION ", (c) 2011 Hans Petter Selasky\n");
 
 	for (u = 0; u < vtuner_max_unit; u++) {
 		ctx = kzalloc(sizeof(struct vtunerc_ctx), GFP_KERNEL);
@@ -1062,6 +1003,12 @@ vtunerc_init(void)
 			return -ENOMEM;
 
 		vtunerc_tbl[u] = ctx;
+
+		init_waitqueue_head(&ctx->rd_queue);
+
+		sema_init(&ctx->rd_sem, 1);
+		sema_init(&ctx->xchange_sem, 1);
+		sema_init(&ctx->ioctl_sem, 1);
 
 		ctx->fd_control = -1;
 		ctx->fd_data = -1;
@@ -1072,87 +1019,53 @@ vtunerc_init(void)
 		snprintf(ctx->dport, sizeof(ctx->dport),
 		    "%u", atoi(vtuner_cport) + (2 * u) + 1);
 
-		/* DVB */
-
-		/* create new adapter */
-		ret = dvb_register_adapter(&ctx->dvb_adapter, DRIVER_NAME,
-		    THIS_MODULE, NULL, adapter_nr);
-		if (ret < 0)
-			goto err_kfree;
-
-		ctx->dvb_adapter.priv = ctx;
-
-		memset(&ctx->demux, 0, sizeof(ctx->demux));
-		dvbdemux = &ctx->demux;
-		dvbdemux->priv = ctx;
-		dvbdemux->filternum = VTUNER_MAX_PID;
-		dvbdemux->feednum = VTUNER_MAX_PID;
-		dvbdemux->start_feed = vtunerc_start_feed;
-		dvbdemux->stop_feed = vtunerc_stop_feed;
-		dvbdemux->dmx.capabilities = 0;
-		ret = dvb_dmx_init(dvbdemux);
-		if (ret < 0)
-			goto err_dvb_unregister_adapter;
-
-		dmx = &dvbdemux->dmx;
-
-		ctx->hw_frontend.source = DMX_FRONTEND_0;
-		ctx->mem_frontend.source = DMX_MEMORY_FE;
-		ctx->dmxdev.filternum = VTUNER_MAX_PID;
-		ctx->dmxdev.demux = dmx;
-
-		ret = dvb_dmxdev_init(&ctx->dmxdev, &ctx->dvb_adapter);
-		if (ret < 0)
-			goto err_dvb_dmx_release;
-
-		ret = dmx->add_frontend(dmx, &ctx->hw_frontend);
-		if (ret < 0)
-			goto err_dvb_dmxdev_release;
-
-		ret = dmx->add_frontend(dmx, &ctx->mem_frontend);
-		if (ret < 0)
-			goto err_remove_hw_frontend;
-
-		ret = dmx->connect_frontend(dmx, &ctx->hw_frontend);
-		if (ret < 0)
-			goto err_remove_mem_frontend;
-
-		sema_init(&ctx->xchange_sem, 1);
-
-		/* init pid table */
-		for (i = 0; i < VTUNER_MAX_PID; i++)
-			ctx->pidtab[i] = VTUNER_PID_UNKNOWN;
-
-		/* setup frontend */
-		if (vtunerc_frontend_init(ctx, vtuner_type) != 0)
-			ctx->vtype = VT_NULL;
-
 		/* create reader thread */
 		pthread_create(&ctx->reader_thread, NULL, vtuner_reader_thread, ctx);
+
+		for (p = 0; p != (3 * 4); p++) {
+			pthread_t dummy;
+
+			if (pthread_create(&dummy, NULL, vtunerc_work, NULL))
+				printk(KERN_INFO "Failed creating vTuncer client process\n");
+		}
+
+		snprintf(buf, sizeof(buf), "dvb/adapter%d/demux0", webcamd_unit + u);
+
+		printf("Creating /dev/%s (vTuner client)\n", buf);
+
+		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_FRONTEND,
+		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
+
+		if (webcamd_hal_register)
+			hal_add_device(buf);
+
+		snprintf(buf, sizeof(buf), "dvb/adapter%d/dvr0", webcamd_unit + u);
+
+		printf("Creating /dev/%s (vTuner client)\n", buf);
+
+		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_DMX,
+		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
+
+		if (webcamd_hal_register)
+			hal_add_device(buf);
+
+		snprintf(buf, sizeof(buf), "dvb/adapter%d/demux0", webcamd_unit + u);
+
+		printf("Creating /dev/%s (vTuner client)\n", buf);
+
+		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_DVR,
+		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
+
+		if (webcamd_hal_register)
+			hal_add_device(buf);
 	}
-
-out:
-	return ret;
-
-	dmx->disconnect_frontend(dmx);
-err_remove_mem_frontend:
-	dmx->remove_frontend(dmx, &ctx->mem_frontend);
-err_remove_hw_frontend:
-	dmx->remove_frontend(dmx, &ctx->hw_frontend);
-err_dvb_dmxdev_release:
-	dvb_dmxdev_release(&ctx->dmxdev);
-err_dvb_dmx_release:
-	dvb_dmx_release(dvbdemux);
-err_dvb_unregister_adapter:
-	dvb_unregister_adapter(&ctx->dvb_adapter);
-err_kfree:
-	kfree(ctx);
-	goto out;
+	return 0;
 }
 
 static void __exit
 vtunerc_exit(void)
 {
+#if 0
 	struct dvb_demux *dvbdemux;
 	struct dmx_demux *dmx;
 	int u;
@@ -1164,21 +1077,13 @@ vtunerc_exit(void)
 			continue;
 		vtunerc_tbl[u] = NULL;
 
-		vtunerc_frontend_clear(ctx);
+		XXX TODO
 
-		dvbdemux = &ctx->demux;
-		dmx = &dvbdemux->dmx;
-
-		dmx->disconnect_frontend(dmx);
-		dmx->remove_frontend(dmx, &ctx->mem_frontend);
-		dmx->remove_frontend(dmx, &ctx->hw_frontend);
-		dvb_dmxdev_release(&ctx->dmxdev);
-		dvb_dmx_release(dvbdemux);
-		dvb_unregister_adapter(&ctx->dvb_adapter);
-		kfree(ctx);
+		    kfree(ctx);
 	}
 
 	printk(KERN_NOTICE "vtunerc: unloaded successfully\n");
+#endif
 }
 
 module_init(vtunerc_init);
@@ -1187,16 +1092,13 @@ module_exit(vtunerc_exit);
 module_param_named(devices, vtuner_max_unit, int, 0644);
 MODULE_PARM_DESC(devices, "Number of clients (default is 0, disabled)");
 
-module_param_named(type, vtuner_type, int, 0644);
-MODULE_PARM_DESC(type, "Type of adapters (S=1,C=2,T=4,S2=8, default is 0)");
-
 module_param_string(host, vtuner_host, sizeof(vtuner_host), 0644);
 MODULE_PARM_DESC(host, "Hostname at which to connect (default is 127.0.0.1)");
 
 module_param_string(cport, vtuner_cport, sizeof(vtuner_cport), 0644);
 MODULE_PARM_DESC(cport, "Control port at host (default is 5100)");
 
-MODULE_AUTHOR("Honza Petrous");
-MODULE_DESCRIPTION("Virtual DVB device client");
-MODULE_LICENSE("GPL");
-MODULE_VERSION(VTUNERC_MODULE_VERSION);
+MODULE_AUTHOR("Hans Petter Selasky");
+MODULE_DESCRIPTION("Virtual DVB device server");
+MODULE_LICENSE("BSD");
+MODULE_VERSION(VTUNER_MODULE_VERSION);
