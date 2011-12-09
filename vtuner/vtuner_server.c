@@ -443,6 +443,7 @@ vtuners_open(struct vtuners_ctx *ctx)
 	down(&ctx->writer_sem);
 	ctx->demux_fd = linux_open(
 	    (F_V4B_SUBDEV_MAX * F_V4B_DVB_DEMUX) + adapter, O_RDWR | O_NONBLOCK);
+
 	if (ctx->demux_fd == NULL) {
 		up(&ctx->writer_sem);
 		goto error;
@@ -709,9 +710,10 @@ vtuners_control_thread(void *arg)
 		if (len < 0)
 			goto rx_error;
 
-		if (vtuners_read(ctx->fd_control, (u8 *) & ctx->msgbuf.body, len) != len)
-			goto rx_error;
-
+		if (len != 0) {
+			if (vtuners_read(ctx->fd_control, (u8 *) & ctx->msgbuf.body, len) != len)
+				goto rx_error;
+		}
 		if (swapped)
 			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.rx_struct);
 

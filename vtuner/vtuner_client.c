@@ -455,7 +455,6 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		break;
 
 	case FE_SET_PROPERTY:
-
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dtv_properties, 0,
 		    &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
@@ -1029,7 +1028,7 @@ vtunerc_init(void)
 				printk(KERN_INFO "Failed creating vTuncer client process\n");
 		}
 
-		snprintf(buf, sizeof(buf), "dvb/adapter%d/demux0", webcamd_unit + u);
+		snprintf(buf, sizeof(buf), "dvb/adapter%d/frontend0", webcamd_unit + u);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
@@ -1077,9 +1076,9 @@ vtunerc_exit(void)
 			continue;
 		vtunerc_tbl[u] = NULL;
 
-		XXX TODO
+		XXX TODO;
 
-		    kfree(ctx);
+		kfree(ctx);
 	}
 
 	printk(KERN_NOTICE "vtunerc: unloaded successfully\n");
