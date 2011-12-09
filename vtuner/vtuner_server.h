@@ -21,11 +21,7 @@
 
 struct vtuners_ctx {
 
-	int	type;
 	int	unit;
-
-	struct dvb_frontend_info fe_info;
-	struct dvb_frontend_parameters fe_params;
 
 	struct cdev_handle *frontend_fd;
 	struct cdev_handle *demux_fd;
@@ -36,18 +32,16 @@ struct vtuners_ctx {
 	pthread_t writer_thread;
 	pthread_t control_thread;
 
+	struct dtv_property dtv_props[VTUNER_MAX_PROP];
+
+	union vtuner_dvb_message dvb;
+
 	struct vtuner_message msgbuf;
 
 	u32	buffer[MAX_VTUNER_BUFFER / 4];
 
-	u16	pids[VTUNER_MAX_PID];
-
 	int	fd_data;
 	int	fd_control;
-	int	skip_set_frontend;
-
-	int	num_props;
-	struct dtv_property props[DTV_IOCTL_MAX_MSGS];
 
 	char	cport[16];
 	char	dport[16];

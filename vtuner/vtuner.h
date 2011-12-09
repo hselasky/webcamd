@@ -1,17 +1,33 @@
+/*-
+ * Copyright (c) 2011 Hans Petter Selasky. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 /*
- * vtuner API
+ * BSD vTuner API
  *
- * Copyright (C) 2010-11 Honza Petrous <jpetrous@smartimp.cz>
- * [based on dreamtuner userland code by Roland Mieslinger]
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation version 2.
- *
- * This program is distributed WITHOUT ANY WARRANTY of any
- * kind, whether express or implied; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Inspired by code written by:
+ * Honza Petrous <jpetrous@smartimp.cz>
  */
 
 #ifndef _VTUNER_H_
@@ -24,57 +40,195 @@
 #define	VTUNER_VERSION_00030001 0x00030001
 #define	VTUNER_VERSION VTUNER_VERSION_00030001
 #define	VTUNER_MAGIC 0x76543210U
-#define	VTUNER_MAX_PID	30
 #define	VTUNER_TS_ALIGN 188
-#define	VTUNER_PID_UNKNOWN 0xFFFFU
 #define	VTUNER_DEFAULT_PORT "5100"
+#define	VTUNER_MAX_PROP 64
 
-#define	VT_NULL 0x00
-#define	VT_S   0x01
-#define	VT_C   0x02
-#define	VT_T   0x04
-#define	VT_S2  0x08
+enum {
+	MSG_UNDEFINED = 0,
 
-#define	MSG_SET_FRONTEND		1
-#define	MSG_GET_FRONTEND		2
-#define	MSG_READ_STATUS			3
-#define	MSG_READ_BER			4
-#define	MSG_READ_SIGNAL_STRENGTH	5
-#define	MSG_READ_SNR			6
-#define	MSG_READ_UCBLOCKS		7
-#define	MSG_SET_TONE			8
-#define	MSG_SET_VOLTAGE			9
-#define	MSG_ENABLE_HIGH_VOLTAGE		10
-#define	MSG_SEND_DISEQC_MSG		11
-#define	MSG_SEND_DISEQC_BURST		13
-#define	MSG_PIDLIST			14
-#define	MSG_TYPE_CHANGED		15
-#define	MSG_SET_PROPERTY		16
-#define	MSG_GET_PROPERTY		17
+	MSG_DMX_START = 16,
+	MSG_DMX_STOP,
+	MSG_DMX_SET_FILTER,
+	MSG_DMX_SET_PES_FILTER,
+	MSG_DMX_SET_BUFFER_SIZE,
+	MSG_DMX_GET_PES_PIDS,
+	MSG_DMX_GET_CAPS,
+	MSG_DMX_SET_SOURCE,
+	MSG_DMX_GET_STC,
+	MSG_DMX_ADD_PID,
+	MSG_DMX_REMOVE_PID,
 
-#define	MSG_NULL			1024
-#define	MSG_DISCOVER			1025
-#define	MSG_UPDATE       		1026
+	MSG_FE_SET_PROPERTY = 32,
+	MSG_FE_GET_PROPERTY,
+	MSG_FE_GET_INFO,
+	MSG_FE_DISEQC_RESET_OVERLOAD,
+	MSG_FE_DISEQC_SEND_MASTER_CMD,
+	MSG_FE_DISEQC_RECV_SLAVE_REPLY,
+	MSG_FE_DISEQC_SEND_BURST,
+	MSG_FE_SET_TONE,
+	MSG_FE_SET_VOLTAGE,
+	MSG_FE_ENABLE_HIGH_LNB_VOLTAGE,
+
+	MSG_FE_READ_STATUS,
+	MSG_FE_READ_BER,
+	MSG_FE_READ_SIGNAL_STRENGTH,
+	MSG_FE_READ_SNR,
+	MSG_FE_READ_UNCORRECTED_BLOCKS,
+
+	MSG_FE_SET_FRONTEND,
+	MSG_FE_GET_FRONTEND,
+	MSG_FE_SET_FRONTEND_TUNE_MODE,
+	MSG_FE_GET_EVENT,
+	MSG_FE_DISHNETWORK_SEND_LEGACY_CMD,
+
+	MSG_STRUCT_DMX_FILTER = 64,
+	MSG_STRUCT_DMX_SCT_FILTER_PARAMS,
+	MSG_STRUCT_DMX_PES_FILTER_PARAMS,
+	MSG_STRUCT_DMX_PES_PID,
+	MSG_STRUCT_DMX_CAPS,
+	MSG_STRUCT_DMX_STC,
+	MSG_STRUCT_DVB_FRONTEND_INFO,
+	MSG_STRUCT_DVB_DISEQC_MASTER_CMD,
+	MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY,
+	MSG_STRUCT_DVB_FRONTEND_PARAMETERS,
+	MSG_STRUCT_DVB_FRONTEND_EVENT,
+	MSG_STRUCT_DTV_CMDS_H,
+	MSG_STRUCT_DTV_PROPERTIES,
+	MSG_STRUCT_U32,
+	MSG_STRUCT_U16,
+	MSG_STRUCT_NULL,
+};
 
 /* define platform independant types */
 
 typedef uint8_t v8 __aligned(1);
 typedef uint16_t v16 __aligned(2);
 typedef uint32_t v32 __aligned(4);
+typedef uint64_t v64 __aligned(8);
 
-typedef int8_t t8 __aligned(1);
-typedef int16_t t16 __aligned(2);
-typedef int32_t t32 __aligned(4);
+/*
+ * ==== DMX device structures ====
+ */
 
-/* define master message types */
+struct vtuner_dmx_filter {
+	v8	filter[DMX_FILTER_SIZE];
+	v8	mask [DMX_FILTER_SIZE];
+	v8	mode [DMX_FILTER_SIZE];
+};
 
-struct diseqc_master_cmd {
+struct vtuner_dmx_sct_filter_params {
+	v16	pid;
+	struct vtuner_dmx_filter filter;
+	v32	timeout;
+	v32	flags;
+};
+
+struct vtuner_dmx_pes_filter_params {
+	v16	pid;
+	v32	input;
+	v32	output;
+	v32	pes_type;
+	v32	flags;
+};
+
+struct vtuner_dmx_pes_pid {
+	uint16_t pids[5];
+};
+
+struct vtuner_dmx_caps {
+	v32	caps;
+	v32	num_decoders;
+};
+
+struct vtuner_dmx_stc {
+	v32	num;
+	v32	base;
+	v64	stc;
+};
+
+/*
+ * ==== Frontend device structures ====
+ */
+
+struct vtuner_dvb_frontend_info {
+	v8	name [128];
+	v32	type;
+	v32	frequency_min;
+	v32	frequency_max;
+	v32	frequency_stepsize;
+	v32	frequency_tolerance;
+	v32	symbol_rate_min;
+	v32	symbol_rate_max;
+	v32	symbol_rate_tolerance;
+	v32	notifier_delay;
+	v32	caps;
+};
+
+struct vtuner_dvb_diseqc_master_cmd {
 	v8	msg  [6];
 	v8	msg_len;
 };
 
-struct vtuner_property {
+struct vtuner_dvb_diseqc_slave_reply {
+	v8	msg  [4];
+	v8	msg_len;
+	v32	timeout;
+};
+
+struct vtuner_dvb_qpsk_parameters {
+	v32	symbol_rate;
+	v32	fec_inner;
+};
+
+struct vtuner_dvb_qam_parameters {
+	v32	symbol_rate;
+	v32	fec_inner;
+	v32	modulation;
+};
+
+struct vtuner_dvb_vsb_parameters {
+	v32	modulation;
+};
+
+struct vtuner_dvb_ofdm_parameters {
+	v32	bandwidth;
+	v32	code_rate_HP;
+	v32	code_rate_LP;
+	v32	constellation;
+	v32	transmission_mode;
+	v32	guard_interval;
+	v32	hierarchy_information;
+};
+
+struct vtuner_dvb_frontend_parameters {
+	v32	frequency;
+	v32	inversion;
+	union {
+		struct vtuner_dvb_qpsk_parameters qpsk;
+		struct vtuner_dvb_qam_parameters qam;
+		struct vtuner_dvb_ofdm_parameters ofdm;
+		struct vtuner_dvb_vsb_parameters vsb;
+	}	u;
+};
+
+struct vtuner_dvb_frontend_event {
+	v32	status;
+	struct vtuner_dvb_frontend_parameters parameters;
+};
+
+struct vtuner_dtv_cmds_h {
+	v8	name [64];
+
 	v32	cmd;
+
+	v8	set;
+	v8	buffer;
+};
+
+struct vtuner_dtv_property {
+	v32	cmd;
+	v32	reserved[3];
 	union {
 		v32	data;
 		struct {
@@ -82,56 +236,57 @@ struct vtuner_property {
 			v32	len;
 		}	buffer;
 	}	u;
-	t32	result;
+	int	result;
+};
+
+struct vtuner_dtv_properties {
+	v32	num;
+	struct vtuner_dtv_property props[VTUNER_MAX_PROP];
 };
 
 struct vtuner_message {
-	t32	msg_type;
-	u32	msg_magic;
-	u32	msg_version;
-	u32	msg_error;
+	struct {
+		v32	magic;
+		v32	mtype;
+		v32	rx_struct;
+		v32	tx_struct;
+		v32	error;
+	}	hdr;
 	union {
-		struct {
-			v32	frequency;
-			v8	inversion;
-			union {
-				struct {
-					v32	symbol_rate;
-					v32	fec_inner;
-				}	qpsk;
-				struct {
-					v32	symbol_rate;
-					v32	fec_inner;
-					v32	modulation;
-				}	qam;
-				struct {
-					v32	bandwidth;
-					v32	code_rate_HP;
-					v32	code_rate_LP;
-					v32	constellation;
-					v32	transmission_mode;
-					v32	guard_interval;
-					v32	hierarchy_information;
-				}	ofdm;
-				struct {
-					v32	modulation;
-				}	vsb;
-			}	u;
-		}	fe_params;
-		struct vtuner_property prop;
-		v32	status;
-		v32	ber;
-		v16	ss;
-		v16	snr;
-		v32	ucb;
-		v8	tone;
-		v8	voltage;
-		struct diseqc_master_cmd diseqc_master_cmd;
-		v8	burst;
-		v16	pidlist[VTUNER_MAX_PID];
-		v8	pad  [72];
-		v32	type_changed;
+		v32	value32;
+		v16	value16;
+		struct vtuner_dmx_filter dmx_filter;
+		struct vtuner_dmx_sct_filter_params dmx_sct_filter_params;
+		struct vtuner_dmx_pes_filter_params dmx_pes_filter_params;
+		struct vtuner_dmx_pes_pid dmx_pes_pid;
+		struct vtuner_dmx_caps dmx_caps;
+		struct vtuner_dmx_stc dmx_stc;
+		struct vtuner_dvb_frontend_info dvb_frontend_info;
+		struct vtuner_dvb_diseqc_master_cmd dvb_diseqc_master_cmd;
+		struct vtuner_dvb_diseqc_slave_reply dvb_diseqc_slave_reply;
+		struct vtuner_dvb_frontend_parameters dvb_frontend_parameters;
+		struct vtuner_dvb_frontend_event dvb_frontend_event;
+		struct vtuner_dtv_cmds_h dtv_cmds_h;
+		struct vtuner_dtv_properties dtv_properties;
 	}	body;
+};
+
+union vtuner_dvb_message {
+	u32	value32;
+	u16	value16;
+	struct dmx_filter dmx_filter;
+	struct dmx_sct_filter_params dmx_sct_filter_params;
+	struct dmx_pes_filter_params dmx_pes_filter_params;
+	struct dmx_caps dmx_caps;
+	struct dmx_stc dmx_stc;
+	struct dvb_frontend_info dvb_frontend_info;
+	struct dvb_diseqc_master_cmd dvb_diseqc_master_cmd;
+	struct dvb_diseqc_slave_reply dvb_diseqc_slave_reply;
+	struct dvb_frontend_parameters dvb_frontend_parameters;
+	struct dvb_frontend_event dvb_frontend_event;
+	struct dtv_cmds_h dtv_cmds_h;
+	struct dtv_property dtv_property;
+	struct dtv_properties dtv_properties;
 };
 
 #endif					/* _VTUNER_H_ */
