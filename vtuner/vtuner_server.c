@@ -405,7 +405,7 @@ hw_send_diseq_burst(struct vtuners_ctx *hw, u8 burst)
 int
 hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 {
-	struct dmx_pes_filter_params flt;
+	struct dmx_sct_filter_params flt;
 	int i;
 
 	memset(&flt, 0, sizeof(flt));
@@ -432,11 +432,10 @@ hw_pidlist(struct vtuners_ctx *hw, u16 * pidlist)
 		if (hw->pids[i] != pidlist[i]) {
 			if (pidlist[i] != VTUNER_PID_UNKNOWN) {
 				flt.pid = pidlist[i];
-				flt.input = DMX_IN_FRONTEND;
-				flt.pes_type = DMX_PES_OTHER;
-				flt.output = DMX_OUT_TS_TAP;
-				flt.flags = DMX_IMMEDIATE_START;
-				linux_ioctl(hw->demux_fd, -1, DMX_SET_PES_FILTER, &flt);
+				flt.flags = DMX_IMMEDIATE_START |
+				    DMX_CHECK_CRC;
+				linux_ioctl(hw->demux_fd, -1,
+				    DMX_SET_FILTER, &flt);
 			}
 			hw->pids[i] = pidlist[i];
 		}

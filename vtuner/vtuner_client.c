@@ -60,7 +60,7 @@ pidtab_find_index(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < (VTUNER_MAX_PID - 1); i++) {
+	for (i = 0; i < VTUNER_MAX_PID; i++) {
 		if (pidtab[i] == pid)
 			return (i);
 	}
@@ -73,7 +73,7 @@ pidtab_add_pid(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < (VTUNER_MAX_PID - 1); i++)
+	for (i = 0; i < VTUNER_MAX_PID; i++)
 		if (pidtab[i] == VTUNER_PID_UNKNOWN ||
 		    pidtab[i] == pid) {
 			pidtab[i] = pid;
@@ -87,7 +87,7 @@ pidtab_del_pid(u16 * pidtab, int pid)
 {
 	int i;
 
-	for (i = 0; i < (VTUNER_MAX_PID - 1); i++) {
+	for (i = 0; i < VTUNER_MAX_PID; i++) {
 		if (pidtab[i] == pid) {
 			pidtab[i] = VTUNER_PID_UNKNOWN;
 			return 0;
@@ -103,9 +103,8 @@ pidtab_copy_to_msg(struct vtunerc_ctx *ctx,
 {
 	int i;
 
-	for (i = 0; i < (VTUNER_MAX_PID - 1); i++)
+	for (i = 0; i < VTUNER_MAX_PID; i++)
 		msg->body.pidlist[i] = ctx->pidtab[i];
-	msg->body.pidlist[i] = 0;
 }
 
 static int
@@ -117,6 +116,10 @@ vtunerc_start_feed(struct dvb_demux_feed *feed)
 
 	memset(&msg, 0, sizeof(msg));
 
+	printk(KERN_ERR "vtunerc: Start feed type %d pid %d\n",
+	    feed->type, feed->pid);
+
+#if 0
 	switch (feed->type) {
 	case DMX_TYPE_TS:
 		break;
@@ -130,6 +133,7 @@ vtunerc_start_feed(struct dvb_demux_feed *feed)
 		    feed->type);
 		return -EINVAL;
 	}
+#endif
 
 	/* organize PID list table */
 
@@ -154,6 +158,9 @@ vtunerc_stop_feed(struct dvb_demux_feed *feed)
 	struct vtuner_message msg;
 
 	memset(&msg, 0, sizeof(msg));
+
+	printk(KERN_ERR "vtunerc: Stop feed type %d pid %d\n",
+	    feed->type, feed->pid);
 
 	/* organize PID list table */
 
