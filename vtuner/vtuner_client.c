@@ -60,19 +60,19 @@
 
 #define	VTUNER_PEER_MEMSET(a,b,c) do {			\
     static const u8 dummyz[sizeof(*(a))] __aligned(4);	\
-    extern int dummy[(b) ? -1 : 1];			\
+    extern int dummyc[(b) ? -1 : 1];			\
     if (copy_to_user(a,dummyz,sizeof(*(a))) != 0)	\
 	*c |= -1U;					\
 } while (0)
 
 #define	VTUNER_PEER_MEMCPY(a,b,c,d) do {				\
-    extern int dummy[(sizeof(*(a.c)) != sizeof(*(b.c))) ? -1 : 1];	\
+    extern int dummyc[(sizeof(*(a.c)) != sizeof(*(b.c))) ? -1 : 1];	\
     if (copy_to_user(a.c,b.c,sizeof(*(a.c))) != 0)			\
 	*d |= -1U;							\
 } while (0)
 
 #define	VTUNER_LOCAL_MEMCPY(a,b,c,d) do {				\
-    extern int dummy[(sizeof(*(a.c)) != sizeof(*(b.c))) ? -1 : 1];	\
+    extern int dummyc[(sizeof(*(a.c)) != sizeof(*(b.c))) ? -1 : 1];	\
     if (copy_from_user(a.c,b.c,sizeof(*(a.c))) != 0)		\
 	*d |= -1U;							\
 } while (0)
@@ -240,6 +240,9 @@ vtunerc_do_message(struct vtunerc_ctx *ctx,
 
 	down(&ctx->xchange_sem);
 
+	printk(KERN_INFO "vTuner: Doing message mt=%d rxs=%d txs=%d\n",
+	    mtype, rx_struct, tx_struct);
+
 	/* stamp the byte order and version */
 
 	msg->hdr.magic = VTUNER_MAGIC;
@@ -281,6 +284,9 @@ tx_error:
 	ret = (s32) msg->hdr.error;
 
 	up(&ctx->xchange_sem);
+
+	printk(KERN_INFO "vTuner: Result %d\n", ret);
+
 	return ret;
 }
 
@@ -343,6 +349,9 @@ vtuner_reader_thread(void *arg)
 static int
 vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dvb_message *dvb)
 {
+	struct {
+		struct dtv_properties dtv_properties;
+	}      dummy;
 	int ret = 0;
 	u32 i;
 	u32 max;
@@ -455,10 +464,13 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		break;
 
 	case FE_SET_PROPERTY:
+	case FE_GET_PROPERTY:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dtv_properties, 0,
 		    &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dtv_properties.num, &ret);
+		VTUNER_LOCAL_MEMCPY(&dummy, &(*dvb),
+		    dtv_properties.props, &ret);
 
 		max = ctx->msgbuf.body.dtv_properties.num;
 		if (max > VTUNER_PROP_MAX) {
@@ -466,65 +478,52 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 			break;
 		}
 		for (i = 0; i != max; i++) {
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 			    dtv_properties.props[i].cmd, &ret);
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 			    dtv_properties.props[i].reserved[0], &ret);
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 			    dtv_properties.props[i].reserved[1], &ret);
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 			    dtv_properties.props[i].reserved[2], &ret);
 
 			if (ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
 			    ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
-				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 				    dtv_properties.props[i].u.data, &ret);
 			} else {
-				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 				    dtv_properties.props[i].u.buffer.len, &ret);
-				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
 				    dtv_properties.props[i].u.buffer.data, &ret);
 			}
 		}
 
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
-		    MSG_FE_SET_PROPERTY,
-		    MSG_STRUCT_DTV_PROPERTIES,
-		    MSG_STRUCT_NULL);
-		break;
-
-	case FE_GET_PROPERTY:
-
-		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dtv_properties, 0,
-		    &ret);
-		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
-		    dtv_properties.num, &ret);
-
+		if (cmd == FE_SET_PROPERTY) {
+			ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+			    MSG_FE_SET_PROPERTY,
+			    MSG_STRUCT_DTV_PROPERTIES,
+			    MSG_STRUCT_NULL);
+			break;
+		}
 		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_GET_PROPERTY,
-		    MSG_STRUCT_U32,
+		    MSG_STRUCT_DTV_PROPERTIES,
 		    MSG_STRUCT_DTV_PROPERTIES);
 
-		max = ctx->msgbuf.body.dtv_properties.num;
-		if (max > VTUNER_PROP_MAX) {
-			max = VTUNER_PROP_MAX;
-			ctx->msgbuf.body.dtv_properties.num = VTUNER_PROP_MAX;
-		}
-		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.num, &ret);
-
 		for (i = 0; i != max; i++) {
-			VTUNER_PEER_MEMSET(&(*dvb).dtv_properties.props[i], 0, &ret);
-			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].cmd, &ret);
-			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].reserved[0], &ret);
-			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].reserved[1], &ret);
-			VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].reserved[2], &ret);
+			VTUNER_PEER_MEMSET(&dummy.dtv_properties.props[i], 0, &ret);
+			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].cmd, &ret);
+			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[0], &ret);
+			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[1], &ret);
+			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[2], &ret);
 
 			if (ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
 			    ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
-				VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].u.data, &ret);
+				VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].u.data, &ret);
 			} else {
-				VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.len, &ret);
-				VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.data, &ret);
+				VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.len, &ret);
+				VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.data, &ret);
 			}
 		}
 		break;

@@ -69,6 +69,7 @@ static int
 vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 {
 	int ret = -1;
+	int max;
 	int i;
 
 	switch (msg->hdr.mtype) {
@@ -151,16 +152,20 @@ vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 		    DMX_REMOVE_PID, &msg->body.value16);
 		break;
 
+	case MSG_FE_GET_PROPERTY:
 	case MSG_FE_SET_PROPERTY:
-		if (msg->body.dtv_properties.num > VTUNER_PROP_MAX)
-			msg->body.dtv_properties.num = VTUNER_PROP_MAX;
+
+		max = msg->body.dtv_properties.num;
+
+		if (max > VTUNER_PROP_MAX)
+			msg->body.dtv_properties.num = max = VTUNER_PROP_MAX;
 
 		VTUNER_MEMSET(&ctx->dvb.dtv_properties, 0);
 		VTUNER_MEMCPY(&ctx->dvb,
 		    &msg->body, dtv_properties.num);
 		ctx->dvb.dtv_properties.props = ctx->dtv_props;
 
-		for (i = 0; i != msg->body.dtv_properties.num; i++) {
+		for (i = 0; i != max; i++) {
 			VTUNER_MEMSET(&ctx->dtv_props[i], 0);
 			VTUNER_MEMCPY(&ctx->dtv_props[i],
 			    &msg->body.dtv_properties.props[i], cmd);
@@ -183,26 +188,15 @@ vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 			}
 		}
 
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
-		    FE_SET_PROPERTY, &ctx->dvb.dtv_properties);
-		break;
-
-	case MSG_FE_GET_PROPERTY:
-		if (msg->body.dtv_properties.num > VTUNER_PROP_MAX)
-			msg->body.dtv_properties.num = VTUNER_PROP_MAX;
-
-		VTUNER_MEMSET(&ctx->dvb.dtv_properties, 0);
-		VTUNER_MEMCPY(&ctx->dvb,
-		    &msg->body, dtv_properties.num);
-		ctx->dvb.dtv_properties.props = ctx->dtv_props;
-
+		if (msg->hdr.mtype == MSG_FE_SET_PROPERTY) {
+			ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+			    FE_SET_PROPERTY, &ctx->dvb.dtv_properties);
+			break;
+		}
 		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
 		    FE_GET_PROPERTY, &ctx->dvb.dtv_properties);
 
-		VTUNER_MEMCPY(&msg->body,
-		    &ctx->dvb, dtv_properties.num);
-
-		for (i = 0; i != msg->body.dtv_properties.num; i++) {
+		for (i = 0; i != max; i++) {
 			VTUNER_MEMSET(&msg->body.dtv_properties.props[i], 0);
 			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
 			    &ctx->dtv_props[i], cmd);
