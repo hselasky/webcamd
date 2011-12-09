@@ -17,8 +17,6 @@
 #ifndef _VTUNER_SERVER_PRIV_H
 #define	_VTUNER_SERVER_PRIV_H
 
-#define	MAX_VTUNER_BUFFER (2 * 65536)
-
 struct vtuners_ctx {
 
 	int	unit;
@@ -32,13 +30,14 @@ struct vtuners_ctx {
 	pthread_t writer_thread;
 	pthread_t control_thread;
 
-	struct dtv_property dtv_props[VTUNER_MAX_PROP];
+	struct dtv_property dtv_props[VTUNER_PROP_MAX];
 
 	union vtuner_dvb_message dvb;
 
 	struct vtuner_message msgbuf;
 
-	u32	buffer[MAX_VTUNER_BUFFER / 4];
+	struct vtuner_data_hdr buffer_hdr;
+	u32	buffer[VTUNER_BUFFER_MAX / 4];
 
 	int	fd_data;
 	int	fd_control;

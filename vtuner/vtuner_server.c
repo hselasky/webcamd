@@ -44,6 +44,7 @@
 
 #include <vtuner/vtuner.h>
 #include <vtuner/vtuner_server.h>
+#include <vtuner/vtuner_common.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -52,10 +53,6 @@
 #include <signal.h>
 
 #include <cuse4bsd.h>
-
-#define	VTUNER_BSWAP16(x) x = bswap16(x)
-#define	VTUNER_BSWAP32(x) x = bswap32(x)
-#define	VTUNER_BSWAP64(x) x = bswap64(x)
 
 #define	VTUNER_MODULE_VERSION "1.0-hps"
 
@@ -73,155 +70,6 @@ static char vtuner_host[64] = {"127.0.0.1"};
 static char vtuner_cport[16] = {VTUNER_DEFAULT_PORT};
 
 static int
-vtuners_struct_size(int type)
-{
-	switch (type) {
-	case MSG_STRUCT_DMX_FILTER:
-		return (sizeof(((struct vtuner_message *) 0)->body.dmx_filter));
-	case MSG_STRUCT_DMX_SCT_FILTER_PARAMS:
-		return (sizeof(((struct vtuner_message *) 0)->body.dmx_sct_filter_params));
-	case MSG_STRUCT_DMX_PES_FILTER_PARAMS:
-		return (sizeof(((struct vtuner_message *) 0)->body.dmx_pes_filter_params));
-	case MSG_STRUCT_DMX_PES_PID:
-		return (sizeof(((struct vtuner_message *) 0)->body.dmx_pes_pid));
-	case MSG_STRUCT_DMX_CAPS:
-		return (sizeof(((struct vtuner_message *) 0)->body.dmx_caps));
-	case MSG_STRUCT_DMX_STC:
-		return (sizeof(((struct vtuner_message *) 0)->body.dmx_stc));
-	case MSG_STRUCT_DVB_FRONTEND_INFO:
-		return (sizeof(((struct vtuner_message *) 0)->body.dvb_frontend_info));
-	case MSG_STRUCT_DVB_DISEQC_MASTER_CMD:
-		return (sizeof(((struct vtuner_message *) 0)->body.dvb_diseqc_master_cmd));
-	case MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY:
-		return (sizeof(((struct vtuner_message *) 0)->body.dvb_diseqc_slave_reply));
-	case MSG_STRUCT_DVB_FRONTEND_PARAMETERS:
-		return (sizeof(((struct vtuner_message *) 0)->body.dvb_frontend_parameters));
-	case MSG_STRUCT_DVB_FRONTEND_EVENT:
-		return (sizeof(((struct vtuner_message *) 0)->body.dvb_frontend_event));
-	case MSG_STRUCT_DTV_CMDS_H:
-		return (sizeof(((struct vtuner_message *) 0)->body.dtv_cmds_h));
-	case MSG_STRUCT_DTV_PROPERTIES:
-		return (sizeof(((struct vtuner_message *) 0)->body.dtv_properties));
-	case MSG_STRUCT_U32:
-		return (sizeof(((struct vtuner_message *) 0)->body.value32));
-	case MSG_STRUCT_U16:
-		return (sizeof(((struct vtuner_message *) 0)->body.value16));
-	case MSG_STRUCT_NULL:
-		return (0);
-	default:
-		return (-1);
-	}
-}
-
-static void
-vtuners_hdr_byteswap(struct vtuner_message *msg)
-{
-	VTUNER_BSWAP32(msg->hdr.mtype);
-	VTUNER_BSWAP32(msg->hdr.magic);
-	VTUNER_BSWAP32(msg->hdr.rx_struct);
-	VTUNER_BSWAP32(msg->hdr.tx_struct);
-	VTUNER_BSWAP32(msg->hdr.error);
-}
-
-static void
-vtuners_body_byteswap(struct vtuner_message *msg, int type)
-{
-	int i;
-
-	switch (type) {
-	case MSG_STRUCT_DMX_FILTER:
-		break;
-	case MSG_STRUCT_DMX_SCT_FILTER_PARAMS:
-		VTUNER_BSWAP16(msg->body.dmx_sct_filter_params.pid);
-		VTUNER_BSWAP32(msg->body.dmx_sct_filter_params.timeout);
-		VTUNER_BSWAP32(msg->body.dmx_sct_filter_params.flags);
-		break;
-	case MSG_STRUCT_DMX_PES_FILTER_PARAMS:
-		VTUNER_BSWAP16(msg->body.dmx_pes_filter_params.pid);
-		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.input);
-		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.output);
-		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.pes_type);
-		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.flags);
-		break;
-	case MSG_STRUCT_DMX_PES_PID:
-		for (i = 0; i != 5; i++)
-			VTUNER_BSWAP16(msg->body.dmx_pes_pid.pids[i]);
-		break;
-	case MSG_STRUCT_DMX_CAPS:
-		VTUNER_BSWAP32(msg->body.dmx_caps.caps);
-		VTUNER_BSWAP32(msg->body.dmx_caps.num_decoders);
-		break;
-	case MSG_STRUCT_DMX_STC:
-		VTUNER_BSWAP32(msg->body.dmx_stc.num);
-		VTUNER_BSWAP32(msg->body.dmx_stc.base);
-		VTUNER_BSWAP64(msg->body.dmx_stc.stc);
-		break;
-	case MSG_STRUCT_DVB_FRONTEND_INFO:
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.type);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.frequency_min);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.frequency_max);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.frequency_stepsize);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.frequency_tolerance);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.symbol_rate_min);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.symbol_rate_max);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.symbol_rate_tolerance);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.notifier_delay);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_info.caps);
-		break;
-	case MSG_STRUCT_DVB_DISEQC_MASTER_CMD:
-		break;
-	case MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY:
-		VTUNER_BSWAP32(msg->body.dvb_diseqc_slave_reply.timeout);
-		break;
-	case MSG_STRUCT_DVB_FRONTEND_PARAMETERS:
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.frequency);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.inversion);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.bandwidth);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.code_rate_HP);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.code_rate_LP);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.constellation);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.transmission_mode);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.guard_interval);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.hierarchy_information);
-		break;
-	case MSG_STRUCT_DVB_FRONTEND_EVENT:
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.status);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.frequency);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.inversion);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.bandwidth);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.code_rate_HP);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.code_rate_LP);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.constellation);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.transmission_mode);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.guard_interval);
-		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.hierarchy_information);
-		break;
-	case MSG_STRUCT_DTV_CMDS_H:
-		VTUNER_BSWAP32(msg->body.dtv_cmds_h.cmd);
-		break;
-	case MSG_STRUCT_DTV_PROPERTIES:
-		VTUNER_BSWAP32(msg->body.dtv_properties.num);
-		for (i = 0; i != VTUNER_MAX_PROP; i++) {
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].cmd);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[0]);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[1]);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[2]);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.data);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.buffer.len);
-		}
-		break;
-	case MSG_STRUCT_U32:
-		VTUNER_BSWAP32(msg->body.value32);
-		break;
-	case MSG_STRUCT_U16:
-		VTUNER_BSWAP16(msg->body.value16);
-		break;
-	default:
-		break;
-	}
-}
-
-static int
 vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 {
 	int ret = -1;
@@ -236,211 +84,315 @@ vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 		break;
 	case MSG_DMX_SET_FILTER:
 		VTUNER_MEMSET(&ctx->dvb.dmx_sct_filter_params, 0);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_sct_filter_params.pid);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_sct_filter_params.filter);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_sct_filter_params.timeout);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_sct_filter_params.flags);
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_SET_FILTER, &ctx->dvb.dmx_sct_filter_params);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_sct_filter_params.pid);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_sct_filter_params.filter);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_sct_filter_params.timeout);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_sct_filter_params.flags);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_SET_FILTER, &ctx->dvb.dmx_sct_filter_params);
 		break;
 	case MSG_DMX_SET_PES_FILTER:
 		VTUNER_MEMSET(&ctx->dvb.dmx_pes_filter_params, 0);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_pes_filter_params.pid);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_pes_filter_params.input);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_pes_filter_params.output);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_pes_filter_params.pes_type);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_pes_filter_params.flags);
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_SET_PES_FILTER, &ctx->dvb.dmx_pes_filter_params);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_pes_filter_params.pid);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_pes_filter_params.input);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_pes_filter_params.output);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_pes_filter_params.pes_type);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_pes_filter_params.flags);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_SET_PES_FILTER, &ctx->dvb.dmx_pes_filter_params);
 		break;
 	case MSG_DMX_SET_BUFFER_SIZE:
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_SET_BUFFER_SIZE, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_SET_BUFFER_SIZE, (void *)(long)msg->body.value32);
 		break;
 	case MSG_DMX_GET_PES_PIDS:
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_GET_PES_PIDS, msg->body.dmx_pes_pid.pids);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_GET_PES_PIDS, msg->body.dmx_pes_pid.pids);
 		break;
 	case MSG_DMX_GET_CAPS:
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_GET_CAPS, &msg->body.value32);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_GET_CAPS, &ctx->dvb.dmx_caps);
+
+		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_caps.caps);
+		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_caps.num_decoders);
 		break;
 	case MSG_DMX_SET_SOURCE:
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_SET_SOURCE, &msg->body.value32);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_SET_SOURCE, &msg->body.value32);
 		break;
 	case MSG_DMX_GET_STC:
 		VTUNER_MEMSET(&ctx->dvb.dmx_stc, 0);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_stc.num);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_stc.base);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dmx_stc.stc);
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_GET_STC, &ctx->dvb.dmx_stc);
-		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_stc.num);
-		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_stc.base);
-		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_stc.stc);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_stc.num);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_stc.base);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dmx_stc.stc);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_GET_STC, &ctx->dvb.dmx_stc);
+		VTUNER_MEMCPY(&msg->body,
+		    &ctx->dvb, dmx_stc.num);
+		VTUNER_MEMCPY(&msg->body,
+		    &ctx->dvb, dmx_stc.base);
+		VTUNER_MEMCPY(&msg->body,
+		    &ctx->dvb, dmx_stc.stc);
 		break;
 	case MSG_DMX_ADD_PID:
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_ADD_PID, &msg->body.value16);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_ADD_PID, &msg->body.value16);
 		break;
 	case MSG_DMX_REMOVE_PID:
-		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK, DMX_REMOVE_PID, &msg->body.value16);
+		ret = linux_ioctl(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+		    DMX_REMOVE_PID, &msg->body.value16);
 		break;
 
 	case MSG_FE_SET_PROPERTY:
-		if (msg->body.dtv_properties.num > VTUNER_MAX_PROP)
-			msg->body.dtv_properties.num = VTUNER_MAX_PROP;
+		if (msg->body.dtv_properties.num > VTUNER_PROP_MAX)
+			msg->body.dtv_properties.num = VTUNER_PROP_MAX;
 
 		VTUNER_MEMSET(&ctx->dvb.dtv_properties, 0);
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dtv_properties.num);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dtv_properties.num);
 		ctx->dvb.dtv_properties.props = ctx->dtv_props;
 
 		for (i = 0; i != msg->body.dtv_properties.num; i++) {
 			VTUNER_MEMSET(&ctx->dtv_props[i], 0);
-			VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], cmd);
-			VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], reserved[0]);
-			VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], reserved[1]);
-			VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], reserved[2]);
-			if (msg->body.dtv_properties.props[i].u.buffer.len == 0 ||
-			    msg->body.dtv_properties.props[i].u.buffer.len > 32) {
-				VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], u.data);
+			VTUNER_MEMCPY(&ctx->dtv_props[i],
+			    &msg->body.dtv_properties.props[i], cmd);
+			VTUNER_MEMCPY(&ctx->dtv_props[i],
+			    &msg->body.dtv_properties.props[i], reserved[0]);
+			VTUNER_MEMCPY(&ctx->dtv_props[i],
+			    &msg->body.dtv_properties.props[i], reserved[1]);
+			VTUNER_MEMCPY(&ctx->dtv_props[i],
+			    &msg->body.dtv_properties.props[i], reserved[2]);
+
+			if (msg->body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
+			    msg->body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
+				VTUNER_MEMCPY(&ctx->dtv_props[i],
+				    &msg->body.dtv_properties.props[i], u.data);
 			} else {
-				VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], u.buffer.len);
-				VTUNER_MEMCPY(&ctx->dtv_props[i], &msg->body.dtv_properties.props[i], u.buffer.data);
+				VTUNER_MEMCPY(&ctx->dtv_props[i],
+				    &msg->body.dtv_properties.props[i], u.buffer.len);
+				VTUNER_MEMCPY(&ctx->dtv_props[i],
+				    &msg->body.dtv_properties.props[i], u.buffer.data);
 			}
 		}
 
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_SET_PROPERTY, &ctx->dvb.dtv_properties);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_SET_PROPERTY, &ctx->dvb.dtv_properties);
 		break;
 
 	case MSG_FE_GET_PROPERTY:
-		if (msg->body.dtv_properties.num > VTUNER_MAX_PROP)
-			msg->body.dtv_properties.num = VTUNER_MAX_PROP;
+		if (msg->body.dtv_properties.num > VTUNER_PROP_MAX)
+			msg->body.dtv_properties.num = VTUNER_PROP_MAX;
 
-		VTUNER_MEMSET(&msg->body.dtv_properties.props, 0);
-
-		VTUNER_MEMCPY(&ctx->dvb, &msg->body, dtv_properties.num);
+		VTUNER_MEMSET(&ctx->dvb.dtv_properties, 0);
+		VTUNER_MEMCPY(&ctx->dvb,
+		    &msg->body, dtv_properties.num);
 		ctx->dvb.dtv_properties.props = ctx->dtv_props;
 
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_GET_PROPERTY, &ctx->dvb.dtv_properties);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_GET_PROPERTY, &ctx->dvb.dtv_properties);
+
+		VTUNER_MEMCPY(&msg->body,
+		    &ctx->dvb, dtv_properties.num);
 
 		for (i = 0; i != msg->body.dtv_properties.num; i++) {
-			VTUNER_MEMSET(&ctx->dtv_props[i], 0);
-			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], cmd);
-			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], reserved[0]);
-			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], reserved[1]);
-			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], reserved[2]);
-			if (ctx->dtv_props[i].u.buffer.len == 0 ||
-			    ctx->dtv_props[i].u.buffer.len > 32) {
-				VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], u.data);
+			VTUNER_MEMSET(&msg->body.dtv_properties.props[i], 0);
+			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+			    &ctx->dtv_props[i], cmd);
+			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+			    &ctx->dtv_props[i], reserved[0]);
+			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+			    &ctx->dtv_props[i], reserved[1]);
+			VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+			    &ctx->dtv_props[i], reserved[2]);
+			if (ctx->dtv_props[i].cmd != DTV_DISEQC_MASTER &&
+			    ctx->dtv_props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
+				VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+				    &ctx->dtv_props[i], u.data);
 			} else {
-				VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], u.buffer.len);
-				VTUNER_MEMCPY(&msg->body.dtv_properties.props[i], &ctx->dtv_props[i], u.buffer.data);
+				VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+				    &ctx->dtv_props[i], u.buffer.len);
+				VTUNER_MEMCPY(&msg->body.dtv_properties.props[i],
+				    &ctx->dtv_props[i], u.buffer.data);
 			}
 		}
 		break;
 	case MSG_FE_GET_INFO:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_GET_INFO, &ctx->dvb.dvb_frontend_info);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_GET_INFO, &ctx->dvb.dvb_frontend_info);
 		VTUNER_MEMSET(&msg->body.dvb_frontend_info, 0);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, name);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, type);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, frequency_min);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, frequency_max);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, frequency_stepsize);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, frequency_tolerance);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, symbol_rate_min);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, symbol_rate_max);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, symbol_rate_tolerance);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, notifier_delay);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_info, &ctx->dvb.dvb_frontend_info, caps);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, name);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, type);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, frequency_min);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, frequency_max);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, frequency_stepsize);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, frequency_tolerance);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, symbol_rate_min);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, symbol_rate_max);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, symbol_rate_tolerance);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, notifier_delay);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_info,
+		    &ctx->dvb.dvb_frontend_info, caps);
 		break;
 	case MSG_FE_DISEQC_RESET_OVERLOAD:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_DISEQC_RESET_OVERLOAD, 0);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_DISEQC_RESET_OVERLOAD, 0);
 		break;
 	case MSG_FE_DISEQC_SEND_MASTER_CMD:
 		VTUNER_MEMSET(&ctx->dvb.dvb_diseqc_master_cmd, 0);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_diseqc_master_cmd, &msg->body.dvb_diseqc_master_cmd, msg);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_diseqc_master_cmd, &msg->body.dvb_diseqc_master_cmd, msg_len);
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_DISEQC_SEND_MASTER_CMD, &ctx->dvb.dvb_diseqc_master_cmd);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_diseqc_master_cmd,
+		    &msg->body.dvb_diseqc_master_cmd, msg);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_diseqc_master_cmd,
+		    &msg->body.dvb_diseqc_master_cmd, msg_len);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_DISEQC_SEND_MASTER_CMD, &ctx->dvb.dvb_diseqc_master_cmd);
 		break;
 	case MSG_FE_DISEQC_RECV_SLAVE_REPLY:
 		VTUNER_MEMSET(&ctx->dvb.dvb_diseqc_slave_reply, 0);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_diseqc_slave_reply, &msg->body.dvb_diseqc_slave_reply, timeout);
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_DISEQC_RECV_SLAVE_REPLY, &ctx->dvb.dvb_diseqc_slave_reply);
-		VTUNER_MEMCPY(&msg->body.dvb_diseqc_slave_reply, &ctx->dvb.dvb_diseqc_slave_reply, msg);
-		VTUNER_MEMCPY(&msg->body.dvb_diseqc_slave_reply, &ctx->dvb.dvb_diseqc_slave_reply, msg_len);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_diseqc_slave_reply,
+		    &msg->body.dvb_diseqc_slave_reply, timeout);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_DISEQC_RECV_SLAVE_REPLY, &ctx->dvb.dvb_diseqc_slave_reply);
+		VTUNER_MEMCPY(&msg->body.dvb_diseqc_slave_reply,
+		    &ctx->dvb.dvb_diseqc_slave_reply, msg);
+		VTUNER_MEMCPY(&msg->body.dvb_diseqc_slave_reply,
+		    &ctx->dvb.dvb_diseqc_slave_reply, msg_len);
 		break;
 	case MSG_FE_DISEQC_SEND_BURST:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_DISEQC_SEND_BURST, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_DISEQC_SEND_BURST, (void *)(long)msg->body.value32);
 		break;
 	case MSG_FE_SET_TONE:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_SET_TONE, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_SET_TONE, (void *)(long)msg->body.value32);
 		break;
 	case MSG_FE_SET_VOLTAGE:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_SET_VOLTAGE, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_SET_VOLTAGE, (void *)(long)msg->body.value32);
 		break;
 	case MSG_FE_ENABLE_HIGH_LNB_VOLTAGE:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_ENABLE_HIGH_LNB_VOLTAGE, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_ENABLE_HIGH_LNB_VOLTAGE, (void *)(long)msg->body.value32);
 		break;
 	case MSG_FE_READ_STATUS:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_READ_STATUS, &msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_READ_STATUS, &msg->body.value32);
 		break;
 	case MSG_FE_READ_BER:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_READ_BER, &msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_READ_BER, &msg->body.value32);
 		break;
 	case MSG_FE_READ_SIGNAL_STRENGTH:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_READ_SIGNAL_STRENGTH, &msg->body.value16);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_READ_SIGNAL_STRENGTH, &msg->body.value16);
 		break;
 	case MSG_FE_READ_SNR:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_READ_SNR, &msg->body.value16);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_READ_SNR, &msg->body.value16);
 		break;
 	case MSG_FE_READ_UNCORRECTED_BLOCKS:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_READ_UNCORRECTED_BLOCKS, &msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_READ_UNCORRECTED_BLOCKS, &msg->body.value32);
 		break;
 	case MSG_FE_SET_FRONTEND:
-
 		VTUNER_MEMSET(&ctx->dvb.dvb_frontend_parameters, 0);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, frequency);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, inversion);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.bandwidth);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.code_rate_HP);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.code_rate_LP);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.constellation);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.transmission_mode);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.guard_interval);
-		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters, &msg->body.dvb_frontend_parameters, u.ofdm.hierarchy_information);
-
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_SET_FRONTEND, &ctx->dvb.dvb_frontend_parameters);
-
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, frequency);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, inversion);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.bandwidth);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.code_rate_HP);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.code_rate_LP);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.constellation);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.transmission_mode);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.guard_interval);
+		VTUNER_MEMCPY(&ctx->dvb.dvb_frontend_parameters,
+		    &msg->body.dvb_frontend_parameters, u.ofdm.hierarchy_information);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_SET_FRONTEND, &ctx->dvb.dvb_frontend_parameters);
 		break;
 	case MSG_FE_GET_FRONTEND:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_GET_FRONTEND, &ctx->dvb.dvb_frontend_parameters);
-
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_GET_FRONTEND, &ctx->dvb.dvb_frontend_parameters);
 		VTUNER_MEMSET(&msg->body.dvb_frontend_parameters, 0);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, frequency);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, inversion);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.bandwidth);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.code_rate_HP);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.code_rate_LP);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.constellation);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.transmission_mode);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.guard_interval);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters, &ctx->dvb.dvb_frontend_parameters, u.ofdm.hierarchy_information);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, frequency);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, inversion);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.bandwidth);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.code_rate_HP);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.code_rate_LP);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.constellation);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.transmission_mode);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.guard_interval);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_parameters,
+		    &ctx->dvb.dvb_frontend_parameters, u.ofdm.hierarchy_information);
 		break;
-
 	case MSG_FE_SET_FRONTEND_TUNE_MODE:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_SET_FRONTEND_TUNE_MODE, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_SET_FRONTEND_TUNE_MODE, (void *)(long)msg->body.value32);
 		break;
-
 	case MSG_FE_GET_EVENT:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_GET_EVENT, &ctx->dvb.dvb_frontend_event);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_GET_EVENT, &ctx->dvb.dvb_frontend_event);
 		VTUNER_MEMSET(&msg->body.dvb_frontend_event, 0);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, status);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.frequency);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.inversion);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.bandwidth);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.code_rate_HP);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.code_rate_LP);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.constellation);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.transmission_mode);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.guard_interval);
-		VTUNER_MEMCPY(&msg->body.dvb_frontend_event, &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.hierarchy_information);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, status);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.frequency);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.inversion);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.bandwidth);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.code_rate_HP);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.code_rate_LP);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.constellation);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.transmission_mode);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.guard_interval);
+		VTUNER_MEMCPY(&msg->body.dvb_frontend_event,
+		    &ctx->dvb.dvb_frontend_event, parameters.u.ofdm.hierarchy_information);
 		break;
 	case MSG_FE_DISHNETWORK_SEND_LEGACY_CMD:
-		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK, FE_DISHNETWORK_SEND_LEGACY_CMD, (void *)(long)msg->body.value32);
+		ret = linux_ioctl(ctx->frontend_fd, CUSE_FFLAG_NONBLOCK,
+		    FE_DISHNETWORK_SEND_LEGACY_CMD, (void *)(long)msg->body.value32);
 		break;
 	default:
 		break;
@@ -703,8 +655,13 @@ vtuners_writer_thread(void *arg)
 			ctx->fd_data = -1;
 			continue;
 		}
+		ctx->buffer_hdr.magic = VTUNER_MAGIC;
+		ctx->buffer_hdr.length = len;
+
+		len += sizeof(ctx->buffer_hdr);
+
 		if (vtuners_write(ctx->fd_data,
-		    (u8 *) ctx->buffer, len) != len) {
+		    (u8 *) & ctx->buffer_hdr, len) != len) {
 			close(ctx->fd_data);
 			ctx->fd_data = -1;
 			continue;
@@ -744,7 +701,7 @@ vtuners_control_thread(void *arg)
 			goto rx_error;
 
 		if (ctx->msgbuf.hdr.magic != VTUNER_MAGIC) {
-			vtuners_hdr_byteswap(&ctx->msgbuf);
+			vtuner_hdr_byteswap(&ctx->msgbuf);
 			if (ctx->msgbuf.hdr.magic != VTUNER_MAGIC)
 				goto rx_error;
 			swapped = 1;
@@ -752,7 +709,7 @@ vtuners_control_thread(void *arg)
 			swapped = 0;
 		}
 
-		len = vtuners_struct_size(ctx->msgbuf.hdr.rx_struct);
+		len = vtuner_struct_size(ctx->msgbuf.hdr.rx_struct);
 		if (len < 0)
 			goto rx_error;
 
@@ -760,20 +717,20 @@ vtuners_control_thread(void *arg)
 			goto rx_error;
 
 		if (swapped)
-			vtuners_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.rx_struct);
+			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.rx_struct);
 
 		ctx->msgbuf.hdr.error =
 		    vtuners_process_msg(ctx, &ctx->msgbuf);
 
-		len = vtuners_struct_size(ctx->msgbuf.hdr.tx_struct);
+		len = vtuner_struct_size(ctx->msgbuf.hdr.tx_struct);
 		if (len < 0)
 			continue;
 
 		len += sizeof(ctx->msgbuf.hdr);
 
 		if (swapped) {
-			vtuners_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.tx_struct);
-			vtuners_hdr_byteswap(&ctx->msgbuf);
+			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.tx_struct);
+			vtuner_hdr_byteswap(&ctx->msgbuf);
 		}
 		if (vtuners_write(ctx->fd_control, (u8 *) & ctx->msgbuf, len) != len)
 			goto rx_error;
