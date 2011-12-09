@@ -240,9 +240,6 @@ vtunerc_do_message(struct vtunerc_ctx *ctx,
 
 	down(&ctx->xchange_sem);
 
-	printk(KERN_INFO "vTuner: Doing message mt=%d rxs=%d txs=%d\n",
-	    mtype, rx_struct, tx_struct);
-
 	/* stamp the byte order and version */
 
 	msg->hdr.magic = VTUNER_MAGIC;
@@ -265,6 +262,9 @@ retry:
 
 	len += sizeof(msg->hdr);
 
+	printk(KERN_INFO "vTuner: Doing message mt=%d rxs=%d txs=%d len=%d\n",
+	    mtype, rx_struct, tx_struct, len);
+
 	if (vtunerc_fd_write(ctx->fd_control, (u8 *) msg, len) != len)
 		goto tx_error;
 
@@ -283,9 +283,9 @@ tx_error:
 	}
 	ret = (s32) msg->hdr.error;
 
-	up(&ctx->xchange_sem);
+	printk(KERN_INFO "vTuner: Result %d, len=%d\n", ret, len);
 
-	printk(KERN_INFO "vTuner: Result %d\n", ret);
+	up(&ctx->xchange_sem);
 
 	return ret;
 }

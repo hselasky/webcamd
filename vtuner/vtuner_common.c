@@ -165,12 +165,26 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 	case MSG_STRUCT_DTV_PROPERTIES:
 		VTUNER_BSWAP32(msg->body.dtv_properties.num);
 		for (i = 0; i != VTUNER_PROP_MAX; i++) {
+			int has_buf = 0;
+
+			if (msg->body.dtv_properties.props[i].cmd == DTV_DISEQC_MASTER ||
+			    msg->body.dtv_properties.props[i].cmd == DTV_DISEQC_SLAVE_REPLY)
+				has_buf = 1;
+
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].cmd);
+
+			if (msg->body.dtv_properties.props[i].cmd == DTV_DISEQC_MASTER ||
+			    msg->body.dtv_properties.props[i].cmd == DTV_DISEQC_SLAVE_REPLY)
+				has_buf = 1;
+
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[0]);
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[1]);
 			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].reserved[2]);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.data);
-			VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.buffer.len);
+
+			if (has_buf)
+				VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.buffer.len);
+			else
+				VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.data);
 		}
 		break;
 	case MSG_STRUCT_U32:

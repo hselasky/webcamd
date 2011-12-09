@@ -161,8 +161,7 @@ vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 			msg->body.dtv_properties.num = max = VTUNER_PROP_MAX;
 
 		VTUNER_MEMSET(&ctx->dvb.dtv_properties, 0);
-		VTUNER_MEMCPY(&ctx->dvb,
-		    &msg->body, dtv_properties.num);
+		ctx->dvb.dtv_properties.props = max;
 		ctx->dvb.dtv_properties.props = ctx->dtv_props;
 
 		for (i = 0; i != max; i++) {
