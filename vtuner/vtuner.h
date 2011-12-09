@@ -260,7 +260,8 @@ struct vtuner_message {
 		v32	rx_struct;
 		v32	tx_struct;
 		v32	error;
-	} hdr __aligned(8);
+		v32	reserved;
+	}	hdr;
 	union {
 		v32	value32;
 		v16	value16;
@@ -276,7 +277,7 @@ struct vtuner_message {
 		struct vtuner_dvb_frontend_event dvb_frontend_event;
 		struct vtuner_dtv_cmds_h dtv_cmds_h;
 		struct vtuner_dtv_properties dtv_properties;
-	} body __aligned(8);
+	}	body;
 };
 
 union vtuner_dvb_message {
