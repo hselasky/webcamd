@@ -33,7 +33,6 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
-#include <linux/i2c.h>
 
 #include "dvb_demux.h"
 #include "dvb_frontend.h"
@@ -633,7 +632,7 @@ vtuners_writer_thread(void *arg)
 			len = -EWOULDBLOCK;
 		} else {
 			len = linux_read(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
-			    (u8 *) ctx->buffer, sizeof(ctx->buffer));
+			    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
 		}
 		up(&ctx->writer_sem);
 
@@ -645,13 +644,13 @@ vtuners_writer_thread(void *arg)
 			ctx->fd_data = -1;
 			continue;
 		}
-		ctx->buffer_hdr.magic = VTUNER_MAGIC;
-		ctx->buffer_hdr.length = len;
+		ctx->buffer[0] = VTUNER_MAGIC;
+		ctx->buffer[1] = len;
 
-		len += sizeof(ctx->buffer_hdr);
+		len += 8;
 
 		if (vtuners_write(ctx->fd_data,
-		    (u8 *) & ctx->buffer_hdr, len) != len) {
+		    (u8 *) ctx->buffer, len) != len) {
 			close(ctx->fd_data);
 			ctx->fd_data = -1;
 			continue;

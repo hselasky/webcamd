@@ -33,7 +33,6 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
-#include <linux/i2c.h>
 
 #include "dvb_demux.h"
 #include "dvb_frontend.h"

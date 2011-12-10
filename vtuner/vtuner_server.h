@@ -52,8 +52,7 @@ struct vtuners_ctx {
 
 	struct vtuner_message msgbuf;
 
-	struct vtuner_data_hdr buffer_hdr;
-	u32	buffer[VTUNER_BUFFER_MAX / 4];
+	u32	buffer[2 + (VTUNER_BUFFER_MAX / 4)];
 
 	int	fd_data;
 	int	fd_control;
