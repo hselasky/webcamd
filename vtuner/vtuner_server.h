@@ -56,6 +56,7 @@ struct vtuners_ctx {
 
 	int	fd_data;
 	int	fd_control;
+	int	fd_control_rx;
 
 	char	cport[16];
 	char	dport[16];

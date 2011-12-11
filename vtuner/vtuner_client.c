@@ -230,12 +230,16 @@ vtunerc_fd_write(int fd, const u8 * ptr, int len)
 	return (off);
 }
 
-static int
+static void
 vtunerc_do_message(struct vtunerc_ctx *ctx,
-    struct vtuner_message *msg, int mtype, int rx_struct, int tx_struct)
+    struct vtuner_message *msg, int mtype, int rx_size, int tx_size, int *pret)
 {
-	int ret;
 	int len;
+
+	/* if an error is already set, just return */
+
+	if (*pret != 0)
+		return;
 
 	down(&ctx->xchange_sem);
 
@@ -243,9 +247,10 @@ vtunerc_do_message(struct vtunerc_ctx *ctx,
 
 	msg->hdr.magic = VTUNER_MAGIC;
 	msg->hdr.mtype = mtype;
-	msg->hdr.rx_struct = rx_struct;
-	msg->hdr.tx_struct = tx_struct;
+	msg->hdr.rx_size = rx_size;
+	msg->hdr.tx_size = tx_size;
 	msg->hdr.error = 0;
+	msg->hdr.padding = 0;
 
 retry:
 	if (ctx->fd_control < 0) {
@@ -255,19 +260,19 @@ retry:
 			return (-ENXIO);
 		}
 	}
-	len = vtuner_struct_size(rx_struct);
+	len = rx_size;
 	if (len < 0)
 		goto tx_error;
 
 	len += sizeof(msg->hdr);
 
 	printk(KERN_INFO "vTuner: Doing message mt=%d rxs=%d txs=%d len=%d\n",
-	    mtype, rx_struct, tx_struct, len);
+	    mtype, rx_size, tx_size, len);
 
 	if (vtunerc_fd_write(ctx->fd_control, (u8 *) msg, len) != len)
 		goto tx_error;
 
-	len = vtuner_struct_size(tx_struct);
+	len = tx_size;
 	if (len < 0)
 		goto tx_error;
 
@@ -280,13 +285,11 @@ tx_error:
 		ctx->fd_control = -1;
 		goto retry;
 	}
-	ret = (s32) msg->hdr.error;
+	*pret = (s16) msg->hdr.error;
 
-	printk(KERN_INFO "vTuner: Result %d, len=%d\n", ret, len);
+	printk(KERN_INFO "vTuner: Result %d, len=%d\n", *pret, len);
 
 	up(&ctx->xchange_sem);
-
-	return ret;
 }
 
 static void *
@@ -357,12 +360,10 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 
 	switch (cmd) {
 	case DMX_START:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_START,
-		    MSG_STRUCT_NULL, MSG_STRUCT_NULL);
+		vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_START, 0, 0, &ret);
 		break;
 	case DMX_STOP:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_STOP,
-		    MSG_STRUCT_NULL, MSG_STRUCT_NULL);
+		vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_STOP, 0, 0, &ret);
 		break;
 	case DMX_SET_FILTER:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_sct_filter_params, 0, &ret);
@@ -374,10 +375,9 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    dmx_sct_filter_params.timeout, &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dmx_sct_filter_params.flags, &ret);
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_SET_FILTER,
-		    MSG_STRUCT_DMX_SCT_FILTER_PARAMS,
-		    MSG_STRUCT_NULL);
+		    sizeof(ctx->msgbuf.body.dmx_sct_filter_params), 0, &ret);
 		break;
 	case DMX_SET_PES_FILTER:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_pes_filter_params, 0,
@@ -392,32 +392,28 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    dmx_pes_filter_params.pes_type, &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dmx_pes_filter_params.flags, &ret);
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_SET_PES_FILTER,
-		    MSG_STRUCT_DMX_PES_FILTER_PARAMS,
-		    MSG_STRUCT_NULL);
+		    sizeof(ctx->msgbuf.body.dmx_pes_filter_params), 0, &ret);
 		break;
 	case DMX_SET_BUFFER_SIZE:
 		ctx->msgbuf.body.value32 = (long)dvb;
 
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_SET_BUFFER_SIZE,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32), 0, &ret);
 		break;
 	case DMX_GET_PES_PIDS:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_GET_PES_PIDS,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_DMX_PES_PID);
+		    0, sizeof(ctx->msgbuf.body.dmx_pes_pid), &ret);
 
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_pes_pid.pids, &ret);
 		break;
 	case DMX_GET_CAPS:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_GET_CAPS,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_DMX_CAPS);
+		    0, sizeof(ctx->msgbuf.body.dmx_caps), &ret);
 
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_caps.caps, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_caps.num_decoders, &ret);
@@ -425,10 +421,10 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 	case DMX_SET_SOURCE:
 		ctx->msgbuf.body.value32 = dvb->value32;
 
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_SET_SOURCE,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32),
+		    0, &ret);
 		break;
 	case DMX_GET_STC:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_stc, 0,
@@ -439,27 +435,25 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    dmx_stc.base, &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dmx_stc.stc, &ret);
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_GET_STC,
-		    MSG_STRUCT_DMX_STC,
-		    MSG_STRUCT_DMX_STC);
+		    sizeof(ctx->msgbuf.body.dmx_stc),
+		    sizeof(ctx->msgbuf.body.dmx_stc), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_stc.num, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_stc.base, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_stc.stc, &ret);
 		break;
 	case DMX_ADD_PID:
 		ctx->msgbuf.body.value16 = dvb->value16;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_ADD_PID,
-		    MSG_STRUCT_U16,
-		    MSG_STRUCT_NULL);
+		    sizeof(u16), 0, &ret);
 		break;
 	case DMX_REMOVE_PID:
 		ctx->msgbuf.body.value16 = dvb->value16;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_REMOVE_PID,
-		    MSG_STRUCT_U16,
-		    MSG_STRUCT_NULL);
+		    sizeof(u16), 0, &ret);
 		break;
 
 	case FE_SET_PROPERTY:
@@ -499,16 +493,16 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		}
 
 		if (cmd == FE_SET_PROPERTY) {
-			ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+			vtunerc_do_message(ctx, &ctx->msgbuf,
 			    MSG_FE_SET_PROPERTY,
-			    MSG_STRUCT_DTV_PROPERTIES,
-			    MSG_STRUCT_NULL);
+			    (u8 *) & ctx->msgbuf.body.dtv_properties.props[max] - (u8 *) & ctx->msgbuf.body,
+			    0, &ret);
 			break;
 		}
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_GET_PROPERTY,
-		    MSG_STRUCT_DTV_PROPERTIES,
-		    MSG_STRUCT_DTV_PROPERTIES);
+		    (u8 *) & ctx->msgbuf.body.dtv_properties.props[max] - (u8 *) & ctx->msgbuf.body,
+		    (u8 *) & ctx->msgbuf.body.dtv_properties.props[max] - (u8 *) & ctx->msgbuf.body, &ret);
 
 		for (i = 0; i != max; i++) {
 			VTUNER_PEER_MEMSET(&dummy.dtv_properties.props[i], 0, &ret);
@@ -528,10 +522,10 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		break;
 
 	case FE_GET_INFO:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_GET_INFO,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_DVB_FRONTEND_INFO);
+		    0,
+		    sizeof(ctx->msgbuf.body.dvb_frontend_info), &ret);
 		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_info, 0, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
 		    dvb_frontend_info.name, &ret);
@@ -557,94 +551,83 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    dvb_frontend_info.caps, &ret);
 		break;
 	case FE_DISEQC_RESET_OVERLOAD:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
-		    MSG_FE_DISEQC_RESET_OVERLOAD,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_NULL);
+		vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_FE_DISEQC_RESET_OVERLOAD, 0, 0, &ret);
 		break;
 	case FE_DISEQC_SEND_MASTER_CMD:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dvb_diseqc_master_cmd, 0,
 		    &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb), dvb_diseqc_master_cmd.msg, &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb), dvb_diseqc_master_cmd.msg_len, &ret);
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_DISEQC_SEND_MASTER_CMD,
-		    MSG_STRUCT_DVB_DISEQC_MASTER_CMD,
-		    MSG_STRUCT_NULL);
+		    sizeof(ctx->msgbuf.body.dvb_diseqc_master_cmd), 0, &ret);
 		break;
 	case FE_DISEQC_RECV_SLAVE_REPLY:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dvb_diseqc_slave_reply, 0,
 		    &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dvb_diseqc_slave_reply.timeout, &ret);
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_DISEQC_RECV_SLAVE_REPLY,
-		    MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY,
-		    MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY);
+		    sizeof(ctx->msgbuf.body.dvb_diseqc_slave_reply),
+		    sizeof(ctx->msgbuf.body.dvb_diseqc_slave_reply), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dvb_diseqc_slave_reply.msg, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dvb_diseqc_slave_reply.msg_len, &ret);
 		break;
 	case FE_DISEQC_SEND_BURST:
 		ctx->msgbuf.body.value32 = (long)dvb;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_DISEQC_SEND_BURST,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32),
+		    0, &ret);
 		break;
 	case FE_SET_TONE:
 		ctx->msgbuf.body.value32 = (long)dvb;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_SET_TONE,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32), 0, &ret);
 		break;
 	case FE_SET_VOLTAGE:
 		ctx->msgbuf.body.value32 = (long)dvb;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_SET_VOLTAGE,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32), 0, &ret);
 		break;
 	case FE_ENABLE_HIGH_LNB_VOLTAGE:
 		ctx->msgbuf.body.value32 = (long)dvb;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_ENABLE_HIGH_LNB_VOLTAGE,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32), 0, &ret);
 		break;
 	case FE_READ_STATUS:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_READ_STATUS,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_U32);
+		    0, sizeof(u32), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value32, &ret);
 		break;
 	case FE_READ_BER:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_READ_BER,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_U32);
+		    0, sizeof(u32), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value32, &ret);
 		break;
 	case FE_READ_SIGNAL_STRENGTH:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_READ_SIGNAL_STRENGTH,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_U16);
+		    0, sizeof(u16), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value16, &ret);
 		break;
 	case FE_READ_SNR:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_READ_SNR,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_U16);
+		    0, sizeof(u16), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value16, &ret);
 		break;
 	case FE_READ_UNCORRECTED_BLOCKS:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_READ_UNCORRECTED_BLOCKS,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_U32);
+		    0, sizeof(u32), &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, value32, &ret);
 		break;
 	case FE_SET_FRONTEND:
@@ -668,17 +651,14 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    dvb_frontend_parameters.u.ofdm.guard_interval, &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dvb_frontend_parameters.u.ofdm.hierarchy_information, &ret);
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_SET_FRONTEND,
-		    MSG_STRUCT_DVB_FRONTEND_PARAMETERS,
-		    MSG_STRUCT_NULL);
+		    sizeof(ctx->msgbuf.body.dvb_frontend_parameters), 0, &ret);
 		break;
 	case FE_GET_FRONTEND:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_GET_FRONTEND,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_DVB_FRONTEND_PARAMETERS);
-
+		    0, sizeof(ctx->msgbuf.body.dvb_frontend_parameters), &ret);
 		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_parameters, 0, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
 		    dvb_frontend_parameters.frequency, &ret);
@@ -701,16 +681,15 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		break;
 	case FE_SET_FRONTEND_TUNE_MODE:
 		ctx->msgbuf.body.value32 = (long)dvb;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_SET_FRONTEND_TUNE_MODE,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32),
+		    0, &ret);
 		break;
 	case FE_GET_EVENT:
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_GET_EVENT,
-		    MSG_STRUCT_NULL,
-		    MSG_STRUCT_DVB_FRONTEND_EVENT);
+		    0, sizeof(ctx->msgbuf.body.dvb_frontend_event), &ret);
 		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_event, 0, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
 		    dvb_frontend_event.status, &ret);
@@ -735,10 +714,9 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		break;
 	case FE_DISHNETWORK_SEND_LEGACY_CMD:
 		ctx->msgbuf.body.value32 = (long)dvb;
-		ret |= vtunerc_do_message(ctx, &ctx->msgbuf,
+		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_DISHNETWORK_SEND_LEGACY_CMD,
-		    MSG_STRUCT_U32,
-		    MSG_STRUCT_NULL);
+		    sizeof(u32), 0, &ret);
 		break;
 	default:
 		ret |= -1U;
@@ -1090,10 +1068,10 @@ module_param_named(devices, vtuner_max_unit, int, 0644);
 MODULE_PARM_DESC(devices, "Number of clients (default is 0, disabled)");
 
 module_param_string(host, vtuner_host, sizeof(vtuner_host), 0644);
-MODULE_PARM_DESC(host, "Hostname at which to connect (default is 127.0.0.1)");
+MODULE_PARM_DESC(host, "Destination host (default is 127.0.0.1)");
 
 module_param_string(cport, vtuner_cport, sizeof(vtuner_cport), 0644);
-MODULE_PARM_DESC(cport, "Control port at host (default is 5100)");
+MODULE_PARM_DESC(cport, "Destination port (default is 5100)");
 
 MODULE_AUTHOR("Hans Petter Selasky");
 MODULE_DESCRIPTION("Virtual DVB device server");

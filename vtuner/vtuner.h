@@ -43,7 +43,7 @@
 #define	VTUNER_TS_ALIGN 188
 #define	VTUNER_DEFAULT_PORT "5100"
 #define	VTUNER_BUFFER_MAX (2 * 65536)
-#define	VTUNER_PROP_MAX 32
+#define	VTUNER_PROP_MAX 64
 
 enum {
 	MSG_UNDEFINED = 0,
@@ -82,22 +82,6 @@ enum {
 	MSG_FE_SET_FRONTEND_TUNE_MODE,
 	MSG_FE_GET_EVENT,
 	MSG_FE_DISHNETWORK_SEND_LEGACY_CMD,
-
-	MSG_STRUCT_DMX_SCT_FILTER_PARAMS = 64,
-	MSG_STRUCT_DMX_PES_FILTER_PARAMS,
-	MSG_STRUCT_DMX_PES_PID,
-	MSG_STRUCT_DMX_CAPS,
-	MSG_STRUCT_DMX_STC,
-	MSG_STRUCT_DVB_FRONTEND_INFO,
-	MSG_STRUCT_DVB_DISEQC_MASTER_CMD,
-	MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY,
-	MSG_STRUCT_DVB_FRONTEND_PARAMETERS,
-	MSG_STRUCT_DVB_FRONTEND_EVENT,
-	MSG_STRUCT_DTV_CMDS_H,
-	MSG_STRUCT_DTV_PROPERTIES,
-	MSG_STRUCT_U32,
-	MSG_STRUCT_U16,
-	MSG_STRUCT_NULL,
 };
 
 /* define platform independant types */
@@ -226,15 +210,6 @@ struct vtuner_dvb_frontend_event {
 	struct vtuner_dvb_frontend_parameters parameters;
 };
 
-struct vtuner_dtv_cmds_h {
-	v8	name [64];
-
-	v32	cmd;
-
-	v8	set;
-	v8	buffer;
-};
-
 struct vtuner_dtv_property {
 	v32	cmd;
 	v32	reserved[3];
@@ -257,10 +232,10 @@ struct vtuner_message {
 	struct {
 		v32	magic;		/* VTUNER_MAGIC */
 		v32	mtype;
-		v32	rx_struct;
-		v32	tx_struct;
-		v32	error;
-		v32	reserved;
+		v16	rx_size;
+		v16	tx_size;
+		v16	error;
+		v16	padding;
 	}	hdr;
 	union {
 		v32	value32;
@@ -275,7 +250,6 @@ struct vtuner_message {
 		struct vtuner_dvb_diseqc_slave_reply dvb_diseqc_slave_reply;
 		struct vtuner_dvb_frontend_parameters dvb_frontend_parameters;
 		struct vtuner_dvb_frontend_event dvb_frontend_event;
-		struct vtuner_dtv_cmds_h dtv_cmds_h;
 		struct vtuner_dtv_properties dtv_properties;
 	}	body;
 };
@@ -295,7 +269,6 @@ union vtuner_dvb_message {
 	struct dvb_diseqc_slave_reply dvb_diseqc_slave_reply;
 	struct dvb_frontend_parameters dvb_frontend_parameters;
 	struct dvb_frontend_event dvb_frontend_event;
-	struct dtv_cmds_h dtv_cmds_h;
 	struct dtv_properties dtv_properties;
 };
 

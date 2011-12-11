@@ -26,50 +26,22 @@
 #include <vtuner/vtuner.h>
 #include <vtuner/vtuner_common.h>
 
-#define	VTUNER_BSWAP16(x) x = bswap16(x)
-#define	VTUNER_BSWAP32(x) x = bswap32(x)
-#define	VTUNER_BSWAP64(x) x = bswap64(x)
+#define	VTUNER_BSWAP16(x) do {				\
+	extern int dummy[(sizeof(x) != 2) ? -1 : 1];	\
+	x = bswap16(x);					\
+} while (0)
+
+#define	VTUNER_BSWAP32(x) do {				\
+	extern int dummy[(sizeof(x) != 4) ? -1 : 1];	\
+	x = bswap32(x);					\
+} while (0)
+
+#define	VTUNER_BSWAP64(x) do {				\
+	extern int dummy[(sizeof(x) != 8) ? -1 : 1];	\
+	x = bswap64(x);					\
+} while (0)
 
 #define	NMSG ((struct vtuner_message *)0)
-
-int
-vtuner_struct_size(int type)
-{
-	switch (type) {
-	case MSG_STRUCT_DMX_SCT_FILTER_PARAMS:
-		return (sizeof(NMSG->body.dmx_sct_filter_params));
-	case MSG_STRUCT_DMX_PES_FILTER_PARAMS:
-		return (sizeof(NMSG->body.dmx_pes_filter_params));
-	case MSG_STRUCT_DMX_PES_PID:
-		return (sizeof(NMSG->body.dmx_pes_pid));
-	case MSG_STRUCT_DMX_CAPS:
-		return (sizeof(NMSG->body.dmx_caps));
-	case MSG_STRUCT_DMX_STC:
-		return (sizeof(NMSG->body.dmx_stc));
-	case MSG_STRUCT_DVB_FRONTEND_INFO:
-		return (sizeof(NMSG->body.dvb_frontend_info));
-	case MSG_STRUCT_DVB_DISEQC_MASTER_CMD:
-		return (sizeof(NMSG->body.dvb_diseqc_master_cmd));
-	case MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY:
-		return (sizeof(NMSG->body.dvb_diseqc_slave_reply));
-	case MSG_STRUCT_DVB_FRONTEND_PARAMETERS:
-		return (sizeof(NMSG->body.dvb_frontend_parameters));
-	case MSG_STRUCT_DVB_FRONTEND_EVENT:
-		return (sizeof(NMSG->body.dvb_frontend_event));
-	case MSG_STRUCT_DTV_CMDS_H:
-		return (sizeof(NMSG->body.dtv_cmds_h));
-	case MSG_STRUCT_DTV_PROPERTIES:
-		return (sizeof(NMSG->body.dtv_properties));
-	case MSG_STRUCT_U32:
-		return (sizeof(NMSG->body.value32));
-	case MSG_STRUCT_U16:
-		return (sizeof(NMSG->body.value16));
-	case MSG_STRUCT_NULL:
-		return (0);
-	default:
-		return (-1);
-	}
-}
 
 void
 vtuner_data_hdr_byteswap(struct vtuner_data_hdr *msg)
@@ -83,9 +55,10 @@ vtuner_hdr_byteswap(struct vtuner_message *msg)
 {
 	VTUNER_BSWAP32(msg->hdr.mtype);
 	VTUNER_BSWAP32(msg->hdr.magic);
-	VTUNER_BSWAP32(msg->hdr.rx_struct);
-	VTUNER_BSWAP32(msg->hdr.tx_struct);
-	VTUNER_BSWAP32(msg->hdr.error);
+	VTUNER_BSWAP16(msg->hdr.rx_size);
+	VTUNER_BSWAP16(msg->hdr.tx_size);
+	VTUNER_BSWAP16(msg->hdr.error);
+	VTUNER_BSWAP16(msg->hdr.padding);
 }
 
 void
@@ -94,32 +67,32 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 	int i;
 
 	switch (type) {
-	case MSG_STRUCT_DMX_SCT_FILTER_PARAMS:
+	case DMX_SET_FILTER:
 		VTUNER_BSWAP16(msg->body.dmx_sct_filter_params.pid);
 		VTUNER_BSWAP32(msg->body.dmx_sct_filter_params.timeout);
 		VTUNER_BSWAP32(msg->body.dmx_sct_filter_params.flags);
 		break;
-	case MSG_STRUCT_DMX_PES_FILTER_PARAMS:
+	case DMX_SET_PES_FILTER:
 		VTUNER_BSWAP16(msg->body.dmx_pes_filter_params.pid);
 		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.input);
 		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.output);
 		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.pes_type);
 		VTUNER_BSWAP32(msg->body.dmx_pes_filter_params.flags);
 		break;
-	case MSG_STRUCT_DMX_PES_PID:
+	case DMX_GET_PES_PIDS:
 		for (i = 0; i != 5; i++)
 			VTUNER_BSWAP16(msg->body.dmx_pes_pid.pids[i]);
 		break;
-	case MSG_STRUCT_DMX_CAPS:
+	case DMX_GET_CAPS:
 		VTUNER_BSWAP32(msg->body.dmx_caps.caps);
 		VTUNER_BSWAP32(msg->body.dmx_caps.num_decoders);
 		break;
-	case MSG_STRUCT_DMX_STC:
+	case DMX_GET_STC:
 		VTUNER_BSWAP32(msg->body.dmx_stc.num);
 		VTUNER_BSWAP32(msg->body.dmx_stc.base);
 		VTUNER_BSWAP64(msg->body.dmx_stc.stc);
 		break;
-	case MSG_STRUCT_DVB_FRONTEND_INFO:
+	case FE_GET_INFO:
 		VTUNER_BSWAP32(msg->body.dvb_frontend_info.type);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_info.frequency_min);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_info.frequency_max);
@@ -131,12 +104,11 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 		VTUNER_BSWAP32(msg->body.dvb_frontend_info.notifier_delay);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_info.caps);
 		break;
-	case MSG_STRUCT_DVB_DISEQC_MASTER_CMD:
-		break;
-	case MSG_STRUCT_DVB_DISEQC_SLAVE_REPLY:
+	case FE_DISEQC_RECV_SLAVE_REPLY:
 		VTUNER_BSWAP32(msg->body.dvb_diseqc_slave_reply.timeout);
 		break;
-	case MSG_STRUCT_DVB_FRONTEND_PARAMETERS:
+	case FE_SET_FRONTEND:
+	case FE_GET_FRONTEND:
 		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.frequency);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.inversion);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.bandwidth);
@@ -147,7 +119,7 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.guard_interval);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_parameters.u.ofdm.hierarchy_information);
 		break;
-	case MSG_STRUCT_DVB_FRONTEND_EVENT:
+	case FE_GET_EVENT:
 		VTUNER_BSWAP32(msg->body.dvb_frontend_event.status);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.frequency);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.inversion);
@@ -159,10 +131,8 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.guard_interval);
 		VTUNER_BSWAP32(msg->body.dvb_frontend_event.parameters.u.ofdm.hierarchy_information);
 		break;
-	case MSG_STRUCT_DTV_CMDS_H:
-		VTUNER_BSWAP32(msg->body.dtv_cmds_h.cmd);
-		break;
-	case MSG_STRUCT_DTV_PROPERTIES:
+	case FE_SET_PROPERTY:
+	case FE_GET_PROPERTY:
 		VTUNER_BSWAP32(msg->body.dtv_properties.num);
 		for (i = 0; i != VTUNER_PROP_MAX; i++) {
 			int has_buf = 0;
@@ -187,10 +157,23 @@ vtuner_body_byteswap(struct vtuner_message *msg, int type)
 				VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.data);
 		}
 		break;
-	case MSG_STRUCT_U32:
+	case DMX_SET_SOURCE:
+	case DMX_SET_BUFFER_SIZE:
+	case FE_DISEQC_SEND_BURST:
+	case FE_SET_TONE:
+	case FE_SET_VOLTAGE:
+	case FE_ENABLE_HIGH_LNB_VOLTAGE:
+	case FE_READ_STATUS:
+	case FE_READ_BER:
+	case FE_READ_UNCORRECTED_BLOCKS:
+	case FE_SET_FRONTEND_TUNE_MODE:
+	case FE_DISHNETWORK_SEND_LEGACY_CMD:
 		VTUNER_BSWAP32(msg->body.value32);
 		break;
-	case MSG_STRUCT_U16:
+	case FE_READ_SIGNAL_STRENGTH:
+	case DMX_ADD_PID:
+	case DMX_REMOVE_PID:
+	case FE_READ_SNR:
 		VTUNER_BSWAP16(msg->body.value16);
 		break;
 	default:

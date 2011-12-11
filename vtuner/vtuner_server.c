@@ -639,9 +639,11 @@ vtuners_writer_thread(void *arg)
 		if (len == -EWOULDBLOCK) {
 			usleep(2000);
 			continue;
-		} else if (len <= 0) {
+		} else if (len < 0) {
 			close(ctx->fd_data);
 			ctx->fd_data = -1;
+			continue;
+		} else if (len == 0) {
 			continue;
 		}
 		ctx->buffer[0] = VTUNER_MAGIC;
@@ -684,10 +686,17 @@ vtuners_control_thread(void *arg)
 			}
 		}
 
+		/* regularly clear out the msgbuf */
+		if (ctx->fd_control_rx >= sizeof(ctx->msgbuf)) {
+			ctx->fd_control_rx = 0;
+			memset(&ctx->msgbuf, 0, sizeof(ctx->msgbuf));
+		}
 		len = sizeof(ctx->msgbuf.hdr);
 
 		if (vtuners_read(ctx->fd_control, (u8 *) & ctx->msgbuf.hdr, len) != len)
 			goto rx_error;
+
+		ctx->fd_control_rx += len;
 
 		if (ctx->msgbuf.hdr.magic != VTUNER_MAGIC) {
 			vtuner_hdr_byteswap(&ctx->msgbuf);
@@ -698,28 +707,30 @@ vtuners_control_thread(void *arg)
 			swapped = 0;
 		}
 
-		len = vtuner_struct_size(ctx->msgbuf.hdr.rx_struct);
-		if (len < 0)
+		len = ctx->msgbuf.hdr.rx_size;
+		if (len < 0 || len > sizeof(ctx->msgbuf.body))
 			goto rx_error;
 
 		if (len != 0) {
 			if (vtuners_read(ctx->fd_control, (u8 *) & ctx->msgbuf.body, len) != len)
 				goto rx_error;
+
+			ctx->fd_control_rx += len;
 		}
 		if (swapped)
-			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.rx_struct);
+			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.mtype);
 
 		ctx->msgbuf.hdr.error =
 		    vtuners_process_msg(ctx, &ctx->msgbuf);
 
-		len = vtuner_struct_size(ctx->msgbuf.hdr.tx_struct);
-		if (len < 0)
+		len = ctx->msgbuf.hdr.tx_size;
+		if (len < 0 || len > sizeof(ctx->msgbuf.body))
 			continue;
 
 		len += sizeof(ctx->msgbuf.hdr);
 
 		if (swapped) {
-			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.tx_struct);
+			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.mtype);
 			vtuner_hdr_byteswap(&ctx->msgbuf);
 		}
 		if (vtuners_write(ctx->fd_control, (u8 *) & ctx->msgbuf, len) != len)
@@ -795,10 +806,10 @@ module_param_named(devices, vtuner_max_unit, int, 0644);
 MODULE_PARM_DESC(devices, "Number of servers (default is 0, disabled)");
 
 module_param_string(host, vtuner_host, sizeof(vtuner_host), 0644);
-MODULE_PARM_DESC(host, "Hostname at which to bind (default is 127.0.0.1)");
+MODULE_PARM_DESC(host, "Listen host (default is 127.0.0.1)");
 
 module_param_string(cport, vtuner_cport, sizeof(vtuner_cport), 0644);
-MODULE_PARM_DESC(cport, "Control port at host (default is 5100)");
+MODULE_PARM_DESC(cport, "Listen port (default is 5100)");
 
 MODULE_AUTHOR("Hans Petter Selasky");
 MODULE_DESCRIPTION("Virtual DVB device server");
