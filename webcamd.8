@@ -108,7 +108,7 @@ Register device by the HAL daemon.
 .It Fl D
 Enable vTuner client support.
 Connect to one or more remote DVB device instead of using USB.
-The vTuner protocol needs two ports for normal operation which are allocated back to back.
+The vTuner protocol needs eight ports for normal operation which are allocated back to back.
 One port for control communication and the other port for data communication.
 .It Fl H
 Enable vTuner server support.
@@ -116,7 +116,7 @@ Make the DVB device available on TCP/IP instead of Cuse4BSD.
 If the ndev parameter is negative, all present DVB devices
 are mapped to TCP/IP.
 Else only the given number of DVB devices are mapped.
-The vTuner protocol needs two ports for normal operation which are allocated back to back.
+The vTuner protocol needs eight ports for normal operation which are allocated back to back.
 One port for control communication and the other port for data communication.
 .El
 .Sh EXAMPLES

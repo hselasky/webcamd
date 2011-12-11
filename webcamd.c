@@ -585,7 +585,7 @@ main(int argc, char **argv)
 			char *ndev;
 			char *type;
 			char *host;
-			char *cport;
+			char *port;
 
 		case 'm':
 			ptr = strstr(optarg, "=");
@@ -602,16 +602,16 @@ main(int argc, char **argv)
 
 		case 'D':
 			host = optarg;
-			cport = strstr(host, ":");
-			if (cport == NULL) {
+			port = strstr(host, ":");
+			if (port == NULL) {
 				v4b_errx(1, "invalid syntax for "
 				    "-D option: '%s'", optarg);
 			}
-			*cport++ = 0;
-			ndev = strstr(cport, ":");
+			*port++ = 0;
+			ndev = strstr(port, ":");
 			if (ndev == NULL) {
 				v4b_errx(1, "invalid syntax for "
-				    "-D option: '%s'", cport);
+				    "-D option: '%s'", port);
 			}
 			*ndev++ = 0;
 			ptr = strstr(ndev, ":");
@@ -620,7 +620,7 @@ main(int argc, char **argv)
 
 			if (mod_set_param("vtuner_client.devices", ndev) < 0 ||
 			    mod_set_param("vtuner_client.host", host) < 0 ||
-			    mod_set_param("vtuner_client.cport", cport) < 0) {
+			    mod_set_param("vtuner_client.port", port) < 0) {
 				v4b_errx(1, "Cannot set all module "
 				    "parameters for vTuner client.");
 			}
@@ -628,16 +628,16 @@ main(int argc, char **argv)
 
 		case 'L':
 			host = optarg;
-			cport = strstr(host, ":");
-			if (cport == NULL) {
+			port = strstr(host, ":");
+			if (port == NULL) {
 				v4b_errx(1, "invalid syntax for "
 				    "-L option: '%s'", optarg);
 			}
-			*cport++ = 0;
-			ndev = strstr(cport, ":");
+			*port++ = 0;
+			ndev = strstr(port, ":");
 			if (ndev == NULL) {
 				v4b_errx(1, "invalid syntax for "
-				    "-L option: '%s'", cport);
+				    "-L option: '%s'", port);
 			}
 			*ndev++ = 0;
 			ptr = strstr(ndev, ":");
@@ -646,7 +646,7 @@ main(int argc, char **argv)
 
 			if (mod_set_param("vtuner_server.devices", ndev) < 0 ||
 			    mod_set_param("vtuner_server.host", host) < 0 ||
-			    mod_set_param("vtuner_server.cport", cport) < 0) {
+			    mod_set_param("vtuner_server.port", port) < 0) {
 				v4b_errx(1, "Cannot set all module "
 				    "parameters for vTuner server.");
 			}

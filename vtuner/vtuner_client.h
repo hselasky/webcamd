@@ -23,49 +23,35 @@
  * SUCH DAMAGE.
  */
 
-/*
- * BSD vTuner Client API
- *
- * Inspired by code written by:
- * Honza Petrous <jpetrous@smartimp.cz>
- */
-
 #ifndef _VTUNER_CLIENT_PRIV_H
 #define	_VTUNER_CLIENT_PRIV_H
 
-enum {
-	VTUNERC_DT_FRONTEND,
-	VTUNERC_DT_DMX,
-	VTUNERC_DT_DVR,
+struct vtunerc_config {
+	const char *host;
+	char	cport[16];
+	char	dport[16];
 };
 
 struct vtunerc_ctx {
 
-	struct semaphore xchange_sem;
-	struct semaphore rd_sem;
-	struct semaphore ioctl_sem;
-	wait_queue_head_t rd_queue;
+	struct semaphore fd_wr_sem;
+	struct semaphore fd_rd_sem;
+	struct semaphore fd_ioctl_sem;
 
-	pthread_t reader_thread;
+	wait_queue_head_t fd_rd_queue;
 
 	struct vtuner_message msgbuf;
 
-	int	fd_control;
-	int	fd_data;
+	int	fd_ctrl_peer;
+	int	fd_data_peer;
+	int	closing;
+	int	rd_closed;
 
-	int	frontend_opened;
-	int	dmx_opened;
-	int	dvr_opened;
+	pthread_t reader_thread;
 
 	u32	buffer_off;
 	u32	buffer_rem;
-	struct vtuner_data_hdr buffer_hdr;
 	u32	buffer[VTUNER_BUFFER_MAX];
-
-	u8	buffer_typ;
-
-	char	cport[16];
-	char	dport[16];
 };
 
 #endif

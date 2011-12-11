@@ -44,10 +44,10 @@
 #define	NMSG ((struct vtuner_message *)0)
 
 void
-vtuner_data_hdr_byteswap(struct vtuner_data_hdr *msg)
+vtuner_data_hdr_byteswap(u32 * ptr)
 {
-	VTUNER_BSWAP32(msg->magic);
-	VTUNER_BSWAP32(msg->length);
+	VTUNER_BSWAP32(ptr[0]);
+	VTUNER_BSWAP32(ptr[1]);
 }
 
 void

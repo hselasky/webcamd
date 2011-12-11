@@ -29,7 +29,7 @@
 struct vtuner_message;
 
 int	vtuner_struct_size(int);
-void	vtuner_data_hdr_byteswap(struct vtuner_data_hdr *);
+void	vtuner_data_hdr_byteswap(u32 *);
 void	vtuner_hdr_byteswap(struct vtuner_message *);
 void	vtuner_body_byteswap(struct vtuner_message *, int);
 

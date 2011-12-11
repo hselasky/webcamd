@@ -23,23 +23,21 @@
  * SUCH DAMAGE.
  */
 
-/*
- * BSD vTuner Server API
- *
- * Inspired by code written by:
- * Honza Petrous <jpetrous@smartimp.cz>
- */
-
 #ifndef _VTUNER_SERVER_PRIV_H
 #define	_VTUNER_SERVER_PRIV_H
 
+struct vtuners_config {
+	const char *host;
+	char	cport[16];
+	char	dport[16];
+	int	c_fd;
+	int	d_fd;
+	int	unit;
+};
+
 struct vtuners_ctx {
 
-	int	unit;
-
-	struct cdev_handle *frontend_fd;
-	struct cdev_handle *demux_fd;
-	struct cdev_handle *streaming_fd;
+	struct cdev_handle *proxy_fd;
 
 	struct semaphore writer_sem;
 
@@ -56,10 +54,6 @@ struct vtuners_ctx {
 
 	int	fd_data;
 	int	fd_control;
-	int	fd_control_rx;
-
-	char	cport[16];
-	char	dport[16];
 };
 
 #endif					/* _VTUNER_SERVER_PRIV_H */
