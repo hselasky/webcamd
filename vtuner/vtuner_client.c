@@ -257,7 +257,8 @@ retry:
 		vtunerc_connect_control(ctx);
 		if (ctx->fd_control < 0) {
 			up(&ctx->xchange_sem);
-			return (-ENXIO);
+			*pret = -ENXIO;
+			return;
 		}
 	}
 	len = rx_size;
