@@ -426,7 +426,7 @@ vtuners_listen(const char *host, const char *port, int buffer)
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags |= AI_NUMERICHOST;
 
-	printk(KERN_INFO "vTuner: Listening to %s:%s (control)\n",
+	printk(KERN_INFO "vTuner: Listening to %s:%s\n",
 	    host, port);
 
 	if ((error = getaddrinfo(host, port, &hints, &res)))
@@ -465,29 +465,21 @@ vtuners_writer_thread(void *arg)
 {
 	struct vtuners_ctx *ctx = arg;
 	int len;
-	int block;
 
-	while (1) {
+	while (ctx->fd_control > -1) {
 
-		block = 0;
+		len = linux_read(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
+		    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
 
-		down(&ctx->writer_sem);
-		if (ctx->proxy_fd == NULL) {
-			len = -EWOULDBLOCK;
-		} else {
-			len = linux_read(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
-			    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
-		}
-		up(&ctx->writer_sem);
-
-		if (len == -EWOULDBLOCK) {
-			block = 1;
+		if (len == -EINVAL)
 			break;
-		} else if (len <= 0) {
-			break;
+
+		if (len <= 0) {
+			usleep(2000);
+			continue;
 		}
 		ctx->buffer[0] = VTUNER_MAGIC;
-		ctx->buffer[1] = VTUNER_SET_LEN(len) | VTUNER_SET_TYPE(0);
+		ctx->buffer[1] = len;
 
 		len += 8;
 
@@ -495,17 +487,15 @@ vtuners_writer_thread(void *arg)
 		    (u8 *) ctx->buffer, len) != len) {
 			break;
 		}
-		if (block)
-			usleep(2000);
 	}
 
 	down(&ctx->writer_sem);
 	close(ctx->fd_data);
 	ctx->fd_data = -1;
-	block = (ctx->fd_control == -1);
+	len = (ctx->fd_control == -1);
 	up(&ctx->writer_sem);
 
-	if (block) {
+	if (len) {
 		linux_close(ctx->proxy_fd);
 		kfree(ctx);
 	}

@@ -105,7 +105,7 @@ vtunerc_connect(const char *host, const char *port, int buffer)
 	hints.ai_protocol = IPPROTO_TCP;
 
 	printk(KERN_INFO "vTuner: Trying to connect "
-	    "to %s:%s (control)\n", host, port);
+	    "to %s:%s\n", host, port);
 
 	if ((error = getaddrinfo(host, port, &hints, &res)))
 		return (-1);
@@ -132,7 +132,7 @@ vtunerc_connect(const char *host, const char *port, int buffer)
 
 	freeaddrinfo(res);
 
-	printk(KERN_INFO "vTuner: Connected, fd=%d (control)\n", s);
+	printk(KERN_INFO "vTuner: Connected, fd=%d\n", s);
 
 	return (s);
 }
