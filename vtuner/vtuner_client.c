@@ -1073,7 +1073,7 @@ vtunerc_init(void)
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
-		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_DMX,
+		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_DVR,
 		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
 
 		if (webcamd_hal_register)
@@ -1083,7 +1083,7 @@ vtunerc_init(void)
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
-		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_DVR,
+		cuse_dev_create(&vtunerc_methods, ctx, (void *)VTUNERC_DT_DMX,
 		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
 
 		if (webcamd_hal_register)
