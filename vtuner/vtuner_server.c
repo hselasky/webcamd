@@ -471,9 +471,6 @@ vtuners_writer_thread(void *arg)
 		len = linux_read(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
 		    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
 
-		if (len == -EINVAL)
-			break;
-
 		if (len <= 0) {
 			usleep(2000);
 			continue;

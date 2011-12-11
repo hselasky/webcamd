@@ -798,26 +798,24 @@ repeat:
 
 		wake_up_all(&ctx->fd_rd_queue);
 	}
-	if (len) {
-		if (fflags & CUSE_FFLAG_NONBLOCK) {
+	if (!(fflags & CUSE_FFLAG_NONBLOCK)) {
 
-			up(&ctx->fd_rd_sem);
+		up(&ctx->fd_rd_sem);
 
-			delta = wait_event_interruptible(ctx->fd_rd_queue,
-			    ctx->buffer_rem != 0);
+		if (off)
+			return (off);
 
-			if (delta) {
-				return (CUSE_ERR_SIGNAL);
-			} else {
-				goto repeat;
-			}
-		} else {
-			if (delta == 0) {
-				up(&ctx->fd_rd_sem);
-				return (CUSE_ERR_WOULDBLOCK);
-			}
-		}
+		delta = wait_event_interruptible(ctx->fd_rd_queue,
+		    ctx->buffer_rem != 0);
+
+		if (delta)
+			return (CUSE_ERR_SIGNAL);
+
+		goto repeat;
 	}
+	if (off == 0)
+		off = CUSE_ERR_WOULDBLOCK;
+
 	up(&ctx->fd_rd_sem);
 	return (off);
 }
