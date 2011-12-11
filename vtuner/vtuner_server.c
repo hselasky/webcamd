@@ -651,7 +651,7 @@ vtuners_make_config(int off, int unit)
 		kfree(cfg);
 		return (NULL);
 	}
-	cfg->d_fd = vtuners_listen(cfg->host, cfg->cport, 2 * VTUNER_BUFFER_MAX);
+	cfg->d_fd = vtuners_listen(cfg->host, cfg->dport, 2 * VTUNER_BUFFER_MAX);
 	if (cfg->d_fd < 0) {
 		close(cfg->c_fd);
 		kfree(cfg);
