@@ -215,18 +215,27 @@ error:
 	printk(KERN_INFO "vTuner: Result %d, len=%d\n", *pret, len);
 }
 
+static void
+vtunerc_reader_hup(int dummy)
+{
+	pthread_exit(NULL);
+}
+
 static void *
 vtunerc_reader_thread(void *arg)
 {
 	struct vtunerc_ctx *ctx = arg;
 	int len;
 
+	signal(SIGHUP, vtunerc_reader_hup);
+
+	ctx->reader_init = 1;
+
+	wake_up_all(&ctx->fd_rd_queue);
+
 	while (1) {
 
-		wait_event(ctx->fd_rd_queue, ctx->buffer_rem == 0 || ctx->closing != 0);
-
-		if (ctx->closing != 0)
-			break;
+		wait_event(ctx->fd_rd_queue, ctx->buffer_rem == 0);
 
 		if (vtunerc_fd_read(ctx->fd_data_peer, (u8 *) & ctx->buffer, 8) != 8)
 			break;
@@ -254,11 +263,8 @@ vtunerc_reader_thread(void *arg)
 		cuse_poll_wakeup();
 	}
 
-	wait_event(ctx->fd_rd_queue, ctx->closing != 0);
-
-	ctx->rd_closed = 1;
-
-	wake_up_all(&ctx->fd_rd_queue);
+	while (1)
+		pause();
 
 	return (NULL);
 }
@@ -719,23 +725,25 @@ vtunerc_open(struct cuse_dev *cdev, int fflags)
 	ctx->fd_ctrl_peer = vtunerc_connect(cfg->host,
 	    cfg->cport, 4096);
 	if (ctx->fd_ctrl_peer < 0) {
-		free(ctx);
+		kfree(ctx);
 		return (CUSE_ERR_OTHER);
 	}
 	ctx->fd_data_peer = vtunerc_connect(cfg->host,
 	    cfg->dport, 2 * VTUNER_BUFFER_MAX);
 	if (ctx->fd_data_peer < 0) {
 		close(ctx->fd_ctrl_peer);
-		free(ctx);
+		kfree(ctx);
 		return (CUSE_ERR_OTHER);
 	}
 	if (pthread_create(&ctx->reader_thread,
 	    NULL, &vtunerc_reader_thread, ctx) != 0) {
 		close(ctx->fd_ctrl_peer);
 		close(ctx->fd_data_peer);
-		free(ctx);
+		kfree(ctx);
 		return (CUSE_ERR_OTHER);
 	}
+	wait_event(ctx->fd_rd_queue, ctx->reader_init != 0);
+
 	cuse_dev_set_per_file_handle(cdev, ctx);
 
 	return (0);
@@ -748,18 +756,12 @@ vtunerc_close(struct cuse_dev *cdev, int fflags)
 
 	ctx = cuse_dev_get_per_file_handle(cdev);
 
-	ctx->closing = 1;
-
-	wake_up_all(&ctx->fd_rd_queue);
-
-	pthread_kill(ctx->reader_thread, SIGURG);
-
-	wait_event(ctx->fd_rd_queue, ctx->rd_closed != 0);
+	pthread_kill(ctx->reader_thread, SIGHUP);
 
 	close(ctx->fd_ctrl_peer);
 	close(ctx->fd_data_peer);
 
-	free(ctx);
+	kfree(ctx);
 
 	return (0);
 }

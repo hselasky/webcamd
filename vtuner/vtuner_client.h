@@ -44,8 +44,7 @@ struct vtunerc_ctx {
 
 	int	fd_ctrl_peer;
 	int	fd_data_peer;
-	int	closing;
-	int	rd_closed;
+	int	reader_init;
 
 	pthread_t reader_thread;
 
