@@ -177,7 +177,7 @@ vtunerc_connect_data(struct vtunerc_ctx *ctx)
 		    res0->ai_protocol)) < 0)
 			continue;
 
-		flag = 2 * sizeof(ctx->buffer);
+		flag = 2 * (sizeof(ctx->buffer) + 8);
 		setsockopt(s, SOL_SOCKET, SO_RCVBUF, &flag, sizeof(flag));
 
 		flag = 1;
@@ -298,6 +298,7 @@ vtuner_reader_thread(void *arg)
 {
 	struct vtunerc_ctx *ctx = arg;
 	int len;
+	int type;
 
 	while (1) {
 
@@ -319,10 +320,11 @@ vtuner_reader_thread(void *arg)
 			if (ctx->buffer_hdr.magic != VTUNER_MAGIC)
 				goto rx_error;
 		}
-		if (ctx->buffer_hdr.length > VTUNER_BUFFER_MAX)
-			goto rx_error;
+		len = VTUNER_GET_LEN(ctx->buffer_hdr.length);
+		type = VTUNER_GET_TYPE(ctx->buffer_hdr.length);
 
-		len = ctx->buffer_hdr.length;
+		if (len < 0 || len > VTUNER_BUFFER_MAX)
+			goto rx_error;
 
 		if (vtunerc_fd_read(ctx->fd_data, (u8 *) ctx->buffer, len) != len) {
 	rx_error:
@@ -336,7 +338,21 @@ vtuner_reader_thread(void *arg)
 			ctx->fd_data = -1;
 		} else {
 
+			switch (type) {
+			case 0:
+				if (!ctx->dmx_opened)
+					continue;
+				break;
+			case 1:
+				if (!ctx->dvr_opened)
+					continue;
+				break;
+			default:
+				continue;
+			}
+
 			down(&ctx->rd_sem);
+			ctx->buffer_typ = type;
 			ctx->buffer_rem = len;
 			ctx->buffer_off = 0;
 			up(&ctx->rd_sem);
@@ -829,9 +845,25 @@ vtunerc_close(struct cuse_dev *cdev, int fflags)
 		break;
 	case VTUNERC_DT_DMX:
 		ctx->dmx_opened = 0;
+
+		down(&ctx->rd_sem);
+		if (ctx->buffer_rem != 0 && ctx->buffer_typ == 0) {
+			ctx->buffer_rem = 0;
+			wake_up_all(&ctx->rd_queue);
+			cuse_poll_wakeup();
+		}
+		up(&ctx->rd_sem);
 		break;
 	case VTUNERC_DT_DVR:
 		ctx->dvr_opened = 0;
+
+		down(&ctx->rd_sem);
+		if (ctx->buffer_rem != 0 && ctx->buffer_typ == 1) {
+			ctx->buffer_rem = 0;
+			wake_up_all(&ctx->rd_queue);
+			cuse_poll_wakeup();
+		}
+		up(&ctx->rd_sem);
 		break;
 	default:
 		break;
@@ -845,14 +877,23 @@ vtunerc_read(struct cuse_dev *cdev, int fflags,
 {
 	struct vtunerc_ctx *ctx;
 	long devtype;
+	u8 type;
 	int delta;
 	int off;
 
 	ctx = cuse_dev_get_priv0(cdev);
 	devtype = (long)cuse_dev_get_priv1(cdev);
 
-	if (devtype != VTUNERC_DT_DMX)
+	switch (devtype) {
+	case VTUNERC_DT_DVR:
+		type = 1;
+		break;
+	case VTUNERC_DT_DMX:
+		type = 0;
+		break;
+	default:
 		return (CUSE_ERR_INVALID);
+	}
 
 	off = 0;
 
@@ -860,9 +901,12 @@ repeat:
 	delta = len;
 
 	down(&ctx->rd_sem);
-	if ((u32) delta > ctx->buffer_rem)
-		delta = ctx->buffer_rem;
-	up(&ctx->rd_sem);
+	if (ctx->buffer_typ == type) {
+		if ((u32) delta > ctx->buffer_rem)
+			delta = ctx->buffer_rem;
+	} else {
+		delta = 0;
+	}
 
 	if (delta != 0) {
 
@@ -870,19 +914,20 @@ repeat:
 		    ctx->buffer_off, delta) != 0)
 			return (CUSE_ERR_FAULT);
 
-		down(&ctx->rd_sem);
 		ctx->buffer_off += delta;
 		ctx->buffer_rem -= delta;
-		up(&ctx->rd_sem);
+
 		len -= delta;
 		off += delta;
 
 		wake_up_all(&ctx->rd_queue);
 	}
+	up(&ctx->rd_sem);
+
 	if (len) {
 		if (fflags & CUSE_FFLAG_NONBLOCK) {
 			delta = wait_event_interruptible(ctx->rd_queue,
-			    ctx->buffer_rem != 0);
+			    ctx->buffer_rem != 0 && ctx->buffer_typ == type);
 			if (delta)
 				return (CUSE_ERR_SIGNAL);
 			else
@@ -934,15 +979,24 @@ vtunerc_poll(struct cuse_dev *cdev, int fflags, int events)
 	ctx = cuse_dev_get_priv0(cdev);
 	devtype = (long)cuse_dev_get_priv1(cdev);
 
-	if (devtype != VTUNERC_DT_DMX)
-		return (0);
-
 	revents = 0;
 
-	down(&ctx->rd_sem);
-	if (ctx->buffer_rem != 0)
-		revents |= events & CUSE_POLL_READ;
-	up(&ctx->rd_sem);
+	switch (devtype) {
+	case VTUNERC_DT_DVR:
+		down(&ctx->rd_sem);
+		if (ctx->buffer_rem != 0 && ctx->buffer_typ == 1)
+			revents |= events & CUSE_POLL_READ;
+		up(&ctx->rd_sem);
+		break;
+	case VTUNERC_DT_DMX:
+		down(&ctx->rd_sem);
+		if (ctx->buffer_rem != 0 && ctx->buffer_typ == 0)
+			revents |= events & CUSE_POLL_READ;
+		up(&ctx->rd_sem);
+		break;
+	default:
+		return (0);
+	}
 
 #if 0
 	if (error & (POLLOUT | POLLWRNORM))

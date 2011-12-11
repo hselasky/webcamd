@@ -395,11 +395,11 @@ vtuners_close(struct vtuners_ctx *ctx)
 		linux_close(ctx->frontend_fd);
 		ctx->frontend_fd = NULL;
 	}
+	down(&ctx->writer_sem);
 	if (ctx->streaming_fd != NULL) {
 		linux_close(ctx->streaming_fd);
 		ctx->streaming_fd = NULL;
 	}
-	down(&ctx->writer_sem);
 	if (ctx->demux_fd != NULL) {
 		linux_close(ctx->demux_fd);
 		ctx->demux_fd = NULL;
@@ -426,13 +426,14 @@ vtuners_open(struct vtuners_ctx *ctx)
 	if (ctx->frontend_fd == NULL)
 		goto error;
 
+	down(&ctx->writer_sem);
 	ctx->streaming_fd = linux_open(
 	    (F_V4B_SUBDEV_MAX * F_V4B_DVB_DVR) + adapter, O_RDONLY);
 
-	if (ctx->streaming_fd == NULL)
+	if (ctx->streaming_fd == NULL) {
+		up(&ctx->writer_sem);
 		goto error;
-
-	down(&ctx->writer_sem);
+	}
 	ctx->demux_fd = linux_open(
 	    (F_V4B_SUBDEV_MAX * F_V4B_DVB_DEMUX) + adapter, O_RDWR | O_NONBLOCK);
 
@@ -611,52 +612,81 @@ vtuners_writer_thread(void *arg)
 {
 	struct vtuners_ctx *ctx = arg;
 	int len;
+	int block;
 
 	while (1) {
 
 		while (ctx->fd_data < 0) {
-			down(&ctx->writer_sem);
-			len = (ctx->demux_fd != NULL);
-			up(&ctx->writer_sem);
+			vtuners_connect_data(ctx);
 
-			if (len != 0)
-				vtuners_connect_data(ctx);
 			if (ctx->fd_data < 0) {
 				usleep(1000000);
 				continue;
 			}
 		}
 
-		down(&ctx->writer_sem);
-		if (ctx->demux_fd == NULL) {
-			len = -EWOULDBLOCK;
-		} else {
-			len = linux_read(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
-			    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
-		}
-		up(&ctx->writer_sem);
+		block = 0;
 
-		if (len == -EWOULDBLOCK) {
+		do {
+			down(&ctx->writer_sem);
+			if (ctx->demux_fd == NULL) {
+				len = -EWOULDBLOCK;
+			} else {
+				len = linux_read(ctx->demux_fd, CUSE_FFLAG_NONBLOCK,
+				    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
+			}
+			up(&ctx->writer_sem);
+
+			if (len == -EWOULDBLOCK) {
+				block++;
+				break;
+			} else if (len <= 0) {
+				break;
+			}
+			ctx->buffer[0] = VTUNER_MAGIC;
+			ctx->buffer[1] = VTUNER_SET_LEN(len) | VTUNER_SET_TYPE(0);
+
+			len += 8;
+
+			if (vtuners_write(ctx->fd_data,
+			    (u8 *) ctx->buffer, len) != len) {
+				close(ctx->fd_data);
+				ctx->fd_data = -1;
+				break;
+			}
+		} while (0);
+
+		do {
+			down(&ctx->writer_sem);
+			if (ctx->streaming_fd == NULL) {
+				len = -EWOULDBLOCK;
+			} else {
+				len = linux_read(ctx->streaming_fd, CUSE_FFLAG_NONBLOCK,
+				    ((u8 *) ctx->buffer) + 8, sizeof(ctx->buffer) - 8);
+			}
+			up(&ctx->writer_sem);
+
+			if (len == -EWOULDBLOCK) {
+				block++;
+				break;
+			} else if (len <= 0) {
+				break;
+			}
+			ctx->buffer[0] = VTUNER_MAGIC;
+			ctx->buffer[1] = VTUNER_SET_LEN(len) | VTUNER_SET_TYPE(1);
+
+			len += 8;
+
+			if (vtuners_write(ctx->fd_data,
+			    (u8 *) ctx->buffer, len) != len) {
+				close(ctx->fd_data);
+				ctx->fd_data = -1;
+				break;
+			}
+		} while (0);
+
+		if (block == 2)
 			usleep(2000);
-			continue;
-		} else if (len < 0) {
-			close(ctx->fd_data);
-			ctx->fd_data = -1;
-			continue;
-		} else if (len == 0) {
-			continue;
-		}
-		ctx->buffer[0] = VTUNER_MAGIC;
-		ctx->buffer[1] = len;
-
-		len += 8;
-
-		if (vtuners_write(ctx->fd_data,
-		    (u8 *) ctx->buffer, len) != len) {
-			close(ctx->fd_data);
-			ctx->fd_data = -1;
-			continue;
-		}
 	}
 	return (NULL);
 }

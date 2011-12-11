@@ -44,6 +44,10 @@
 #define	VTUNER_DEFAULT_PORT "5100"
 #define	VTUNER_BUFFER_MAX (2 * 65536)
 #define	VTUNER_PROP_MAX 64
+#define	VTUNER_GET_LEN(x) (0xFFFFFF & (x))
+#define	VTUNER_GET_TYPE(x) (0xFF & ((x) >> 24))
+#define	VTUNER_SET_LEN(x) (0xFFFFFF & (x))
+#define	VTUNER_SET_TYPE(x) (0xFF000000 & ((x) << 24))
 
 enum {
 	MSG_UNDEFINED = 0,

@@ -62,6 +62,8 @@ struct vtunerc_ctx {
 	struct vtuner_data_hdr buffer_hdr;
 	u32	buffer[VTUNER_BUFFER_MAX];
 
+	u8	buffer_typ;
+
 	char	cport[16];
 	char	dport[16];
 };
