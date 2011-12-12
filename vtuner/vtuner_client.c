@@ -731,7 +731,9 @@ vtunerc_close(struct cuse_dev *cdev, int fflags)
 	ctx = cuse_dev_get_per_file_handle(cdev);
 
 	close(ctx->fd_ctrl_peer);
-	close(ctx->fd_data_peer);
+
+	if (ctx->fd_data_peer > -1)
+		close(ctx->fd_data_peer);
 
 	kfree(ctx);
 
