@@ -36,11 +36,16 @@ struct vtunerc_ctx {
 
 	struct vtuner_message msgbuf;
 
+	struct {
+		struct dtv_properties dtv_properties;
+	}	msgdummy;
+
 	int	fd_ctrl_peer;
 	int	fd_data_peer;
-	int	reader_init;
+	int	rd_message;
+	int	closing;
 
-	pthread_t reader_thread;
+	pthread_t poll_thread;
 
 	u32	buffer_off;
 	u32	buffer_rem;

@@ -33,6 +33,7 @@ struct vtuners_config {
 	int	c_fd;
 	int	d_fd;
 	int	unit;
+	int	mode;
 };
 
 struct vtuners_ctx {

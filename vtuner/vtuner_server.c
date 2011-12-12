@@ -52,14 +52,23 @@
   memcpy(a.c, b.c, sizeof(*(a.c)));					\
 } while (0)
 
-static int vtuner_max_unit = 0;
+#define	DPRINTF(fmt,...) do {				\
+	if (vtuner_debug) {				\
+		printk(KERN_INFO "%s:%s:%d: " fmt,	\
+		    __FILE__, __FUNCTION__,		\
+		    __LINE__,## __VA_ARGS__);		\
+	}						\
+} while (0)
+
+static int vtuner_max_unit;
+static int vtuner_debug;
 static char vtuner_host[64] = {"127.0.0.1"};
 static char vtuner_port[16] = {VTUNER_DEFAULT_PORT};
 
 static void
 vtuners_work_exec_hup(int dummy)
 {
-
+	DPRINTF("\n");
 }
 
 static int
@@ -69,12 +78,16 @@ vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 	int max;
 	int i;
 
+	DPRINTF("\n");
+
 	switch (msg->hdr.mtype) {
 	case MSG_DMX_START:
-		ret = linux_ioctl(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK, DMX_START, NULL);
+		ret = linux_ioctl(ctx->proxy_fd,
+		    CUSE_FFLAG_NONBLOCK, DMX_START, NULL);
 		break;
 	case MSG_DMX_STOP:
-		ret = linux_ioctl(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK, DMX_STOP, NULL);
+		ret = linux_ioctl(ctx->proxy_fd,
+		    CUSE_FFLAG_NONBLOCK, DMX_STOP, NULL);
 		break;
 	case MSG_DMX_SET_FILTER:
 		VTUNER_MEMSET(&ctx->dvb.dmx_sct_filter_params, 0);
@@ -392,10 +405,14 @@ vtuners_read(int fd, u8 * ptr, int len)
 	int off = 0;
 	int err;
 
+	DPRINTF("\n");
+
 	while (off < len) {
 		err = read(fd, ptr + off, len - off);
-		if (err <= 0)
+		if (err <= 0) {
+			DPRINTF("Read error %d\n", err);
 			return (err);
+		}
 		off += err;
 	}
 	return (off);
@@ -407,10 +424,14 @@ vtuners_write(int fd, const u8 * ptr, int len)
 	int off = 0;
 	int err;
 
+	DPRINTF("\n");
+
 	while (off < len) {
 		err = write(fd, ptr + off, len - off);
-		if (err <= 0)
+		if (err <= 0) {
+			DPRINTF("Write error %d\n", err);
 			return (err);
+		}
 		off += err;
 	}
 	return (off);
@@ -432,8 +453,7 @@ vtuners_listen(const char *host, const char *port, int buffer)
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags |= AI_NUMERICHOST;
 
-	printk(KERN_INFO "vTuner: Listening to %s:%s\n",
-	    host, port);
+	DPRINTF("Listening to %s:%s\n", host, port);
 
 	if ((error = getaddrinfo(host, port, &hints, &res)))
 		return (-1);
@@ -483,6 +503,8 @@ vtuners_writer_thread(void *arg)
 			usleep(2000);
 			continue;
 		}
+		DPRINTF("len = %d\n", len);
+
 		ctx->buffer[0] = VTUNER_MAGIC;
 		ctx->buffer[1] = len;
 
@@ -490,6 +512,7 @@ vtuners_writer_thread(void *arg)
 
 		if (vtuners_write(ctx->fd_data,
 		    (u8 *) ctx->buffer, len) != len) {
+			DPRINTF("Could not write %d bytes\n", len);
 			break;
 		}
 	}
@@ -501,6 +524,7 @@ vtuners_writer_thread(void *arg)
 	up(&ctx->writer_sem);
 
 	if (len) {
+		DPRINTF("Closing %p\n", ctx->proxy_fd);
 		linux_close(ctx->proxy_fd);
 		kfree(ctx);
 	}
@@ -521,44 +545,56 @@ vtuners_control_thread(void *arg)
 		len = sizeof(ctx->msgbuf.hdr);
 
 		if (vtuners_read(ctx->fd_control,
-		    (u8 *) & ctx->msgbuf.hdr, len) != len)
+		    (u8 *) & ctx->msgbuf.hdr, len) != len) {
+			DPRINTF("Bad read of len %d\n", len);
 			break;
-
+		}
 		if (ctx->msgbuf.hdr.magic != VTUNER_MAGIC) {
 			vtuner_hdr_byteswap(&ctx->msgbuf);
-			if (ctx->msgbuf.hdr.magic != VTUNER_MAGIC)
+			if (ctx->msgbuf.hdr.magic != VTUNER_MAGIC) {
+				DPRINTF("Bad magic 0x%08x\n", ctx->msgbuf.hdr.magic);
 				break;
+			}
 			swapped = 1;
 		} else {
 			swapped = 0;
 		}
 
 		len = ctx->msgbuf.hdr.rx_size;
-		if (len < 0 || len > sizeof(ctx->msgbuf.body))
+		if (len < 0 || len > sizeof(ctx->msgbuf.body)) {
+			DPRINTF("Bad rx_size = %d\n", len);
 			break;
-
-		if (len != 0) {
-			if (vtuners_read(ctx->fd_control, (u8 *) & ctx->msgbuf.body, len) != len)
-				break;
 		}
-		if (swapped)
-			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.mtype);
-
+		if (len != 0) {
+			if (vtuners_read(ctx->fd_control,
+			    (u8 *) & ctx->msgbuf.body, len) != len) {
+				DPRINTF("Bad read of len %d\n", len);
+				break;
+			}
+		}
+		if (swapped) {
+			vtuner_body_byteswap(&ctx->msgbuf,
+			    ctx->msgbuf.hdr.mtype);
+		}
 		ctx->msgbuf.hdr.error =
 		    vtuners_process_msg(ctx, &ctx->msgbuf);
 
 		len = ctx->msgbuf.hdr.tx_size;
-		if (len < 0 || len > sizeof(ctx->msgbuf.body))
-			continue;
-
+		if (len < 0 || len > sizeof(ctx->msgbuf.body)) {
+			DPRINTF("Bad write length %d\n", len);
+			break;
+		}
 		len += sizeof(ctx->msgbuf.hdr);
 
 		if (swapped) {
 			vtuner_body_byteswap(&ctx->msgbuf, ctx->msgbuf.hdr.mtype);
 			vtuner_hdr_byteswap(&ctx->msgbuf);
 		}
-		if (vtuners_write(ctx->fd_control, (u8 *) & ctx->msgbuf, len) != len)
+		if (vtuners_write(ctx->fd_control,
+		    (u8 *) & ctx->msgbuf, len) != len) {
+			DPRINTF("Could not write %d bytes\n", len);
 			break;
+		}
 	}
 
 	down(&ctx->writer_sem);
@@ -568,6 +604,7 @@ vtuners_control_thread(void *arg)
 	up(&ctx->writer_sem);
 
 	if (swapped) {
+		DPRINTF("Closing %p\n", ctx->proxy_fd);
 		linux_close(ctx->proxy_fd);
 		kfree(ctx);
 	}
@@ -596,13 +633,15 @@ vtuners_listen_worker(void *arg)
 			alarm(0);
 			if (f_data > -1) {
 
+				DPRINTF("New connection %d,%d\n", f_ctrl, f_data);
+
 				ctx = kzalloc(sizeof(struct vtuners_ctx), GFP_KERNEL);
 				if (!ctx) {
 					close(f_data);
 					close(f_ctrl);
 					continue;
 				}
-				ctx->proxy_fd = linux_open(cfg->unit, O_RDWR);
+				ctx->proxy_fd = linux_open(cfg->unit, cfg->mode);
 				if (ctx->proxy_fd == NULL) {
 					close(f_data);
 					close(f_ctrl);
@@ -632,7 +671,7 @@ vtuners_listen_worker(void *arg)
  *------------------------------------------------------------------------*/
 
 static struct vtuners_config *
-vtuners_make_config(int off, int unit)
+vtuners_make_config(int off, int unit, int mode)
 {
 	struct vtuners_config *cfg;
 
@@ -642,6 +681,7 @@ vtuners_make_config(int off, int unit)
 
 	cfg->unit = unit;
 	cfg->host = vtuner_host;
+	cfg->mode = mode;
 	snprintf(cfg->cport, sizeof(cfg->cport), "%u", atoi(vtuner_port) + off);
 	snprintf(cfg->dport, sizeof(cfg->dport), "%u", atoi(vtuner_port) + off + 1);
 
@@ -677,20 +717,23 @@ vtuners_init(void)
 
 		pthread_create(&dummy, NULL, &vtuners_listen_worker,
 		    vtuners_make_config(0 + (8 * u), (F_V4B_SUBDEV_MAX *
-		    F_V4B_DVB_FRONTEND) + u));
+		    F_V4B_DVB_FRONTEND) + u, O_RDWR));
 
 		pthread_create(&dummy, NULL, &vtuners_listen_worker,
 		    vtuners_make_config(2 + (8 * u), (F_V4B_SUBDEV_MAX *
-		    F_V4B_DVB_DVR) + u));
+		    F_V4B_DVB_DVR) + u, O_RDONLY));
 
 		pthread_create(&dummy, NULL, &vtuners_listen_worker,
 		    vtuners_make_config(4 + (8 * u), (F_V4B_SUBDEV_MAX *
-		    F_V4B_DVB_DEMUX) + u));
+		    F_V4B_DVB_DEMUX) + u, O_RDWR));
 	}
 	return (0);
 }
 
 module_init(vtuners_init);
+
+module_param_named(debug, vtuner_debug, int, 0644);
+MODULE_PARM_DESC(debug, "Enable debugging (default is 0, disabled)");
 
 module_param_named(devices, vtuner_max_unit, int, 0644);
 MODULE_PARM_DESC(devices, "Number of servers (default is 0, disabled)");

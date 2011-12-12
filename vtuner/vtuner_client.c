@@ -69,7 +69,16 @@
 	*d |= -1U;							\
 } while (0)
 
-static int vtuner_max_unit = 0;
+#define	DPRINTF(fmt,...) do {				\
+	if (vtuner_debug) {				\
+		printk(KERN_INFO "%s:%s:%d: " fmt,	\
+		    __FILE__, __FUNCTION__,		\
+		    __LINE__,## __VA_ARGS__);		\
+	}						\
+} while (0)
+
+static int vtuner_max_unit;
+static int vtuner_debug;
 static char vtuner_host[64] = {"127.0.0.1"};
 static char vtuner_port[16] = {VTUNER_DEFAULT_PORT};
 
@@ -104,8 +113,7 @@ vtunerc_connect(const char *host, const char *port, int buffer)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 
-	printk(KERN_INFO "vTuner: Trying to connect "
-	    "to %s:%s\n", host, port);
+	DPRINTF("Trying to connect to %s:%s\n", host, port);
 
 	if ((error = getaddrinfo(host, port, &hints, &res)))
 		return (-1);
@@ -132,7 +140,7 @@ vtunerc_connect(const char *host, const char *port, int buffer)
 
 	freeaddrinfo(res);
 
-	printk(KERN_INFO "vTuner: Connected, fd=%d\n", s);
+	DPRINTF("Connected, fd=%d\n", s);
 
 	return (s);
 }
@@ -143,10 +151,14 @@ vtunerc_fd_read(int fd, u8 * ptr, int len)
 	int off = 0;
 	int err;
 
+	DPRINTF("\n");
+
 	while (off < len) {
 		err = read(fd, ptr + off, len - off);
-		if (err <= 0)
+		if (err <= 0) {
+			DPRINTF("Read error %d\n", err);
 			return (err);
+		}
 		off += err;
 	}
 	return (off);
@@ -158,10 +170,14 @@ vtunerc_fd_write(int fd, const u8 * ptr, int len)
 	int off = 0;
 	int err;
 
+	DPRINTF("\n");
+
 	while (off < len) {
 		err = write(fd, ptr + off, len - off);
-		if (err <= 0)
+		if (err <= 0) {
+			DPRINTF("Write error %d\n", err);
 			return (err);
+		}
 		off += err;
 	}
 	return (off);
@@ -169,7 +185,8 @@ vtunerc_fd_write(int fd, const u8 * ptr, int len)
 
 static void
 vtunerc_do_message(struct vtunerc_ctx *ctx,
-    struct vtuner_message *msg, int mtype, int rx_size, int tx_size, int *pret)
+    struct vtuner_message *msg, int mtype,
+    int rx_size, int tx_size, int *pret)
 {
 	int len;
 
@@ -188,92 +205,129 @@ vtunerc_do_message(struct vtunerc_ctx *ctx,
 	msg->hdr.padding = 0;
 
 	len = rx_size;
-	if (len < 0)
+	if (len < 0) {
+		DPRINTF("Bad RX size %d\n", rx_size);
 		goto error;
-
+	}
 	len += sizeof(msg->hdr);
 
-	printk(KERN_INFO "vTuner: Doing message mt=%d rxs=%d txs=%d len=%d\n",
+	DPRINTF("Doing message mt=%d rxs=%d txs=%d len=%d\n",
 	    mtype, rx_size, tx_size, len);
 
-	if (vtunerc_fd_write(ctx->fd_ctrl_peer, (u8 *) msg, len) != len)
+	if (vtunerc_fd_write(ctx->fd_ctrl_peer, (u8 *) msg, len) != len) {
+		DPRINTF("Bad write of length %d\n", len);
 		goto error;
-
+	}
 	len = tx_size;
-	if (len < 0)
+	if (len < 0) {
+		DPRINTF("Bad TX size %d\n", tx_size);
 		goto error;
-
+	}
 	len += sizeof(msg->hdr);
 
 	if (vtunerc_fd_read(ctx->fd_ctrl_peer, (u8 *) msg, len) != len) {
-error:
-		*pret = -ENXIO;
-	} else {
-		*pret = (s16) msg->hdr.error;
+		DPRINTF("Bad read of length %d\n", len);
+		goto error;
 	}
+	*pret = (s16) msg->hdr.error;
 
-	printk(KERN_INFO "vTuner: Result %d, len=%d\n", *pret, len);
+	DPRINTF("Result %d, len=%d\n", *pret, len);
+	return;
+
+error:
+	*pret = -ENXIO;
+	return;
 }
 
-static void
-vtunerc_read_poll(struct vtunerc_ctx *ctx)
+static int
+vtunerc_do_peer_read(struct vtunerc_ctx *ctx)
 {
-	struct pollfd pfd[1];
 	int len;
 
-	if (ctx->buffer_rem != 0 || ctx->fd_data_peer < 0)
-		return;
+	DPRINTF("\n");
 
-	pfd[0].fd = ctx->fd_data_peer;
-	pfd[0].revents = 0;
-	pfd[0].events = (POLLRDNORM | POLLIN);
+	if (ctx->buffer_rem != 0)
+		return (0);
 
-	poll(pfd, 1, 0);
+	len = vtunerc_fd_read(ctx->fd_data_peer,
+	    (u8 *) & ctx->buffer, 8);
 
-	if (pfd[0].revents == 0)
-		return;
-
-	if (vtunerc_fd_read(ctx->fd_data_peer, (u8 *) & ctx->buffer, 8) != 8)
-		goto error;;
-
+	if (len != 8) {
+		DPRINTF("Bad peer read of 8 bytes\n");
+		return (-1);;
+	}
 	if (ctx->buffer[0] != VTUNER_MAGIC) {
 		vtuner_data_hdr_byteswap(ctx->buffer);
-		if (ctx->buffer[0] != VTUNER_MAGIC)
-			goto error;;
+		if (ctx->buffer[0] != VTUNER_MAGIC) {
+			DPRINTF("Bad magic 0x%08x != "
+			    "0x%08x\n", ctx->buffer[0], VTUNER_MAGIC);
+			return (-1);
+		}
 	}
 	len = ctx->buffer[1];
 
-	if (len < 0 || len > VTUNER_BUFFER_MAX)
-		goto error;;
-
+	if (len < 0 || len > VTUNER_BUFFER_MAX) {
+		DPRINTF("Bad receive length (%d)\n", len);
+		return (-1);;
+	}
 	if (vtunerc_fd_read(ctx->fd_data_peer,
-	    (u8 *) ctx->buffer, len) != len)
-		goto error;;
-
+	    (u8 *) ctx->buffer, len) != len) {
+		DPRINTF("Bad peer read of %d bytes\n", len);
+		return (-1);;
+	}
 	ctx->buffer_rem = len;
 	ctx->buffer_off = 0;
-	return;
-error:
-	close(ctx->fd_data_peer);
-	ctx->fd_data_peer = -1;
+
+	if (ctx->rd_message == 1) {
+		ctx->rd_message = 0;
+		pthread_kill(ctx->poll_thread, SIGURG);
+	}
+	return (0);
+}
+
+static void *
+vtunerc_do_peer_poll(void *arg)
+{
+	struct vtunerc_ctx *ctx = arg;
+	struct pollfd fds[1];
+
+	DPRINTF("\n");
+
+	while (!ctx->closing) {
+		fds[0].fd = ctx->fd_data_peer;
+		fds[0].revents = 0;
+		fds[0].events = (POLLRDNORM | POLLIN);
+
+		poll(fds, 1, 250);
+
+		if (fds[0].revents) {
+			if (ctx->rd_message == 0)
+				ctx->rd_message = 1;
+			cuse_poll_wakeup();
+			usleep(250000);
+		}
+	}
+	ctx->rd_message = -1;
+	return (NULL);
 }
 
 static int
 vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dvb_message *dvb)
 {
-	struct {
-		struct dtv_properties dtv_properties;
-	}      dummy;
 	int ret = 0;
 	u32 i;
 	u32 max;
 
+	DPRINTF("\n");
+
 	switch (cmd) {
 	case DMX_START:
-		vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_START, 0, 0, &ret);
+		vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_START, 0, 0, &ret);
 		break;
 	case DMX_STOP:
-		vtunerc_do_message(ctx, &ctx->msgbuf, MSG_DMX_STOP, 0, 0, &ret);
+		vtunerc_do_message(ctx, &ctx->msgbuf,
+		    MSG_DMX_STOP, 0, 0, &ret);
 		break;
 	case DMX_SET_FILTER:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_sct_filter_params, 0, &ret);
@@ -333,8 +387,7 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 
 		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_DMX_SET_SOURCE,
-		    sizeof(u32),
-		    0, &ret);
+		    sizeof(u32), 0, &ret);
 		break;
 	case DMX_GET_STC:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_stc, 0,
@@ -356,14 +409,12 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 	case DMX_ADD_PID:
 		ctx->msgbuf.body.value16 = dvb->value16;
 		vtunerc_do_message(ctx, &ctx->msgbuf,
-		    MSG_DMX_ADD_PID,
-		    sizeof(u16), 0, &ret);
+		    MSG_DMX_ADD_PID, sizeof(u16), 0, &ret);
 		break;
 	case DMX_REMOVE_PID:
 		ctx->msgbuf.body.value16 = dvb->value16;
 		vtunerc_do_message(ctx, &ctx->msgbuf,
-		    MSG_DMX_REMOVE_PID,
-		    sizeof(u16), 0, &ret);
+		    MSG_DMX_REMOVE_PID, sizeof(u16), 0, &ret);
 		break;
 
 	case FE_SET_PROPERTY:
@@ -372,7 +423,7 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    &ret);
 		VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &(*dvb),
 		    dtv_properties.num, &ret);
-		VTUNER_LOCAL_MEMCPY(&dummy, &(*dvb),
+		VTUNER_LOCAL_MEMCPY(&ctx->msgdummy, &(*dvb),
 		    dtv_properties.props, &ret);
 
 		max = ctx->msgbuf.body.dtv_properties.num;
@@ -381,23 +432,23 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 			break;
 		}
 		for (i = 0; i != max; i++) {
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 			    dtv_properties.props[i].cmd, &ret);
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 			    dtv_properties.props[i].reserved[0], &ret);
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 			    dtv_properties.props[i].reserved[1], &ret);
-			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+			VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 			    dtv_properties.props[i].reserved[2], &ret);
 
 			if (ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
 			    ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
-				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 				    dtv_properties.props[i].u.data, &ret);
 			} else {
-				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 				    dtv_properties.props[i].u.buffer.len, &ret);
-				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &dummy,
+				VTUNER_LOCAL_MEMCPY(&ctx->msgbuf.body, &ctx->msgdummy,
 				    dtv_properties.props[i].u.buffer.data, &ret);
 			}
 		}
@@ -415,18 +466,18 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		    (u8 *) & ctx->msgbuf.body.dtv_properties.props[max] - (u8 *) & ctx->msgbuf.body, &ret);
 
 		for (i = 0; i != max; i++) {
-			VTUNER_PEER_MEMSET(&dummy.dtv_properties.props[i], 0, &ret);
-			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].cmd, &ret);
-			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[0], &ret);
-			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[1], &ret);
-			VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[2], &ret);
+			VTUNER_PEER_MEMSET(&ctx->msgdummy.dtv_properties.props[i], 0, &ret);
+			VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].cmd, &ret);
+			VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[0], &ret);
+			VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[1], &ret);
+			VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].reserved[2], &ret);
 
 			if (ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_MASTER &&
 			    ctx->msgbuf.body.dtv_properties.props[i].cmd != DTV_DISEQC_SLAVE_REPLY) {
-				VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].u.data, &ret);
+				VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].u.data, &ret);
 			} else {
-				VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.len, &ret);
-				VTUNER_PEER_MEMCPY(&dummy, &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.data, &ret);
+				VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.len, &ret);
+				VTUNER_PEER_MEMCPY(&ctx->msgdummy, &ctx->msgbuf.body, dtv_properties.props[i].u.buffer.data, &ret);
 			}
 		}
 		break;
@@ -434,8 +485,7 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 	case FE_GET_INFO:
 		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_GET_INFO,
-		    0,
-		    sizeof(ctx->msgbuf.body.dvb_frontend_info), &ret);
+		    0, sizeof(ctx->msgbuf.body.dvb_frontend_info), &ret);
 		VTUNER_PEER_MEMSET(&(*dvb).dvb_frontend_info, 0, &ret);
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body,
 		    dvb_frontend_info.name, &ret);
@@ -489,8 +539,7 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		ctx->msgbuf.body.value32 = (long)dvb;
 		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_DISEQC_SEND_BURST,
-		    sizeof(u32),
-		    0, &ret);
+		    sizeof(u32), 0, &ret);
 		break;
 	case FE_SET_TONE:
 		ctx->msgbuf.body.value32 = (long)dvb;
@@ -593,8 +642,7 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 		ctx->msgbuf.body.value32 = (long)dvb;
 		vtunerc_do_message(ctx, &ctx->msgbuf,
 		    MSG_FE_SET_FRONTEND_TUNE_MODE,
-		    sizeof(u32),
-		    0, &ret);
+		    sizeof(u32), 0, &ret);
 		break;
 	case FE_GET_EVENT:
 		vtunerc_do_message(ctx, &ctx->msgbuf,
@@ -639,15 +687,15 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
  * vTuner client Cuse4BSD interface
  *------------------------------------------------------------------------*/
 static void
-vtunerc_work_exec_hup(int dummy)
+vtunerc_cuse_thread_hup(int dummy)
 {
-
+	DPRINTF("\n");
 }
 
 static void *
-vtunerc_work(void *arg)
+vtunerc_cuse_thread(void *arg)
 {
-	signal(SIGHUP, vtunerc_work_exec_hup);
+	signal(SIGHUP, vtunerc_cuse_thread_hup);
 
 	while (1) {
 		if (cuse_wait_and_process() != 0)
@@ -697,6 +745,8 @@ vtunerc_open(struct cuse_dev *cdev, int fflags)
 	struct vtunerc_ctx *ctx;
 	struct vtunerc_config *cfg;
 
+	DPRINTF("\n");
+
 	cfg = cuse_dev_get_priv0(cdev);
 	if (cfg == NULL)
 		return (CUSE_ERR_INVALID);
@@ -718,6 +768,9 @@ vtunerc_open(struct cuse_dev *cdev, int fflags)
 		kfree(ctx);
 		return (CUSE_ERR_OTHER);
 	}
+	pthread_create(&ctx->poll_thread, NULL,
+	    &vtunerc_do_peer_poll, ctx);
+
 	cuse_dev_set_per_file_handle(cdev, ctx);
 
 	return (0);
@@ -728,12 +781,18 @@ vtunerc_close(struct cuse_dev *cdev, int fflags)
 {
 	struct vtunerc_ctx *ctx;
 
+	DPRINTF("\n");
+
 	ctx = cuse_dev_get_per_file_handle(cdev);
+	cuse_dev_set_per_file_handle(cdev, NULL);
 
 	close(ctx->fd_ctrl_peer);
+	close(ctx->fd_data_peer);
 
-	if (ctx->fd_data_peer > -1)
-		close(ctx->fd_data_peer);
+	ctx->closing = 1;
+
+	while (ctx->rd_message != -1)
+		usleep(250000);
 
 	kfree(ctx);
 
@@ -752,9 +811,16 @@ vtunerc_read(struct cuse_dev *cdev, int fflags,
 
 	off = 0;
 
-repeat:
-	vtunerc_read_poll(ctx);
+	DPRINTF("\n");
 
+repeat:
+	if (cuse_got_peer_signal() == 0)
+		return (CUSE_ERR_SIGNAL);
+
+	if ((fflags & CUSE_FFLAG_NONBLOCK) == 0 || ctx->rd_message == 1) {
+		if (vtunerc_do_peer_read(ctx) < 0)
+			return (CUSE_ERR_OTHER);
+	}
 	delta = len;
 
 	if ((u32) delta > ctx->buffer_rem)
@@ -771,21 +837,19 @@ repeat:
 		len -= delta;
 		off += delta;
 	}
-	if (!(fflags & CUSE_FFLAG_NONBLOCK)) {
+	if ((fflags & CUSE_FFLAG_NONBLOCK) == 0) {
 
-		if (off)
+		if (off) {
+			DPRINTF("Return %d\n", off);
 			return (off);
-
-		if (cuse_got_peer_signal() == 0)
-			return (CUSE_ERR_SIGNAL);
-
-		usleep(2000);
+		}
 		goto repeat;
 	}
-	if (off == 0) {
+	if (off == 0)
 		off = CUSE_ERR_WOULDBLOCK;
-		usleep(2000);
-	}
+
+	DPRINTF("Return %d\n", off);
+
 	return (off);
 }
 
@@ -805,6 +869,8 @@ vtunerc_ioctl(struct cuse_dev *cdev, int fflags,
 
 	ctx = cuse_dev_get_per_file_handle(cdev);
 
+	DPRINTF("\n");
+
 	/* we support blocking/non-blocking I/O */
 	if (cmd == FIONBIO || cmd == FIOASYNC)
 		return (0);
@@ -822,8 +888,11 @@ vtunerc_poll(struct cuse_dev *cdev, int fflags, int events)
 
 	ctx = cuse_dev_get_per_file_handle(cdev);
 
-	revents = events & CUSE_POLL_READ;
-
+	if (ctx->rd_message == 1) {
+		revents = events & CUSE_POLL_READ;
+	} else {
+		revents = 0;
+	}
 #if 0
 	if (error & (POLLOUT | POLLWRNORM))
 		revents |= events & CUSE_POLL_WRITE;
@@ -864,14 +933,14 @@ vtunerc_init(void)
 	if (vtuner_max_unit < 0 || vtuner_max_unit > CONFIG_DVB_MAX_ADAPTERS)
 		vtuner_max_unit = CONFIG_DVB_MAX_ADAPTERS;
 
-	printk(KERN_INFO "virtual DVB client adapter driver, version "
+	DPRINTF("virtual DVB client adapter driver, version "
 	    VTUNER_MODULE_VERSION ", (c) 2011 Hans Petter Selasky\n");
 
 	for (u = 0; u != (4 * vtuner_max_unit); u++) {
 		pthread_t dummy;
 
-		if (pthread_create(&dummy, NULL, vtunerc_work, NULL))
-			printk(KERN_INFO "Failed creating vTuncer client process\n");
+		if (pthread_create(&dummy, NULL, vtunerc_cuse_thread, NULL))
+			DPRINTF("Failed creating vTuncer client process\n");
 	}
 
 	for (u = 0; u != vtuner_max_unit; u++) {
@@ -910,6 +979,9 @@ vtunerc_init(void)
 }
 
 module_init(vtunerc_init);
+
+module_param_named(debug, vtuner_debug, int, 0644);
+MODULE_PARM_DESC(debug, "Enable debugging (default is 0, disabled)");
 
 module_param_named(devices, vtuner_max_unit, int, 0644);
 MODULE_PARM_DESC(devices, "Number of clients (default is 0, disabled)");
