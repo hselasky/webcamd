@@ -34,12 +34,6 @@ struct vtunerc_config {
 
 struct vtunerc_ctx {
 
-	struct semaphore fd_wr_sem;
-	struct semaphore fd_rd_sem;
-	struct semaphore fd_ioctl_sem;
-
-	wait_queue_head_t fd_rd_queue;
-
 	struct vtuner_message msgbuf;
 
 	int	fd_ctrl_peer;

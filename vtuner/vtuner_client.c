@@ -216,57 +216,46 @@ error:
 }
 
 static void
-vtunerc_reader_hup(int dummy)
+vtunerc_read_poll(struct vtunerc_ctx *ctx)
 {
-	pthread_exit(NULL);
-}
-
-static void *
-vtunerc_reader_thread(void *arg)
-{
-	struct vtunerc_ctx *ctx = arg;
+	struct pollfd pfd[1];
 	int len;
 
-	signal(SIGHUP, vtunerc_reader_hup);
+	if (ctx->buffer_rem != 0 || ctx->fd_data_peer < 0)
+		return;
 
-	ctx->reader_init = 1;
+	pfd[0].fd = ctx->fd_data_peer;
+	pfd[0].revents = 0;
+	pfd[0].events = (POLLRDNORM | POLLIN);
 
-	wake_up_all(&ctx->fd_rd_queue);
+	poll(pfd, 1, 0);
 
-	while (1) {
+	if (pfd[0].revents == 0)
+		return;
 
-		wait_event(ctx->fd_rd_queue, ctx->buffer_rem == 0);
+	if (vtunerc_fd_read(ctx->fd_data_peer, (u8 *) & ctx->buffer, 8) != 8)
+		goto error;;
 
-		if (vtunerc_fd_read(ctx->fd_data_peer, (u8 *) & ctx->buffer, 8) != 8)
-			break;
-
-		if (ctx->buffer[0] != VTUNER_MAGIC) {
-			vtuner_data_hdr_byteswap(ctx->buffer);
-			if (ctx->buffer[0] != VTUNER_MAGIC)
-				break;
-		}
-		len = ctx->buffer[1];
-
-		if (len < 0 || len > VTUNER_BUFFER_MAX)
-			break;
-
-		if (vtunerc_fd_read(ctx->fd_data_peer,
-		    (u8 *) ctx->buffer, len) != len)
-			break;
-
-		down(&ctx->fd_rd_sem);
-		ctx->buffer_rem = len;
-		ctx->buffer_off = 0;
-		up(&ctx->fd_rd_sem);
-
-		wake_up_all(&ctx->fd_rd_queue);
-		cuse_poll_wakeup();
+	if (ctx->buffer[0] != VTUNER_MAGIC) {
+		vtuner_data_hdr_byteswap(ctx->buffer);
+		if (ctx->buffer[0] != VTUNER_MAGIC)
+			goto error;;
 	}
+	len = ctx->buffer[1];
 
-	while (1)
-		pause();
+	if (len < 0 || len > VTUNER_BUFFER_MAX)
+		goto error;;
 
-	return (NULL);
+	if (vtunerc_fd_read(ctx->fd_data_peer,
+	    (u8 *) ctx->buffer, len) != len)
+		goto error;;
+
+	ctx->buffer_rem = len;
+	ctx->buffer_off = 0;
+	return;
+error:
+	close(ctx->fd_data_peer);
+	ctx->fd_data_peer = -1;
 }
 
 static int
@@ -716,12 +705,6 @@ vtunerc_open(struct cuse_dev *cdev, int fflags)
 	if (ctx == NULL)
 		return (CUSE_ERR_NO_MEMORY);
 
-	sema_init(&ctx->fd_wr_sem, 1);
-	sema_init(&ctx->fd_rd_sem, 1);
-	sema_init(&ctx->fd_ioctl_sem, 1);
-
-	init_waitqueue_head(&ctx->fd_rd_queue);
-
 	ctx->fd_ctrl_peer = vtunerc_connect(cfg->host,
 	    cfg->cport, 4096);
 	if (ctx->fd_ctrl_peer < 0) {
@@ -735,15 +718,6 @@ vtunerc_open(struct cuse_dev *cdev, int fflags)
 		kfree(ctx);
 		return (CUSE_ERR_OTHER);
 	}
-	if (pthread_create(&ctx->reader_thread,
-	    NULL, &vtunerc_reader_thread, ctx) != 0) {
-		close(ctx->fd_ctrl_peer);
-		close(ctx->fd_data_peer);
-		kfree(ctx);
-		return (CUSE_ERR_OTHER);
-	}
-	wait_event(ctx->fd_rd_queue, ctx->reader_init != 0);
-
 	cuse_dev_set_per_file_handle(cdev, ctx);
 
 	return (0);
@@ -755,8 +729,6 @@ vtunerc_close(struct cuse_dev *cdev, int fflags)
 	struct vtunerc_ctx *ctx;
 
 	ctx = cuse_dev_get_per_file_handle(cdev);
-
-	pthread_kill(ctx->reader_thread, SIGHUP);
 
 	close(ctx->fd_ctrl_peer);
 	close(ctx->fd_data_peer);
@@ -779,7 +751,7 @@ vtunerc_read(struct cuse_dev *cdev, int fflags,
 	off = 0;
 
 repeat:
-	down(&ctx->fd_rd_sem);
+	vtunerc_read_poll(ctx);
 
 	delta = len;
 
@@ -789,7 +761,6 @@ repeat:
 	if (delta != 0) {
 		if (copy_to_user(((u8 *) peer_ptr) + off, ((u8 *) ctx->buffer) +
 		    ctx->buffer_off, delta) != 0) {
-			up(&ctx->fd_rd_sem);
 			return (CUSE_ERR_FAULT);
 		}
 		ctx->buffer_off += delta;
@@ -797,28 +768,22 @@ repeat:
 
 		len -= delta;
 		off += delta;
-
-		wake_up_all(&ctx->fd_rd_queue);
 	}
 	if (!(fflags & CUSE_FFLAG_NONBLOCK)) {
-
-		up(&ctx->fd_rd_sem);
 
 		if (off)
 			return (off);
 
-		delta = wait_event_interruptible(ctx->fd_rd_queue,
-		    ctx->buffer_rem != 0);
-
-		if (delta)
+		if (cuse_got_peer_signal() == 0)
 			return (CUSE_ERR_SIGNAL);
 
+		usleep(2000);
 		goto repeat;
 	}
-	if (off == 0)
+	if (off == 0) {
 		off = CUSE_ERR_WOULDBLOCK;
-
-	up(&ctx->fd_rd_sem);
+		usleep(2000);
+	}
 	return (off);
 }
 
@@ -842,9 +807,7 @@ vtunerc_ioctl(struct cuse_dev *cdev, int fflags,
 	if (cmd == FIONBIO || cmd == FIOASYNC)
 		return (0);
 
-	down(&ctx->fd_ioctl_sem);
 	error = vtunerc_process_ioctl(ctx, cmd, peer_data);
-	up(&ctx->fd_ioctl_sem);
 
 	return (vtunerc_convert_error(error));
 }
@@ -857,12 +820,7 @@ vtunerc_poll(struct cuse_dev *cdev, int fflags, int events)
 
 	ctx = cuse_dev_get_per_file_handle(cdev);
 
-	revents = 0;
-
-	down(&ctx->fd_rd_sem);
-	if (ctx->buffer_rem != 0)
-		revents |= events & CUSE_POLL_READ;
-	up(&ctx->fd_rd_sem);
+	revents = events & CUSE_POLL_READ;
 
 #if 0
 	if (error & (POLLOUT | POLLWRNORM))
