@@ -56,6 +56,12 @@ static int vtuner_max_unit = 0;
 static char vtuner_host[64] = {"127.0.0.1"};
 static char vtuner_port[16] = {VTUNER_DEFAULT_PORT};
 
+static void
+vtuners_work_exec_hup(int dummy)
+{
+
+}
+
 static int
 vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 {
@@ -466,6 +472,8 @@ vtuners_writer_thread(void *arg)
 	struct vtuners_ctx *ctx = arg;
 	int len;
 
+	signal(SIGHUP, vtuners_work_exec_hup);
+
 	while (ctx->fd_control > -1) {
 
 		len = linux_read(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
@@ -505,6 +513,8 @@ vtuners_control_thread(void *arg)
 	struct vtuners_ctx *ctx = arg;
 	int len;
 	int swapped;
+
+	signal(SIGHUP, vtuners_work_exec_hup);
 
 	while (1) {
 
@@ -571,6 +581,8 @@ vtuners_listen_worker(void *arg)
 	struct vtuners_ctx *ctx;
 	int f_ctrl;
 	int f_data;
+
+	signal(SIGHUP, vtuners_work_exec_hup);
 
 	if (cfg == NULL)
 		return (NULL);
