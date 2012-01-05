@@ -149,47 +149,70 @@ hal_add_device(const char *devname)
 			return;
 		}
 		if (ioctl(fd, VIDIOC_QUERYCAP, &v2cap) == 0) {
-			libhal_changeset_set_property_string(cset, "video4linux.device", devpath);
-			libhal_changeset_set_property_string(cset, "info.category", "video4linux");
-			libhal_changeset_set_property_string(cset, "video4linux.version", "2");
-			libhal_changeset_set_property_string(cset, "info.product", (const char *)v2cap.card);
-			libhal_device_add_capability(hal_ctx, hal_dev, "video4linux", NULL);
+			libhal_changeset_set_property_string(cset,
+			    "video4linux.device", devpath);
+			libhal_changeset_set_property_string(cset,
+			    "info.category", "video4linux");
+			libhal_changeset_set_property_string(cset,
+			    "video4linux.version", "2");
+			libhal_changeset_set_property_string(cset,
+			    "info.product", (const char *)v2cap.card);
+			libhal_device_add_capability(hal_ctx, hal_dev,
+			    "video4linux", NULL);
 
 			if (v2cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.video_capture", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.video_capture", NULL);
 			if (v2cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.video_output", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.video_output", NULL);
 			if (v2cap.capabilities & V4L2_CAP_VIDEO_OVERLAY)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.video_overlay", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.video_overlay", NULL);
 			if (v2cap.capabilities & V4L2_CAP_AUDIO)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.audio", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.audio", NULL);
 			if (v2cap.capabilities & V4L2_CAP_TUNER)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.tuner", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.tuner", NULL);
 			if (v2cap.capabilities & V4L2_CAP_RADIO)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.radio", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.radio", NULL);
 
+#ifdef CONFIG_VIDEO_V4L1_COMPAT
 		} else if (ioctl(fd, VIDIOCGCAP, &v1cap) == 0) {
-			libhal_changeset_set_property_string(cset, "video4linux.device", devpath);
-			libhal_changeset_set_property_string(cset, "info.category", "video4linux");
-			libhal_changeset_set_property_string(cset, "video4linux.version", "1");
-			libhal_changeset_set_property_string(cset, "info.product", v1cap.name);
-			libhal_device_add_capability(hal_ctx, hal_dev, "video4linux", NULL);
+			libhal_changeset_set_property_string(cset,
+			    "video4linux.device", devpath);
+			libhal_changeset_set_property_string(cset,
+			    "info.category", "video4linux");
+			libhal_changeset_set_property_string(cset,
+			    "video4linux.version", "1");
+			libhal_changeset_set_property_string(cset,
+			    "info.product", v1cap.name);
+			libhal_device_add_capability(hal_ctx, hal_dev,
+			    "video4linux", NULL);
 
 			if (v1cap.type & VID_TYPE_CAPTURE)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.video_capture", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.video_capture", NULL);
 			if (v1cap.type & VID_TYPE_OVERLAY)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.video_overlay", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.video_overlay", NULL);
 			if (v1cap.audios != 0)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.audio", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.audio", NULL);
 			if (v1cap.type & VID_TYPE_TUNER)
-				libhal_device_add_capability(hal_ctx, hal_dev, "video4linux.tuner", NULL);
+				libhal_device_add_capability(hal_ctx, hal_dev,
+				    "video4linux.tuner", NULL);
+#endif
 		}
 		libhal_device_commit_changeset(hal_ctx, cset, NULL);
 		libhal_device_free_changeset(cset);
 
 		close(fd);
 
-	} else if (!strncmp(devname, "dvb/adapter", sizeof("dvb/adapter") - 1)) {
+	} else if (!strncmp(devname, "dvb/adapter",
+	    sizeof("dvb/adapter") - 1)) {
 		char *pdvb = NULL;
 		char *pnew;
 
