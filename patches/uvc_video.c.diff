@@ -1,0 +1,63 @@
+diff -u -r media_tree/drivers/media/video/uvc/uvc_video.c media_tree/drivers/media/video/uvc/uvc_video.c
+--- media_tree/drivers/media/video/uvc/uvc_video.c	2011-10-10 18:57:13.000000000 +0200
++++ media_tree/drivers/media/video/uvc/uvc_video.c	2012-01-05 17:11:09.000000000 +0100
+@@ -823,7 +823,9 @@
+ 	/* Compute the number of packets. Bulk endpoints might transfer UVC
+ 	 * payloads across multiple URBs.
+ 	 */
+-	npackets = size / psize;
++	npackets = DIV_ROUND_UP(size, psize);
++	if (npackets > UVC_MAX_PACKETS)
++		npackets = UVC_MAX_PACKETS;
+ 
+ 	/* Retry allocations until one succeed. */
+ 	for (; npackets > 1; npackets /= 2) {
+@@ -886,25 +888,8 @@
+ 	u32 size;
+ 
+ 	psize = le16_to_cpu(ep->desc.wMaxPacketSize);
+-
+-	if (stream->dev->udev->speed == USB_SPEED_FULL) {
+-		/* (8000 >> 3) = 1000 FPS */
+-		psize = (psize & 0x07ff);
+-		size = (UVC_MAX_PACKETS >> 3) * psize;
+-	} else {
+-		/* 1000 - 8000 FPS, figure out */
+-		psize = (psize & 0x07ff) * (1 + ((psize >> 11) & 3));
+-		size = ep->desc.bInterval;
+-		if (size > 0)
+-			size --;
+-		if (size > 3)
+-			size = 3;
+-		size = (UVC_MAX_PACKETS >> size) * psize;
+-	}
+-
+-	/* avoid division by zero */
+-	if (psize == 0)
+-		return -EINVAL;
++	psize = (psize & 0x07ff) * (1 + ((psize >> 11) & 3));
++	size = stream->ctrl.dwMaxVideoFrameSize;
+ 
+ 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
+ 	if (npackets == 0)
+@@ -958,19 +943,6 @@
+ 	size = stream->ctrl.dwMaxPayloadTransferSize;
+ 	stream->bulk.max_payload_size = size;
+ 
+-	/* avoid division by zero */
+-	if (psize == 0)
+-		return -EINVAL;
+-
+-	/* roughly compute size for buffers */
+-	if (stream->dev->udev->speed == USB_SPEED_FULL) {
+-		size = 4096;
+-	} else {
+-		size = 16384;
+-	}
+-	/* align to packet boundary */
+-	size += (psize - (size % psize)) % psize;
+-
+ 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
+ 	if (npackets == 0)
+ 		return -ENOMEM;
+

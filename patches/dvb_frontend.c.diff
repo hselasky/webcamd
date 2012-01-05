@@ -1,0 +1,23 @@
+diff -u -r media_tree/drivers/media/dvb/dvb-core/dvb_frontend.c media_tree/drivers/media/dvb/dvb-core/dvb_frontend.c
+--- media_tree/drivers/media/dvb/dvb-core/dvb_frontend.c	2011-10-10 18:55:03.000000000 +0200
++++ media_tree/drivers/media/dvb/dvb-core/dvb_frontend.c	2012-01-05 17:11:09.000000000 +0100
+@@ -1535,8 +1535,7 @@
+ 	if (down_interruptible (&fepriv->sem))
+ 		return -ERESTARTSYS;
+ 
+-	if ((cmd == FE_SET_PROPERTY) || (cmd == FE_GET_PROPERTY) ||
+-	    (cmd == FE_GET_PROPERTY_OLD))
++	if ((cmd == FE_SET_PROPERTY) || (cmd == FE_GET_PROPERTY))
+ 		err = dvb_frontend_ioctl_properties(file, cmd, parg);
+ 	else {
+ 		c->state = DTV_UNDEFINED;
+@@ -1594,8 +1593,8 @@
+ 			dprintk("%s() Property cache is full, tuning\n", __func__);
+ 
+ 	} else
+-	if(cmd == FE_GET_PROPERTY || cmd == FE_GET_PROPERTY_OLD) {
++	if(cmd == FE_GET_PROPERTY) {
+ 
+ 		tvps = (struct dtv_properties __user *)parg;
+ 
+
