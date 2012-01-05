@@ -43,7 +43,10 @@ media_tree/drivers/media/dvb/pt1 \
 media_tree/drivers/media/dvb/mantis \
 media_tree/drivers/media/dvb/ngene \
 media_tree/drivers/media/dvb/ddbridge \
-media_tree/drivers/media/dvb/as102 \
+media_tree/drivers/staging/media \
+media_tree/drivers/staging/media/as102 \
+media_tree/drivers/staging/media/cxd2099 \
+media_tree/drivers/staging/media/lirc \
 
 SRCS+= \
 	input.c \
@@ -88,6 +91,7 @@ SRCS+= \
 	rc-apac-viewcomp.c \
 	rc-asus-pc39.c \
 	rc-ati-tv-wonder-hd-600.c \
+	rc-ati-x10.c \
 	rc-avermedia-a16d.c \
 	rc-avermedia.c \
 	rc-avermedia-cardbus.c \
@@ -131,6 +135,7 @@ SRCS+= \
 	rc-lirc.c \
 	rc-lme2510.c \
 	rc-manli.c \
+	rc-medion-x10.c \
 	rc-msi-digivox-ii.c \
 	rc-msi-digivox-iii.c \
 	rc-msi-tvanywhere.c \
@@ -154,6 +159,7 @@ SRCS+= \
 	rc-hauppauge.c \
 	rc-rc6-mce.c \
 	rc-real-audio-220-32-keys.c \
+	rc-snapstream-firefly.c \
 	rc-streamzap.c \
 	rc-tbs-nec.c \
 	rc-technisat-usb2.c \
@@ -181,6 +187,7 @@ SRCS+= \
 	ir-sony-decoder.c \
 	ir-rc5-sz-decoder.c \
 	ir-lirc-codec.c \
+	ati_remote.c \
 	imon.c \
 	mceusb.c \
 	redrat3.c \
@@ -343,8 +350,10 @@ SRCS+= \
 	stk014.c \
 	stv0680.c \
 	t613.c \
+	topro.c \
 	tv8532.c \
 	vc032x.c \
+	vicam.c \
 	zc3xx.c \
 	m5602_core.c \
 	m5602_ov9650.c \
@@ -528,10 +537,10 @@ SRCS+= \
 	af9005-fe.c \
 	af9005-remote.c \
 	anysee.c \
+	pctv452e.c \
 	dw2102.c \
 	dtv5100.c \
 	af9015.c \
-	pctv452e.c \
 	cinergyT2-core.c \
 	cinergyT2-fe.c \
 	ce6230.c \
@@ -546,6 +555,7 @@ SRCS+= \
 	mxl111sf-phy.c \
 	mxl111sf-i2c.c \
 	mxl111sf-gpio.c \
+	mxl111sf-demod.c \
 	mxl111sf-tuner.c \
 	smscoreapi.c \
 	sms-cards.c \
@@ -560,6 +570,7 @@ SRCS+= \
 	as102_fe.c \
 	as102_usb_drv.c \
 	as10x_cmd_cfg.c \
+	cxd2099.c \
 
 .if defined(LIB)
 .include "${.CURDIR}/../../Makefile.lib"

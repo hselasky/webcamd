@@ -264,4 +264,7 @@ help:
 	@echo "#"
 
 configure:
-	linux_make -c config -i media_tree/drivers/input -i media_tree/drivers/media -o build/
+	linux_make -c config \
+		-i media_tree/drivers/input \
+		-i media_tree/drivers/media \
+		-i media_tree/drivers/staging/media -o build/

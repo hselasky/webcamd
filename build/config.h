@@ -21,6 +21,7 @@
 #define	CONFIG_DVB_CX24110 /* y */
 #define	CONFIG_DVB_CX24116 /* y */
 #define	CONFIG_DVB_CX24123 /* y */
+#define	CONFIG_DVB_CXD2099 /* y */
 #define	CONFIG_DVB_CXD2820R /* y */
 #define	CONFIG_DVB_DIB3000MB /* y */
 #define	CONFIG_DVB_DIB3000MC /* y */
@@ -151,6 +152,7 @@
 #define	CONFIG_IR_SONY_DECODER /* y */
 #define	CONFIG_IR_STREAMZAP /* y */
 #define	CONFIG_LIRC /* y */
+#define	CONFIG_LIRC_STAGING /* y */
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
@@ -176,6 +178,7 @@
 #define	CONFIG_RADIO_SAA7706H /* y */
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
+#define	CONFIG_RC_ATI_REMOTE /* y */
 #define	CONFIG_RC_CORE /* y */
 #define	CONFIG_RC_MAP /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
@@ -227,8 +230,10 @@
 #define	CONFIG_USB_GSPCA_STV0680 /* y */
 #define	CONFIG_USB_GSPCA_SUNPLUS /* y */
 #define	CONFIG_USB_GSPCA_T613 /* y */
+#define	CONFIG_USB_GSPCA_TOPRO /* y */
 #define	CONFIG_USB_GSPCA_TV8532 /* y */
 #define	CONFIG_USB_GSPCA_VC032X /* y */
+#define	CONFIG_USB_GSPCA_VICAM /* y */
 #undef	CONFIG_USB_GSPCA_XIRLINK_CIT /* n */
 #define	CONFIG_USB_GSPCA_ZC3XX /* y */
 #define	CONFIG_USB_M5602 /* y */
@@ -336,6 +341,7 @@
 #undef	CONFIG_VIDEO_MT9V032 /* n */
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_VIDEO_M5MOLS /* n */
+#undef	CONFIG_VIDEO_S5K6AA /* n */
 #undef	CONFIG_VIDEO_ADP1653 /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
@@ -363,7 +369,9 @@
 #undef	CONFIG_VIDEO_EM28XX_RC /* n */
 #undef	CONFIG_VIDEO_TLG2300 /* n */
 #undef	CONFIG_VIDEO_CX231XX /* n */
+#undef	CONFIG_VIDEO_CX25821 /* n */
 #undef	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* n */
+#undef	CONFIG_VIDEO_TM6000 /* n */
 #undef	CONFIG_VIDEO_MXB /* n */
 #undef	CONFIG_VIDEO_HEXIUM_ORION /* n */
 #undef	CONFIG_VIDEO_HEXIUM_GEMINI /* n */
@@ -378,7 +386,6 @@
 #undef	CONFIG_VIDEO_MMP_CAMERA /* n */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
-#undef	CONFIG_USB_GSPCA_VICAM /* n */
 #undef	CONFIG_VIDEO_IVTV /* n */
 #undef	CONFIG_VIDEO_CX18 /* n */
 #undef	CONFIG_VIDEO_VIU /* n */
@@ -452,5 +459,18 @@
 #undef	CONFIG_DVB_NGENE /* n */
 #undef	CONFIG_DVB_DDBRIDGE /* n */
 #undef	CONFIG_DVB_FIREDTV /* n */
+#undef	CONFIG_EASYCAP /* n */
+#undef	CONFIG_LIRC_BT829 /* n */
+#undef	CONFIG_LIRC_IGORPLUGUSB /* n */
+#undef	CONFIG_LIRC_IMON /* n */
+#undef	CONFIG_LIRC_PARALLEL /* n */
+#undef	CONFIG_LIRC_SASEM /* n */
+#undef	CONFIG_LIRC_SERIAL /* n */
+#undef	CONFIG_LIRC_SIR /* n */
+#undef	CONFIG_LIRC_TTUSBIR /* n */
+#undef	CONFIG_LIRC_ZILOG /* n */
+#undef	CONFIG_SOLO6X10 /* n */
+#undef	CONFIG_VIDEO_DT3155 /* n */
+#undef	CONFIG_VIDEO_GO7007 /* n */
 
 #endif			/* _ROOT_CONFIG_H_ */
