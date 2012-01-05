@@ -1,0 +1,100 @@
+diff -u -r media_tree/drivers/media/video/videobuf2-memops.c media_tree/drivers/media/video/videobuf2-memops.c
+--- media_tree/drivers/media/video/videobuf2-memops.c	2011-10-10 20:16:36.000000000 +0200
++++ media_tree/drivers/media/video/videobuf2-memops.c	2012-01-05 17:11:09.000000000 +0100
+@@ -44,8 +44,15 @@
+ 	if (vma->vm_ops && vma->vm_ops->open)
+ 		vma->vm_ops->open(vma);
+ 
++	if (vma->vm_file)
++		get_file(vma->vm_file);
++
+ 	memcpy(vma_copy, vma, sizeof(*vma));
+ 
++	vma_copy->vm_mm = NULL;
++	vma_copy->vm_next = NULL;
++	vma_copy->vm_prev = NULL;
++
+ 	return vma_copy;
+ }
+ 
+@@ -64,11 +71,79 @@
+ 	if (vma->vm_ops && vma->vm_ops->close)
+ 		vma->vm_ops->close(vma);
+ 
++	if (vma->vm_file)
++		fput(vma->vm_file);
++
+ 	kfree(vma);
+ }
+ EXPORT_SYMBOL_GPL(vb2_put_vma);
+ 
+ /**
++ * vb2_get_contig_userptr() - lock physically contiguous userspace mapped memory
++ * @vaddr:	starting virtual address of the area to be verified
++ * @size:	size of the area
++ * @res_paddr:	will return physical address for the given vaddr
++ * @res_vma:	will return locked copy of struct vm_area for the given area
++ *
++ * This function will go through memory area of size @size mapped at @vaddr and
++ * verify that the underlying physical pages are contiguous. If they are
++ * contiguous the virtual memory area is locked and a @res_vma is filled with
++ * the copy and @res_pa set to the physical address of the buffer.
++ *
++ * Returns 0 on success.
++ */
++int vb2_get_contig_userptr(unsigned long vaddr, unsigned long size,
++			   struct vm_area_struct **res_vma, dma_addr_t *res_pa)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma;
++	unsigned long offset, start, end;
++	unsigned long this_pfn, prev_pfn;
++	dma_addr_t pa = 0;
++	int ret = -EFAULT;
++
++	start = vaddr;
++	offset = start & ~PAGE_MASK;
++	end = start + size;
++
++	down_read(&mm->mmap_sem);
++	vma = find_vma(mm, start);
++
++	if (vma == NULL || vma->vm_end < end)
++		goto done;
++
++	for (prev_pfn = 0; start < end; start += PAGE_SIZE) {
++		ret = follow_pfn(vma, start, &this_pfn);
++		if (ret)
++			goto done;
++
++		if (prev_pfn == 0)
++			pa = this_pfn << PAGE_SHIFT;
++		else if (this_pfn != prev_pfn + 1) {
++			ret = -EFAULT;
++			goto done;
++		}
++		prev_pfn = this_pfn;
++	}
++
++	/*
++	 * Memory is contigous, lock vma and return to the caller
++	 */
++	*res_vma = vb2_get_vma(vma);
++	if (*res_vma == NULL) {
++		ret = -ENOMEM;
++		goto done;
++	}
++	*res_pa = pa + offset;
++	ret = 0;
++
++done:
++	up_read(&mm->mmap_sem);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(vb2_get_contig_userptr);
++
++/**
+  * vb2_mmap_pfn_range() - map physical pages to userspace
+  * @vma:	virtual memory region for the mapping
+  * @paddr:	starting physical address of the memory to be mapped
+
