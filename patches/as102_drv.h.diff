@@ -1,0 +1,14 @@
+diff as102_drv.h as102_drv.h
+--- as102_drv.h
++++ as102_drv.h
+@@ -55,8 +55,8 @@ extern int debug;
+ 
+ #define AS102_DEVICE_MAJOR	192
+ 
+-#define AS102_USB_BUF_SIZE	512
+-#define MAX_STREAM_URB		32
++#define AS102_USB_BUF_SIZE	(1 << 14)
++#define MAX_STREAM_URB		2
+ 
+ #include "as10x_cmd.h"
+ 
