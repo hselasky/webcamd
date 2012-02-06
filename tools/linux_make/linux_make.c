@@ -237,21 +237,31 @@ read_line(char **ptr, int *line)
 
 		(*ptr)++;
 
-		if (c == '\\') {
+		switch (c) {
+		case ' ':
+		case '\t':
+		case '\r':
+			*((*ptr) - 1) = ' ';
+			break;
+		case '\\':
 			*((*ptr) - 1) = ' ';
 			ignore_nl = 1;
-		}
-		if (c == '\n') {
-
+			break;
+		case '\n':
 			if (ignore_nl) {
 				*((*ptr) - 1) = ' ';
+				(*line)++;
 				ignore_nl = 0;
-			} else {
-				*((*ptr) - 1) = 0;
 				break;
 			}
+			*((*ptr) - 1) = 0;
+			goto done;
+		default:
+			ignore_nl = 0;
+			break;
 		}
 	}
+done:
 	return (old);
 }
 
@@ -652,7 +662,6 @@ parse_makefile(char *path)
 				fprintf(stderr, "Found %s at line "
 				    "%d level %d\n", parent, line, skip);
 			}
-
 			if (skip) {
 				skip++;
 				free(parent);
@@ -680,7 +689,6 @@ parse_makefile(char *path)
 				fprintf(stderr, "Testing %s %c\n",
 				    parent, b);
 			}
-
 			if (strcmp(parent, "ifdef") == 0) {
 				if (b == 'n')
 					skip++;
@@ -704,7 +712,6 @@ parse_makefile(char *path)
 				fprintf(stderr, "Found %s at line "
 				    "%d level %d\n", parent, line, skip);
 			}
-
 			if (skip) {
 				skip++;
 				free(parent);
@@ -724,7 +731,6 @@ parse_makefile(char *path)
 				free(parent);
 				continue;
 			}
-
 			ptr++;
 
 			a = ptr;
@@ -752,7 +758,6 @@ parse_makefile(char *path)
 				fprintf(stderr, "Comparing %s(%s,%s)\n",
 				    parent, a, b);
 			}
-
 			if (strcmp(parent, "ifeq") == 0) {
 				if (strcmp(a, b) != 0)
 					skip++;
@@ -772,7 +777,6 @@ parse_makefile(char *path)
 				fprintf(stderr, "Found endif at line "
 				    "%d level %d\n", line, skip);
 			}
-
 			if (skip)
 				skip--;
 
