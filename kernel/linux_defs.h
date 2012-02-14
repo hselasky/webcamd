@@ -244,6 +244,7 @@
 #define	false 0
 #define	true 1
 #define	HZ 1000
+#define	NSEC_PER_SEC 1000000000LL
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)
 #define	usecs_to_jiffies(x) ((x) / 1000)
@@ -262,9 +263,9 @@
 #define	KBUILD_MODNAME ""
 #define	KERN_NOTICE ""
 #define	BUG(...) __nop
-#define	BUG_ON(...) __nop
-#define	WARN_ON(...) __nop
 #define	WARN(...) __nop
+#define	BUG_ON(x) ({ (x); })
+#define	WARN_ON(x) ({ (x); })
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -274,6 +275,9 @@
 #define	spin_unlock(...) atomic_unlock()
 #define	spin_lock_irq(...)  atomic_lock()
 #define	spin_unlock_irq(...) atomic_unlock()
+#define	raw_spin_lock_init(lock) __nop
+#define	raw_spin_lock(...)  atomic_lock()
+#define	raw_spin_unlock(...) atomic_unlock()
 #define	atomic_inc_return atomic_inc
 #define	atomic_dec_return atomic_dec
 #define	assert_spin_locked(...) __nop

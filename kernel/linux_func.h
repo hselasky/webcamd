@@ -190,6 +190,7 @@ struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
 uint32_t do_div(uint64_t *rem, uint32_t div);
 uint64_t div64_u64(uint64_t, uint64_t);
+uint64_t div_u64_rem(uint64_t, uint32_t, uint32_t *);
 uint64_t div_u64(uint64_t, uint32_t);
 
 #define	do_div(r,d) do_div(&(r),(d))
@@ -220,5 +221,8 @@ const char *skip_spaces(const char *str);
 int	kobject_set_name(struct kobject *kobj, const char *fmt,...);
 
 int	nonseekable_open(struct inode *inode, struct file *filp);
+
+int	kstrtouint(const char *, unsigned int, unsigned int *);
+int	kstrtoint(const char *, unsigned int, int *);
 
 #endif					/* _LINUX_FUNC_H_ */

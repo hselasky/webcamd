@@ -521,6 +521,30 @@ usb_max_isoc_frames(struct usb_device *dev)
 }
 
 /*------------------------------------------------------------------------*
+ *	usb_get_current_frame_number
+ *
+ * The following function returns the last received frame number
+ * from the USB controller.
+ *------------------------------------------------------------------------*/
+uint16_t
+usb_get_current_frame_number(struct usb_device *dev)
+{
+	uint16_t temp;
+
+	atomic_lock();
+	temp = dev->bsd_last_ms;
+	atomic_unlock();
+
+	switch (libusb20_dev_get_speed(dev->bsd_udev)) {
+	case LIBUSB20_SPEED_LOW:
+	case LIBUSB20_SPEED_FULL:
+		return (temp);
+	default:
+		return (temp * 8);
+	}
+}
+
+/*------------------------------------------------------------------------*
  *	usb_submit_urb
  *
  * This function is used to queue an URB after that it has been
@@ -1512,6 +1536,10 @@ usb_linux_isoc_callback(struct libusb20_transfer *xfer)
 
 	switch (status) {
 	case LIBUSB20_TRANSFER_COMPLETED:
+
+		atomic_lock();
+		urb->dev->bsd_last_ms = libusb20_tr_get_time_complete(xfer);
+		atomic_unlock();
 
 		for (x = 0; x < urb->number_of_packets; x++) {
 			uipd = urb->iso_frame_desc + x;

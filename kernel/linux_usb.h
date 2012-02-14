@@ -520,6 +520,7 @@ struct usb_device {
 	char   *serial;			/* iSerialNumber string, if present */
 
 	uint16_t devnum;
+	uint16_t bsd_last_ms;		/* completion time of last ISOC transfer */
 
 	uint8_t	speed;			/* LIBUSB20_SPEED_XXX */
 
@@ -590,6 +591,8 @@ struct urb {
 };
 
 /* various prototypes */
+
+uint16_t	usb_get_current_frame_number(struct usb_device *dev);
 
 int	usb_submit_urb(struct urb *urb, uint16_t mem_flags);
 int	usb_unlink_urb(struct urb *urb);

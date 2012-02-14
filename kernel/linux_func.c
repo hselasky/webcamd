@@ -1647,6 +1647,13 @@ div_u64(uint64_t rem, uint32_t div)
 	return (rem / (uint64_t)div);
 }
 
+uint64_t
+div_u64_rem(uint64_t rem, uint32_t div, uint32_t *prem)
+{
+	*prem = rem % (uint64_t)div;
+        return (rem / (uint64_t)div);
+}
+
 int
 nonseekable_open(struct inode *inode, struct file *file)
 {
@@ -1664,3 +1671,42 @@ zero_nop(void)
 {
 	return (0);
 }
+
+int
+kstrtouint(const char *nptr, unsigned int base, unsigned int *res)
+{
+	unsigned long long temp;
+	char *pp = NULL;
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoull(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
+	if (temp != (unsigned long long)(unsigned int)temp)
+		return (-ERANGE);
+
+	*res = temp;
+	return (0);
+}
+
+int
+kstrtoint(const char *nptr, unsigned int base, int *res)
+{
+	long long temp;
+	char *pp = NULL;
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoll(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
+	if (temp != (long long)(int)temp)
+		return (-ERANGE);
+ 
+	*res = temp;
+	return (0);
+}
+

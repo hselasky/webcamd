@@ -76,6 +76,7 @@ SRCS+= \
 	xc5000.c \
 	xc4000.c \
 	mt2060.c \
+	mt2063.c \
 	mt2266.c \
 	qt1010.c \
 	mt2131.c \
@@ -320,6 +321,7 @@ SRCS+= \
 	etoms.c \
 	finepix.c \
 	jeilinj.c \
+	jl2005bcd.c \
 	kinect.c \
 	konica.c \
 	mars.c \
@@ -477,6 +479,7 @@ SRCS+= \
 	stv6110x.c \
 	isl6423.c \
 	ec100.c \
+	hd29l2.c \
 	ds3000.c \
 	mb86a16.c \
 	mb86a20s.c \
@@ -547,6 +550,7 @@ SRCS+= \
 	friio.c \
 	friio-fe.c \
 	ec168.c \
+	az6007.c \
 	az6027.c \
 	lmedm04.c \
 	technisat-usb2.c \

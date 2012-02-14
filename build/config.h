@@ -34,6 +34,7 @@
 #define	CONFIG_DVB_DUMMY_FE /* y */
 #undef	CONFIG_DVB_DYNAMIC_MINORS /* n */
 #define	CONFIG_DVB_EC100 /* y */
+#define	CONFIG_DVB_HD29L2 /* y */
 #define	CONFIG_DVB_ISL6405 /* y */
 #define	CONFIG_DVB_ISL6421 /* y */
 #define	CONFIG_DVB_ISL6423 /* y */
@@ -101,6 +102,7 @@
 #define	CONFIG_DVB_USB_AF9015 /* y */
 #define	CONFIG_DVB_USB_ANYSEE /* y */
 #define	CONFIG_DVB_USB_AU6610 /* y */
+#define	CONFIG_DVB_USB_AZ6007 /* y */
 #define	CONFIG_DVB_USB_AZ6027 /* y */
 #define	CONFIG_DVB_USB_CE6230 /* y */
 #define	CONFIG_DVB_USB_CINERGY_T2 /* y */
@@ -156,6 +158,7 @@
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
+#define	CONFIG_MEDIA_TUNER_MT2063 /* y */
 #define	CONFIG_MEDIA_TUNER_MT20XX /* y */
 #define	CONFIG_MEDIA_TUNER_MT2131 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2266 /* y */
@@ -200,6 +203,7 @@
 #define	CONFIG_USB_GSPCA_ETOMS /* y */
 #define	CONFIG_USB_GSPCA_FINEPIX /* y */
 #define	CONFIG_USB_GSPCA_JEILINJ /* y */
+#define	CONFIG_USB_GSPCA_JL2005BCD /* y */
 #define	CONFIG_USB_GSPCA_KINECT /* y */
 #define	CONFIG_USB_GSPCA_KONICA /* y */
 #define	CONFIG_USB_GSPCA_MARS /* y */
@@ -245,6 +249,7 @@
 #define	CONFIG_USB_STKWEBCAM /* y */
 #undef	CONFIG_USB_STV06XX /* n */
 #define	CONFIG_USB_VIDEO_CLASS /* y */
+#undef	CONFIG_USB_VIDEO_CLASS_DEBUGFS /* n */
 #define	CONFIG_USB_ZR364XX /* y */
 #define	CONFIG_VIDEOBUF2_CORE /* y */
 #define	CONFIG_VIDEOBUF2_MEMOPS /* y */
@@ -325,6 +330,7 @@
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
+#undef	CONFIG_IR_SANYO_DECODER /* n */
 #undef	CONFIG_IR_MCE_KBD_DECODER /* n */
 #undef	CONFIG_IR_ITE_CIR /* n */
 #undef	CONFIG_IR_FINTEK /* n */
@@ -343,6 +349,7 @@
 #undef	CONFIG_VIDEO_M5MOLS /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
 #undef	CONFIG_VIDEO_ADP1653 /* n */
+#undef	CONFIG_VIDEO_AS3645A /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M111 /* n */
@@ -404,8 +411,10 @@
 #undef	CONFIG_VIDEO_OMAP1 /* n */
 #undef	CONFIG_VIDEO_ATMEL_ISI /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_FIMC /* n */
+#undef	CONFIG_VIDEO_SAMSUNG_S5P_JPEG /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_MFC /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_TV /* n */
+#undef	CONFIG_VIDEO_SAMSUNG_S5P_G2D /* n */
 #undef	CONFIG_ARCH_DAVINCI /* n */
 #undef	CONFIG_VIDEO_SH_VOU /* n */
 #undef	CONFIG_VIDEO_SAA7164 /* n */

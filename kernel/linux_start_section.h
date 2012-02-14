@@ -56,6 +56,12 @@ struct module_exit_struct {
 
 #define	late_initcall(x) module_init(x)	/* XXX FIXME LATER */
 
+#define	module_usb_driver(x) \
+static int x##_init(void) { return (usb_register(&(x)) ? -ENOMEM : 0); } \
+module_init(x##_init); \
+static void x##_exit(void) { usb_deregister(&(x)); } \
+module_exit(x##_exit)
+
 void	linux_parm(void);
 void	linux_init(void);
 void	linux_exit(void);

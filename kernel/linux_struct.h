@@ -167,6 +167,9 @@ struct vm_operations_struct {
 typedef struct spinlock {
 } spinlock_t;
 
+typedef struct raw_spinlock {
+} raw_spinlock_t;
+
 struct file_operations {
 	struct module *owner;
 	loff_t  (*llseek) (struct file *, loff_t, int);
@@ -305,5 +308,18 @@ extern struct device_attribute dev_attr_version;
 extern struct device_attribute dev_attr_wheel;
 extern struct device_attribute dev_attr_xtilt;
 extern struct device_attribute dev_attr_ytilt;
+extern struct device_attribute dev_attr_status_led0_select;
+extern struct device_attribute dev_attr_status_led1_select;
+extern struct device_attribute dev_attr_status0_luminance;
+extern struct device_attribute dev_attr_status1_luminance;
+extern struct device_attribute dev_attr_buttons_luminance;
+extern struct device_attribute dev_attr_button0_rawimg;
+extern struct device_attribute dev_attr_button1_rawimg;
+extern struct device_attribute dev_attr_button2_rawimg;
+extern struct device_attribute dev_attr_button3_rawimg;
+extern struct device_attribute dev_attr_button4_rawimg;
+extern struct device_attribute dev_attr_button5_rawimg;
+extern struct device_attribute dev_attr_button6_rawimg;
+extern struct device_attribute dev_attr_button7_rawimg;
 
 #endif					/* _LINUX_STRUCT_H_ */
