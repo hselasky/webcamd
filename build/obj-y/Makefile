@@ -388,6 +388,7 @@ SRCS+= \
 	uvc_ctrl.c \
 	uvc_status.c \
 	uvc_isight.c \
+	uvc_debugfs.c \
 	ir-kbd-i2c.c \
 	dsbr100.c \
 	radio-mr800.c \

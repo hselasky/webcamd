@@ -249,7 +249,6 @@
 #define	CONFIG_USB_STKWEBCAM /* y */
 #undef	CONFIG_USB_STV06XX /* n */
 #define	CONFIG_USB_VIDEO_CLASS /* y */
-#undef	CONFIG_USB_VIDEO_CLASS_DEBUGFS /* n */
 #define	CONFIG_USB_ZR364XX /* y */
 #define	CONFIG_VIDEOBUF2_CORE /* y */
 #define	CONFIG_VIDEOBUF2_MEMOPS /* y */

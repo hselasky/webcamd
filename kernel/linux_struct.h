@@ -210,6 +210,7 @@ struct file {
 
 typedef struct inode {
 	dev_t	d_inode;
+	void	*i_private;
 	char	i_rdev[0];		/* dummy, must be non-zero */
 } inode_t;
 

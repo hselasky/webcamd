@@ -225,4 +225,7 @@ int	nonseekable_open(struct inode *inode, struct file *filp);
 int	kstrtouint(const char *, unsigned int, unsigned int *);
 int	kstrtoint(const char *, unsigned int, int *);
 
+ssize_t	simple_write_to_buffer(void *, size_t, loff_t *, const void __user *, size_t);
+ssize_t	simple_read_from_buffer(void __user *, size_t, loff_t *, const void *, size_t);
+
 #endif					/* _LINUX_FUNC_H_ */

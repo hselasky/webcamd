@@ -23,7 +23,10 @@
  * SUCH DAMAGE.
  */
 
-/* NOTE: Some functions in this file derive directly from the Linux kernel sources. */
+/*
+ * NOTE: Some functions in this file derive directly from the Linux kernel
+ * sources and are covered by the GPLv2.
+ */
 
 #include <media/v4l2-dev.h>
 
@@ -1651,7 +1654,7 @@ uint64_t
 div_u64_rem(uint64_t rem, uint32_t div, uint32_t *prem)
 {
 	*prem = rem % (uint64_t)div;
-        return (rem / (uint64_t)div);
+	return (rem / (uint64_t)div);
 }
 
 int
@@ -1677,6 +1680,7 @@ kstrtouint(const char *nptr, unsigned int base, unsigned int *res)
 {
 	unsigned long long temp;
 	char *pp = NULL;
+
 	*res = 0;
 
 	if (base < 2 || base > 35)
@@ -1696,6 +1700,7 @@ kstrtoint(const char *nptr, unsigned int base, int *res)
 {
 	long long temp;
 	char *pp = NULL;
+
 	*res = 0;
 
 	if (base < 2 || base > 35)
@@ -1705,8 +1710,53 @@ kstrtoint(const char *nptr, unsigned int base, int *res)
 		return (-EINVAL);
 	if (temp != (long long)(int)temp)
 		return (-ERANGE);
- 
+
 	*res = temp;
 	return (0);
 }
 
+/* The following function was copied from the Linux Kernel sources, fs/libfs.c */
+
+ssize_t 
+simple_read_from_buffer(void __user * to, size_t count, loff_t *ppos,
+    const void *from, size_t available)
+{
+	loff_t pos = *ppos;
+	size_t ret;
+
+	if (pos < 0)
+		return (-EINVAL);
+	if (pos >= available || count == 0)
+		return (0);
+	if (count > available - pos)
+		count = available - pos;
+	ret = copy_to_user(to, from + pos, count);
+	if (ret == count)
+		return (-EFAULT);
+	count -= ret;
+	*ppos = pos + count;
+	return (count);
+}
+
+/* The following function was copied from the Linux Kernel sources, fs/libfs.c */
+
+ssize_t 
+simple_write_to_buffer(void *to, size_t available,
+    loff_t *ppos, const void __user * from, size_t count)
+{
+	loff_t pos = *ppos;
+	size_t ret;
+
+	if (pos < 0)
+		return (-EINVAL);
+	if (pos >= available || count == 0)
+		return (0);
+	if (count > available - pos)
+		count = available - pos;
+	ret = copy_from_user(to + pos, from, count);
+	if (ret == count)
+		return (-EFAULT);
+	count -= ret;
+	*ppos = pos + count;
+	return (count);
+}
