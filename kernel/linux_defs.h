@@ -313,6 +313,8 @@
 #define	time_after_eq(a,b) (((long)(b) - (long)(a)) <= 0)
 #define	time_before(a,b) time_after(b,a)
 #define	time_before_eq(a,b) time_after_eq(b,a)
+#define	time_is_before_jiffies(a) time_after(jiffies,a)
+#define	time_is_after_jiffies(a) time_before(jiffies,a)
 #define	time_is_after_eq_jiffies(a) time_before_eq(jiffies,a)
 #define	time_is_before_eq_jiffies(a) time_after_eq(jiffies,a)
 #define	__attribute_const__
