@@ -598,6 +598,13 @@ mutex_lock(struct mutex *m)
 	atomic_unlock();
 }
 
+int
+mutex_lock_killable(struct mutex *m)
+{
+	mutex_lock(m);
+	return (0);
+}
+
 void
 mutex_unlock(struct mutex *m)
 {

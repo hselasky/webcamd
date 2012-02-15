@@ -240,6 +240,7 @@
 #define	CONFIG_USB_GSPCA_VICAM /* y */
 #undef	CONFIG_USB_GSPCA_XIRLINK_CIT /* n */
 #define	CONFIG_USB_GSPCA_ZC3XX /* y */
+#define	CONFIG_USB_KEENE /* y */
 #define	CONFIG_USB_M5602 /* y */
 #define	CONFIG_USB_MR800 /* y */
 #define	CONFIG_USB_PWC /* y */
@@ -428,6 +429,7 @@
 #undef	CONFIG_VIDEO_DM644X_VPBE /* n */
 #undef	CONFIG_VIDEO_VPBE_DISPLAY /* n */
 #undef	CONFIG_ARCH_OMAP /* n */
+#undef	CONFIG_RADIO_ISA /* n */
 #undef	CONFIG_RADIO_AZTECH /* n */
 #undef	CONFIG_RADIO_RTRACK2 /* n */
 #undef	CONFIG_RADIO_SF16FMI /* n */

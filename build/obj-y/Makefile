@@ -129,6 +129,8 @@ SRCS+= \
 	rc-imon-mce.c \
 	rc-imon-pad.c \
 	rc-iodata-bctv7e.c \
+	rc-it913x-v1.c \
+	rc-it913x-v2.c \
 	rc-kaiomy.c \
 	rc-kworld-315u.c \
 	rc-kworld-plus-tv-analog.c \
@@ -392,6 +394,7 @@ SRCS+= \
 	ir-kbd-i2c.c \
 	dsbr100.c \
 	radio-mr800.c \
+	radio-keene.c \
 	radio-tea5764.c \
 	saa7706h.c \
 	tef6862.c \
