@@ -24,5 +24,6 @@ sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig ../media_tree/drivers/me
 sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig ../media_tree/drivers/media/dvb/frontends/dib3000mb.c
 sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/warn[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig ../media_tree/drivers/media/dvb/frontends/dib3000mb_priv.h
 sed -e "s/sleep[(,]/do_&/g" -e "s/mdo_sleep/msleep/g" -i .orig ../media_tree/drivers/media/dvb/frontends/tda18271c2dd.c
+sed -e "s/info[(]/itx_&/g" -i .orig ../media_tree/drivers/media/dvb/frontends/it913x-fe.c
 
 exit 0
