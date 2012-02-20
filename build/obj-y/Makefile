@@ -76,7 +76,6 @@ SRCS+= \
 	xc5000.c \
 	xc4000.c \
 	mt2060.c \
-	mt2063.c \
 	mt2266.c \
 	qt1010.c \
 	mt2131.c \
@@ -129,8 +128,6 @@ SRCS+= \
 	rc-imon-mce.c \
 	rc-imon-pad.c \
 	rc-iodata-bctv7e.c \
-	rc-it913x-v1.c \
-	rc-it913x-v2.c \
 	rc-kaiomy.c \
 	rc-kworld-315u.c \
 	rc-kworld-plus-tv-analog.c \
@@ -323,7 +320,6 @@ SRCS+= \
 	etoms.c \
 	finepix.c \
 	jeilinj.c \
-	jl2005bcd.c \
 	kinect.c \
 	konica.c \
 	mars.c \
@@ -390,11 +386,9 @@ SRCS+= \
 	uvc_ctrl.c \
 	uvc_status.c \
 	uvc_isight.c \
-	uvc_debugfs.c \
 	ir-kbd-i2c.c \
 	dsbr100.c \
 	radio-mr800.c \
-	radio-keene.c \
 	radio-tea5764.c \
 	saa7706h.c \
 	tef6862.c \
@@ -483,7 +477,6 @@ SRCS+= \
 	stv6110x.c \
 	isl6423.c \
 	ec100.c \
-	hd29l2.c \
 	ds3000.c \
 	mb86a16.c \
 	mb86a20s.c \
@@ -554,7 +547,6 @@ SRCS+= \
 	friio.c \
 	friio-fe.c \
 	ec168.c \
-	az6007.c \
 	az6027.c \
 	lmedm04.c \
 	technisat-usb2.c \

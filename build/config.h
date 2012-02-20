@@ -330,7 +330,6 @@
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
-#undef	CONFIG_IR_SANYO_DECODER /* n */
 #undef	CONFIG_IR_MCE_KBD_DECODER /* n */
 #undef	CONFIG_IR_ITE_CIR /* n */
 #undef	CONFIG_IR_FINTEK /* n */
@@ -349,7 +348,6 @@
 #undef	CONFIG_VIDEO_M5MOLS /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
 #undef	CONFIG_VIDEO_ADP1653 /* n */
-#undef	CONFIG_VIDEO_AS3645A /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M111 /* n */
@@ -411,10 +409,8 @@
 #undef	CONFIG_VIDEO_OMAP1 /* n */
 #undef	CONFIG_VIDEO_ATMEL_ISI /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_FIMC /* n */
-#undef	CONFIG_VIDEO_SAMSUNG_S5P_JPEG /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_MFC /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_TV /* n */
-#undef	CONFIG_VIDEO_SAMSUNG_S5P_G2D /* n */
 #undef	CONFIG_ARCH_DAVINCI /* n */
 #undef	CONFIG_VIDEO_SH_VOU /* n */
 #undef	CONFIG_VIDEO_SAA7164 /* n */
@@ -429,7 +425,6 @@
 #undef	CONFIG_VIDEO_DM644X_VPBE /* n */
 #undef	CONFIG_VIDEO_VPBE_DISPLAY /* n */
 #undef	CONFIG_ARCH_OMAP /* n */
-#undef	CONFIG_RADIO_ISA /* n */
 #undef	CONFIG_RADIO_AZTECH /* n */
 #undef	CONFIG_RADIO_RTRACK2 /* n */
 #undef	CONFIG_RADIO_SF16FMI /* n */
