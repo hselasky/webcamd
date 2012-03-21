@@ -1,0 +1,18 @@
+diff --git a/drivers/media/video/videobuf2-core.c b/drivers/media/video/videobuf2-core.c
+index 2e8f1df..9b9863b 100644
+--- a/drivers/media/video/videobuf2-core.c
++++ b/drivers/media/video/videobuf2-core.c
+@@ -1097,10 +1097,9 @@ int vb2_qbuf(struct vb2_queue *q, struct v4l2_buffer *b)
+ 	 * consistent after getting driver's lock back.
+ 	 */
+ 	if (q->memory == V4L2_MEMORY_USERPTR) {
+-		mmap_sem = &current->mm->mmap_sem;
+-		call_qop(q, wait_prepare, q);
+-		down_read(mmap_sem);
+-		call_qop(q, wait_finish, q);
++		dprintk(1, "qbuf: USERPTR is not supported\n");
++		ret = -EINVAL;
++		goto unlock;
+ 	}
+ 
+ 	if (q->fileio) {

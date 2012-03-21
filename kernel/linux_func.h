@@ -105,6 +105,7 @@ int	register_chrdev(dev_t mm, const char *desc, const struct file_operations *fo
 int	unregister_chrdev(dev_t mm, const char *desc);
 
 uint8_t	bitrev8(uint8_t a);
+uint16_t bitrev16(uint16_t a);
 unsigned int hweight8(unsigned int w);
 unsigned int hweight16(unsigned int w);
 unsigned int hweight32(unsigned int w);

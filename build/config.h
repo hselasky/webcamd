@@ -48,6 +48,7 @@
 #define	CONFIG_DVB_LGS8GXX /* y */
 #define	CONFIG_DVB_LNBP21 /* y */
 #define	CONFIG_DVB_LNBP22 /* y */
+#define	CONFIG_DVB_M88RS2000 /* y */
 #define	CONFIG_DVB_MB86A16 /* y */
 #define	CONFIG_DVB_MB86A20S /* y */
 #define	CONFIG_DVB_MT312 /* y */
@@ -76,6 +77,7 @@
 #define	CONFIG_DVB_STV090x /* y */
 #define	CONFIG_DVB_STV6110 /* y */
 #define	CONFIG_DVB_STV6110x /* y */
+#define	CONFIG_DVB_RTL2830 /* y */
 #define	CONFIG_DVB_TDA10021 /* y */
 #define	CONFIG_DVB_TDA10023 /* y */
 #define	CONFIG_DVB_TDA10048 /* y */
@@ -125,6 +127,7 @@
 #define	CONFIG_DVB_USB_NOVA_T_USB2 /* y */
 #define	CONFIG_DVB_USB_OPERA1 /* y */
 #define	CONFIG_DVB_USB_PCTV452E /* y */
+#define	CONFIG_DVB_USB_RTL28XXU /* y */
 #define	CONFIG_DVB_USB_TECHNISAT_USB2 /* y */
 #define	CONFIG_DVB_USB_TTUSB2 /* y */
 #define	CONFIG_DVB_USB_UMT_010 /* y */
@@ -151,6 +154,7 @@
 #define	CONFIG_IR_RC5_SZ_DECODER /* y */
 #define	CONFIG_IR_RC6_DECODER /* y */
 #define	CONFIG_IR_REDRAT3 /* y */
+#define	CONFIG_IR_SANYO_DECODER /* y */
 #define	CONFIG_IR_SONY_DECODER /* y */
 #define	CONFIG_IR_STREAMZAP /* y */
 #define	CONFIG_LIRC /* y */
@@ -337,10 +341,15 @@
 #undef	CONFIG_IR_ENE /* n */
 #undef	CONFIG_IR_WINBOND_CIR /* n */
 #undef	CONFIG_RC_LOOPBACK /* n */
+#undef	CONFIG_IR_GPIO_CIR /* n */
 #undef	CONFIG_COMPAT /* n */
+#undef	CONFIG_VIDEO_APTINA_PLL /* n */
 #undef	CONFIG_VIDEO_ADV7180 /* n */
+#undef	CONFIG_VIDEO_ADV7183 /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
+#undef	CONFIG_VIDEO_VS6624 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */
+#undef	CONFIG_VIDEO_MT9M032 /* n */
 #undef	CONFIG_VIDEO_MT9P031 /* n */
 #undef	CONFIG_VIDEO_MT9T001 /* n */
 #undef	CONFIG_VIDEO_MT9V032 /* n */
@@ -348,6 +357,7 @@
 #undef	CONFIG_VIDEO_M5MOLS /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
 #undef	CONFIG_VIDEO_ADP1653 /* n */
+#undef	CONFIG_VIDEO_AS3645A /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M111 /* n */
@@ -408,9 +418,13 @@
 #undef	CONFIG_VIDEO_SH_MOBILE_CEU /* n */
 #undef	CONFIG_VIDEO_OMAP1 /* n */
 #undef	CONFIG_VIDEO_ATMEL_ISI /* n */
+#undef	CONFIG_VIDEO_MX2_EMMAPRP /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_FIMC /* n */
+#undef	CONFIG_VIDEO_SAMSUNG_S5P_JPEG /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_MFC /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_TV /* n */
+#undef	CONFIG_VIDEO_SAMSUNG_S5P_G2D /* n */
+#undef	CONFIG_BLACKFIN /* n */
 #undef	CONFIG_ARCH_DAVINCI /* n */
 #undef	CONFIG_VIDEO_SH_VOU /* n */
 #undef	CONFIG_VIDEO_SAA7164 /* n */
@@ -425,6 +439,7 @@
 #undef	CONFIG_VIDEO_DM644X_VPBE /* n */
 #undef	CONFIG_VIDEO_VPBE_DISPLAY /* n */
 #undef	CONFIG_ARCH_OMAP /* n */
+#undef	CONFIG_RADIO_ISA /* n */
 #undef	CONFIG_RADIO_AZTECH /* n */
 #undef	CONFIG_RADIO_RTRACK2 /* n */
 #undef	CONFIG_RADIO_SF16FMI /* n */

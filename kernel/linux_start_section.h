@@ -62,6 +62,12 @@ module_init(x##_init); \
 static void x##_exit(void) { usb_deregister(&(x)); } \
 module_exit(x##_exit)
 
+#define	module_i2c_driver(x) \
+static int x##_init(void) { return (i2c_add_driver(&(x)) ? -ENOMEM : 0); } \
+module_init(x##_init); \
+static void x##_exit(void) { i2c_del_driver(&(x)); } \
+module_exit(x##_exit)
+
 void	linux_parm(void);
 void	linux_init(void);
 void	linux_exit(void);
