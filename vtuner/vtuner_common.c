@@ -23,6 +23,8 @@
  * SUCH DAMAGE.
  */
 
+#define	__DVB_CORE__
+
 #include <vtuner/vtuner.h>
 #include <vtuner/vtuner_common.h>
 
