@@ -483,7 +483,7 @@ vtuners_listen(const char *host, const char *port, int buffer)
 
 	freeaddrinfo(res);
 
-	printf(KERN_INFO "vTuner: Listen result fd=%d\n", s);
+	printk(KERN_INFO "vTuner: Listen result fd=%d\n", s);
 
 	return (s);
 }
