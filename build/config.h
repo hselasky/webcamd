@@ -5,6 +5,7 @@
 #ifndef _ROOT_CONFIG_H_
 #define	_ROOT_CONFIG_H_
 
+#define	CONFIG_DVB_MAX_ADAPTERS 8
 #define	CONFIG_AS102_USB /* y */
 #define	CONFIG_DVB_A8293 /* y */
 #define	CONFIG_DVB_AF9013 /* y */
@@ -331,6 +332,7 @@
 #undef	CONFIG_INPUT_TOUCHSCREEN /* n */
 #undef	CONFIG_INPUT_MISC /* n */
 #undef	CONFIG_INPUT_APMPOWER /* n */
+#undef	CONFIG_INPUT_OF_MATRIX_KEYMAP /* n */
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
