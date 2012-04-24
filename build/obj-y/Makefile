@@ -86,6 +86,8 @@ SRCS+= \
 	max2165.c \
 	tda18218.c \
 	tda18212.c \
+	tua9001.c \
+	fc0011.c \
 	rc-adstech-dvb-t-pci.c \
 	rc-alink-dtu-m.c \
 	rc-anysee.c \
@@ -140,6 +142,7 @@ SRCS+= \
 	rc-lme2510.c \
 	rc-manli.c \
 	rc-medion-x10.c \
+	rc-medion-x10-digitainer.c \
 	rc-msi-digivox-ii.c \
 	rc-msi-digivox-iii.c \
 	rc-msi-tvanywhere.c \
@@ -462,6 +465,7 @@ SRCS+= \
 	tua6100.c \
 	s5h1409.c \
 	itd1000.c \
+	au8522_common.c \
 	au8522_dig.c \
 	au8522_decoder.c \
 	tda10048.c \
@@ -501,6 +505,7 @@ SRCS+= \
 	tda10071.c \
 	rtl2830.c \
 	m88rs2000.c \
+	af9033.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \
@@ -570,6 +575,7 @@ SRCS+= \
 	mxl111sf-demod.c \
 	mxl111sf-tuner.c \
 	rtl28xxu.c \
+	af9035.c \
 	smscoreapi.c \
 	sms-cards.c \
 	smsendian.c \

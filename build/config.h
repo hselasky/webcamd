@@ -5,14 +5,16 @@
 #ifndef _ROOT_CONFIG_H_
 #define	_ROOT_CONFIG_H_
 
-#define	CONFIG_DVB_MAX_ADAPTERS 8
 #define	CONFIG_AS102_USB /* y */
 #define	CONFIG_DVB_A8293 /* y */
 #define	CONFIG_DVB_AF9013 /* y */
+#define	CONFIG_DVB_AF9033 /* y */
 #define	CONFIG_DVB_AS102 /* y */
 #define	CONFIG_DVB_AT76C651 /* y */
 #define	CONFIG_DVB_ATBM8830 /* y */
 #define	CONFIG_DVB_AU8522 /* y */
+#define	CONFIG_DVB_AU8522_DTV /* y */
+#define	CONFIG_DVB_AU8522_V4L /* y */
 #define	CONFIG_DVB_B2C2_FLEXCOP /* y */
 #define	CONFIG_DVB_B2C2_FLEXCOP_USB /* y */
 #define	CONFIG_DVB_BCM3510 /* y */
@@ -50,6 +52,7 @@
 #define	CONFIG_DVB_LNBP21 /* y */
 #define	CONFIG_DVB_LNBP22 /* y */
 #define	CONFIG_DVB_M88RS2000 /* y */
+#define	CONFIG_DVB_MAX_ADAPTERS 8
 #define	CONFIG_DVB_MB86A16 /* y */
 #define	CONFIG_DVB_MB86A20S /* y */
 #define	CONFIG_DVB_MT312 /* y */
@@ -59,6 +62,7 @@
 #define	CONFIG_DVB_OR51132 /* y */
 #define	CONFIG_DVB_OR51211 /* y */
 #define	CONFIG_DVB_PLL /* y */
+#define	CONFIG_DVB_RTL2830 /* y */
 #define	CONFIG_DVB_S5H1409 /* y */
 #define	CONFIG_DVB_S5H1411 /* y */
 #define	CONFIG_DVB_S5H1420 /* y */
@@ -78,7 +82,6 @@
 #define	CONFIG_DVB_STV090x /* y */
 #define	CONFIG_DVB_STV6110 /* y */
 #define	CONFIG_DVB_STV6110x /* y */
-#define	CONFIG_DVB_RTL2830 /* y */
 #define	CONFIG_DVB_TDA10021 /* y */
 #define	CONFIG_DVB_TDA10023 /* y */
 #define	CONFIG_DVB_TDA10048 /* y */
@@ -103,6 +106,7 @@
 #define	CONFIG_DVB_USB_AF9005 /* y */
 #define	CONFIG_DVB_USB_AF9005_REMOTE /* y */
 #define	CONFIG_DVB_USB_AF9015 /* y */
+#define	CONFIG_DVB_USB_AF9035 /* y */
 #define	CONFIG_DVB_USB_ANYSEE /* y */
 #define	CONFIG_DVB_USB_AU6610 /* y */
 #define	CONFIG_DVB_USB_AZ6007 /* y */
@@ -160,6 +164,7 @@
 #define	CONFIG_IR_STREAMZAP /* y */
 #define	CONFIG_LIRC /* y */
 #define	CONFIG_LIRC_STAGING /* y */
+#define	CONFIG_MEDIA_TUNER_FC0011 /* y */
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
@@ -179,6 +184,7 @@
 #define	CONFIG_MEDIA_TUNER_TDA9887 /* y */
 #define	CONFIG_MEDIA_TUNER_TEA5761 /* y */
 #define	CONFIG_MEDIA_TUNER_TEA5767 /* y */
+#define	CONFIG_MEDIA_TUNER_TUA9001 /* y */
 #define	CONFIG_MEDIA_TUNER_XC2028 /* y */
 #define	CONFIG_MEDIA_TUNER_XC4000 /* y */
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */

@@ -27,7 +27,7 @@
 
 /*
  * Many definitions in this header file derive
- * from the Linux Kernel's usb.h
+ * from the Linux Kernel's usb.h and ch9.h
  */
 
 #ifndef _LINUX_USB_H_
@@ -249,6 +249,10 @@ struct usb_config_descriptor {
 	uint8_t	bConfigurationValue;
 	uint8_t	iConfiguration;
 	uint8_t	bmAttributes;
+#define	USB_CONFIG_ATT_ONE		(1 << 7)	/* must be set */
+#define	USB_CONFIG_ATT_SELFPOWER	(1 << 6)	/* self powered */
+#define	USB_CONFIG_ATT_WAKEUP		(1 << 5)	/* can wakeup */
+#define	USB_CONFIG_ATT_BATTERY		(1 << 4)	/* battery powered */
 	uint8_t	bMaxPower;		/* max current in 2 mA units */
 } __packed;
 

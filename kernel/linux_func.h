@@ -146,6 +146,8 @@ u32	crc32_be(u32 crc, unsigned char const *p, size_t len);
 void   *vmalloc(size_t size);
 void   *vzalloc(size_t size);
 void   *kcalloc(size_t n, size_t size, int flags);
+
+#define	kmalloc_array(...) kcalloc(__VA_ARGS__)
 long	__get_free_page(int);
 void	free_page(long);
 struct class *class_get(struct class *class);
@@ -162,6 +164,9 @@ int	do_gettimeofday(struct timeval *tp);
 void	poll_initwait(struct poll_wqueues *pwq);
 void	poll_freewait(struct poll_wqueues *pwq);
 void	poll_schedule(struct poll_wqueues *pwq, int flag);
+
+#define	poll_requested_events(...) 0xFFFFFFFFU
+
 void	bitmap_zero(unsigned long *dst, int nbits);
 int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
@@ -173,6 +178,7 @@ void	ktime_get_ts(struct timespec *ts);
 void	ktime_get_real_ts(struct timespec *ts);
 int64_t	ktime_to_ns(const struct timespec ts);
 struct timespec ktime_sub(const struct timespec a, const struct timespec b);
+struct timespec ktime_get_monotonic_offset(void);
 void	msleep(uint32_t ms);
 uint32_t msleep_interruptible(uint32_t ms);
 void	request_module(const char *fmt,...);

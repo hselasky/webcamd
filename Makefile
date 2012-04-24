@@ -1,7 +1,7 @@
 #
 # $FreeBSD: $
 #
-# Copyright (c) 2010-2011 Hans Petter Selasky. All rights reserved.
+# Copyright (c) 2010-2012 Hans Petter Selasky. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.4.0.1
+VERSION=	3.5.0.1
 PROG=		webcamd
 
 #

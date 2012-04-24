@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2012 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
 #include <media/v4l2-dev.h>
 
 #include <linux/major.h>
+#include <linux/power_supply.h>
 
 #include <dvbdev.h>
 
@@ -1360,6 +1361,30 @@ ktime_sub(const struct timespec a, const struct timespec b)
 	return (r);
 }
 
+static struct timespec ktime_monotonic_offset;
+
+static int
+ktime_monotonic_offset_init(void)
+{
+	struct timespec ta;
+	struct timespec tb;
+
+	clock_gettime(CLOCK_MONOTONIC, &ta);
+	clock_gettime(CLOCK_REALTIME, &tb);
+
+	ktime_monotonic_offset = ktime_sub(tb, ta);
+
+	return (0);
+}
+
+module_init(ktime_monotonic_offset_init);
+
+struct timespec
+ktime_get_monotonic_offset(void)
+{
+	return (ktime_monotonic_offset);
+}
+
 struct timespec
 current_kernel_time(void)
 {
@@ -1727,7 +1752,7 @@ kstrtoint(const char *nptr, unsigned int base, int *res)
 
 /* The following function was copied from the Linux Kernel sources, fs/libfs.c */
 
-ssize_t 
+ssize_t
 simple_read_from_buffer(void __user * to, size_t count, loff_t *ppos,
     const void *from, size_t available)
 {
@@ -1750,7 +1775,7 @@ simple_read_from_buffer(void __user * to, size_t count, loff_t *ppos,
 
 /* The following function was copied from the Linux Kernel sources, fs/libfs.c */
 
-ssize_t 
+ssize_t
 simple_write_to_buffer(void *to, size_t available,
     loff_t *ppos, const void __user * from, size_t count)
 {
@@ -1769,4 +1794,16 @@ simple_write_to_buffer(void *to, size_t available,
 	count -= ret;
 	*ppos = pos + count;
 	return (count);
+}
+
+int
+power_supply_register(struct device *parent, struct power_supply *psy)
+{
+	return (0);
+}
+
+void
+power_supply_unregister(struct power_supply *psy)
+{
+
 }
