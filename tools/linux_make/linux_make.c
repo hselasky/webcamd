@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011 Hans Petter Selasky <hselasky@freebsd.org>
+ * Copyright (c) 2011-2012 Hans Petter Selasky <hselasky@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,6 +79,7 @@ struct makefile {
 struct config {
 	config_entry_t entry;
 	char   *name;
+	char   *orig;
 	char	value;			/* m/y/n */
 };
 
@@ -147,14 +148,16 @@ new_makefile(char *name)
 }
 
 static void
-new_config(char *name, char what)
+new_config(char *name, char *orig, char what)
 {
 	struct config *c0;
 
 	TAILQ_FOREACH(c0, &rootConfig, entry) {
 		if (strcmp(c0->name, name) == 0) {
-			c0->value = what;
+			free(c0->orig);
 			free(name);
+			c0->value = what;
+			c0->orig = orig;
 			return;
 		}
 	}
@@ -165,6 +168,7 @@ new_config(char *name, char what)
 	memset(c0, 0, sizeof(*c0));
 	c0->name = name;
 	c0->value = what;
+	c0->orig = orig;
 
 	TAILQ_INSERT_TAIL(&rootConfig, c0, entry);
 }
@@ -498,12 +502,13 @@ get_config_entry(const char *what)
 	struct config *c0;
 
 	TAILQ_FOREACH(c0, &rootConfig, entry) {
-		if (strcmp(c0->name, what) == 0) {
+		if (c0->value == 'd')
+			continue;
+		if (strcmp(c0->name, what) == 0)
 			return (c0->value);
-		}
 	}
 
-	new_config(strcatdup(what, ""), 'n');
+	new_config(strcatdup(what, ""), NULL, 'n');
 
 	return ('n');
 }
@@ -578,13 +583,26 @@ parse_config(char *path)
 		/* figure out value */
 		switch (temp[0]) {
 		case 'y':
-			new_config(keyword, 'y');
+			new_config(keyword, NULL, 'y');
 			break;
 		case 'm':
-			new_config(keyword, 'm');
+			new_config(keyword, NULL, 'm');
 			break;
 		case 'n':
-			new_config(keyword, 'n');
+			new_config(keyword, NULL, 'n');
+			break;
+		case '\"':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			new_config(keyword, strcatdup(temp, ""), 'd');
 			break;
 		default:
 			errx(EX_NOINPUT, "Invalid configuration "
@@ -1104,6 +1122,9 @@ main(int argc, char **argv)
 		} else if (c0->value == 'y') {
 			printf("#define\t%s /* %c */\n",
 			    c0->name, c0->value);
+		} else if (c0->value == 'd') {
+			printf("#define\t%s %s\n",
+			    c0->name, c0->orig);
 		} else {
 			printf("#undef\t%s /* %c */\n",
 			    c0->name, c0->value);
