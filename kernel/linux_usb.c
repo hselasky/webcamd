@@ -2140,7 +2140,7 @@ uint16_t
 usb_maxpacket(struct usb_device *dev, int endpoint, int is_out)
 {
 	struct usb_host_endpoint *ep;
-	uint8_t index = endpoint & 15;
+	uint8_t index = (endpoint >> 15) & 15;
 
 	if (is_out) {
 		ep = dev->ep_out[index];
