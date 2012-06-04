@@ -802,7 +802,7 @@ device_create_vargs(struct class *class, struct device *parent,
 
 	/* set a default device name */
 	if (class != NULL && class->name != NULL)
-		snprintf(dev->name, sizeof(dev->name), "webcamd%d.%s", webcamd_unit, class->name);
+		snprintf(dev->name, sizeof(dev->name), "webcamd.%s", class->name);
 
 	dev->devt = devt;
 	dev->class = class;

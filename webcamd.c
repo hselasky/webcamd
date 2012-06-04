@@ -59,23 +59,30 @@ static struct cuse_methods v4b_methods = {
 	.cm_poll = v4b_poll,
 };
 
+/*
+ * The first letter in the devicename gives the unit number allocation
+ * group from "A" to "Z". This letter is removed when creating the
+ * character device.
+ */
+#define	UNIT_MAX ('E' - 'A')
+
 static const char *devnames[F_V4B_MAX] = {
 
-	[F_V4B_VIDEO] = "video%d",
+	[F_V4B_VIDEO] = "Avideo%d",
 
-	[F_V4B_DVB_AUDIO] = "dvb/adapter%d/audio0",
-	[F_V4B_DVB_CA] = "dvb/adapter%d/ca0",
-	[F_V4B_DVB_DEMUX] = "dvb/adapter%d/demux0",
-	[F_V4B_DVB_DVR] = "dvb/adapter%d/dvr0",
+	[F_V4B_DVB_AUDIO] = "Bdvb/adapter%d/audio0",
+	[F_V4B_DVB_CA] = "Bdvb/adapter%d/ca0",
+	[F_V4B_DVB_DEMUX] = "Bdvb/adapter%d/demux0",
+	[F_V4B_DVB_DVR] = "Bdvb/adapter%d/dvr0",
 
-	[F_V4B_DVB_FRONTEND] = "dvb/adapter%d/frontend0",
-	[F_V4B_DVB_OSD] = "dvb/adapter%d/osd0",
-	[F_V4B_DVB_SEC] = "dvb/adapter%d/sec0",
-	[F_V4B_DVB_VIDEO] = "dvb/adapter%d/video0",
+	[F_V4B_DVB_FRONTEND] = "Bdvb/adapter%d/frontend0",
+	[F_V4B_DVB_OSD] = "Bdvb/adapter%d/osd0",
+	[F_V4B_DVB_SEC] = "Bdvb/adapter%d/sec0",
+	[F_V4B_DVB_VIDEO] = "Bdvb/adapter%d/video0",
 
-	[F_V4B_LIRC] = "lirc%d",
+	[F_V4B_LIRC] = "Clirc%d",
 
-	[F_V4B_EVDEV] = "input/event%d",
+	[F_V4B_EVDEV] = "Dinput/event%d",
 };
 
 static int u_unit = 0;
@@ -95,12 +102,11 @@ static int vtuner_server;
 #define	CHR_MODE 0660
 
 char	global_fw_prefix[128] = {"/boot/modules"};
-int	webcamd_unit;
 int	webcamd_hal_register;
 
 #define	v4b_errx(code, fmt, ...) do {			\
-	fprintf(stderr, fmt "\n",## __VA_ARGS__);	\
-	exit(code);					\
+    fprintf(stderr, "webcamd: " fmt,## __VA_ARGS__);	\
+    exit(code);						\
 } while (0)
 
 static void
@@ -319,8 +325,16 @@ v4b_create(int unit)
 	pthread_t dummy;
 	unsigned int n;
 	unsigned int p;
-	int temp;
+	int id;
 	char buf[128];
+	int unit_num[UNIT_MAX][F_V4B_SUBDEV_MAX];
+	const char *dname;
+
+	for (n = 0; n != UNIT_MAX; n++) {
+		for (p = 0; p != F_V4B_SUBDEV_MAX; p++) {
+			unit_num[n][p] = (unit < 0) ? -1 : (unit + p);
+		}
+	}
 
 	for (n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX); n++) {
 
@@ -330,20 +344,30 @@ v4b_create(int unit)
 
 			linux_close(handle);
 
-			temp = (unit * F_V4B_SUBDEV_MAX) +
-			    (n % F_V4B_SUBDEV_MAX);
+			dname = devnames[n / F_V4B_SUBDEV_MAX];
+			id = dname[0] - 'A';
+			p = (n % F_V4B_SUBDEV_MAX);
+
+			if (unit_num[id][p] < 0) {
+				if (cuse_alloc_unit_number_by_id(
+				    &unit_num[id][p],
+				    CUSE_ID_WEBCAMD(id)) != 0) {
+					v4b_errx(1, "Cannot allocate "
+					    "uniq unit number");
+				}
+			}
 
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
-			    0, uid, gid, CHR_MODE, devnames[n / F_V4B_SUBDEV_MAX],
-			    temp);
+			    0, uid, gid, CHR_MODE, dname + 1,
+			    unit_num[id][p]);
 
-			snprintf(buf, sizeof(buf), devnames[n / F_V4B_SUBDEV_MAX], temp);
+			snprintf(buf, sizeof(buf), dname + 1, unit_num[id][p]);
 
 			printf("Creating /dev/%s\n", buf);
 
 			for (p = 0; p != 4; p++) {
 				if (pthread_create(&dummy, NULL, v4b_work, NULL)) {
-					v4b_errx(1, "Failed creating Video4BSD process");
+					v4b_errx(1, "Failed creating Cuse4BSD process");
 				}
 			}
 
@@ -422,8 +446,7 @@ pidfile_create(int bus, int addr, int index)
 		pidfile_write(local_pid);
 	}
 
-	printf("Attached ugen%d.%d[%d] to cuse unit %d\n",
-	    bus, addr, index, u_videodev);
+	printf("Attached to ugen%d.%d[%d]\n", bus, addr, index);
 
 	return (0);
 }
@@ -555,12 +578,6 @@ main(int argc, char **argv)
 		v4b_errx(1, "Could not open /dev/cuse. "
 		    "Did you kldload cuse4bsd?");
 	}
-	if (u_videodev < 0) {
-		if (cuse_alloc_unit_number(&u_videodev) != 0)
-			v4b_errx(1, "Cannot allocate unique unit number");
-	}
-	webcamd_unit = u_videodev * F_V4B_SUBDEV_MAX;
-
 	if (do_realtime != 0) {
 		struct sched_param params;
 

@@ -72,7 +72,6 @@
 #include <media_tree/include/linux/mod_devicetable.h>
 #include <media_tree/include/linux/videodev2.h>
 
-extern int webcamd_unit;
 extern int webcamd_hal_register;
 
 extern uid_t v4b_get_uid(void);
