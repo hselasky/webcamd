@@ -167,6 +167,10 @@ void	poll_schedule(struct poll_wqueues *pwq, int flag);
 
 #define	poll_requested_events(...) 0xFFFFFFFFU
 
+int	bitmap_andnot(unsigned long *, const unsigned long *, const unsigned long *, int);
+int	bitmap_and(unsigned long *, const unsigned long *, const unsigned long *, int);
+void	bitmap_or(unsigned long *, const unsigned long *, const unsigned long *, int);
+void	bitmap_xor(unsigned long *, const unsigned long *, const unsigned long *, int);
 void	bitmap_zero(unsigned long *dst, int nbits);
 int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);

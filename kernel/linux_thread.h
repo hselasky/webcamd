@@ -163,6 +163,7 @@ void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
 
 void	mutex_lock(struct mutex *m);
 int	mutex_lock_killable(struct mutex *m);
+int	mutex_trylock(struct mutex *m);
 void	mutex_unlock(struct mutex *m);
 
 #define	mutex_init(m) sema_init(&(m)->sem, 1)

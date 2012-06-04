@@ -44,6 +44,7 @@
 #define	CONFIG_DVB_IT913X_FE /* y */
 #define	CONFIG_DVB_IX2505V /* y */
 #define	CONFIG_DVB_L64781 /* y */
+#define	CONFIG_DVB_LG2160 /* y */
 #define	CONFIG_DVB_LGDT3304 /* y */
 #define	CONFIG_DVB_LGDT3305 /* y */
 #define	CONFIG_DVB_LGDT330X /* y */
@@ -165,6 +166,8 @@
 #define	CONFIG_LIRC /* y */
 #define	CONFIG_LIRC_STAGING /* y */
 #define	CONFIG_MEDIA_TUNER_FC0011 /* y */
+#define	CONFIG_MEDIA_TUNER_FC0012 /* y */
+#define	CONFIG_MEDIA_TUNER_FC0013 /* y */
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
@@ -205,7 +208,6 @@
 #define	CONFIG_TABLET_USB_WACOM /* y */
 #define	CONFIG_TTPCI_EEPROM /* y */
 #define	CONFIG_USB_DSBR /* y */
-#define	CONFIG_USB_ET61X251 /* y */
 #define	CONFIG_USB_GL860 /* y */
 #define	CONFIG_USB_GSPCA /* y */
 #define	CONFIG_USB_GSPCA_BENQ /* y */
@@ -364,8 +366,10 @@
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_VIDEO_M5MOLS /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
+#undef	CONFIG_VIDEO_SMIAPP /* n */
 #undef	CONFIG_VIDEO_ADP1653 /* n */
 #undef	CONFIG_VIDEO_AS3645A /* n */
+#undef	CONFIG_VIDEO_SMIAPP_PLL /* n */
 #undef	CONFIG_SOC_CAMERA_IMX074 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M001 /* n */
 #undef	CONFIG_SOC_CAMERA_MT9M111 /* n */
@@ -398,6 +402,7 @@
 #undef	CONFIG_VIDEO_MXB /* n */
 #undef	CONFIG_VIDEO_HEXIUM_ORION /* n */
 #undef	CONFIG_VIDEO_HEXIUM_GEMINI /* n */
+#undef	CONFIG_STA2X11_VIP /* n */
 #undef	CONFIG_VIDEO_TIMBERDALE /* n */
 #undef	CONFIG_VIDEOBUF_DMA_SG /* n */
 #undef	CONFIG_VIDEOBUF_DMA_CONTIG /* n */

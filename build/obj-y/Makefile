@@ -17,7 +17,6 @@ media_tree/drivers/media/video/usbvision \
 media_tree/drivers/media/video/pvrusb2 \
 media_tree/drivers/media/video/cpia2 \
 media_tree/drivers/media/video/sn9c102 \
-media_tree/drivers/media/video/et61x251 \
 media_tree/drivers/media/video/pwc \
 media_tree/drivers/media/video/gspca \
 media_tree/drivers/media/video/gspca/m5602 \
@@ -88,11 +87,14 @@ SRCS+= \
 	tda18212.c \
 	tua9001.c \
 	fc0011.c \
+	fc0012.c \
+	fc0013.c \
 	rc-adstech-dvb-t-pci.c \
 	rc-alink-dtu-m.c \
 	rc-anysee.c \
 	rc-apac-viewcomp.c \
 	rc-asus-pc39.c \
+	rc-asus-ps3-100.c \
 	rc-ati-tv-wonder-hd-600.c \
 	rc-ati-x10.c \
 	rc-avermedia-a16d.c \
@@ -143,6 +145,7 @@ SRCS+= \
 	rc-manli.c \
 	rc-medion-x10.c \
 	rc-medion-x10-digitainer.c \
+	rc-medion-x10-or2x.c \
 	rc-msi-digivox-ii.c \
 	rc-msi-digivox-iii.c \
 	rc-msi-tvanywhere.c \
@@ -310,8 +313,6 @@ SRCS+= \
 	sn9c102_tas5110c1b.c \
 	sn9c102_tas5110d.c \
 	sn9c102_tas5130d1b.c \
-	et61x251_core.c \
-	et61x251_tas5130d1b.c \
 	pwc-if.c \
 	pwc-misc.c \
 	pwc-ctrl.c \
@@ -322,6 +323,7 @@ SRCS+= \
 	pwc-kiara.c \
 	pwc-timon.c \
 	gspca.c \
+	autogain_functions.c \
 	benq.c \
 	conex.c \
 	cpia1.c \
@@ -452,6 +454,7 @@ SRCS+= \
 	s5h1420.c \
 	lgdt330x.c \
 	lgdt3305.c \
+	lg2160.c \
 	cx24123.c \
 	lnbp21.c \
 	lnbp22.c \

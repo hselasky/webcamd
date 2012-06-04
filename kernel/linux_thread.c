@@ -580,6 +580,29 @@ finish_wait(wait_queue_head_t *qh, wait_queue_t *wait)
 
 }
 
+int
+mutex_trylock(struct mutex *m)
+{
+	pthread_t self;
+	int retval = 1;
+
+	self = pthread_self();
+
+	atomic_lock();
+	/* check for recursive locking first */
+	if (m->sem.owner == self) {
+		m->sem.value--;
+	} else if (m->sem.owner == MUTEX_NO_OWNER) {
+		down(&m->sem);
+		m->sem.owner = self;
+	} else {
+		retval = 0;
+	}
+	atomic_unlock();
+
+	return (retval);
+}
+
 void
 mutex_lock(struct mutex *m)
 {

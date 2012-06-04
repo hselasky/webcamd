@@ -114,6 +114,7 @@ struct class {
 struct device_driver {
 	const char *name;
 	struct module *owner;
+	struct dev_pm_ops *pm;
 };
 
 typedef void device_release_t (struct device *);

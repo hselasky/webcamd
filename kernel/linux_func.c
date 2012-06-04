@@ -1009,6 +1009,68 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 	return (offset);
 }
 
+int
+bitmap_andnot(unsigned long *dst, const unsigned long *b1,
+    const unsigned long *b2, int nbits)
+{
+	int len = (nbits + BITS_PER_LONG - 1) / BITS_PER_LONG;
+	long retval = 0;
+	long temp;
+	int n;
+
+	for (n = 0; n != len; n++) {
+		temp = b1[n] & ~b2[n];
+		dst[n] = temp;
+		retval |= temp;
+	}
+	return (retval != 0);
+}
+
+int
+bitmap_and(unsigned long *dst, const unsigned long *b1,
+    const unsigned long *b2, int nbits)
+{
+	int len = (nbits + BITS_PER_LONG - 1) / BITS_PER_LONG;
+	long retval = 0;
+	long temp;
+	int n;
+
+	for (n = 0; n != len; n++) {
+		temp = b1[n] & b2[n];
+		dst[n] = temp;
+		retval |= temp;
+	}
+	return (retval != 0);
+}
+
+void
+bitmap_or(unsigned long *dst, const unsigned long *b1,
+    const unsigned long *b2, int nbits)
+{
+	int len = (nbits + BITS_PER_LONG - 1) / BITS_PER_LONG;
+	long temp;
+	int n;
+
+	for (n = 0; n != len; n++) {
+		temp = b1[n] | b2[n];
+		dst[n] = temp;
+	}
+}
+
+void
+bitmap_xor(unsigned long *dst, const unsigned long *b1,
+    const unsigned long *b2, int nbits)
+{
+	int len = (nbits + BITS_PER_LONG - 1) / BITS_PER_LONG;
+	long temp;
+	int n;
+
+	for (n = 0; n != len; n++) {
+		temp = b1[n] | b2[n];
+		dst[n] = temp;
+	}
+}
+
 void
 bitmap_zero(unsigned long *dst, int nbits)
 {
