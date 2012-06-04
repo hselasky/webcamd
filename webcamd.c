@@ -66,7 +66,7 @@ static struct cuse_methods v4b_methods = {
  */
 #define	UNIT_MAX ('E' - 'A')
 
-static const char *devnames[F_V4B_MAX] = {
+const char *webcamd_devnames[F_V4B_MAX] = {
 
 	[F_V4B_VIDEO] = "Avideo%d",
 
@@ -344,7 +344,7 @@ v4b_create(int unit)
 
 			linux_close(handle);
 
-			dname = devnames[n / F_V4B_SUBDEV_MAX];
+			dname = webcamd_devnames[n / F_V4B_SUBDEV_MAX];
 			id = dname[0] - 'A';
 			p = (n % F_V4B_SUBDEV_MAX);
 

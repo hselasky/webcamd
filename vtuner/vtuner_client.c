@@ -947,7 +947,16 @@ vtunerc_init(void)
 
 	for (u = 0; u != vtuner_max_unit; u++) {
 
-		snprintf(buf, sizeof(buf), "dvb/adapter%d/frontend0", webcamd_unit + u);
+		int unit = -1;
+		int id = webcamd_devnames[F_V4B_DVB_FRONTEND][0] - 'A';
+
+		if (cuse_alloc_unit_number_by_id(&unit,
+		    CUSE_ID_WEBCAMD(id)) != 0) {
+			printf("Could not allocate unit number\n");
+			continue;
+		}
+
+		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_FRONTEND] + 1, unit);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
@@ -957,7 +966,7 @@ vtunerc_init(void)
 		if (webcamd_hal_register)
 			hal_add_device(buf);
 
-		snprintf(buf, sizeof(buf), "dvb/adapter%d/dvr0", webcamd_unit + u);
+		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DVR] + 1, unit);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
@@ -967,7 +976,7 @@ vtunerc_init(void)
 		if (webcamd_hal_register)
 			hal_add_device(buf);
 
-		snprintf(buf, sizeof(buf), "dvb/adapter%d/demux0", webcamd_unit + u);
+		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DEMUX] + 1, unit);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
