@@ -1192,7 +1192,7 @@ unsigned int
 usb_create_host_endpoint(struct usb_device *dev, uint8_t type, uint8_t ep)
 {
 	return ((type << 30) | ((ep & 0xFF) << 15) |
-	    ((dev->devnum & 0x7F) << 8));
+	    ((dev->devnum & 0x7F) << 8) | (ep & USB_DIR_IN));
 }
 
 /*------------------------------------------------------------------------*
@@ -1216,14 +1216,13 @@ usb_find_host_endpoint(struct usb_device *dev, unsigned int pipe)
 	uint8_t type = (pipe >> 30) & 3;
 	uint8_t ep = (pipe >> 15) & 255;
 
-	if (dev == NULL) {
+	if (dev == NULL)
 		return (NULL);
-	}
-	if (type == USB_ENDPOINT_XFER_CONTROL) {
+
+	if (type == USB_ENDPOINT_XFER_CONTROL)
 		mask = USB_ENDPOINT_NUMBER_MASK;
-	} else {
+	else
 		mask = (USB_ENDPOINT_DIR_MASK | USB_ENDPOINT_NUMBER_MASK);
-	}
 
 	ep &= mask;
 
