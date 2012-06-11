@@ -579,6 +579,7 @@ struct urb {
 #define	URB_NO_TRANSFER_DMA_MAP 0x0008	/* "transfer_dma" is valid on submit */
 #define	URB_WAIT_WAKEUP		0x0010	/* custom flags */
 #define	URB_IS_SLEEPING		0x0020	/* custom flags */
+#define	URB_FREE_BUFFER		0x0040	/* free transfer buffer with the URB */
 
 	uint16_t start_frame;		/* (modify) start frame (ISO) */
 	uint16_t number_of_packets;	/* (in) number of ISO packets */

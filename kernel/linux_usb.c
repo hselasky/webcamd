@@ -1405,11 +1405,15 @@ usb_buffer_free(struct usb_device *dev, uint32_t size,
 void
 usb_free_urb(struct urb *urb)
 {
-	if (urb == NULL) {
+	if (urb == NULL)
 		return;
-	}
+
 	/* make sure that the current URB is not active */
 	usb_kill_urb(urb);
+
+	/* free transfer buffer, if free buffer flag is set */
+	if (urb->transfer_flags & URB_FREE_BUFFER)
+		free(urb->transfer_buffer);
 
 	/* just free it */
 	free(urb);
@@ -1425,9 +1429,9 @@ usb_free_urb(struct urb *urb)
 void
 usb_init_urb(struct urb *urb)
 {
-	if (urb == NULL) {
+	if (urb == NULL)
 		return;
-	}
+
 	memset(urb, 0, sizeof(*urb));
 }
 
