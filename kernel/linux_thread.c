@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2012 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -183,7 +183,7 @@ __wait_get_timeout(uint64_t timeout, struct timespec *ts)
 	ts[0].tv_nsec = timeout % 1000000000ULL;
 	ts[0].tv_sec = timeout / 1000000000ULL;
 
-	clock_gettime(CLOCK_REALTIME_FAST, ts + 1);
+	clock_gettime(CLOCK_MONOTONIC, ts + 1);
 
 	ts[0].tv_sec += ts[1].tv_sec;
 	ts[0].tv_nsec += ts[1].tv_nsec;
@@ -549,13 +549,18 @@ atomic_get_lock(void)
 int
 thread_init(void)
 {
-	pthread_mutexattr_t attr;
+	pthread_mutexattr_t mattr;
+	pthread_condattr_t cattr;
 
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutex_init(&atomic_mutex, &attr);
+	pthread_mutexattr_init(&mattr);
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&atomic_mutex, &mattr);
+	pthread_mutexattr_destroy(&mattr);
 
-	pthread_cond_init(&sema_cond, NULL);
+	pthread_condattr_init(&cattr);
+	pthread_condattr_setclock(&cattr, CLOCK_MONOTONIC);
+	pthread_cond_init(&sema_cond, &cattr);
+	pthread_condattr_destroy(&cattr);
 
 	pthread_key_create(&wrapper_key, NULL);
 
