@@ -273,7 +273,8 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 			error = -EFAULT;
 			goto done;
 		}
-		ptr = linux_mmap(handle, fflags, NULL,
+		ptr = linux_mmap(handle, fflags,
+		    (void *)(long)PAGE_SIZE,
 		    buf.length, buf.m.offset);
 
 		if (ptr != MAP_FAILED) {

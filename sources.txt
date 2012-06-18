@@ -2,8 +2,8 @@ Media tree sources used:
 ========================
 
 git clone git://linuxtv.org/media_tree.git
-git checkout -b master-3.5 remotes/origin/staging/for_v3.5
+git checkout remotes/origin/staging/for_v3.6
 
-top commit 5472d3f17845c4398c6a510b46855820920c2181
+top commit 50fbe32cf41a8309ed8016eb6f81232acfa23ae7
 
 --HPS
