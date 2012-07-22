@@ -16,7 +16,6 @@ patch $OPT ../media_tree/drivers/media/video/videobuf2-vmalloc.c videobuf2-vmall
 patch $OPT -R ../media_tree/include/linux/dvb/frontend.h frontend.h.diff
 patch $OPT -R ../media_tree/include/linux/input.h input.h.diff
 patch $OPT ../media_tree/drivers/staging/media/as102/as102_drv.h as102_drv.h.diff
-patch $OPT ../media_tree/drivers/media/dvb/dvb-usb/af9015.c af9015.c.diff
 patch $OPT ../media_tree/drivers/media/dvb/dvb-usb/usb-urb.c usb-urb.c.diff
 patch $OPT ../media_tree/drivers/media/video/gspca/gspca.c gspca.diff 
 patch $OPT ../media_tree/drivers/media/video/stk-webcam.h stk-webcam.h.diff
