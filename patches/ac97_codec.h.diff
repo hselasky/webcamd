@@ -1,0 +1,13 @@
+diff --git a/include/sound/ac97_codec.h b/include/sound/ac97_codec.h
+index 02cbb50..c886f21 100644
+--- a/include/sound/ac97_codec.h
++++ b/include/sound/ac97_codec.h
+@@ -28,7 +28,7 @@
+ #include <linux/bitops.h>
+ #include <linux/device.h>
+ #include <linux/workqueue.h>
+-#include "pcm.h"
++struct snd_pcm_runtime;
+ #include "control.h"
+ #include "info.h"
+ 
