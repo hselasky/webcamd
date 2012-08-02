@@ -1773,6 +1773,46 @@ zero_nop(void)
 }
 
 int
+kstrtos16(const char *nptr, unsigned int base, int16_t *res)
+{
+	long long temp;
+	char *pp = NULL;
+
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoll(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
+	if (temp != (long long)(int16_t)temp)
+		return (-ERANGE);
+
+	*res = temp;
+	return (0);
+}
+
+int
+kstrtou16(const char *nptr, unsigned int base, uint16_t *res)
+{
+	unsigned long long temp;
+	char *pp = NULL;
+
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoull(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
+	if (temp != (unsigned long long)(uint16_t)temp)
+		return (-ERANGE);
+
+	*res = temp;
+	return (0);
+}
+
+int
 kstrtouint(const char *nptr, unsigned int base, unsigned int *res)
 {
 	unsigned long long temp;

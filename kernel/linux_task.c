@@ -220,8 +220,9 @@ tasklet_schedule(struct tasklet_struct *t)
 }
 
 void
-	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long),
-    	unsigned long data){
+tasklet_init(struct tasklet_struct *t, tasklet_func_t *func,
+    unsigned long data)
+{
 	INIT_WORK(&t->work, tasklet_wrapper_callback);
 
 	t->func = func;

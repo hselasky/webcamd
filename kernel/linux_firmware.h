@@ -31,6 +31,9 @@ struct firmware {
 	const uint8_t *data;
 };
 
+typedef void (firmware_cb_t)(const struct firmware *, void *);
+
+int	request_firmware_nowait(struct module *, bool, const char *, struct device *, gfp_t, void *, firmware_cb_t *);
 int	request_firmware(const struct firmware **, const char *, struct device *);
 void	release_firmware(const struct firmware *);
 

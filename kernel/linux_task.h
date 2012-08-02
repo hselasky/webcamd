@@ -38,9 +38,11 @@ typedef struct work_struct {
 
 #define	DECLARE_WORK(name, fn) struct work_struct name = { .func = fn }
 
+typedef void (tasklet_func_t)(unsigned long);
+
 struct tasklet_struct {
 	struct work_struct work;	/* must be first */
-	void    (*func) (unsigned long);
+	tasklet_func_t *func;
 	unsigned long data;
 };
 
@@ -68,7 +70,7 @@ void	cancel_delayed_work_sync(struct delayed_work *work);
 void	cancel_work(struct work_struct *work);
 void	cancel_work_sync(struct work_struct *work);
 void	tasklet_schedule(struct tasklet_struct *t);
-void	tasklet_init(struct tasklet_struct *t, void (*func) (unsigned long), unsigned long data);
+void	tasklet_init(struct tasklet_struct *t, tasklet_func_t *, unsigned long data);
 void	tasklet_kill(struct tasklet_struct *t);
 
 #endif					/* _LINUX_TASK_H_ */

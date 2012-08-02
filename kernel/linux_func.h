@@ -233,6 +233,9 @@ int	kobject_set_name(struct kobject *kobj, const char *fmt,...);
 
 int	nonseekable_open(struct inode *inode, struct file *filp);
 
+int	kstrtos16(const char *, unsigned int, int16_t *);
+int	kstrtou16(const char *, unsigned int, uint16_t *);
+
 int	kstrtouint(const char *, unsigned int, unsigned int *);
 int	kstrtoint(const char *, unsigned int, int *);
 

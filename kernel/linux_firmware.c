@@ -28,6 +28,60 @@ extern char global_fw_prefix[];
 #define	FW_DECONST(ptr) \
 	((void *)((const uint8_t *)(ptr) - (const uint8_t *)(0)))
 
+struct firmware_cb_arg {
+	const struct firmware *pfw;
+	firmware_cb_t *pfunc;
+	void   *ctx;
+};
+
+static int
+request_firmware_nowait_task(void *arg)
+{
+	struct firmware_cb_arg *pfcbarg = arg;
+
+	(pfcbarg->pfunc) (pfcbarg->pfw, pfcbarg->ctx);
+
+	free(pfcbarg);
+
+	return (0);
+}
+
+int
+request_firmware_nowait(struct module *module, bool uevent,
+    const char *name, struct device *device, gfp_t gfp, void *context,
+    firmware_cb_t *pfunc)
+{
+	int error;
+	struct firmware_cb_arg *pfcbarg;
+	struct task_struct *task;
+
+	if (pfunc == NULL)
+		return (-EINVAL);
+
+	pfcbarg = malloc(sizeof(*pfcbarg));
+	if (pfcbarg == NULL)
+		return (-ENOMEM);
+
+	pfcbarg->pfw = NULL;
+	pfcbarg->pfunc = pfunc;
+	pfcbarg->ctx = context;
+
+	error = request_firmware(&pfcbarg->pfw, name, device);
+	if (error) {
+		free(pfcbarg);
+		return (error);
+	}
+	task = kthread_run(&request_firmware_nowait_task,
+	    pfcbarg, "ASYNC FW LOAD");
+
+	if (IS_ERR(task)) {
+		release_firmware(pfcbarg->pfw);
+		free(pfcbarg);
+		return (PTR_ERR(task));
+	}
+	return (0);
+}
+
 int
 request_firmware(const struct firmware **ppfw, const char *name,
     struct device *device)

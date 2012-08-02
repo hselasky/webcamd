@@ -59,6 +59,7 @@
 #define	__cond_lock(x,c) (c)
 #define	__pgprot(x)     ((pgprot_t)(x))
 #define	__rcu
+#define	__percpu
 #define	irqs_disabled(...) (0)
 #define	SetPageReserved(...)   __nop
 #define	ClearPageReserved(...) __nop
@@ -359,6 +360,12 @@
 #ifndef __pure
 #define	__pure __attribute__((pure))
 #endif
+#ifndef __bitwise
+#define	__bitwise
+#endif
+#ifndef __force
+#define	__force
+#endif
 #define	put_user(val, ptr) ({						\
 	int temp_err;							\
 	__typeof(val) temp_var = (val);					\
@@ -442,6 +449,8 @@ typedef unsigned short __be16;
 typedef unsigned int __be32;
 typedef unsigned int uint;
 typedef int irqreturn_t;
+typedef off_t __kernel_off_t;
+typedef int __kernel_pid_t;
 
 #ifndef __GLIBC__
 typedef long long loff_t;
