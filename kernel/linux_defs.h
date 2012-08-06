@@ -390,6 +390,7 @@
 #define	rcu_read_lock() atomic_lock()
 #define	rcu_read_unlock() atomic_unlock()
 #define	rcu_dereference(p) (p)
+#define	rcu_dereference_protected(p,c) (p)
 #define	rcu_assign_pointer(a,b) do { a = (b); } while (0)
 #define	list_for_each_entry_rcu(a,b,c) list_for_each_entry(a,b,c)
 #define	list_add_rcu(a,b) list_add(a,b)

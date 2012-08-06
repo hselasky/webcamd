@@ -30,6 +30,7 @@
 
 #include <media/v4l2-dev.h>
 
+#include <linux/leds.h>
 #include <linux/major.h>
 #include <linux/power_supply.h>
 
@@ -418,6 +419,18 @@ bitrev16(uint16_t a)
 	a = ((a & 0x0F0F) << 4) | ((a & 0xF0F0) >> 4);
 	a = ((a & 0x00FF) << 8) | ((a & 0xFF00) >> 8);
 	return (a);
+}
+
+size_t
+memweight(const void *ptr, size_t bytes)
+{
+	size_t x;
+	size_t y;
+
+	for (x = y = 0; x != bytes; x++) {
+		y += hweight8(*(uint8_t *)ptr);
+	}
+	return (y);
 }
 
 unsigned int
@@ -1906,6 +1919,24 @@ power_supply_register(struct device *parent, struct power_supply *psy)
 
 void
 power_supply_unregister(struct power_supply *psy)
+{
+
+}
+
+int
+power_supply_powers(struct power_supply *psy, struct device *dev)
+{
+	return (0);
+}
+
+int
+led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+{
+	return (0);
+}
+
+void
+led_classdev_unregister(struct led_classdev *led_cdev)
 {
 
 }

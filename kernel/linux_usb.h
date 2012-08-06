@@ -739,6 +739,9 @@ uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
 void	usb_enable_autosuspend(struct usb_device *udev);
 int	__usb_get_extra_descriptor(char *, unsigned, unsigned char, void **);
 
+#define	usb_interrupt_msg(dev, pipe, data, len, actlen, timo) \
+    usb_bulk_msg(dev, pipe, data, len, actlen, timo)
+
 #define	usb_get_extra_descriptor(desc, type, ptr) \
 	__usb_get_extra_descriptor((desc)->extra, \
         (desc)->extralen, type, (void *)(ptr))

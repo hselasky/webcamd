@@ -178,6 +178,9 @@ void	mutex_unlock(struct mutex *m);
 #define	wait_for_completion_killable(x) wait_for_completion_interruptible(x)
 
 void	init_completion(struct completion *x);
+
+#define	INIT_COMPLETION(x) \
+    init_completion(&(x))
 void	uninit_completion(struct completion *x);
 void	wait_for_completion(struct completion *x);
 int	wait_for_completion_interruptible(struct completion *x);
