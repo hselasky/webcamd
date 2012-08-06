@@ -428,7 +428,7 @@ memweight(const void *ptr, size_t bytes)
 	size_t y;
 
 	for (x = y = 0; x != bytes; x++) {
-		y += hweight8(*(uint8_t *)ptr);
+		y += hweight8(((uint8_t *)ptr)[x]);
 	}
 	return (y);
 }
