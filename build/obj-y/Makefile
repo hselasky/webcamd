@@ -46,6 +46,8 @@ media_tree/drivers/staging/media \
 media_tree/drivers/staging/media/as102 \
 media_tree/drivers/staging/media/cxd2099 \
 media_tree/drivers/staging/media/lirc \
+media_tree/sound/i2c/other \
+contrib/dvb-usb \
 
 SRCS+= \
 	input.c \
@@ -203,6 +205,7 @@ SRCS+= \
 	mceusb.c \
 	redrat3.c \
 	streamzap.c \
+	iguanair.c \
 	v4l2-dev.c \
 	v4l2-ioctl.c \
 	v4l2-device.c \
@@ -399,6 +402,9 @@ SRCS+= \
 	uvc_isight.c \
 	uvc_debugfs.c \
 	ir-kbd-i2c.c \
+	radio-shark.c \
+	radio-shark2.c \
+	radio-tea5777.c \
 	dsbr100.c \
 	radio-mr800.c \
 	radio-keene.c \
@@ -507,6 +513,7 @@ SRCS+= \
 	a8293.c \
 	tda10071.c \
 	rtl2830.c \
+	rtl2832.c \
 	m88rs2000.c \
 	af9033.c \
 	ttpci-eeprom.c \
@@ -593,6 +600,8 @@ SRCS+= \
 	as102_usb_drv.c \
 	as10x_cmd_cfg.c \
 	cxd2099.c \
+	tea575x-tuner.c \
+	tbs-qboxs2.c \
 
 .if defined(LIB)
 .include "${.CURDIR}/../../Makefile.lib"

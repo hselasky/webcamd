@@ -265,4 +265,7 @@ configure:
 	linux_make -c config \
 		-i media_tree/drivers/input \
 		-i media_tree/drivers/media \
-		-i media_tree/drivers/staging/media -o build/
+		-i media_tree/drivers/staging/media \
+		-i media_tree/sound/i2c/other \
+		-i contrib/dvb-usb \
+		-o build/

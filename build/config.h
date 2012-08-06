@@ -64,6 +64,7 @@
 #define	CONFIG_DVB_OR51211 /* y */
 #define	CONFIG_DVB_PLL /* y */
 #define	CONFIG_DVB_RTL2830 /* y */
+#define	CONFIG_DVB_RTL2832 /* y */
 #define	CONFIG_DVB_S5H1409 /* y */
 #define	CONFIG_DVB_S5H1411 /* y */
 #define	CONFIG_DVB_S5H1420 /* y */
@@ -134,6 +135,7 @@
 #define	CONFIG_DVB_USB_OPERA1 /* y */
 #define	CONFIG_DVB_USB_PCTV452E /* y */
 #define	CONFIG_DVB_USB_RTL28XXU /* y */
+#define	CONFIG_DVB_USB_TBSQBOXS2 /* y */
 #define	CONFIG_DVB_USB_TECHNISAT_USB2 /* y */
 #define	CONFIG_DVB_USB_TTUSB2 /* y */
 #define	CONFIG_DVB_USB_UMT_010 /* y */
@@ -151,6 +153,7 @@
 #define	CONFIG_INPUT_EVDEV /* y */
 #define	CONFIG_INPUT_TABLET /* y */
 #define	CONFIG_IR_CORE /* y */
+#define	CONFIG_IR_IGUANA /* y */
 #define	CONFIG_IR_IMON /* y */
 #define	CONFIG_IR_JVC_DECODER /* y */
 #define	CONFIG_IR_LIRC_CODEC /* y */
@@ -193,11 +196,14 @@
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */
 #define	CONFIG_MMU /* y */
 #define	CONFIG_RADIO_SAA7706H /* y */
+#define	CONFIG_RADIO_SHARK /* y */
+#define	CONFIG_RADIO_SHARK2 /* y */
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
 #define	CONFIG_RC_ATI_REMOTE /* y */
 #define	CONFIG_RC_CORE /* y */
 #define	CONFIG_RC_MAP /* y */
+#define	CONFIG_SND_TEA575X /* y */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
 #define	CONFIG_TABLET_USB_ACECAD /* y */
@@ -331,6 +337,7 @@
 #undef	CONFIG_INPUT_FF_MEMLESS /* n */
 #undef	CONFIG_INPUT_POLLDEV /* n */
 #undef	CONFIG_INPUT_SPARSEKMAP /* n */
+#undef	CONFIG_INPUT_MATRIXKMAP /* n */
 #undef	CONFIG_INPUT_MOUSEDEV /* n */
 #undef	CONFIG_INPUT_JOYDEV /* n */
 #undef	CONFIG_INPUT_EVBUG /* n */
@@ -340,7 +347,6 @@
 #undef	CONFIG_INPUT_TOUCHSCREEN /* n */
 #undef	CONFIG_INPUT_MISC /* n */
 #undef	CONFIG_INPUT_APMPOWER /* n */
-#undef	CONFIG_INPUT_OF_MATRIX_KEYMAP /* n */
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
 #undef	CONFIG_VIDEO_SAA7146 /* n */
 #undef	CONFIG_VIDEO_SAA7146_VV /* n */
@@ -356,6 +362,7 @@
 #undef	CONFIG_VIDEO_APTINA_PLL /* n */
 #undef	CONFIG_VIDEO_ADV7180 /* n */
 #undef	CONFIG_VIDEO_ADV7183 /* n */
+#undef	CONFIG_VIDEO_ADV7393 /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VS6624 /* n */
 #undef	CONFIG_VIDEO_VINO /* n */
@@ -442,8 +449,8 @@
 #undef	CONFIG_VIDEO_SH_VOU /* n */
 #undef	CONFIG_VIDEO_SAA7164 /* n */
 #undef	CONFIG_VIDEO_DAVINCI_VPIF /* n */
-#undef	CONFIG_DISPLAY_DAVINCI_DM646X_EVM /* n */
-#undef	CONFIG_CAPTURE_DAVINCI_DM646X_EVM /* n */
+#undef	CONFIG_VIDEO_DAVINCI_VPIF_DISPLAY /* n */
+#undef	CONFIG_VIDEO_DAVINCI_VPIF_CAPTURE /* n */
 #undef	CONFIG_VIDEO_VPSS_SYSTEM /* n */
 #undef	CONFIG_VIDEO_VPFE_CAPTURE /* n */
 #undef	CONFIG_VIDEO_DM6446_CCDC /* n */
@@ -505,5 +512,8 @@
 #undef	CONFIG_SOLO6X10 /* n */
 #undef	CONFIG_VIDEO_DT3155 /* n */
 #undef	CONFIG_VIDEO_GO7007 /* n */
+#undef	CONFIG_SND_PDAUDIOCF /* n */
+#undef	CONFIG_SND_ICE1712 /* n */
+#undef	CONFIG_SND_ICE1724 /* n */
 
 #endif			/* _ROOT_CONFIG_H_ */
