@@ -116,6 +116,7 @@ MKLINT=		no
 NOGCCERROR=
 MLINKS=
 BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./long_size_test
+PTHREAD_LIBS?=	-lpthread
 
 .include "${.CURDIR}/build/obj-y/Makefile"
 
@@ -171,7 +172,7 @@ CFLAGS+= -g
 #
 # List of linker flags
 #
-LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd -lpthread -lutil
+LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd ${PTHREAD_LIBS} -lutil
 
 #
 # List of Linux specific sources
