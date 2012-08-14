@@ -500,8 +500,10 @@ done:
 #define	LIRC_MAJOR 14
 #define	EVDEV_MINOR_BASE 64
 
-static struct cdev *cdev_registry[F_V4B_MAX][F_V4B_SUBDEV_MAX];
-static uint32_t cdev_mm[F_V4B_MAX][F_V4B_SUBDEV_MAX];
+#define	SUB_MAX (F_V4B_SUBDEV_MAX * F_V4B_SUBSUBDEV_MAX)
+
+static struct cdev *cdev_registry[F_V4B_MAX][SUB_MAX];
+static uint32_t cdev_mm[F_V4B_MAX][SUB_MAX];
 
 static void
 cdev_set_device(dev_t mm, struct cdev *cdev)
@@ -547,8 +549,8 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 			return;
 
 		id = (mm >> 4) & 0x03;
-		if (id != 0)
-			return;
+
+		subdev += F_V4B_SUBDEV_MAX * id;
 
 		switch (mm & 0xFFFF000FU) {
 		case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO):
@@ -606,9 +608,9 @@ cdev_get_device(unsigned int f_v4b)
 {
 	unsigned int subunit;
 
-	subunit = f_v4b % F_V4B_SUBDEV_MAX;
+	subunit = f_v4b % SUB_MAX;
 
-	f_v4b /= F_V4B_SUBDEV_MAX;
+	f_v4b /= SUB_MAX;
 
 	if (f_v4b >= F_V4B_MAX)
 		return (NULL);		/* should not happen */
@@ -621,9 +623,9 @@ cdev_get_mm(unsigned int f_v4b)
 {
 	unsigned int subunit;
 
-	subunit = f_v4b % F_V4B_SUBDEV_MAX;
+	subunit = f_v4b % SUB_MAX;
 
-	f_v4b /= F_V4B_SUBDEV_MAX;
+	f_v4b /= SUB_MAX;
 
 	if (f_v4b >= F_V4B_MAX)
 		return (0);		/* should not happen */

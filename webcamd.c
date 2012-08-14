@@ -70,15 +70,15 @@ const char *webcamd_devnames[F_V4B_MAX] = {
 
 	[F_V4B_VIDEO] = "Avideo%d",
 
-	[F_V4B_DVB_AUDIO] = "Bdvb/adapter%d/audio0",
-	[F_V4B_DVB_CA] = "Bdvb/adapter%d/ca0",
-	[F_V4B_DVB_DEMUX] = "Bdvb/adapter%d/demux0",
-	[F_V4B_DVB_DVR] = "Bdvb/adapter%d/dvr0",
+	[F_V4B_DVB_AUDIO] = "Bdvb/adapter%d/audio%d",
+	[F_V4B_DVB_CA] = "Bdvb/adapter%d/ca%d",
+	[F_V4B_DVB_DEMUX] = "Bdvb/adapter%d/demux%d",
+	[F_V4B_DVB_DVR] = "Bdvb/adapter%d/dvr%d",
 
-	[F_V4B_DVB_FRONTEND] = "Bdvb/adapter%d/frontend0",
-	[F_V4B_DVB_OSD] = "Bdvb/adapter%d/osd0",
-	[F_V4B_DVB_SEC] = "Bdvb/adapter%d/sec0",
-	[F_V4B_DVB_VIDEO] = "Bdvb/adapter%d/video0",
+	[F_V4B_DVB_FRONTEND] = "Bdvb/adapter%d/frontend%d",
+	[F_V4B_DVB_OSD] = "Bdvb/adapter%d/osd%d",
+	[F_V4B_DVB_SEC] = "Bdvb/adapter%d/sec%d",
+	[F_V4B_DVB_VIDEO] = "Bdvb/adapter%d/video%d",
 
 	[F_V4B_LIRC] = "Clirc%d",
 
@@ -326,6 +326,7 @@ v4b_create(int unit)
 	pthread_t dummy;
 	unsigned int n;
 	unsigned int p;
+	unsigned int q;
 	int id;
 	char buf[128];
 	int unit_num[UNIT_MAX][F_V4B_SUBDEV_MAX];
@@ -337,7 +338,8 @@ v4b_create(int unit)
 		}
 	}
 
-	for (n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX); n++) {
+	for (n = 0; n != (F_V4B_MAX * F_V4B_SUBDEV_MAX *
+	    F_V4B_SUBSUBDEV_MAX); n++) {
 
 		handle = linux_open(n, O_RDONLY);
 
@@ -345,9 +347,11 @@ v4b_create(int unit)
 
 			linux_close(handle);
 
-			dname = webcamd_devnames[n / F_V4B_SUBDEV_MAX];
+			dname = webcamd_devnames[n / (F_V4B_SUBSUBDEV_MAX *
+			    F_V4B_SUBDEV_MAX)];
 			id = dname[0] - 'A';
 			p = (n % F_V4B_SUBDEV_MAX);
+			q = ((n / F_V4B_SUBDEV_MAX) % F_V4B_SUBSUBDEV_MAX);
 
 			if (unit_num[id][p] < 0) {
 				if (cuse_alloc_unit_number_by_id(
@@ -357,12 +361,12 @@ v4b_create(int unit)
 					    "uniq unit number");
 				}
 			}
-
 			cuse_dev_create(&v4b_methods, (void *)(long)n,
 			    0, uid, gid, CHR_MODE, dname + 1,
-			    unit_num[id][p]);
+			    unit_num[id][p], q);
 
-			snprintf(buf, sizeof(buf), dname + 1, unit_num[id][p]);
+			snprintf(buf, sizeof(buf), dname + 1,
+			    unit_num[id][p], q);
 
 			printf("Creating /dev/%s\n", buf);
 
