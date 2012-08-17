@@ -505,6 +505,10 @@ done:
 static struct cdev *cdev_registry[F_V4B_MAX][SUB_MAX];
 static uint32_t cdev_mm[F_V4B_MAX][SUB_MAX];
 
+static int dvb_swap_fe;
+module_param_named(dvb_swap_fe, dvb_swap_fe, int, 0644);
+MODULE_PARM_DESC(dvb_swap_fe, "swap default frontend ID, 0..3");
+
 static void
 cdev_set_device(dev_t mm, struct cdev *cdev)
 {
@@ -549,6 +553,14 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 			return;
 
 		id = (mm >> 4) & 0x03;
+
+		switch (mm & 0xFFFF000FU) {
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
+			id = (id + dvb_swap_fe) & 0x03;
+			break;
+		default:
+			break;
+		}
 
 		subdev += F_V4B_SUBDEV_MAX * id;
 

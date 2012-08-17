@@ -21,7 +21,6 @@ patch $OPT ../media_tree/drivers/media/video/gspca/gspca.c gspca.diff
 patch $OPT ../media_tree/drivers/media/video/stk-webcam.h stk-webcam.h.diff
 patch $OPT ../media_tree/include/sound/ac97_codec.h ac97_codec.h.diff
 patch $OPT ../media_tree/include/linux/dvb/ca.h ca.h.diff
-patch $OPT ../media_tree/drivers/media/dvb/dvb-usb/ttusb2.c ttusb2.c.diff
 
 sed -e "s/dbg[(]/dib_&/g" -i .orig ../media_tree/drivers/media/common/tuners/tda18212.c
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig ../media_tree/drivers/media/dvb/frontends/cx24123.c
