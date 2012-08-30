@@ -6,42 +6,59 @@ SRCPATHS+= \
 media_tree/drivers/input \
 media_tree/drivers/input/tablet \
 media_tree/drivers/media \
+media_tree/drivers/media/tuners \
 media_tree/drivers/media/common \
-media_tree/drivers/media/common/tuners \
+media_tree/drivers/media/common/b2c2 \
+media_tree/drivers/media/common/saa7146 \
+media_tree/drivers/media/common/siano \
 media_tree/drivers/media/rc \
 media_tree/drivers/media/rc/keymaps \
-media_tree/drivers/media/video \
-media_tree/drivers/media/video/cx25840 \
-media_tree/drivers/media/video/em28xx \
-media_tree/drivers/media/video/usbvision \
-media_tree/drivers/media/video/pvrusb2 \
-media_tree/drivers/media/video/cpia2 \
-media_tree/drivers/media/video/sn9c102 \
-media_tree/drivers/media/video/pwc \
-media_tree/drivers/media/video/gspca \
-media_tree/drivers/media/video/gspca/m5602 \
-media_tree/drivers/media/video/gspca/gl860 \
-media_tree/drivers/media/video/hdpvr \
-media_tree/drivers/media/video/au0828 \
-media_tree/drivers/media/video/uvc \
-media_tree/drivers/media/video/davinci \
+media_tree/drivers/media/platform \
+media_tree/drivers/media/platform/davinci \
+media_tree/drivers/media/i2c \
+media_tree/drivers/media/i2c/cx25840 \
+media_tree/drivers/media/i2c/soc_camera \
+media_tree/drivers/media/pci \
+media_tree/drivers/media/pci/ttpci \
+media_tree/drivers/media/pci/b2c2 \
+media_tree/drivers/media/pci/pluto2 \
+media_tree/drivers/media/pci/dm1105 \
+media_tree/drivers/media/pci/pt1 \
+media_tree/drivers/media/pci/mantis \
+media_tree/drivers/media/pci/ngene \
+media_tree/drivers/media/pci/ddbridge \
+media_tree/drivers/media/pci/b2c2 \
+media_tree/drivers/media/pci/saa7146 \
+media_tree/drivers/media/usb \
+media_tree/drivers/media/usb/ttusb-dec \
+media_tree/drivers/media/usb/ttusb-budget \
+media_tree/drivers/media/usb/dvb-usb \
+media_tree/drivers/media/usb/dvb-usb-v2 \
+media_tree/drivers/media/usb/siano \
+media_tree/drivers/media/usb/b2c2 \
+media_tree/drivers/media/usb/zr364xx \
+media_tree/drivers/media/usb/stkwebcam \
+media_tree/drivers/media/usb/s2255 \
+media_tree/drivers/media/usb/uvc \
+media_tree/drivers/media/usb/gspca \
+media_tree/drivers/media/usb/gspca/m5602 \
+media_tree/drivers/media/usb/gspca/gl860 \
+media_tree/drivers/media/usb/pwc \
+media_tree/drivers/media/usb/cpia2 \
+media_tree/drivers/media/usb/sn9c102 \
+media_tree/drivers/media/usb/au0828 \
+media_tree/drivers/media/usb/hdpvr \
+media_tree/drivers/media/usb/pvrusb2 \
+media_tree/drivers/media/usb/usbvision \
+media_tree/drivers/media/usb/em28xx \
+media_tree/drivers/media/mmc \
+media_tree/drivers/media/mmc/siano \
+media_tree/drivers/media/firewire \
+media_tree/drivers/media/parport \
 media_tree/drivers/media/radio \
-media_tree/drivers/media/dvb \
-media_tree/drivers/media/dvb/dvb-core \
-media_tree/drivers/media/dvb/frontends \
-media_tree/drivers/media/dvb/ttpci \
-media_tree/drivers/media/dvb/ttusb-dec \
-media_tree/drivers/media/dvb/ttusb-budget \
-media_tree/drivers/media/dvb/b2c2 \
-media_tree/drivers/media/dvb/bt8xx \
-media_tree/drivers/media/dvb/dvb-usb \
-media_tree/drivers/media/dvb/pluto2 \
-media_tree/drivers/media/dvb/siano \
-media_tree/drivers/media/dvb/dm1105 \
-media_tree/drivers/media/dvb/pt1 \
-media_tree/drivers/media/dvb/mantis \
-media_tree/drivers/media/dvb/ngene \
-media_tree/drivers/media/dvb/ddbridge \
+media_tree/drivers/media/v4l2-core \
+media_tree/drivers/media/dvb-core \
+media_tree/drivers/media/dvb-frontends \
 media_tree/drivers/staging/media \
 media_tree/drivers/staging/media/as102 \
 media_tree/drivers/staging/media/cxd2099 \
@@ -91,6 +108,18 @@ SRCS+= \
 	fc0011.c \
 	fc0012.c \
 	fc0013.c \
+	flexcop.c \
+	flexcop-fe-tuner.c \
+	flexcop-i2c.c \
+	flexcop-sram.c \
+	flexcop-eeprom.c \
+	flexcop-misc.c \
+	flexcop-hw-filter.c \
+	smscoreapi.c \
+	sms-cards.c \
+	smsendian.c \
+	smsir.c \
+	smsdvb.c \
 	rc-adstech-dvb-t-pci.c \
 	rc-alink-dtu-m.c \
 	rc-anysee.c \
@@ -206,16 +235,14 @@ SRCS+= \
 	redrat3.c \
 	streamzap.c \
 	iguanair.c \
-	v4l2-dev.c \
-	v4l2-ioctl.c \
-	v4l2-device.c \
-	v4l2-fh.c \
-	v4l2-event.c \
-	v4l2-ctrls.c \
-	v4l2-subdev.c \
-	v4l2-int-device.c \
-	v4l2-common.c \
-	tuner-core.c \
+	ttusbir.c \
+	msp3400-driver.c \
+	msp3400-kthreads.c \
+	cx25840-core.c \
+	cx25840-audio.c \
+	cx25840-firmware.c \
+	cx25840-vbi.c \
+	cx25840-ir.c \
 	tvaudio.c \
 	tda7432.c \
 	saa6588.c \
@@ -239,8 +266,6 @@ SRCS+= \
 	tvp5150.c \
 	tvp514x.c \
 	tvp7002.c \
-	msp3400-driver.c \
-	msp3400-kthreads.c \
 	cs5345.c \
 	cs53l32a.c \
 	m52790.c \
@@ -248,11 +273,6 @@ SRCS+= \
 	wm8775.c \
 	wm8739.c \
 	vp27smpx.c \
-	cx25840-core.c \
-	cx25840-audio.c \
-	cx25840-firmware.c \
-	cx25840-vbi.c \
-	cx25840-ir.c \
 	upd64031a.c \
 	upd64083.c \
 	ov7670.c \
@@ -260,71 +280,89 @@ SRCS+= \
 	tveeprom.c \
 	mt9v011.c \
 	sr030pc30.c \
-	em28xx-video.c \
-	em28xx-i2c.c \
-	em28xx-cards.c \
-	em28xx-core.c \
-	em28xx-vbi.c \
-	em28xx-dvb.c \
-	usbvision-core.c \
-	usbvision-video.c \
-	usbvision-i2c.c \
-	usbvision-cards.c \
-	pvrusb2-i2c-core.c \
-	pvrusb2-audio.c \
-	pvrusb2-encoder.c \
-	pvrusb2-video-v4l.c \
-	pvrusb2-eeprom.c \
-	pvrusb2-main.c \
-	pvrusb2-hdw.c \
-	pvrusb2-v4l2.c \
-	pvrusb2-ctrl.c \
-	pvrusb2-std.c \
-	pvrusb2-devattr.c \
-	pvrusb2-context.c \
-	pvrusb2-io.c \
-	pvrusb2-ioread.c \
-	pvrusb2-cx2584x-v4l.c \
-	pvrusb2-wm8775.c \
-	pvrusb2-cs53l32a.c \
-	pvrusb2-dvb.c \
-	pvrusb2-sysfs.c \
-	cpia2_v4l.c \
-	cpia2_usb.c \
-	cpia2_core.c \
-	videobuf-core.c \
-	videobuf-vmalloc.c \
-	videobuf-dvb.c \
 	btcx-risc.c \
-	videobuf2-core.c \
-	videobuf2-memops.c \
-	videobuf2-vmalloc.c \
 	cx2341x.c \
+	ak881x.c \
+	ir-kbd-i2c.c \
+	ttpci-eeprom.c \
+	ttusb_dec.c \
+	ttusbdecfe.c \
+	dvb-ttusb-budget.c \
+	dvb-usb-firmware.c \
+	dvb-usb-init.c \
+	dvb-usb-urb.c \
+	dvb-usb-i2c.c \
+	dvb-usb-dvb.c \
+	dvb-usb-remote.c \
+	usb-urb.c \
+	vp7045.c \
+	vp7045-fe.c \
+	vp702x.c \
+	vp702x-fe.c \
+	gp8psk.c \
+	gp8psk-fe.c \
+	dtt200u.c \
+	dtt200u-fe.c \
+	dibusb-common.c \
+	a800.c \
+	dibusb-mb.c \
+	dibusb-mc.c \
+	nova-t-usb2.c \
+	umt-010.c \
+	m920x.c \
+	digitv.c \
+	cxusb.c \
+	ttusb2.c \
+	dib0700_core.c \
+	dib0700_devices.c \
+	opera1.c \
+	af9005.c \
+	af9005-fe.c \
+	af9005-remote.c \
+	pctv452e.c \
+	dw2102.c \
+	dtv5100.c \
+	cinergyT2-core.c \
+	cinergyT2-fe.c \
+	friio.c \
+	friio-fe.c \
+	az6027.c \
+	technisat-usb2.c \
+	dvb_usb_core.c \
+	dvb_usb_urb.c \
+	usb_urb.c \
+	cypress_firmware.c \
+	af9015.c \
+	af9035.c \
+	anysee.c \
+	au6610.c \
+	az6007.c \
+	ce6230.c \
+	ec168.c \
+	it913x.c \
+	lmedm04.c \
+	gl861.c \
+	mxl111sf.c \
+	mxl111sf-phy.c \
+	mxl111sf-i2c.c \
+	mxl111sf-gpio.c \
+	mxl111sf-demod.c \
+	mxl111sf-tuner.c \
+	rtl28xxu.c \
+	smsusb.c \
+	flexcop-usb.c \
 	zr364xx.c \
 	stk-webcam.c \
 	stk-sensor.c \
-	sn9c102_core.c \
-	sn9c102_hv7131d.c \
-	sn9c102_hv7131r.c \
-	sn9c102_mi0343.c \
-	sn9c102_mi0360.c \
-	sn9c102_mt9v111.c \
-	sn9c102_ov7630.c \
-	sn9c102_ov7660.c \
-	sn9c102_pas106b.c \
-	sn9c102_pas202bcb.c \
-	sn9c102_tas5110c1b.c \
-	sn9c102_tas5110d.c \
-	sn9c102_tas5130d1b.c \
-	pwc-if.c \
-	pwc-misc.c \
-	pwc-ctrl.c \
-	pwc-v4l.c \
-	pwc-uncompress.c \
-	pwc-dec1.c \
-	pwc-dec23.c \
-	pwc-kiara.c \
-	pwc-timon.c \
+	s2255drv.c \
+	uvc_driver.c \
+	uvc_queue.c \
+	uvc_v4l2.c \
+	uvc_video.c \
+	uvc_ctrl.c \
+	uvc_status.c \
+	uvc_isight.c \
+	uvc_debugfs.c \
 	gspca.c \
 	autogain_functions.c \
 	benq.c \
@@ -381,27 +419,70 @@ SRCS+= \
 	gl860-ov2640.c \
 	gl860-ov9655.c \
 	gl860-mi2020.c \
-	hdpvr-control.c \
-	hdpvr-core.c \
-	hdpvr-video.c \
-	hdpvr-i2c.c \
-	s2255drv.c \
-	ak881x.c \
+	pwc-if.c \
+	pwc-misc.c \
+	pwc-ctrl.c \
+	pwc-v4l.c \
+	pwc-uncompress.c \
+	pwc-dec1.c \
+	pwc-dec23.c \
+	pwc-kiara.c \
+	pwc-timon.c \
+	cpia2_v4l.c \
+	cpia2_usb.c \
+	cpia2_core.c \
+	sn9c102_core.c \
+	sn9c102_hv7131d.c \
+	sn9c102_hv7131r.c \
+	sn9c102_mi0343.c \
+	sn9c102_mi0360.c \
+	sn9c102_mt9v111.c \
+	sn9c102_ov7630.c \
+	sn9c102_ov7660.c \
+	sn9c102_pas106b.c \
+	sn9c102_pas202bcb.c \
+	sn9c102_tas5110c1b.c \
+	sn9c102_tas5110d.c \
+	sn9c102_tas5130d1b.c \
 	au0828-core.c \
 	au0828-i2c.c \
 	au0828-cards.c \
 	au0828-dvb.c \
 	au0828-video.c \
 	au0828-vbi.c \
-	uvc_driver.c \
-	uvc_queue.c \
-	uvc_v4l2.c \
-	uvc_video.c \
-	uvc_ctrl.c \
-	uvc_status.c \
-	uvc_isight.c \
-	uvc_debugfs.c \
-	ir-kbd-i2c.c \
+	hdpvr-control.c \
+	hdpvr-core.c \
+	hdpvr-video.c \
+	hdpvr-i2c.c \
+	pvrusb2-i2c-core.c \
+	pvrusb2-audio.c \
+	pvrusb2-encoder.c \
+	pvrusb2-video-v4l.c \
+	pvrusb2-eeprom.c \
+	pvrusb2-main.c \
+	pvrusb2-hdw.c \
+	pvrusb2-v4l2.c \
+	pvrusb2-ctrl.c \
+	pvrusb2-std.c \
+	pvrusb2-devattr.c \
+	pvrusb2-context.c \
+	pvrusb2-io.c \
+	pvrusb2-ioread.c \
+	pvrusb2-cx2584x-v4l.c \
+	pvrusb2-wm8775.c \
+	pvrusb2-cs53l32a.c \
+	pvrusb2-dvb.c \
+	pvrusb2-sysfs.c \
+	usbvision-core.c \
+	usbvision-video.c \
+	usbvision-i2c.c \
+	usbvision-cards.c \
+	em28xx-video.c \
+	em28xx-i2c.c \
+	em28xx-cards.c \
+	em28xx-core.c \
+	em28xx-vbi.c \
+	em28xx-dvb.c \
 	radio-shark.c \
 	radio-shark2.c \
 	radio-tea5777.c \
@@ -411,6 +492,22 @@ SRCS+= \
 	radio-tea5764.c \
 	saa7706h.c \
 	tef6862.c \
+	v4l2-dev.c \
+	v4l2-ioctl.c \
+	v4l2-device.c \
+	v4l2-fh.c \
+	v4l2-event.c \
+	v4l2-ctrls.c \
+	v4l2-subdev.c \
+	v4l2-int-device.c \
+	v4l2-common.c \
+	tuner-core.c \
+	videobuf-core.c \
+	videobuf-vmalloc.c \
+	videobuf-dvb.c \
+	videobuf2-core.c \
+	videobuf2-memops.c \
+	videobuf2-vmalloc.c \
 	dvbdev.c \
 	dmxdev.c \
 	dvb_demux.c \
@@ -516,82 +613,6 @@ SRCS+= \
 	rtl2832.c \
 	m88rs2000.c \
 	af9033.c \
-	ttpci-eeprom.c \
-	ttusb_dec.c \
-	ttusbdecfe.c \
-	dvb-ttusb-budget.c \
-	flexcop.c \
-	flexcop-fe-tuner.c \
-	flexcop-i2c.c \
-	flexcop-sram.c \
-	flexcop-eeprom.c \
-	flexcop-misc.c \
-	flexcop-hw-filter.c \
-	flexcop-dma.c \
-	flexcop-usb.c \
-	dvb-usb-firmware.c \
-	dvb-usb-init.c \
-	dvb-usb-urb.c \
-	dvb-usb-i2c.c \
-	dvb-usb-dvb.c \
-	dvb-usb-remote.c \
-	usb-urb.c \
-	vp7045.c \
-	vp7045-fe.c \
-	vp702x.c \
-	vp702x-fe.c \
-	gp8psk.c \
-	gp8psk-fe.c \
-	dtt200u.c \
-	dtt200u-fe.c \
-	dibusb-common.c \
-	a800.c \
-	dibusb-mb.c \
-	dibusb-mc.c \
-	nova-t-usb2.c \
-	umt-010.c \
-	m920x.c \
-	gl861.c \
-	au6610.c \
-	digitv.c \
-	cxusb.c \
-	ttusb2.c \
-	dib0700_core.c \
-	dib0700_devices.c \
-	opera1.c \
-	af9005.c \
-	af9005-fe.c \
-	af9005-remote.c \
-	anysee.c \
-	pctv452e.c \
-	dw2102.c \
-	dtv5100.c \
-	af9015.c \
-	cinergyT2-core.c \
-	cinergyT2-fe.c \
-	ce6230.c \
-	friio.c \
-	friio-fe.c \
-	ec168.c \
-	az6007.c \
-	az6027.c \
-	lmedm04.c \
-	technisat-usb2.c \
-	it913x.c \
-	mxl111sf.c \
-	mxl111sf-phy.c \
-	mxl111sf-i2c.c \
-	mxl111sf-gpio.c \
-	mxl111sf-demod.c \
-	mxl111sf-tuner.c \
-	rtl28xxu.c \
-	af9035.c \
-	smscoreapi.c \
-	sms-cards.c \
-	smsendian.c \
-	smsir.c \
-	smsdvb.c \
-	smsusb.c \
 	as102_drv.c \
 	as102_fw.c \
 	as10x_cmd.c \

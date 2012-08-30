@@ -149,6 +149,20 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/frontends
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/ttpci
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/gspca
 CFLAGS+= -I${LINUXDIR}/drivers/media/video/hdpvr
+
+#
+# 3.7 paths
+#
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb-core
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb-usb
+CFLAGS+= -I${LINUXDIR}/drivers/media/dvb-frontends
+CFLAGS+= -I${LINUXDIR}/drivers/media/tuners
+CFLAGS+= -I${LINUXDIR}/drivers/media/pci/ttpci
+CFLAGS+= -I${LINUXDIR}/drivers/media/common/siano
+CFLAGS+= -I${LINUXDIR}/drivers/media/common/b2c2
+CFLAGS+= -I${LINUXDIR}/drivers/media/usb/gspca
+CFLAGS+= -I${LINUXDIR}/drivers/media/usb/dvb-usb
+
 CFLAGS+= -I${LINUXDIR}/include
 
 CFLAGS+= -I${LOCALBASE}
