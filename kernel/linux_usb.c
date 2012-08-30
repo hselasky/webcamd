@@ -1132,9 +1132,25 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 			p_uhi++;
 
 			for (k = 0; k != id->num_endpoints; k++) {
+				const uint8_t *pcomp;
+
 				ed = id->endpoints + k;
 				libusb20_me_encode(&p_uhe->desc,
 				    sizeof(p_uhe->desc), &ed->desc);
+				/*
+				 * Look for SuperSpeed endpoint
+				 * companion descriptor
+				 */
+				pcomp = NULL;
+				while ((pcomp = libusb20_desc_foreach(
+				    &ed->extra, pcomp) != NULL)) {
+					if (pcomp[0] >= (uint8_t)sizeof(p_uhe->ss_ep_comp) &&
+					    pcomp[1] == 0x30) {
+						memcpy(&p_uhe->ss_ep_comp, pcomp, sizeof(p_uhe->ss_ep_comp));
+						break;
+					}
+				}
+
 				TAILQ_INIT(&p_uhe->bsd_urb_list);
 				p_uhe->bsd_iface_index = i;
 				p_uhe->extra = ed->extra.ptr;

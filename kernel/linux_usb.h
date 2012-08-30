@@ -202,6 +202,8 @@ struct usb_driver {
 	LIST_ENTRY(usb_driver) linux_driver_list;
 
 	uint8_t	supports_autosuspend;
+	uint8_t	soft_unbind;
+	uint8_t	no_dynamic_id;
 };
 
 /*
@@ -304,6 +306,18 @@ struct usb_endpoint_descriptor {
 	uint8_t	bRefresh;
 	uint8_t	bSynchAddress;
 } __packed;
+
+struct usb_ss_ep_comp_descriptor {
+	uint8_t	bLength;
+	uint8_t	bDescriptorType;
+	uint8_t	bMaxBurst;
+	uint8_t	bmAttributes;
+	uint16_t wBytesPerInterval;
+} __packed;
+
+#define	USB_DT_SS_EP_COMP_SIZE		6
+#define	USB_SS_MAX_STREAMS(x)		(1 << ((x) & 0x1f))
+#define	USB_SS_MULT(x)			(1 + ((x) & 0x3))
 
 #define	USB_DT_ENDPOINT_SIZE		7
 #define	USB_DT_ENDPOINT_AUDIO_SIZE	9
@@ -445,6 +459,7 @@ struct usb_endpoint_descriptor {
  */
 struct usb_host_endpoint {
 	struct usb_endpoint_descriptor desc;
+	struct usb_ss_ep_comp_descriptor ss_ep_comp;
 
 	TAILQ_HEAD(, urb) bsd_urb_list;
 

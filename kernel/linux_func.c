@@ -506,6 +506,7 @@ static struct cdev *cdev_registry[F_V4B_MAX][SUB_MAX];
 static uint32_t cdev_mm[F_V4B_MAX][SUB_MAX];
 
 static int dvb_swap_fe;
+
 module_param_named(dvb_swap_fe, dvb_swap_fe, int, 0644);
 MODULE_PARM_DESC(dvb_swap_fe, "swap default DVB frontend, 0..3");
 
