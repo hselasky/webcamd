@@ -2200,3 +2200,9 @@ __usb_get_extra_descriptor(char *buffer, unsigned size,
 	}
 	return (-1);
 }
+
+int
+usb_endpoint_maxp(const struct usb_endpoint_descriptor *epd)
+{
+	return (le16_to_cpu(epd->wMaxPacketSize));
+}
