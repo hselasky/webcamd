@@ -1137,13 +1137,14 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 				ed = id->endpoints + k;
 				libusb20_me_encode(&p_uhe->desc,
 				    sizeof(p_uhe->desc), &ed->desc);
+
 				/*
 				 * Look for SuperSpeed endpoint
 				 * companion descriptor
 				 */
 				pcomp = NULL;
 				while ((pcomp = libusb20_desc_foreach(
-				    &ed->extra, pcomp) != NULL)) {
+				    &ed->extra, pcomp)) != NULL) {
 					if (pcomp[0] >= (uint8_t)sizeof(p_uhe->ss_ep_comp) &&
 					    pcomp[1] == 0x30) {
 						memcpy(&p_uhe->ss_ep_comp, pcomp, sizeof(p_uhe->ss_ep_comp));
