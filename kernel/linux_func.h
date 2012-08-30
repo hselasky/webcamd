@@ -71,12 +71,13 @@ unsigned long copy_to_user(void *to, const void *from, unsigned long n);
 unsigned long copy_from_user(void *to, const void *from, unsigned long n);
 unsigned long clear_user(void *to, unsigned long n);
 void	schedule(void);
-int	atomic_inc(atomic_t *v);
-int	atomic_dec(atomic_t *v);
-int	atomic_add(int i, atomic_t *v);
-void	atomic_set(atomic_t *v, int i);
-int	atomic_read(const atomic_t *v);
-int	atomic_dec_and_test(atomic_t *v);
+int	atomic_inc(atomic_t *);
+int	atomic_dec(atomic_t *);
+int	atomic_add(int i, atomic_t *);
+int	atomic_add_unless(atomic_t *, int, int);
+void	atomic_set(atomic_t *, int);
+int	atomic_read(const atomic_t *);
+int	atomic_dec_and_test(atomic_t *);
 
 /* Bit-operations */
 int	test_bit(int nr, const void *addr);
@@ -135,6 +136,8 @@ void   *ERR_PTR(long error);
 long	PTR_ERR(const void *ptr);
 long	IS_ERR(const void *ptr);
 int	__ffs(int x);
+
+#define	ffz(x) __ffz(x)
 int	__ffz(int x);
 
 #define	__fls(x) fls(x)
@@ -184,6 +187,9 @@ void	ktime_get_real_ts(struct timespec *ts);
 int64_t	ktime_to_ns(const struct timespec ts);
 struct timespec ktime_sub(const struct timespec a, const struct timespec b);
 struct timespec ktime_get_monotonic_offset(void);
+struct timespec ktime_add_us(const struct timespec, const uint64_t);
+int64_t	ktime_us_delta(const struct timespec, const struct timespec);
+int64_t	ktime_to_us(const struct timespec);
 void	msleep(uint32_t ms);
 uint32_t msleep_interruptible(uint32_t ms);
 void	request_module(const char *fmt,...);

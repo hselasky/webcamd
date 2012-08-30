@@ -269,6 +269,20 @@ atomic_add(int i, atomic_t *v)
 }
 
 int
+atomic_add_unless(atomic_t *v, int a, int u)
+{
+	int c;
+
+	atomic_lock();
+	c = v->counter;
+	if (c != u)
+		v->counter += a;
+	atomic_unlock();
+
+	return (c != u);
+}
+
+int
 atomic_inc(atomic_t *v)
 {
 	int i;
@@ -1473,6 +1487,31 @@ struct timespec
 ktime_get_monotonic_offset(void)
 {
 	return (ktime_monotonic_offset);
+}
+
+struct timespec
+ktime_add_us(const struct timespec t, const uint64_t usec)
+{
+	struct timespec temp;
+
+	temp.tv_nsec = 1000 * (usec % 1000000ULL);
+	temp.tv_sec = usec / 1000000ULL;
+
+	return (timespec_add(t, temp));
+}
+
+int64_t
+ktime_us_delta(const struct timespec last, const struct timespec first)
+{
+	return (ktime_to_us(ktime_sub(last, first)));
+}
+
+int64_t
+ktime_to_us(const struct timespec t)
+{
+	struct timeval tv = ktime_to_timeval(t);
+
+	return (((int64_t)tv.tv_sec * 1000000LL) + tv.tv_usec);
 }
 
 struct timespec
