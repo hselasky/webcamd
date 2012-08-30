@@ -31,7 +31,8 @@ static volatile uint32_t atomic_recurse;
 static pthread_key_t wrapper_key;
 
 struct task_struct linux_task = {
-	.comm = "V4B",
+	.comm = "WEBCAMD",
+	.pid = 1,
 };
 
 void

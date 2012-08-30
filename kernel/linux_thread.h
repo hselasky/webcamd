@@ -30,6 +30,7 @@
 
 typedef struct task_struct {
 	const char *comm;
+	pid_t	pid;
 } task_struct_t;
 
 typedef struct wait_queue {
