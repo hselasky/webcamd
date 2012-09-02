@@ -967,6 +967,23 @@ failure:
 	return (-EINVAL);
 }
 
+static char *
+usb_string_dup(struct usb_device *udev, uint8_t string_id)
+{
+	char buf[80];
+	int size;
+
+	if (string_id == 0)
+		return (strdup(""));
+
+	if ((size = usb_string(udev, string_id,
+	    buf, sizeof(buf) - 1)) > 0) {
+		buf[size] = '\0';
+		return (strdup(buf));
+	}
+	return (strdup(""));
+}
+
 /*------------------------------------------------------------------------*
  *	usb_linux_create_usb_device
  *
@@ -1034,9 +1051,6 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	p_ui = (void *)(p_uhe + nedesc);
 	p_uhi = (void *)(p_ui + iface_index);
 
-	p_ud->product = "";
-	p_ud->manufacturer = "";
-	p_ud->serial = "";
 	p_ud->bus = &usb_dummy_bus;
 
 	switch (libusb20_dev_get_speed(udev)) {
@@ -1176,8 +1190,14 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 
 	get_device(&p_ud->dev);		/* make sure we don't get freed */
 
+	p_ud->product = usb_string_dup(p_ud,
+	    p_ud->descriptor.iProduct);
+	p_ud->manufacturer = usb_string_dup(p_ud,
+	    p_ud->descriptor.iManufacturer);
+	p_ud->serial = usb_string_dup(p_ud,
+	    p_ud->descriptor.iSerialNumber);
 done:
-	return p_ud;
+	return (p_ud);
 }
 
 /*------------------------------------------------------------------------*
@@ -1402,6 +1422,9 @@ usb_linux_free_device(struct usb_device *dev)
 	err = usb_setup_endpoint(dev, &dev->ep0, 0);
 	atomic_unlock();
 
+	free(dev->product);
+	free(dev->manufacturer);
+	free(dev->serial);
 	free(dev);
 }
 
