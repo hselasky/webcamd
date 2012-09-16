@@ -37,6 +37,7 @@ typedef struct work_struct {
 } work_t;
 
 #define	DECLARE_WORK(name, fn) struct work_struct name = { .func = fn }
+#define	to_delayed_work(pwork) ((struct delayed_work *)(pwork))
 
 typedef void (tasklet_func_t)(unsigned long);
 
@@ -58,6 +59,7 @@ typedef struct execute_work {
 void	INIT_WORK(struct work_struct *work, work_func_t func);
 void	INIT_DELAYED_WORK(struct delayed_work *work, work_func_t func);
 int	schedule_work(struct work_struct *work);
+int	queue_delayed_work(struct workqueue_struct *, struct delayed_work *, unsigned long);
 int	schedule_delayed_work(struct delayed_work *work, unsigned long delay);
 void	destroy_workqueue(struct workqueue_struct *wq);
 int	queue_work(struct workqueue_struct *wq, struct work_struct *work);
@@ -65,10 +67,11 @@ struct workqueue_struct *create_workqueue(const char *name);
 struct workqueue_struct *create_singlethread_workqueue(const char *name);
 void	flush_workqueue(struct workqueue_struct *wq);
 void	flush_scheduled_work(void);
-void	cancel_rearming_delayed_work(struct delayed_work *work);
-void	cancel_delayed_work_sync(struct delayed_work *work);
-void	cancel_work(struct work_struct *work);
-void	cancel_work_sync(struct work_struct *work);
+void	cancel_rearming_delayed_work(struct delayed_work *);
+void	cancel_delayed_work(struct delayed_work *);
+void	cancel_delayed_work_sync(struct delayed_work *);
+void	cancel_work(struct work_struct *);
+void	cancel_work_sync(struct work_struct *);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, tasklet_func_t *, unsigned long data);
 void	tasklet_kill(struct tasklet_struct *t);

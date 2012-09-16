@@ -1994,3 +1994,15 @@ led_classdev_unregister(struct led_classdev *led_cdev)
 {
 
 }
+
+void
+led_classdev_suspend(struct led_classdev *led_cdev)
+{
+
+}
+
+void
+led_classdev_resume(struct led_classdev *led_cdev)
+{
+
+}

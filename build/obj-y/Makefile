@@ -5,19 +5,23 @@
 SRCPATHS+= \
 media_tree/drivers/input \
 media_tree/drivers/input/tablet \
+media_tree/drivers/input/touchscreen \
 media_tree/drivers/media \
+media_tree/drivers/media/i2c \
+media_tree/drivers/media/i2c/cx25840 \
+media_tree/drivers/media/i2c/soc_camera \
 media_tree/drivers/media/tuners \
+media_tree/drivers/media/dvb-frontends \
+media_tree/drivers/media/v4l2-core \
+media_tree/drivers/media/dvb-core \
+media_tree/drivers/media/rc \
+media_tree/drivers/media/rc/keymaps \
 media_tree/drivers/media/common \
 media_tree/drivers/media/common/b2c2 \
 media_tree/drivers/media/common/saa7146 \
 media_tree/drivers/media/common/siano \
-media_tree/drivers/media/rc \
-media_tree/drivers/media/rc/keymaps \
 media_tree/drivers/media/platform \
 media_tree/drivers/media/platform/davinci \
-media_tree/drivers/media/i2c \
-media_tree/drivers/media/i2c/cx25840 \
-media_tree/drivers/media/i2c/soc_camera \
 media_tree/drivers/media/pci \
 media_tree/drivers/media/pci/ttpci \
 media_tree/drivers/media/pci/b2c2 \
@@ -56,9 +60,6 @@ media_tree/drivers/media/mmc/siano \
 media_tree/drivers/media/firewire \
 media_tree/drivers/media/parport \
 media_tree/drivers/media/radio \
-media_tree/drivers/media/v4l2-core \
-media_tree/drivers/media/dvb-core \
-media_tree/drivers/media/dvb-frontends \
 media_tree/drivers/staging/media \
 media_tree/drivers/staging/media/as102 \
 media_tree/drivers/staging/media/cxd2099 \
@@ -79,6 +80,54 @@ SRCS+= \
 	kbtab.c \
 	wacom_wac.c \
 	wacom_sys.c \
+	msp3400-driver.c \
+	msp3400-kthreads.c \
+	cx25840-core.c \
+	cx25840-audio.c \
+	cx25840-firmware.c \
+	cx25840-vbi.c \
+	cx25840-ir.c \
+	tvaudio.c \
+	tda7432.c \
+	saa6588.c \
+	tda9840.c \
+	tea6415c.c \
+	tea6420.c \
+	saa7110.c \
+	saa7115.c \
+	saa717x.c \
+	saa7127.c \
+	saa7185.c \
+	saa7191.c \
+	adv7170.c \
+	adv7175.c \
+	adv7343.c \
+	bt819.c \
+	bt856.c \
+	bt866.c \
+	ks0127.c \
+	ths7303.c \
+	tvp5150.c \
+	tvp514x.c \
+	tvp7002.c \
+	cs5345.c \
+	cs53l32a.c \
+	m52790.c \
+	tlv320aic23b.c \
+	wm8775.c \
+	wm8739.c \
+	vp27smpx.c \
+	upd64031a.c \
+	upd64083.c \
+	ov7670.c \
+	tcm825x.c \
+	tveeprom.c \
+	mt9v011.c \
+	sr030pc30.c \
+	btcx-risc.c \
+	cx2341x.c \
+	ak881x.c \
+	ir-kbd-i2c.c \
 	tuner-xc2028.c \
 	tuner-simple.c \
 	tuner-types.c \
@@ -108,18 +157,127 @@ SRCS+= \
 	fc0011.c \
 	fc0012.c \
 	fc0013.c \
-	flexcop.c \
-	flexcop-fe-tuner.c \
-	flexcop-i2c.c \
-	flexcop-sram.c \
-	flexcop-eeprom.c \
-	flexcop-misc.c \
-	flexcop-hw-filter.c \
-	smscoreapi.c \
-	sms-cards.c \
-	smsendian.c \
-	smsir.c \
-	smsdvb.c \
+	dvb-pll.c \
+	stv0299.c \
+	stb0899_drv.c \
+	stb0899_algo.c \
+	stb6100.c \
+	sp8870.c \
+	cx22700.c \
+	s5h1432.c \
+	cx24110.c \
+	tda8083.c \
+	l64781.c \
+	dib3000mb.c \
+	dib3000mc.c \
+	dibx000_common.c \
+	dib7000m.c \
+	dib7000p.c \
+	dib8000.c \
+	dib9000.c \
+	mt312.c \
+	ves1820.c \
+	ves1x93.c \
+	tda1004x.c \
+	sp887x.c \
+	nxt6000.c \
+	mt352.c \
+	zl10036.c \
+	zl10039.c \
+	zl10353.c \
+	cx22702.c \
+	drxd_firm.c \
+	drxd_hard.c \
+	tda10021.c \
+	tda10023.c \
+	stv0297.c \
+	nxt200x.c \
+	or51211.c \
+	or51132.c \
+	bcm3510.c \
+	s5h1420.c \
+	lgdt330x.c \
+	lgdt3305.c \
+	lg2160.c \
+	cx24123.c \
+	lnbp21.c \
+	lnbp22.c \
+	isl6405.c \
+	isl6421.c \
+	tda10086.c \
+	tda826x.c \
+	tda8261.c \
+	dib0070.c \
+	dib0090.c \
+	tua6100.c \
+	s5h1409.c \
+	itd1000.c \
+	au8522_common.c \
+	au8522_dig.c \
+	au8522_decoder.c \
+	tda10048.c \
+	cx24113.c \
+	s5h1411.c \
+	lgs8gl5.c \
+	tda665x.c \
+	lgs8gxx.c \
+	atbm8830.c \
+	dvb_dummy_fe.c \
+	af9013.c \
+	cx24116.c \
+	si21xx.c \
+	stv0288.c \
+	stb6000.c \
+	s921.c \
+	stv6110.c \
+	stv0900_core.c \
+	stv0900_sw.c \
+	stv090x.c \
+	stv6110x.c \
+	isl6423.c \
+	ec100.c \
+	hd29l2.c \
+	ds3000.c \
+	mb86a16.c \
+	mb86a20s.c \
+	ix2505v.c \
+	stv0367.c \
+	cxd2820r_core.c \
+	cxd2820r_c.c \
+	cxd2820r_t.c \
+	cxd2820r_t2.c \
+	tda18271c2dd.c \
+	it913x-fe.c \
+	a8293.c \
+	tda10071.c \
+	rtl2830.c \
+	rtl2832.c \
+	m88rs2000.c \
+	af9033.c \
+	v4l2-dev.c \
+	v4l2-ioctl.c \
+	v4l2-device.c \
+	v4l2-fh.c \
+	v4l2-event.c \
+	v4l2-ctrls.c \
+	v4l2-subdev.c \
+	v4l2-int-device.c \
+	v4l2-common.c \
+	tuner-core.c \
+	videobuf-core.c \
+	videobuf-vmalloc.c \
+	videobuf-dvb.c \
+	videobuf2-core.c \
+	videobuf2-memops.c \
+	videobuf2-vmalloc.c \
+	dvbdev.c \
+	dmxdev.c \
+	dvb_demux.c \
+	dvb_filter.c \
+	dvb_ca_en50221.c \
+	dvb_frontend.c \
+	dvb_ringbuffer.c \
+	dvb_math.c \
 	rc-adstech-dvb-t-pci.c \
 	rc-alink-dtu-m.c \
 	rc-anysee.c \
@@ -236,54 +394,18 @@ SRCS+= \
 	streamzap.c \
 	iguanair.c \
 	ttusbir.c \
-	msp3400-driver.c \
-	msp3400-kthreads.c \
-	cx25840-core.c \
-	cx25840-audio.c \
-	cx25840-firmware.c \
-	cx25840-vbi.c \
-	cx25840-ir.c \
-	tvaudio.c \
-	tda7432.c \
-	saa6588.c \
-	tda9840.c \
-	tea6415c.c \
-	tea6420.c \
-	saa7110.c \
-	saa7115.c \
-	saa717x.c \
-	saa7127.c \
-	saa7185.c \
-	saa7191.c \
-	adv7170.c \
-	adv7175.c \
-	adv7343.c \
-	bt819.c \
-	bt856.c \
-	bt866.c \
-	ks0127.c \
-	ths7303.c \
-	tvp5150.c \
-	tvp514x.c \
-	tvp7002.c \
-	cs5345.c \
-	cs53l32a.c \
-	m52790.c \
-	tlv320aic23b.c \
-	wm8775.c \
-	wm8739.c \
-	vp27smpx.c \
-	upd64031a.c \
-	upd64083.c \
-	ov7670.c \
-	tcm825x.c \
-	tveeprom.c \
-	mt9v011.c \
-	sr030pc30.c \
-	btcx-risc.c \
-	cx2341x.c \
-	ak881x.c \
-	ir-kbd-i2c.c \
+	flexcop.c \
+	flexcop-fe-tuner.c \
+	flexcop-i2c.c \
+	flexcop-sram.c \
+	flexcop-eeprom.c \
+	flexcop-misc.c \
+	flexcop-hw-filter.c \
+	smscoreapi.c \
+	sms-cards.c \
+	smsendian.c \
+	smsir.c \
+	smsdvb.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \
@@ -492,127 +614,6 @@ SRCS+= \
 	radio-tea5764.c \
 	saa7706h.c \
 	tef6862.c \
-	v4l2-dev.c \
-	v4l2-ioctl.c \
-	v4l2-device.c \
-	v4l2-fh.c \
-	v4l2-event.c \
-	v4l2-ctrls.c \
-	v4l2-subdev.c \
-	v4l2-int-device.c \
-	v4l2-common.c \
-	tuner-core.c \
-	videobuf-core.c \
-	videobuf-vmalloc.c \
-	videobuf-dvb.c \
-	videobuf2-core.c \
-	videobuf2-memops.c \
-	videobuf2-vmalloc.c \
-	dvbdev.c \
-	dmxdev.c \
-	dvb_demux.c \
-	dvb_filter.c \
-	dvb_ca_en50221.c \
-	dvb_frontend.c \
-	dvb_ringbuffer.c \
-	dvb_math.c \
-	dvb-pll.c \
-	stv0299.c \
-	stb0899_drv.c \
-	stb0899_algo.c \
-	stb6100.c \
-	sp8870.c \
-	cx22700.c \
-	s5h1432.c \
-	cx24110.c \
-	tda8083.c \
-	l64781.c \
-	dib3000mb.c \
-	dib3000mc.c \
-	dibx000_common.c \
-	dib7000m.c \
-	dib7000p.c \
-	dib8000.c \
-	dib9000.c \
-	mt312.c \
-	ves1820.c \
-	ves1x93.c \
-	tda1004x.c \
-	sp887x.c \
-	nxt6000.c \
-	mt352.c \
-	zl10036.c \
-	zl10039.c \
-	zl10353.c \
-	cx22702.c \
-	drxd_firm.c \
-	drxd_hard.c \
-	tda10021.c \
-	tda10023.c \
-	stv0297.c \
-	nxt200x.c \
-	or51211.c \
-	or51132.c \
-	bcm3510.c \
-	s5h1420.c \
-	lgdt330x.c \
-	lgdt3305.c \
-	lg2160.c \
-	cx24123.c \
-	lnbp21.c \
-	lnbp22.c \
-	isl6405.c \
-	isl6421.c \
-	tda10086.c \
-	tda826x.c \
-	tda8261.c \
-	dib0070.c \
-	dib0090.c \
-	tua6100.c \
-	s5h1409.c \
-	itd1000.c \
-	au8522_common.c \
-	au8522_dig.c \
-	au8522_decoder.c \
-	tda10048.c \
-	cx24113.c \
-	s5h1411.c \
-	lgs8gl5.c \
-	tda665x.c \
-	lgs8gxx.c \
-	atbm8830.c \
-	dvb_dummy_fe.c \
-	af9013.c \
-	cx24116.c \
-	si21xx.c \
-	stv0288.c \
-	stb6000.c \
-	s921.c \
-	stv6110.c \
-	stv0900_core.c \
-	stv0900_sw.c \
-	stv090x.c \
-	stv6110x.c \
-	isl6423.c \
-	ec100.c \
-	hd29l2.c \
-	ds3000.c \
-	mb86a16.c \
-	mb86a20s.c \
-	ix2505v.c \
-	stv0367.c \
-	cxd2820r_core.c \
-	cxd2820r_c.c \
-	cxd2820r_t.c \
-	cxd2820r_t2.c \
-	tda18271c2dd.c \
-	it913x-fe.c \
-	a8293.c \
-	tda10071.c \
-	rtl2830.c \
-	rtl2832.c \
-	m88rs2000.c \
-	af9033.c \
 	as102_drv.c \
 	as102_fw.c \
 	as10x_cmd.c \
@@ -621,6 +622,7 @@ SRCS+= \
 	as102_usb_drv.c \
 	as10x_cmd_cfg.c \
 	cxd2099.c \
+	lirc_igorplugusb.c \
 	tea575x-tuner.c \
 	tbs-qboxs2.c \
 

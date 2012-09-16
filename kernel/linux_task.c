@@ -57,6 +57,13 @@ delayed_work_timer_fn(unsigned long __data)
 }
 
 int
+queue_delayed_work(struct workqueue_struct *dummy,
+    struct delayed_work *pwork, unsigned long delay)
+{
+	return (schedule_delayed_work(pwork, delay));
+}
+
+int
 schedule_delayed_work(struct delayed_work *work, unsigned long delay)
 {
 	int retval;
@@ -128,7 +135,12 @@ queue_work(struct workqueue_struct *wq, struct work_struct *work)
 void
 flush_workqueue(struct workqueue_struct *wq)
 {
+}
 
+void
+cancel_delayed_work(struct delayed_work *_work)
+{
+	cancel_work(&_work->work);
 }
 
 void
