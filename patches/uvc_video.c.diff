@@ -12,34 +12,6 @@ diff -u -r media_tree/drivers/media/video/uvc/uvc_video.c media_tree/drivers/med
  
  	/* Retry allocations until one succeed. */
  	for (; npackets > 1; npackets /= 2) {
-@@ -886,25 +888,8 @@
- 	u32 size;
- 
- 	psize = le16_to_cpu(ep->desc.wMaxPacketSize);
--
--	if (stream->dev->udev->speed == USB_SPEED_FULL) {
--		/* (8000 >> 3) = 1000 FPS */
--		psize = (psize & 0x07ff);
--		size = (UVC_MAX_PACKETS >> 3) * psize;
--	} else {
--		/* 1000 - 8000 FPS, figure out */
--		psize = (psize & 0x07ff) * (1 + ((psize >> 11) & 3));
--		size = ep->desc.bInterval;
--		if (size > 0)
--			size --;
--		if (size > 3)
--			size = 3;
--		size = (UVC_MAX_PACKETS >> size) * psize;
--	}
--
--	/* avoid division by zero */
--	if (psize == 0)
--		return -EINVAL;
-+	psize = (psize & 0x07ff) * (1 + ((psize >> 11) & 3));
-+	size = stream->ctrl.dwMaxVideoFrameSize;
- 
- 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
- 	if (npackets == 0)
 @@ -886,23 +888,7 @@
  	u32 size;
  
