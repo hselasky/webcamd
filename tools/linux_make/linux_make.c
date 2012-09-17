@@ -151,8 +151,8 @@ new_makefile(char *name)
 static int
 sort_node_compare(const void *pa, const void *pb)
 {
-	const struct node *na = pa;
-	const struct node *nb = pb;
+	const struct node *na = *(const void **)pa;
+	const struct node *nb = *(const void **)pb;
 
 	return (strcmp(na->name, nb->name));
 }
@@ -189,8 +189,8 @@ sort_nodes(node_head_t *pnh)
 static int
 sort_config_compare(const void *pa, const void *pb)
 {
-	const struct config *ca = pa;
-	const struct config *cb = pb;
+	const struct config *ca = *(const void **)pa;
+	const struct config *cb = *(const void **)pb;
 
 	return (strcmp(ca->name, cb->name));
 }
