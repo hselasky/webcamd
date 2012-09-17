@@ -149,44 +149,6 @@ new_makefile(char *name)
 }
 
 static int
-sort_node_compare(const void *pa, const void *pb)
-{
-	const struct node *na = *(const void **)pa;
-	const struct node *nb = *(const void **)pb;
-
-	return (strcmp(na->name, nb->name));
-}
-
-static void
-sort_nodes(node_head_t *pnh)
-{
-	uint32_t x;
-	uint32_t count = 0;
-	struct node *n0;
-	struct node **ppn;
-
-	TAILQ_FOREACH(n0, pnh, entry)
-	    count++;
-
-	ppn = malloc(sizeof(void *) * count);
-	if (ppn == NULL)
-		return;
-
-	count = 0;
-	TAILQ_FOREACH(n0, pnh, entry)
-	    ppn[count++] = n0;
-
-	qsort(ppn, count, sizeof(void *), sort_node_compare);
-
-	TAILQ_INIT(pnh);
-
-	for (x = 0; x != count; x++)
-		TAILQ_INSERT_TAIL(pnh, ppn[x], entry);
-
-	free(ppn);
-}
-
-static int
 sort_config_compare(const void *pa, const void *pb)
 {
 	const struct config *ca = *(const void **)pa;
@@ -534,8 +496,6 @@ objs_exec(char *ptr, void (*fn) (char *name))
 			    strcmp(n0->name + len, "-n") == 0 ||
 			    strcmp(n0->name + len, "-m") == 0 ||
 			    strcmp(n0->name + len, "-objs") == 0) {
-
-				sort_nodes(&n0->children);
 
 				TAILQ_FOREACH(n1, &n0->children, entry) {
 					objs_exec(n1->name, fn);
@@ -979,8 +939,6 @@ output_makefile(char *name)
 	    "SRCS+= \\\n");
 
 	n0 = add_node(&rootNode, strcatdup(name, ""));
-
-	sort_nodes(&n0->children);
 
 	TAILQ_FOREACH(n1, &n0->children, entry) {
 		objs_exec(n1->name, &print_source);
