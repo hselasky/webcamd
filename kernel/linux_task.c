@@ -29,6 +29,7 @@ static struct work_struct *work_curr;
 static struct work_head work_head = TAILQ_HEAD_INITIALIZER(work_head);
 static pthread_t work_thread;
 static pthread_cond_t work_cond;
+static int flush_work;
 
 int
 schedule_work(struct work_struct *work)
@@ -117,6 +118,7 @@ work_exec(void *arg)
 			atomic_lock();
 			work_curr = NULL;
 		} else {
+			flush_work = 0;
 			atomic_pre_sleep();
 			pthread_cond_wait(&work_cond, atomic_get_lock());
 			atomic_post_sleep();
@@ -180,7 +182,21 @@ cancel_work_sync(struct work_struct *work)
 void
 flush_scheduled_work(void)
 {
-	usleep(100000);
+	uint32_t drops;
+
+	atomic_lock();
+	flush_work = 1;
+	while (1) {
+		pthread_cond_signal(&work_cond);
+		if (flush_work == 0)
+			break;
+		drops = atomic_drop();
+		atomic_unlock();
+		usleep(10000);
+		atomic_lock();
+		atomic_pickup(drops);
+	}
+	atomic_unlock();
 }
 
 void

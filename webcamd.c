@@ -332,6 +332,9 @@ v4b_create(int unit)
 	int unit_num[UNIT_MAX][F_V4B_SUBDEV_MAX];
 	const char *dname;
 
+	/* The DVB V2 API is ASYNC and we need to wait for it: */
+	flush_scheduled_work();
+
 	for (n = 0; n != UNIT_MAX; n++) {
 		for (p = 0; p != F_V4B_SUBDEV_MAX; p++) {
 			unit_num[n][p] = (unit < 0) ? -1 : (unit + p);
