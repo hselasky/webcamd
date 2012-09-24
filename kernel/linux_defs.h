@@ -98,6 +98,7 @@
 #define	symbol_put(x) __nop
 #define	EXPORT_SYMBOL(...)
 #define	EXPORT_SYMBOL_GPL(...)
+#define	MODULE_INFO(...)
 #define	MODULE_AUTHOR(...)
 #define	MODULE_DESCRIPTION(...)
 #define	MODULE_LICENSE(...)
