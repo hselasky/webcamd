@@ -160,6 +160,7 @@
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	kstrdup(a,b) strdup(a)
+#define	might_sleep(x) __nop
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
 #define	usleep_range(_min,_max) usleep(_min)

@@ -55,7 +55,11 @@ for F in \
 ../media_tree/drivers/media/dvb/frontends/dib3000mb_priv.h \
 ../media_tree/drivers/media/dvb/frontends/tda18271c2dd.c \
 ../media_tree/drivers/media/dvb/frontends/it913x-fe.c \
-../media_tree/drivers/media/dvb/frontends/m88rs2000.c
+../media_tree/drivers/media/dvb/frontends/m88rs2000.c \
+../media_tree/drivers/media/usb/dvb-usb-v2/lmedm04.c \
+../media_tree/drivers/media/usb/dvb-usb-v2/it913x.c \
+../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf-tuner.c \
+../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf.c
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
 done
@@ -88,6 +92,10 @@ find_media_file dib3000mb_priv.h
 find_media_file tda18271c2dd.c
 find_media_file it913x-fe.c
 find_media_file m88rs2000.c
+find_media_file lmedm04.c
+find_media_file it913x.c
+find_media_file mxl111sf-tuner.c
+find_media_file mxl111sf.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
@@ -110,7 +118,11 @@ sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx2412
 sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig $(find_media_file dib3000mb.c)
 sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/warn[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig $(find_media_file dib3000mb_priv.h)
 sed -e "s/sleep[(,]/do_&/g" -e "s/mdo_sleep/msleep/g" -i .orig $(find_media_file tda18271c2dd.c)
-sed -e "s/info[(]/itx_&/g" -e "s/itx_itx_/itx_/g" -i .orig $(find_media_file it913x-fe.c)
-sed -e "s/info[(]/m88_&/g" -e "s/m88_m88_/m88_/g" -i .orig $(find_media_file m88rs2000.c)
+sed -e "s/[ 	]info[(]/ itx_info(/g" -i .orig $(find_media_file it913x-fe.c)
+sed -e "s/[ 	]info[(]/ m88_info(/g" -i .orig $(find_media_file m88rs2000.c)
+sed -e "s/[ 	]info[(]/ med_info(/g" -i .orig $(find_media_file lmedm04.c)
+sed -e "s/[ 	]info[(]/ itx_info(/g" -i .orig $(find_media_file it913x.c)
+sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf-tuner.c)
+sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf.c)
 
 exit 0

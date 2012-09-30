@@ -225,9 +225,11 @@
 #undef	CONFIG_LIRC_ZILOG /* n */
 #undef	CONFIG_MANTIS_CORE /* n */
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
+#define	CONFIG_MEDIA_TUNER_E4000 /* y */
 #define	CONFIG_MEDIA_TUNER_FC0011 /* y */
 #define	CONFIG_MEDIA_TUNER_FC0012 /* y */
 #define	CONFIG_MEDIA_TUNER_FC0013 /* y */
+#define	CONFIG_MEDIA_TUNER_FC2580 /* y */
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
@@ -523,6 +525,7 @@
 #undef	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* n */
 #define	CONFIG_VIDEO_PVRUSB2_DVB /* y */
 #define	CONFIG_VIDEO_PVRUSB2_SYSFS /* y */
+#undef	CONFIG_VIDEO_S5K4ECGX /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
 #define	CONFIG_VIDEO_SAA6588 /* y */
 #define	CONFIG_VIDEO_SAA7110 /* y */

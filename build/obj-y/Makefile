@@ -153,6 +153,8 @@ SRCS+= \
 	max2165.c \
 	tda18218.c \
 	tda18212.c \
+	e4000.c \
+	fc2580.c \
 	tua9001.c \
 	fc0011.c \
 	fc0012.c \
