@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.7.0.4
+VERSION=	3.7.0.5
 PROG=		webcamd
 
 #
