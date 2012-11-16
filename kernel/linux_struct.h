@@ -54,6 +54,11 @@ struct attribute {
 	mode_t	mode;
 };
 
+struct bin_attribute {
+	const char *name;
+	mode_t	mode;
+};
+
 struct attribute_group {
 	const char *name;
 	struct attribute **attrs;
@@ -86,6 +91,12 @@ struct device_type {
 	    .mode = _mode, .owner = THIS_MODULE },	\
         .show   = _show,				\
         .store  = _store,				\
+}
+
+#define	__ATTR_RO(_n) {					\
+	.attr = { .name = __stringify(_n),		\
+	    .mode = 0444, .owner = THIS_MODULE },	\
+	.show = _n##_show,				\
 }
 
 #define	__ATTR_NULL { }

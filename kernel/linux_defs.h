@@ -225,6 +225,7 @@
 })
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	POLL_ERR POLLERR
+#define	IOCSIZE_MASK (_IOC_SIZEMASK << _IOC_SIZESHIFT)
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
 #define	_IOC_NR(cmd) ((cmd) & 0xFF)

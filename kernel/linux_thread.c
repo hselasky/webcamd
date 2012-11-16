@@ -297,6 +297,22 @@ down_read_trylock(struct semaphore *sem)
 	return (0);
 }
 
+int
+down_trylock(struct semaphore *sem)
+{
+	int ret;
+
+	atomic_lock();
+	if (sem->value > 0) {
+		down(sem);
+		ret = 1;		/* success */
+	} else {
+		ret = 0;		/* congested */
+	}
+	atomic_unlock();
+	return (0);
+}
+
 void
 down(struct semaphore *sem)
 {

@@ -160,6 +160,7 @@ void	sema_uninit(struct semaphore *sem);
 void	up (struct semaphore *);
 void	down(struct semaphore *);
 int	down_read_trylock(struct semaphore *sem);
+int	down_trylock(struct semaphore *sem);
 void	poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p);
 
 void	mutex_lock(struct mutex *m);

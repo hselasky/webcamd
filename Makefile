@@ -282,8 +282,11 @@ help:
 	@echo "# pwcview"
 	@echo "#"
 
-configure:
-	linux_make -c config \
+tools/linux_make/linux_make:
+	make -C tools/linux_make
+
+configure: tools/linux_make/linux_make
+	tools/linux_make/linux_make -c config \
 		-i media_tree/drivers/input \
 		-i media_tree/drivers/media \
 		-i media_tree/drivers/staging/media \
