@@ -1,27 +1,28 @@
 #ifndef _LINUX_STRUCT_H_
 #define	_LINUX_STRUCT_H_
 
-struct vm_area_struct;
-struct vm_operations_struct;
-struct poll_table_page;
-struct kobj_uevent_env;
-struct module;
-struct file;
-struct inode;
+struct cdev;
 struct class;
+struct dev_pm_ops;
 struct device;
 struct device_driver;
-struct dev_pm_ops;
-struct page;
-struct cdev;
-struct mutex;
 struct dmi_system_id;
+struct file;
+struct inode;
 struct input_device_id;
+struct kmem_cache;
+struct kobj_uevent_env;
+struct module;
+struct mutex;
+struct page;
 struct pci_dev;
+struct poll_table_page;
+struct pt_regs;
 struct tasklet_struct;
 struct usb_driver;
 struct usb_interface;
-struct pt_regs;
+struct vm_area_struct;
+struct vm_operations_struct;
 
 #define	LINUX_VMA_MAX 16
 
@@ -32,12 +33,7 @@ typedef struct {
 	volatile unsigned int counter;
 } atomic_t;
 
-struct rcu_head {
-
-};
-
 struct module {
-
 };
 
 struct kobject {
@@ -213,6 +209,7 @@ typedef struct inode {
 	dev_t	d_inode;
 	void   *i_private;
 	char	i_rdev[0];		/* dummy, must be non-zero */
+	struct cdev *i_cdev;		/* pointer to cdev */
 } inode_t;
 
 #define	F_V4B_SUBDEV_MAX 	8

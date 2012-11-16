@@ -23,13 +23,15 @@
  * SUCH DAMAGE.
  */
 
+#include <linux/rcupdate.h>
+
 TAILQ_HEAD(work_head, work_struct);
 
 static struct work_struct *work_curr;
 static struct work_head work_head = TAILQ_HEAD_INITIALIZER(work_head);
 static pthread_t work_thread;
 static pthread_cond_t work_cond;
-static int flush_work;
+static int flush_work_var;
 
 int
 schedule_work(struct work_struct *work)
@@ -118,7 +120,7 @@ work_exec(void *arg)
 			atomic_lock();
 			work_curr = NULL;
 		} else {
-			flush_work = 0;
+			flush_work_var = 0;
 			atomic_pre_sleep();
 			pthread_cond_wait(&work_cond, atomic_get_lock());
 			atomic_post_sleep();
@@ -134,9 +136,24 @@ queue_work(struct workqueue_struct *wq, struct work_struct *work)
 	return (schedule_work(work));
 }
 
+bool
+flush_work(struct work_struct *work)
+{
+	bool retval;
+
+	atomic_lock();
+	retval = (work->entry.tqe_prev != NULL);
+	while (work->entry.tqe_prev != NULL)
+		schedule();
+	atomic_unlock();
+
+	return (retval);
+}
+
 void
 flush_workqueue(struct workqueue_struct *wq)
 {
+	flush_scheduled_work();
 }
 
 void
@@ -174,6 +191,10 @@ void
 cancel_work_sync(struct work_struct *work)
 {
 	atomic_lock();
+	if (work->entry.tqe_prev != NULL) {
+		TAILQ_REMOVE(&work_head, work, entry);
+		work->entry.tqe_prev = NULL;
+	}
 	while (work == work_curr)
 		schedule();
 	atomic_unlock();
@@ -185,10 +206,10 @@ flush_scheduled_work(void)
 	uint32_t drops;
 
 	atomic_lock();
-	flush_work = 1;
+	flush_work_var = 1;
 	while (1) {
 		pthread_cond_signal(&work_cond);
-		if (flush_work == 0)
+		if (flush_work_var == 0)
 			break;
 		drops = atomic_drop();
 		atomic_unlock();
@@ -264,6 +285,60 @@ tasklet_kill(struct tasklet_struct *t)
 	if (t->work.entry.tqe_prev != NULL) {
 		TAILQ_REMOVE(&work_head, &t->work, entry);
 		t->work.entry.tqe_prev = NULL;
+	}
+	atomic_unlock();
+}
+
+static pthread_t rcu_thread;
+static pthread_cond_t rcu_cond;
+static struct rcu_head *rcu_head;
+
+static void *
+rcu_exec(void *arg)
+{
+	struct rcu_head *t;
+
+	atomic_lock();
+	while (1) {
+		t = rcu_head;
+		if (t != NULL) {
+			rcu_head = t->next;
+			t->next = NULL;
+			atomic_unlock();
+			t->func(t);
+			atomic_lock();
+		} else {
+			atomic_pre_sleep();
+			pthread_cond_wait(&rcu_cond, atomic_get_lock());
+			atomic_post_sleep();
+		}
+	}
+	atomic_unlock();
+	return (NULL);
+}
+
+static int
+rcu_init(void)
+{
+	pthread_cond_init(&rcu_cond, NULL);
+
+	if (pthread_create(&rcu_thread, NULL, rcu_exec, NULL)) {
+		printf("Failed creating RCU process\n");
+	}
+	return (0);
+}
+
+module_init(rcu_init);
+
+void
+call_rcu(struct rcu_head *head, rcu_func_t *func)
+{
+	atomic_lock();
+	if (head->next == NULL) {
+		head->next = rcu_head;
+		head->func = func;
+		rcu_head = head;
+		pthread_cond_signal(&rcu_cond);
 	}
 	atomic_unlock();
 }

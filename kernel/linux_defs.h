@@ -135,6 +135,11 @@
 #define	warn(fmt, ...) printk("WARN: " fmt "\n",## __VA_ARGS__)
 #define	dbg(fmt, ...) printk("DBG: " fmt "\n",## __VA_ARGS__)
 #define	err(fmt, ...) printk("ERR: " fmt "\n",## __VA_ARGS__)
+#define	kmem_cache_create(desc,size,align,arg,fn) ((struct kmem_cache *)(size))
+#define	kmem_cache_destroy(...) __nop
+#define	kmem_cache_free(ref,ptr) free(ptr)
+#define	kmem_cache_alloc(ref,g) malloc((long)(ref))
+#define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
 #define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
@@ -239,6 +244,7 @@
 #define	VM_FAULT_OOM 0x0010
 #define	VM_RESERVED 0x0020
 #define	VM_IO 0x0040
+#define	VM_DONTDUMP 0x0080
 #define	DMA_FROM_DEVICE 0x01
 #define	DMA_TO_DEVICE 0x02
 #define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
@@ -392,9 +398,15 @@
 /* rcu - support */
 #define	rcu_read_lock() atomic_lock()
 #define	rcu_read_unlock() atomic_unlock()
-#define	rcu_dereference(p) (p)
-#define	rcu_dereference_protected(p,c) (p)
-#define	rcu_assign_pointer(a,b) do { a = (b); } while (0)
+#define	rcu_dereference(var)	\
+  ({ __typeof(var) __temp;	\
+     atomic_lock();		\
+     __temp = (var);		\
+     atomic_unlock();		\
+     __temp; })
+#define	rcu_dereference_protected(p,c) rcu_dereference(p)
+#define	rcu_dereference_raw(p) rcu_dereference(p)
+#define	rcu_assign_pointer(a,b) do { atomic_lock(); (a) = (b); atomic_unlock(); } while (0)
 #define	list_for_each_entry_rcu(a,b,c) list_for_each_entry(a,b,c)
 #define	list_add_rcu(a,b) list_add(a,b)
 #define	list_add_tail_rcu(a,b) list_add_tail(a,b)

@@ -105,7 +105,8 @@ char	global_fw_prefix[128] = {"/boot/modules"};
 int	webcamd_hal_register;
 
 #define	v4b_errx(code, fmt, ...) do {			\
-    fprintf(stderr, "webcamd: " fmt,## __VA_ARGS__);	\
+    fprintf(stderr, "webcamd: " fmt "\n",##		\
+	__VA_ARGS__); 					\
     exit(code);						\
 } while (0)
 

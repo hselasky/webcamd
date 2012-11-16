@@ -170,8 +170,12 @@ void	mutex_unlock(struct mutex *m);
 #define	mutex_init(m) sema_init(&(m)->sem, 1)
 #define	mutex_destroy(m) sema_uninit(&(m)->sem)
 #define	mutex_lock_interruptible(m) (mutex_lock(m),0)
-#define	mutex_is_locked(x) ((x)->sem.owner == pthread_self())
-
+#define	mutex_is_locked(x) ({			\
+    int __ret;					\
+    atomic_lock();				\
+    __ret = ((x)->sem.owner != MUTEX_NO_OWNER);	\
+    atomic_unlock();				\
+    __ret;})
 #define	init_MUTEX(s) sema_init(s,1)
 #define	init_MUTEX_LOCKED(s) sema_init(s, 0)
 #define	down_interruptible(x) (down(x),0)

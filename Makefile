@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.7.0.5
+VERSION=	3.8.0.1
 PROG=		webcamd
 
 #
@@ -125,9 +125,8 @@ PTHREAD_LIBS?=	-lpthread
 #
 SRCPATHS+= kernel
 SRCPATHS+= vtuner
-SRCPATHS+= ${LINUXDIR}/kernel
 
-.PATH: ${.CURDIR} ${SRCPATHS}
+.PATH: ${.CURDIR} ${SRCPATHS} ${LINUXDIR}/kernel ${LINUXDIR}/lib
 
 #
 # List of compiler flags
@@ -164,6 +163,7 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/usb/gspca
 CFLAGS+= -I${LINUXDIR}/drivers/media/usb/dvb-usb
 
 CFLAGS+= -I${LINUXDIR}/include
+CFLAGS+= -I${LINUXDIR}/include/uapi
 
 CFLAGS+= -I${LOCALBASE}
 CFLAGS+= -I${LOCALBASE}/include
@@ -192,6 +192,7 @@ LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd ${PTHREAD_LIBS} -lutil
 # List of Linux specific sources
 #
 SRCS+= kfifo.c
+SRCS+= idr.c
 
 #
 # List of FreeBSD specific sources
@@ -252,8 +253,13 @@ package:
 		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
 		sources.txt \
 		config \
-		${SRCPATHS} build/ media_tree/include \
-		patches/do_patch.sh patches/*.diff \
+		${SRCPATHS} \
+		build \
+		media_tree/include \
+		media_tree/lib/idr.c \
+		media_tree/kernel/kfifo.c \
+		patches/do_patch.sh \
+		patches/*.diff \
 		tools/linux_make/*.[ch] \
 		tools/linux_make/Makefile
 

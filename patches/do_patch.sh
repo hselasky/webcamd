@@ -8,7 +8,7 @@ OPT='-Nslf'
 
 find_media_file()
 {
-    grep -F "${1}" do_patch.tmp || echo "../not_found/${1}"
+    grep -m 1 -F "${1}" do_patch.tmp || echo "../not_found/${1}"
 }
 
 echo -n "" > do_patch.tmp
@@ -31,7 +31,9 @@ for F in \
 ../media_tree/drivers/media/video/videobuf2-core.c \
 ../media_tree/drivers/media/video/videobuf2-memops.c \
 ../media_tree/drivers/media/video/videobuf2-vmalloc.c \
+../media_tree/include/uapi/linux/dvb/frontend.h \
 ../media_tree/include/linux/dvb/frontend.h \
+../media_tree/include/uapi/linux/input.h \
 ../media_tree/include/linux/input.h \
 ../media_tree/drivers/staging/media/as102/as102_drv.h \
 ../media_tree/drivers/media/usb/dvb-usb/usb-urb.c \
@@ -40,7 +42,9 @@ for F in \
 ../media_tree/drivers/media/video/gspca/gspca.c \
 ../media_tree/drivers/media/usb/stkwebcam/stk-webcam.h \
 ../media_tree/drivers/media/video/stk-webcam.h \
+../media_tree/include/uapi/sound/ac97_codec.h \
 ../media_tree/include/sound/ac97_codec.h \
+../media_tree/include/uapi/linux/dvb/ca.h \
 ../media_tree/include/linux/dvb/ca.h \
 ../media_tree/drivers/media/tuners/tda18212.c \
 ../media_tree/drivers/media/common/tuners/tda18212.c \

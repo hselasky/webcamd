@@ -406,8 +406,8 @@ SRCS+= \
 	smscoreapi.c \
 	sms-cards.c \
 	smsendian.c \
-	smsir.c \
 	smsdvb.c \
+	smsir.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \

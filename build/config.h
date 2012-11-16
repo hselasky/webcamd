@@ -284,6 +284,7 @@
 #define	CONFIG_RC_MAP /* y */
 #undef	CONFIG_SMS_SDIO_DRV /* n */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
+#define	CONFIG_SMS_SIANO_RC /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
 #undef	CONFIG_SND_ICE1712 /* n */
 #undef	CONFIG_SND_ICE1724 /* n */

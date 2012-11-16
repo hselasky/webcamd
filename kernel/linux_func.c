@@ -33,6 +33,7 @@
 #include <linux/leds.h>
 #include <linux/major.h>
 #include <linux/power_supply.h>
+#include <linux/rcupdate.h>
 
 #include <dvbdev.h>
 
@@ -1121,6 +1122,25 @@ bitmap_zero(unsigned long *dst, int nbits)
 	memset(dst, 0, len);
 }
 
+int
+bitmap_subset(const unsigned long *pa, const unsigned long *pb, int nbits)
+{
+	int end = (nbits + BITS_PER_LONG - 1) / BITS_PER_LONG;
+	int x;
+
+	for (x = 0; x != end; x++) {
+		if (pa[x] & ~pb[x])
+			return (0);
+	}
+
+	x = nbits & (BITS_PER_LONG - 1);
+	if (x) {
+		if (pa[end] & ~pb[end] & ((2ULL << x) - 1ULL))
+			return (0);
+	}
+	return (1);
+}
+
 /*
  * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
  *
@@ -2005,4 +2025,269 @@ void
 led_classdev_resume(struct led_classdev *led_cdev)
 {
 
+}
+
+/* "int_sqrt" was copied from HPS's libmbin */
+
+uint64_t
+int_sqrt(uint64_t a)
+{
+	uint64_t b = 0x4000000000000000ULL;
+
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x7000000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x3000000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c00000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc00000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x700000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x300000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c0000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc0000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x70000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x30000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x7000000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x3000000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c00000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc00000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x700000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x300000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c0000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc0000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x70000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x30000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x7000000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x3000000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c00000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc00000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x700000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x300000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c0000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc0000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x70000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x30000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x7000000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x3000000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c00000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc00000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x700000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x300000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c0000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc0000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x70000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x30000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x7000ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x3000ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c00ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc00ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x700ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x300ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1c0ULL;
+	} else {
+		b >>= 1;
+		b ^= 0xc0ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x70ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x30ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1cULL;
+	} else {
+		b >>= 1;
+		b ^= 0xcULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x7ULL;
+	} else {
+		b >>= 1;
+		b ^= 0x3ULL;
+	}
+	if (a >= b) {
+		a -= b;
+		b >>= 1;
+		b ^= 0x1ULL;
+	} else {
+		b >>= 1;
+	}
+	return (b);
 }

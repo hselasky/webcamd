@@ -55,6 +55,29 @@ i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 }
 
 int
+__i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+{
+	unsigned long end_jiffies;
+	int ret;
+	int try;
+
+	if (adap->algo->master_xfer) {
+
+		end_jiffies = jiffies + adap->timeout;
+		for (ret = 0, try = 0; try <= adap->retries; try++) {
+			ret = adap->algo->master_xfer(adap, msgs, num);
+			if (ret != -EAGAIN)
+				break;
+			if (time_after(jiffies, end_jiffies))
+				break;
+		}
+		return (ret);
+	} else {
+		return (-EOPNOTSUPP);
+	}
+}
+
+int
 i2c_register_driver(struct module *mod, struct i2c_driver *drv)
 {
 	return (0);

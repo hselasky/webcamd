@@ -49,10 +49,11 @@ linux_open(int f_v4b, int fflags)
 	handle->fixed_dentry.d_inode = &handle->fixed_inode;
 	handle->fixed_file.f_path.dentry = &handle->fixed_dentry;
 	handle->fixed_inode.d_inode = cdev_get_mm(f_v4b);
+	handle->fixed_inode.i_cdev = cdev;
 
-	if (cdev->ops->open == NULL) {
+	if (cdev->ops->open == NULL)
 		return (handle);
-	}
+
 	if ((error = -cdev->ops->open(&handle->fixed_inode, &handle->fixed_file))) {
 		free(handle);
 		return (NULL);

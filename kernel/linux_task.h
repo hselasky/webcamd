@@ -56,6 +56,14 @@ typedef struct execute_work {
 	struct work_struct work;
 } execute_work_t;
 
+struct rcu_head;
+typedef void rcu_func_t (struct rcu_head *);
+
+struct rcu_head {
+	struct rcu_head *next;
+	rcu_func_t *func;
+};
+
 void	INIT_WORK(struct work_struct *work, work_func_t func);
 void	INIT_DELAYED_WORK(struct delayed_work *work, work_func_t func);
 int	schedule_work(struct work_struct *work);
@@ -65,6 +73,7 @@ void	destroy_workqueue(struct workqueue_struct *wq);
 int	queue_work(struct workqueue_struct *wq, struct work_struct *work);
 struct workqueue_struct *create_workqueue(const char *name);
 struct workqueue_struct *create_singlethread_workqueue(const char *name);
+bool	flush_work(struct work_struct *work);
 void	flush_workqueue(struct workqueue_struct *wq);
 void	flush_scheduled_work(void);
 void	cancel_rearming_delayed_work(struct delayed_work *);
@@ -75,5 +84,6 @@ void	cancel_work_sync(struct work_struct *);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, tasklet_func_t *, unsigned long data);
 void	tasklet_kill(struct tasklet_struct *t);
+void	call_rcu(struct rcu_head *, rcu_func_t *);
 
 #endif					/* _LINUX_TASK_H_ */

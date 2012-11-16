@@ -176,6 +176,7 @@ int	bitmap_and(unsigned long *, const unsigned long *, const unsigned long *, in
 void	bitmap_or(unsigned long *, const unsigned long *, const unsigned long *, int);
 void	bitmap_xor(unsigned long *, const unsigned long *, const unsigned long *, int);
 void	bitmap_zero(unsigned long *dst, int nbits);
+int	bitmap_subset(const unsigned long *, const unsigned long *, int);
 int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
@@ -248,5 +249,7 @@ int	kstrtoint(const char *, unsigned int, int *);
 
 ssize_t	simple_write_to_buffer(void *, size_t, loff_t *, const void __user *, size_t);
 ssize_t	simple_read_from_buffer(void __user *, size_t, loff_t *, const void *, size_t);
+
+uint64_t int_sqrt(uint64_t a);
 
 #endif					/* _LINUX_FUNC_H_ */
