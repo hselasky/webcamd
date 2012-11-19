@@ -33,7 +33,6 @@
 #include <linux/leds.h>
 #include <linux/major.h>
 #include <linux/power_supply.h>
-#include <linux/rcupdate.h>
 
 #include <dvbdev.h>
 
