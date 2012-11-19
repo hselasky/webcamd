@@ -143,7 +143,7 @@ flush_work(struct work_struct *work)
 
 	atomic_lock();
 	retval = (work->entry.tqe_prev != NULL);
-	while (work->entry.tqe_prev != NULL)
+	while (work->entry.tqe_prev != NULL || work_curr == work)
 		schedule();
 	atomic_unlock();
 
