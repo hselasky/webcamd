@@ -1124,7 +1124,7 @@ bitmap_zero(unsigned long *dst, int nbits)
 int
 bitmap_subset(const unsigned long *pa, const unsigned long *pb, int nbits)
 {
-	int end = (nbits + BITS_PER_LONG - 1) / BITS_PER_LONG;
+	int end = nbits / BITS_PER_LONG;
 	int x;
 
 	for (x = 0; x != end; x++) {
@@ -1132,9 +1132,9 @@ bitmap_subset(const unsigned long *pa, const unsigned long *pb, int nbits)
 			return (0);
 	}
 
-	x = nbits & (BITS_PER_LONG - 1);
+	x = nbits % BITS_PER_LONG;
 	if (x) {
-		if (pa[end] & ~pb[end] & ((2ULL << x) - 1ULL))
+		if (pa[end] & ~pb[end] & ((1ULL << x) - 1ULL))
 			return (0);
 	}
 	return (1);
