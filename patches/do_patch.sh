@@ -87,7 +87,7 @@ find_media_file as102_drv.h
 find_media_file usb-urb.c
 find_media_file gspca.c
 find_media_file stk-webcam.h
-find_media_file ac97_codec.h
+#find_media_file ac97_codec.h
 find_media_file ca.h
 find_media_file tda18212.c
 find_media_file cx24123.c
@@ -114,7 +114,7 @@ patch $OPT $(find_media_file as102_drv.h) as102_drv.h.diff
 patch $OPT $(find_media_file usb-urb.c) usb-urb.c.diff
 patch $OPT $(find_media_file gspca.c) gspca.diff 
 patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
-patch $OPT $(find_media_file ac97_codec.h) ac97_codec.h.diff
+#patch $OPT $(find_media_file ac97_codec.h) ac97_codec.h.diff
 patch $OPT $(find_media_file ca.h) ca.h.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
