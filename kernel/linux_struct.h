@@ -238,6 +238,7 @@ enum {
 	F_V4B_DVB_VIDEO,
 	F_V4B_LIRC,
 	F_V4B_EVDEV,
+	F_V4B_JOYDEV,
 	F_V4B_MAX,
 };
 

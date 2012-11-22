@@ -64,7 +64,7 @@ static struct cuse_methods v4b_methods = {
  * group from "A" to "Z". This letter is removed when creating the
  * character device.
  */
-#define	UNIT_MAX ('E' - 'A')
+#define	UNIT_MAX ('F' - 'A')
 
 const char *webcamd_devnames[F_V4B_MAX] = {
 
@@ -83,6 +83,8 @@ const char *webcamd_devnames[F_V4B_MAX] = {
 	[F_V4B_LIRC] = "Clirc%d",
 
 	[F_V4B_EVDEV] = "Dinput/event%d",
+
+	[F_V4B_JOYDEV] = "Einput/js%d",
 };
 
 static int u_unit = 0;

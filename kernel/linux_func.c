@@ -513,6 +513,7 @@ done:
 
 #define	LIRC_MAJOR 14
 #define	EVDEV_MINOR_BASE 64
+#define	JOYDEV_MINOR_BASE 0
 
 #define	SUB_MAX (F_V4B_SUBDEV_MAX * F_V4B_SUBSUBDEV_MAX)
 
@@ -532,13 +533,21 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 
 	switch (mm & 0xFFFF0000U) {
 	case MKDEV(INPUT_MAJOR, 0):
-		switch (mm & 0xFFE0) {
+		switch (mm & 0xFFC0) {
 		case EVDEV_MINOR_BASE:
-			subdev = mm & 0x1F;
+			subdev = mm & 0x3F;
 			if (subdev >= F_V4B_SUBDEV_MAX)
 				break;
 			cdev_registry[F_V4B_EVDEV][subdev] = cdev;
 			cdev_mm[F_V4B_EVDEV][subdev] = mm;
+			break;
+
+		case JOYDEV_MINOR_BASE:
+			subdev = mm & 0x3F;
+			if (subdev >= F_V4B_SUBDEV_MAX)
+				break;
+			cdev_registry[F_V4B_JOYDEV][subdev] = cdev;
+			cdev_mm[F_V4B_JOYDEV][subdev] = mm;
 			break;
 		default:
 			subdev = 0;
