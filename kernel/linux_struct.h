@@ -18,6 +18,7 @@ struct page;
 struct pci_dev;
 struct poll_table_page;
 struct pt_regs;
+struct snd_pcm_runtime;
 struct tasklet_struct;
 struct usb_driver;
 struct usb_interface;
