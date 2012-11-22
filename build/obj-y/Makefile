@@ -4,6 +4,7 @@
 
 SRCPATHS+= \
 media_tree/drivers/input \
+media_tree/drivers/input/joystick \
 media_tree/drivers/input/tablet \
 media_tree/drivers/input/touchscreen \
 media_tree/drivers/media \
@@ -72,6 +73,7 @@ SRCS+= \
 	input-compat.c \
 	input-mt.c \
 	ff-core.c \
+	joydev.c \
 	evdev.c \
 	acecad.c \
 	aiptek.c \
