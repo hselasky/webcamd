@@ -23,6 +23,8 @@
  * SUCH DAMAGE.
  */
 
+#include <linux/idr.h>
+
 extern struct module_init_struct __start_linux_parm_mod;
 extern struct module_init_struct __start_linux_init_mod;
 extern struct module_exit_struct __start_linux_exit_mod;
@@ -44,6 +46,8 @@ linux_init(void)
 	struct module_init_struct *t = &__start_linux_init_mod;
 
 	thread_init();
+
+	idr_init_cache();
 
 	while (t->magic == MODULE_INIT_MAGIC) {
 		t->func();
