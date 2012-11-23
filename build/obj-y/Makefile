@@ -82,6 +82,7 @@ SRCS+= \
 	kbtab.c \
 	wacom_wac.c \
 	wacom_sys.c \
+	usbtouchscreen.c \
 	msp3400-driver.c \
 	msp3400-kthreads.c \
 	cx25840-core.c \
@@ -408,8 +409,8 @@ SRCS+= \
 	smscoreapi.c \
 	sms-cards.c \
 	smsendian.c \
-	smsdvb.c \
 	smsir.c \
+	smsdvb.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \

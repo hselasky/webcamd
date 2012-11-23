@@ -726,6 +726,8 @@ int	usb_driver_claim_interface(struct usb_driver *, struct usb_interface *, void
 #define	usb_mark_last_busy(...) __nop
 #define	usb_driver_release_interface(...) __nop
 
+#define	usb_endpoint_type(epd) \
+	((epd)->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
 #define	usb_endpoint_num(epd) \
 	((epd)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK)
 #define	usb_endpoint_is_bulk_in(epd) \
