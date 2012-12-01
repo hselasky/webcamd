@@ -419,6 +419,8 @@
 #define	kill_fasync(...) __nop
 #define	fasync_helper(...) (0)
 
+#define	get_file(x) __nop
+
 #define	ATOMIC_INIT(x) { (x) }
 
 #define	IRQ_NONE 0

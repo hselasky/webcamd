@@ -27,6 +27,10 @@ struct vm_operations_struct;
 
 #define	LINUX_VMA_MAX 16
 
+enum dma_data_direction {
+	DMA_DATA_DIRECTION_DUMMY
+};
+
 typedef struct poll_table_struct {
 }	poll_table;
 
@@ -38,6 +42,7 @@ struct module {
 };
 
 struct kobject {
+	struct kobject *parent;
 };
 
 struct kobj_uevent_env {

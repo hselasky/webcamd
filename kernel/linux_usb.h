@@ -762,6 +762,10 @@ int	__usb_get_extra_descriptor(char *, unsigned, unsigned char, void **);
 #define	usb_get_extra_descriptor(desc, type, ptr) \
 	__usb_get_extra_descriptor((desc)->extra, \
         (desc)->extralen, type, (void *)(ptr))
+
+#define	usb_hub_for_each_child(a,b,c) \
+	for ((b) = 0, (c) = NULL; 0;)
+
 int	usb_endpoint_maxp(const struct usb_endpoint_descriptor *);
 
 #define	usb_alloc_coherent(...) usb_buffer_alloc(__VA_ARGS__)

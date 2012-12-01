@@ -1,7 +1,7 @@
-diff --git a/drivers/media/video/videobuf2-memops.c b/drivers/media/video/videobuf2-memops.c
-index c41cb60..b840736 100644
---- a/drivers/media/video/videobuf2-memops.c
-+++ b/drivers/media/video/videobuf2-memops.c
+diff --git a/drivers/media/v4l2-core/videobuf2-memops.c b/drivers/media/v4l2-core/videobuf2-memops.c
+index 81c1ad8..24fe5fc 100644
+--- a/drivers/media/v4l2-core/videobuf2-memops.c
++++ b/drivers/media/v4l2-core/videobuf2-memops.c
 @@ -44,15 +44,8 @@ struct vm_area_struct *vb2_get_vma(struct vm_area_struct *vma)
  	if (vma->vm_ops && vma->vm_ops->open)
  		vma->vm_ops->open(vma);
@@ -17,8 +17,8 @@ index c41cb60..b840736 100644
 -
  	return vma_copy;
  }
- 
-@@ -71,71 +64,11 @@ void vb2_put_vma(struct vm_area_struct *vma)
+ EXPORT_SYMBOL_GPL(vb2_get_vma);
+@@ -72,13 +65,11 @@ void vb2_put_vma(struct vm_area_struct *vma)
  	if (vma->vm_ops && vma->vm_ops->close)
  		vma->vm_ops->close(vma);
  
@@ -29,64 +29,15 @@ index c41cb60..b840736 100644
  }
  EXPORT_SYMBOL_GPL(vb2_put_vma);
  
++#if 0
  /**
-- * vb2_get_contig_userptr() - lock physically contiguous userspace mapped memory
-- * @vaddr:	starting virtual address of the area to be verified
-- * @size:	size of the area
-- * @res_paddr:	will return physical address for the given vaddr
-- * @res_vma:	will return locked copy of struct vm_area for the given area
-- *
-- * This function will go through memory area of size @size mapped at @vaddr and
-- * verify that the underlying physical pages are contiguous. If they are
-- * contiguous the virtual memory area is locked and a @res_vma is filled with
-- * the copy and @res_pa set to the physical address of the buffer.
-- *
-- * Returns 0 on success.
-- */
--int vb2_get_contig_userptr(unsigned long vaddr, unsigned long size,
--			   struct vm_area_struct **res_vma, dma_addr_t *res_pa)
--{
--	struct mm_struct *mm = current->mm;
--	struct vm_area_struct *vma;
--	unsigned long offset, start, end;
--	unsigned long this_pfn, prev_pfn;
--	dma_addr_t pa = 0;
--
--	start = vaddr;
--	offset = start & ~PAGE_MASK;
--	end = start + size;
--
--	vma = find_vma(mm, start);
--
--	if (vma == NULL || vma->vm_end < end)
--		return -EFAULT;
--
--	for (prev_pfn = 0; start < end; start += PAGE_SIZE) {
--		int ret = follow_pfn(vma, start, &this_pfn);
--		if (ret)
--			return ret;
--
--		if (prev_pfn == 0)
--			pa = this_pfn << PAGE_SHIFT;
--		else if (this_pfn != prev_pfn + 1)
--			return -EFAULT;
--
--		prev_pfn = this_pfn;
--	}
--
--	/*
--	 * Memory is contigous, lock vma and return to the caller
--	 */
--	*res_vma = vb2_get_vma(vma);
--	if (*res_vma == NULL)
--		return -ENOMEM;
--
--	*res_pa = pa + offset;
--	return 0;
--}
--EXPORT_SYMBOL_GPL(vb2_get_contig_userptr);
--
--/**
-  * vb2_mmap_pfn_range() - map physical pages to userspace
-  * @vma:	virtual memory region for the mapping
-  * @paddr:	starting physical address of the memory to be mapped
+  * vb2_get_contig_userptr() - lock physically contiguous userspace mapped memory
+  * @vaddr:	starting virtual address of the area to be verified
+@@ -135,6 +126,7 @@ int vb2_get_contig_userptr(unsigned long vaddr, unsigned long size,
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(vb2_get_contig_userptr);
++#endif
+ 
+ /**
+  * vb2_common_vm_open() - increase refcount of the vma
