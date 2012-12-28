@@ -243,6 +243,7 @@ SRCS+= \
 	ec100.c \
 	hd29l2.c \
 	ds3000.c \
+	ts2020.c \
 	mb86a16.c \
 	mb86a20s.c \
 	ix2505v.c \
@@ -373,6 +374,7 @@ SRCS+= \
 	rc-tevii-nec.c \
 	rc-tivo.c \
 	rc-total-media-in-hand.c \
+	rc-total-media-in-hand-02.c \
 	rc-trekstor.c \
 	rc-tt-1500.c \
 	rc-twinhan1027.c \

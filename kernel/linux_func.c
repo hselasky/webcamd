@@ -33,6 +33,7 @@
 #include <linux/leds.h>
 #include <linux/major.h>
 #include <linux/power_supply.h>
+#include <linux/dma-buf.h>
 
 #include <dvbdev.h>
 
@@ -2298,4 +2299,65 @@ int_sqrt(uint64_t a)
 		b >>= 1;
 	}
 	return (b);
+}
+
+void   *
+devres_alloc(dr_release_t release, size_t size, gfp_t gfp)
+{
+	void *ptr;
+
+	ptr = malloc(size);
+	if (ptr != NULL)
+		memset(ptr, 0, size);
+	return (ptr);
+}
+
+void
+devres_free(void *res)
+{
+	free(res);
+}
+
+void
+devres_add(struct device *dev, void *res)
+{
+	/* NOP */
+}
+
+int
+devres_destroy(struct device *dev, dr_release_t release,
+    dr_match_t match, void *match_data)
+{
+	printf("TODO: Implement devres_destroy()\n");
+	return (0);
+}
+
+int
+dma_buf_fd(struct dma_buf *dmabuf, int flags)
+{
+	return (-1);
+}
+
+struct dma_buf *
+dma_buf_get(int fd)
+{
+	return (NULL);
+}
+
+void
+dma_buf_put(struct dma_buf *dmabuf)
+{
+
+}
+
+void   *
+dma_buf_vmap(struct dma_buf *buf)
+{
+	return (NULL);
+}
+
+void
+dma_buf_vunmap(struct dma_buf *buf, void *vaddr)
+{
+
 }

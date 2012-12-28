@@ -132,6 +132,9 @@ struct device_driver {
 
 typedef void device_release_t (struct device *);
 
+typedef void (*dr_release_t)(struct device *dev, void *res);
+typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);
+
 struct device {
 	int	minor;
 	int	busnum;

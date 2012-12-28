@@ -252,4 +252,9 @@ ssize_t	simple_read_from_buffer(void __user *, size_t, loff_t *, const void *, s
 
 uint64_t int_sqrt(uint64_t a);
 
+void   *devres_alloc(dr_release_t, size_t, gfp_t);
+void	devres_free(void *);
+void	devres_add(struct device *, void *);
+int	devres_destroy(struct device *, dr_release_t, dr_match_t, void *);
+
 #endif					/* _LINUX_FUNC_H_ */
