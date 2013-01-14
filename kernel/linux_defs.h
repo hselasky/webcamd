@@ -108,6 +108,7 @@
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	MODULE_SUPPORTED_DEVICE(...)
 #define	MODULE_FIRMWARE(...)
+#define	IS_ENABLED(x,...) defined(x##__VA_ARGS__)
 #define	THIS_MODULE (NULL)
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
