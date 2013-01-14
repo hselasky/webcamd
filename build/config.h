@@ -475,6 +475,7 @@
 #define	CONFIG_USB_GSPCA_ZC3XX /* y */
 #define	CONFIG_USB_KEENE /* y */
 #define	CONFIG_USB_M5602 /* y */
+#define	CONFIG_USB_MA901 /* y */
 #define	CONFIG_USB_MR800 /* y */
 #define	CONFIG_USB_PWC /* y */
 #define	CONFIG_USB_S2255 /* y */
@@ -622,6 +623,7 @@
 #define	CONFIG_VIDEO_V4L1_COMPAT /* y */
 #define	CONFIG_VIDEO_V4L2 /* y */
 #define	CONFIG_VIDEO_V4L2_COMMON /* y */
+#define	CONFIG_VIDEO_V4L2_INT_DEVICE /* y */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
 #undef	CONFIG_VIDEO_VINO /* n */
 #undef	CONFIG_VIDEO_VIU /* n */

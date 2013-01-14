@@ -618,6 +618,7 @@ SRCS+= \
 	dsbr100.c \
 	radio-mr800.c \
 	radio-keene.c \
+	radio-ma901.c \
 	radio-tea5764.c \
 	saa7706h.c \
 	tef6862.c \
