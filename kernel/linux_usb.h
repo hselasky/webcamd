@@ -755,6 +755,7 @@ uint8_t	usb_pipetype(unsigned int);
 uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
 void	usb_enable_autosuspend(struct usb_device *udev);
 int	__usb_get_extra_descriptor(char *, unsigned, unsigned char, void **);
+int	usb_translate_errors(int);
 
 #define	usb_pipeisoc(pipe) (usb_pipetype((pipe)) == PIPE_ISOCHRONOUS)
 #define	usb_pipeint(pipe) (usb_pipetype((pipe)) == PIPE_INTERRUPT)

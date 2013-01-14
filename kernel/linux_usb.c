@@ -2230,3 +2230,17 @@ usb_endpoint_maxp(const struct usb_endpoint_descriptor *epd)
 {
 	return (le16_to_cpu(epd->wMaxPacketSize));
 }
+
+int
+usb_translate_errors(int error_code)
+{
+	switch (error_code) {
+	case 0:
+	case -ENOMEM:
+	case -ENODEV:
+	case -EOPNOTSUPP:
+		return (error_code);
+	default:
+		return (-EIO);
+	}
+}
