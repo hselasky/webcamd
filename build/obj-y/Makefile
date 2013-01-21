@@ -252,6 +252,7 @@ SRCS+= \
 	cxd2820r_c.c \
 	cxd2820r_t.c \
 	cxd2820r_t2.c \
+	drxk_hard.c \
 	tda18271c2dd.c \
 	it913x-fe.c \
 	a8293.c \

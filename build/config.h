@@ -46,7 +46,7 @@
 #define	CONFIG_DVB_DIB9000 /* y */
 #undef	CONFIG_DVB_DM1105 /* n */
 #define	CONFIG_DVB_DRXD /* y */
-#undef	CONFIG_DVB_DRXK /* n */
+#define	CONFIG_DVB_DRXK /* y */
 #define	CONFIG_DVB_DS3000 /* y */
 #define	CONFIG_DVB_DUMMY_FE /* y */
 #undef	CONFIG_DVB_DYNAMIC_MINORS /* n */
