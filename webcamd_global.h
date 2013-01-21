@@ -83,4 +83,7 @@ extern int v4b_get_perm(void);
 #define	setmode __setmode
 #define	sync __sync
 
+#ifndef O_CLOEXEC
+#define	O_CLOEXEC	0x00100000
+#endif
 #endif					/* _WEBCAMD_GLOBAL_H_ */
