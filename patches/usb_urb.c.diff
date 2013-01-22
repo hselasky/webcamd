@@ -1,0 +1,34 @@
+--- drivers/media/usb/dvb-usb-v2/usb_urb.c
++++ drivers/media/usb/dvb-usb-v2/usb_urb.c
+@@ -328,6 +328,11 @@ int usb_urb_initv2(struct usb_data_stream *stream,
+ 
+ 	switch (stream->props.type) {
+ 	case USB_BULK:
++
++		/* XXX override driver parameters */
++		stream->props.count = 2;
++		stream->props.u.bulk.buffersize = 16384;
++
+ 		ret = usb_alloc_stream_buffers(stream, stream->props.count,
+ 				stream->props.u.bulk.buffersize);
+ 		if (ret < 0)
+@@ -335,6 +340,19 @@ int usb_urb_initv2(struct usb_data_stream *stream,
+ 
+ 		return usb_urb_alloc_bulk_urbs(stream);
+ 	case USB_ISOC:
++
++		/* XXX override driver parameters */
++		switch (stream->udev->speed) {
++		case USB_SPEED_FULL:
++		case USB_SPEED_LOW:
++			stream->props.count = 2;
++			stream->props.u.isoc.framesperurb = 24;
++			break;
++		default:
++			stream->props.count = 2;
++			stream->props.u.isoc.framesperurb = 24 * 8;
++			break;
++		}
+ 		ret = usb_alloc_stream_buffers(stream, stream->props.count,
+ 				stream->props.u.isoc.framesize *
+ 				stream->props.u.isoc.framesperurb);

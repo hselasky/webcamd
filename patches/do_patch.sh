@@ -38,6 +38,7 @@ for F in \
 ../media_tree/drivers/staging/media/as102/as102_drv.h \
 ../media_tree/drivers/media/usb/dvb-usb/usb-urb.c \
 ../media_tree/drivers/media/dvb/dvb-usb/usb-urb.c \
+../media_tree/drivers/media/usb/dvb-usb-v2/usb_urb.c \
 ../media_tree/drivers/media/usb/gspca/gspca.c \
 ../media_tree/drivers/media/video/gspca/gspca.c \
 ../media_tree/drivers/media/usb/stkwebcam/stk-webcam.h \
@@ -85,6 +86,7 @@ find_media_file frontend.h
 find_media_file input.h
 find_media_file as102_drv.h
 find_media_file usb-urb.c
+find_media_file usb_urb.c
 find_media_file gspca.c
 find_media_file stk-webcam.h
 #find_media_file ac97_codec.h
@@ -112,6 +114,7 @@ patch $OPT -R $(find_media_file frontend.h) frontend.h.diff
 patch $OPT -R $(find_media_file input.h) input.h.diff
 patch $OPT $(find_media_file as102_drv.h) as102_drv.h.diff
 patch $OPT $(find_media_file usb-urb.c) usb-urb.c.diff
+patch $OPT $(find_media_file usb_urb.c) usb_urb.c.diff
 patch $OPT $(find_media_file gspca.c) gspca.diff 
 patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
 #patch $OPT $(find_media_file ac97_codec.h) ac97_codec.h.diff
