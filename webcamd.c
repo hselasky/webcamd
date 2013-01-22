@@ -146,6 +146,8 @@ v4b_convert_error(int error)
 			error = CUSE_ERR_WOULDBLOCK;
 			break;
 		case -EINVAL:
+		case -ENOENT:
+		case -ENOTTY:
 			error = CUSE_ERR_INVALID;
 			break;
 		case -ENOMEM:
