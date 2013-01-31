@@ -52,6 +52,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <stdbool.h>
 
 #include <libusb20.h>
 #include <libusb20_desc.h>

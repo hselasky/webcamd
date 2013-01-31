@@ -253,8 +253,6 @@
 #define	__KERNEL__
 #define	capable(...) 1
 #define	uninitialized_var(...) __VA_ARGS__
-#define	false 0
-#define	true 1
 #define	HZ 1000
 #define	NSEC_PER_SEC 1000000000LL
 #define	jiffies get_jiffies_64()
@@ -478,7 +476,6 @@ typedef long long loff_t;
 #endif
 typedef unsigned int gfp_t;
 typedef uint32_t dev_t;
-typedef uint8_t bool;
 typedef struct timespec ktime_t;
 
 #endif					/* _LINUX_DEFS_H_ */
