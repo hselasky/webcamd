@@ -40,7 +40,7 @@
 #ifndef HAVE_HAL
 
 void
-hal_init(int bus, int addr, int iface)
+hal_init(int bus, int addr, int iface, const char *desc)
 {
 	return;
 }
@@ -61,10 +61,12 @@ hal_add_device(const char *devname)
 static LibHalContext *hal_ctx;
 static DBusConnection *hal_conn;
 static char *hal_dev;
+static char *hal_desc;
+static int hal_iface;
 static int hal_dvb_index;
 
 void
-hal_init(int bus, int addr, int iface)
+hal_init(int bus, int addr, int iface, const char *desc)
 {
 	char **ppdev;
 	int n;
@@ -76,6 +78,13 @@ hal_init(int bus, int addr, int iface)
 		usleep(1000000);
 		printf("Waiting for DBUS connection.\n");
 	}
+
+	if (desc == NULL)
+		desc = "Unknown";
+
+	hal_desc = strdup(desc);
+	if (hal_desc == NULL)
+		return;
 
 	hal_ctx = libhal_ctx_new();
 	if (hal_ctx == NULL)
@@ -109,6 +118,7 @@ hal_init(int bus, int addr, int iface)
 					continue;
 
 				hal_dev = strdup(ppdev[n]);
+				hal_iface = iface;
 				break;
 			}
 		}
@@ -254,6 +264,56 @@ hal_add_device(const char *devname)
 		free(pdvb);
 
 		hal_dvb_index++;
+	} else if (!strncmp(devname, "input/event",
+	    sizeof("input_event") - 1)) {
+
+		char *pinput = NULL;
+		char *pnew;
+
+		asprintf(&pinput, "%s_if%d_logicaldev_input",
+		    hal_dev, hal_iface);
+
+		if (pinput == NULL)
+			return;
+
+		if (libhal_device_exists(hal_ctx, pinput, NULL) == 0) {
+			pnew = libhal_new_device(hal_ctx, NULL);
+			if (pnew == NULL) {
+				free(pinput);
+				return;
+			}
+		} else {
+			pnew = pinput;
+		}
+
+		cset = libhal_device_new_changeset(pnew);
+		if (cset == NULL) {
+			if (pnew != pinput)
+				free(pnew);
+			free(pinput);
+		}
+
+		libhal_changeset_set_property_string(cset, "info.category", "input");
+		libhal_changeset_set_property_string(cset, "info.parent", hal_dev);
+		libhal_changeset_set_property_string(cset, "info.product", hal_desc);
+		libhal_changeset_set_property_string(cset, "info.subsystem", "input");
+		libhal_changeset_set_property_string(cset, "input.device", devpath);
+		libhal_changeset_set_property_string(cset, "input.originating_device", hal_dev);
+		libhal_changeset_set_property_string(cset, "input.product", hal_desc);
+		libhal_changeset_set_property_string(cset, "linux.device_file", devpath);
+		libhal_changeset_set_property_int(cset, "linux.hotplug_type", 2);
+		libhal_changeset_set_property_string(cset, "info.subsystem", "input");
+		libhal_changeset_set_property_string(cset, "linux.sysfs_path", devpath);
+
+		libhal_device_add_capability(hal_ctx, pnew, "input", NULL);
+		libhal_device_commit_changeset(hal_ctx, cset, NULL);
+		libhal_device_free_changeset(cset);
+
+		if (pnew != pinput) {
+			libhal_device_commit_to_gdl(hal_ctx, pnew, pinput, NULL);
+			free(pnew);
+		}
+		free(pinput);
 	}
 }
 

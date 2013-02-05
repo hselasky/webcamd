@@ -94,6 +94,7 @@ static int u_videodev = -1;
 static int do_fork = 0;
 static int do_realtime = 1;
 static struct pidfh *local_pid = NULL;
+static char *d_desc;
 static gid_t gid;
 static uid_t uid;
 static int gid_found;
@@ -707,12 +708,12 @@ main(int argc, char **argv)
 	linux_init();
 
 	if (vtuner_client == 0) {
-		if (usb_linux_probe_p(&u_unit, &u_addr, &u_index) < 0)
+		if (usb_linux_probe_p(&u_unit, &u_addr, &u_index, &d_desc) < 0)
 			v4b_errx(1, "Cannot find USB device");
 	}
 	if (vtuner_server == 0) {
 		if (webcamd_hal_register)
-			hal_init(u_unit, u_addr, u_index);
+			hal_init(u_unit, u_addr, u_index, d_desc);
 
 		v4b_create(u_videodev);
 
