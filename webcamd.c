@@ -94,7 +94,7 @@ static int u_videodev = -1;
 static int do_fork = 0;
 static int do_realtime = 1;
 static struct pidfh *local_pid = NULL;
-static char *d_desc;
+static const char *d_desc;
 static gid_t gid;
 static uid_t uid;
 static int gid_found;
