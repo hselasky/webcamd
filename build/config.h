@@ -570,12 +570,14 @@
 #undef	CONFIG_VIDEO_OMAP2 /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
 #define	CONFIG_VIDEO_OV7670 /* y */
+#undef	CONFIG_VIDEO_OV9650 /* n */
 #undef	CONFIG_VIDEO_PMS /* n */
 #define	CONFIG_VIDEO_PVRUSB2 /* y */
 #undef	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* n */
 #define	CONFIG_VIDEO_PVRUSB2_DVB /* y */
 #define	CONFIG_VIDEO_PVRUSB2_SYSFS /* y */
 #undef	CONFIG_VIDEO_S3C_CAMIF /* n */
+#undef	CONFIG_VIDEO_S5C73M3 /* n */
 #undef	CONFIG_VIDEO_S5K4ECGX /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
 #define	CONFIG_VIDEO_SAA6588 /* y */

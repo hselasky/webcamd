@@ -238,6 +238,21 @@ get_unaligned_le16(const void *_ptr)
 	return (val);
 }
 
+void *
+devm_kzalloc(struct device *dev, size_t size, gfp_t gfp)
+{
+	void *ptr;
+
+	/*
+	 * TODO: Register data so that it gets freed
+	 * when the device is freed.
+	 */
+	ptr = malloc(size);
+	if (ptr != NULL)
+		memset(ptr, 0, size);
+	return (ptr);
+}
+
 void   *
 dev_get_drvdata(const struct device *dev)
 {

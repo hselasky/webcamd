@@ -124,11 +124,8 @@ SRCS+= \
 	upd64083.c \
 	ov7670.c \
 	tcm825x.c \
-	tveeprom.c \
 	mt9v011.c \
 	sr030pc30.c \
-	btcx-risc.c \
-	cx2341x.c \
 	ak881x.c \
 	ir-kbd-i2c.c \
 	tuner-xc2028.c \
@@ -414,6 +411,9 @@ SRCS+= \
 	smsendian.c \
 	smsir.c \
 	smsdvb.c \
+	cx2341x.c \
+	btcx-risc.c \
+	tveeprom.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \
