@@ -231,31 +231,31 @@ remove_wait_queue(wait_queue_head_t *qh, wait_queue_t *wq)
 int
 schedule_timeout(long timeout)
 {
-	usleep(1000 * timeout);
-	return (0);
-}
-
-int
-schedule_timeout_interruptible(long timeout)
-{
-	usleep(1000 * timeout);
-	return (0);
-}
-
-void
-schedule(void)
-{
 	uint32_t drops;
 
 	atomic_lock();
 	drops = atomic_drop();
 	atomic_unlock();
 
-	usleep(4000);
+	usleep(1000 * timeout);
 
 	atomic_lock();
 	atomic_pickup(drops);
 	atomic_unlock();
+
+	return (0);
+}
+
+int
+schedule_timeout_interruptible(long timeout)
+{
+	return (schedule_timeout(timeout));
+}
+
+void
+schedule(void)
+{
+	schedule_timeout(4);
 }
 
 void
@@ -294,7 +294,7 @@ down_read_trylock(struct semaphore *sem)
 		ret = 0;		/* congested */
 	}
 	atomic_unlock();
-	return (0);
+	return (ret);
 }
 
 int
@@ -310,7 +310,7 @@ down_trylock(struct semaphore *sem)
 		ret = 0;		/* congested */
 	}
 	atomic_unlock();
-	return (0);
+	return (ret);
 }
 
 void
