@@ -126,7 +126,7 @@ PTHREAD_LIBS?=	-lpthread
 SRCPATHS+= kernel
 SRCPATHS+= vtuner
 
-.PATH: ${.CURDIR} ${SRCPATHS} ${LINUXDIR}/kernel ${LINUXDIR}/lib
+.PATH: ${.CURDIR} ${SRCPATHS} ${LINUXDIR}/lib
 
 #
 # List of compiler flags
@@ -259,7 +259,7 @@ package:
 		build \
 		media_tree/include \
 		media_tree/lib/idr.c \
-		media_tree/kernel/kfifo.c \
+		media_tree/lib/kfifo.c \
 		patches/do_patch.sh \
 		patches/*.diff \
 		tools/linux_make/*.[ch] \
