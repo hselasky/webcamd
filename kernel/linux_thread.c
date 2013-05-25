@@ -258,6 +258,22 @@ schedule(void)
 	schedule_timeout(4);
 }
 
+int
+wait_on_bit(void *word, int bit, wait_on_bit_fn_t *action, unsigned mode)
+{
+	int ret = 0;
+
+	while (test_bit(bit, word) && !ret)
+		ret = action(word);
+	return (ret);
+}
+
+void
+wake_up_bit(void *word, int bit)
+{
+	wake_up_all_internal();
+}
+
 void
 sema_init(struct semaphore *sem, int32_t value)
 {

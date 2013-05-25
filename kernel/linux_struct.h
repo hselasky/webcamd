@@ -3,6 +3,7 @@
 
 struct cdev;
 struct class;
+struct cpumask;
 struct dev_pm_ops;
 struct device;
 struct device_driver;
@@ -12,12 +13,14 @@ struct inode;
 struct input_device_id;
 struct kmem_cache;
 struct kobj_uevent_env;
+struct lock_class_key;
 struct module;
 struct mutex;
 struct page;
 struct pci_dev;
 struct poll_table_page;
 struct pt_regs;
+struct seq_file;
 struct snd_pcm_runtime;
 struct tasklet_struct;
 struct usb_driver;
@@ -222,6 +225,7 @@ struct file {
 	int	f_flags;
 };
 
+#define	file_inode(_f) (_f)->f_dentry->d_inode
 #define	f_dentry f_path.dentry
 #define	iminor(i) ((i)->d_inode & 0xFFFFUL)
 

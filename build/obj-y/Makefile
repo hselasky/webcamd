@@ -159,6 +159,8 @@ SRCS+= \
 	fc0011.c \
 	fc0012.c \
 	fc0013.c \
+	tuner_it913x.c \
+	r820t.c \
 	dvb-pll.c \
 	stv0299.c \
 	stb0899_drv.c \
@@ -304,6 +306,7 @@ SRCS+= \
 	rc-budget-ci-old.c \
 	rc-cinergy-1400.c \
 	rc-cinergy.c \
+	rc-delock-61959.c \
 	rc-dib0700-nec.c \
 	rc-dib0700-rc5.c \
 	rc-digitalnow-tinytwin.c \
@@ -362,6 +365,7 @@ SRCS+= \
 	rc-hauppauge.c \
 	rc-rc6-mce.c \
 	rc-real-audio-220-32-keys.c \
+	rc-reddo.c \
 	rc-snapstream-firefly.c \
 	rc-streamzap.c \
 	rc-tbs-nec.c \
@@ -410,10 +414,11 @@ SRCS+= \
 	sms-cards.c \
 	smsendian.c \
 	smsir.c \
-	smsdvb.c \
+	smsdvb-main.c \
 	cx2341x.c \
 	btcx-risc.c \
 	tveeprom.c \
+	cypress_firmware.c \
 	ttpci-eeprom.c \
 	ttusb_dec.c \
 	ttusbdecfe.c \
@@ -461,7 +466,6 @@ SRCS+= \
 	dvb_usb_core.c \
 	dvb_usb_urb.c \
 	usb_urb.c \
-	cypress_firmware.c \
 	af9015.c \
 	af9035.c \
 	anysee.c \
@@ -612,6 +616,7 @@ SRCS+= \
 	em28xx-cards.c \
 	em28xx-core.c \
 	em28xx-vbi.c \
+	em28xx-camera.c \
 	em28xx-dvb.c \
 	radio-shark.c \
 	radio-shark2.c \

@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.9.0.5
+VERSION=	3.10.0.2
 PROG=		webcamd
 
 #
@@ -141,6 +141,7 @@ CFLAGS+= -I${.CURDIR}
 CFLAGS+= -I${.CURDIR}/dummy
 CFLAGS+= -I${.CURDIR}/headers
 
+CFLAGS+= -I${LINUXDIR}/drivers/media/common
 CFLAGS+= -I${LINUXDIR}/drivers/media/common/tuners
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/dvb-core
 CFLAGS+= -I${LINUXDIR}/drivers/media/dvb/dvb-usb

@@ -88,6 +88,11 @@ void	schedule(void);
 #define	wake_up_interruptible_all(q)    wake_up_all(q)
 #define	wake_up_interruptible_sync(q)   wake_up(q)
 
+typedef int wait_on_bit_fn_t (void *);
+
+int	wait_on_bit(void *, int, wait_on_bit_fn_t *, unsigned);
+void	wake_up_bit(void *, int);
+
 #define	wait_event(wq, condition)		\
 do {						\
 	atomic_lock();				\
@@ -233,6 +238,7 @@ void	poll_wakeup_internal(void);
 #define	rt_mutex_init(x) mutex_init(x)
 #define	rt_mutex_destroy(x) mutex_destroy(x)
 #define	rt_mutex_lock(x) mutex_lock(x)
+#define	rt_mutex_trylock(x) mutex_trylock(x)
 #define	rt_mutex_unlock(x) mutex_unlock(x)
 #define	DEFINE_RT_MUTEX(x) DEFINE_MUTEX(x)
 #define	rt_mutex_is_locked(x) mutex_is_locked(x)

@@ -238,7 +238,7 @@ get_unaligned_le16(const void *_ptr)
 	return (val);
 }
 
-void *
+void   *
 devm_kzalloc(struct device *dev, size_t size, gfp_t gfp)
 {
 	void *ptr;
@@ -1165,6 +1165,47 @@ bitmap_subset(const unsigned long *pa, const unsigned long *pb, int nbits)
 	return (1);
 }
 
+int
+bitmap_full(const unsigned long *bitmap, int bits)
+{
+	int k;
+	int lim = bits / BITS_PER_LONG;
+
+	for (k = 0; k < lim; ++k)
+		if (~bitmap[k])
+			return (0);
+
+	lim = bits % BITS_PER_LONG;
+	if (lim) {
+		if ((~bitmap[k]) & ((1ULL << lim) - 1ULL))
+			return (0);
+	}
+	return (1);
+}
+
+void
+bitmap_clear(unsigned long *map, int start, int nr)
+{
+	unsigned long *p = map + (start / BITS_PER_LONG);
+	int size = start + nr;
+	int rem = start % BITS_PER_LONG;
+	int bits_to_clear = BITS_PER_LONG - rem;
+	unsigned long mask_to_clear = ((1ULL << rem) - 1ULL);
+
+	while (nr - bits_to_clear >= 0) {
+		*p &= ~mask_to_clear;
+		nr -= bits_to_clear;
+		bits_to_clear = BITS_PER_LONG;
+		mask_to_clear = ~0UL;
+		p++;
+	}
+	if (nr) {
+		size = size % BITS_PER_LONG;
+		mask_to_clear &= ((1ULL << size) - 1ULL);
+		*p &= ~mask_to_clear;
+	}
+}
+
 /*
  * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
  *
@@ -1195,13 +1236,13 @@ generic_swap(void *a, void *b, int size)
 void
 sort(void *base, size_t num, size_t size,
     int (*cmp) (const void *, const void *),
-    void (*swap) (void *, void *, int size))
+    void (*swap_fn) (void *, void *, int size))
 {
 	/* pre-scale counters for performance */
 	int i = (num / 2 - 1) * size, n = num * size, c, r;
 
-	if (!swap)
-		swap = (size == 4 ? u32_swap : generic_swap);
+	if (!swap_fn)
+		swap_fn = (size == 4 ? u32_swap : generic_swap);
 
 	/* heapify */
 	for (; i >= 0; i -= size) {
@@ -1211,20 +1252,20 @@ sort(void *base, size_t num, size_t size,
 				c += size;
 			if (cmp(base + r, base + c) >= 0)
 				break;
-			swap(base + r, base + c, size);
+			swap_fn(base + r, base + c, size);
 		}
 	}
 
 	/* sort */
 	for (i = n - size; i > 0; i -= size) {
-		swap(base, base + i, size);
+		swap_fn(base, base + i, size);
 		for (r = 0; r * 2 + size < i; r = c) {
 			c = r * 2 + size;
 			if (c < i - size && cmp(base + c, base + c + size) < 0)
 				c += size;
 			if (cmp(base + r, base + c) >= 0)
 				break;
-			swap(base + r, base + c, size);
+			swap_fn(base + r, base + c, size);
 		}
 	}
 }

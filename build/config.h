@@ -10,6 +10,7 @@
 #define	CONFIG_AS102_USB /* y */
 #undef	CONFIG_BLACKFIN /* n */
 #undef	CONFIG_COMPAT /* n */
+#define	CONFIG_CYPRESS_FIRMWARE /* y */
 #define	CONFIG_DVB_A8293 /* y */
 #define	CONFIG_DVB_AF9013 /* y */
 #define	CONFIG_DVB_AF9033 /* y */
@@ -139,7 +140,6 @@
 #define	CONFIG_DVB_USB_CE6230 /* y */
 #define	CONFIG_DVB_USB_CINERGY_T2 /* y */
 #define	CONFIG_DVB_USB_CXUSB /* y */
-#define	CONFIG_DVB_USB_CYPRESS_FIRMWARE /* y */
 #define	CONFIG_DVB_USB_DIB0700 /* y */
 #define	CONFIG_DVB_USB_DIBUSB_MB /* y */
 #define	CONFIG_DVB_USB_DIBUSB_MC /* y */
@@ -259,6 +259,7 @@
 #define	CONFIG_MEDIA_TUNER_FC0012 /* y */
 #define	CONFIG_MEDIA_TUNER_FC0013 /* y */
 #define	CONFIG_MEDIA_TUNER_FC2580 /* y */
+#define	CONFIG_MEDIA_TUNER_IT913X /* y */
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
@@ -269,6 +270,7 @@
 #define	CONFIG_MEDIA_TUNER_MXL5005S /* y */
 #define	CONFIG_MEDIA_TUNER_MXL5007T /* y */
 #define	CONFIG_MEDIA_TUNER_QT1010 /* y */
+#define	CONFIG_MEDIA_TUNER_R820T /* y */
 #define	CONFIG_MEDIA_TUNER_SIMPLE /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18212 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18218 /* y */
@@ -283,6 +285,7 @@
 #define	CONFIG_MEDIA_TUNER_XC4000 /* y */
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */
 #define	CONFIG_MMU /* y */
+#undef	CONFIG_OF /* n */
 #undef	CONFIG_RADIO_AZTECH /* n */
 #undef	CONFIG_RADIO_CADET /* n */
 #undef	CONFIG_RADIO_GEMTEK /* n */
@@ -298,6 +301,7 @@
 #define	CONFIG_RADIO_SHARK2 /* y */
 #undef	CONFIG_RADIO_SI470X /* n */
 #undef	CONFIG_RADIO_SI4713 /* n */
+#undef	CONFIG_RADIO_SI476X /* n */
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
 #undef	CONFIG_RADIO_TERRATEC /* n */
@@ -312,6 +316,7 @@
 #undef	CONFIG_RC_LOOPBACK /* n */
 #define	CONFIG_RC_MAP /* y */
 #undef	CONFIG_SMS_SDIO_DRV /* n */
+#undef	CONFIG_SMS_SIANO_DEBUGFS /* n */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
 #define	CONFIG_SMS_SIANO_RC /* y */
 #define	CONFIG_SMS_USB_DRV /* y */
@@ -530,11 +535,11 @@
 #define	CONFIG_VIDEO_CX25840 /* y */
 #undef	CONFIG_VIDEO_CX88 /* n */
 #undef	CONFIG_VIDEO_DAVINCI_VPBE_DISPLAY /* n */
-#undef	CONFIG_VIDEO_DAVINCI_VPIF /* n */
 #undef	CONFIG_VIDEO_DAVINCI_VPIF_CAPTURE /* n */
 #undef	CONFIG_VIDEO_DAVINCI_VPIF_DISPLAY /* n */
 #define	CONFIG_VIDEO_DEV /* y */
 #undef	CONFIG_VIDEO_DM355_CCDC /* n */
+#undef	CONFIG_VIDEO_DM365_ISIF /* n */
 #undef	CONFIG_VIDEO_DM365_VPFE /* n */
 #undef	CONFIG_VIDEO_DM6446_CCDC /* n */
 #undef	CONFIG_VIDEO_DT3155 /* n */
@@ -548,7 +553,6 @@
 #undef	CONFIG_VIDEO_HEXIUM_ORION /* n */
 #define	CONFIG_VIDEO_IR /* y */
 #define	CONFIG_VIDEO_IR_I2C /* y */
-#undef	CONFIG_VIDEO_ISIF /* n */
 #undef	CONFIG_VIDEO_IVTV /* n */
 #define	CONFIG_VIDEO_KS0127 /* y */
 #undef	CONFIG_VIDEO_M32R_AR_M64278 /* n */
@@ -569,6 +573,7 @@
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_VIDEO_OMAP2 /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
+#undef	CONFIG_VIDEO_OV7640 /* n */
 #define	CONFIG_VIDEO_OV7670 /* y */
 #undef	CONFIG_VIDEO_OV9650 /* n */
 #undef	CONFIG_VIDEO_PMS /* n */
@@ -591,8 +596,8 @@
 #define	CONFIG_VIDEO_SAA717X /* y */
 #define	CONFIG_VIDEO_SAA7185 /* y */
 #define	CONFIG_VIDEO_SAA7191 /* y */
+#undef	CONFIG_VIDEO_SAMSUNG_EXYNOS4_IS /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_EXYNOS_GSC /* n */
-#undef	CONFIG_VIDEO_SAMSUNG_S5P_FIMC /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_G2D /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_JPEG /* n */
 #undef	CONFIG_VIDEO_SAMSUNG_S5P_MFC /* n */
@@ -601,6 +606,7 @@
 #undef	CONFIG_VIDEO_SH_VOU /* n */
 #undef	CONFIG_VIDEO_SMIAPP /* n */
 #undef	CONFIG_VIDEO_SMIAPP_PLL /* n */
+#undef	CONFIG_VIDEO_SONY_BTF_MPX /* n */
 #define	CONFIG_VIDEO_SR030PC30 /* y */
 #undef	CONFIG_VIDEO_STK1160 /* n */
 #define	CONFIG_VIDEO_TCM825X /* y */
@@ -619,6 +625,10 @@
 #define	CONFIG_VIDEO_TVP514X /* y */
 #define	CONFIG_VIDEO_TVP5150 /* y */
 #define	CONFIG_VIDEO_TVP7002 /* y */
+#undef	CONFIG_VIDEO_TW2804 /* n */
+#undef	CONFIG_VIDEO_TW9903 /* n */
+#undef	CONFIG_VIDEO_TW9906 /* n */
+#undef	CONFIG_VIDEO_UDA1342 /* n */
 #define	CONFIG_VIDEO_UPD64031A /* y */
 #define	CONFIG_VIDEO_UPD64083 /* y */
 #define	CONFIG_VIDEO_USBVISION /* y */
@@ -631,8 +641,6 @@
 #undef	CONFIG_VIDEO_VIU /* n */
 #undef	CONFIG_VIDEO_VIVI /* n */
 #define	CONFIG_VIDEO_VP27SMPX /* y */
-#undef	CONFIG_VIDEO_VPFE_CAPTURE /* n */
-#undef	CONFIG_VIDEO_VPSS_SYSTEM /* n */
 #undef	CONFIG_VIDEO_VPX3220 /* n */
 #undef	CONFIG_VIDEO_VS6624 /* n */
 #undef	CONFIG_VIDEO_W9966 /* n */

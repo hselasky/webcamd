@@ -65,7 +65,6 @@ for F in \
 ../media_tree/drivers/media/usb/dvb-usb-v2/it913x.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf-tuner.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf.c \
-../media_tree/drivers/input/tablet/wacom_sys.c \
 ../media_tree/drivers/input/tablet/wacom.h
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
@@ -104,7 +103,6 @@ find_media_file lmedm04.c
 find_media_file it913x.c
 find_media_file mxl111sf-tuner.c
 find_media_file mxl111sf.c
-find_media_file wacom_sys.c
 find_media_file wacom.h
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
@@ -123,7 +121,6 @@ patch $OPT $(find_media_file gspca.c) gspca.diff
 patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
 #patch $OPT $(find_media_file ac97_codec.h) ac97_codec.h.diff
 patch $OPT $(find_media_file ca.h) ca.h.diff
-patch $OPT $(find_media_file wacom_sys.c) wacom_sys.c.diff
 patch $OPT $(find_media_file wacom.h) wacom.h.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)

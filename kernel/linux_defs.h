@@ -60,6 +60,12 @@
 #define	__pgprot(x)     ((pgprot_t)(x))
 #define	__rcu
 #define	__percpu
+#define	preempt_enable() __nop
+#define	preempt_disable() __nop
+#define	__this_cpu_write(a,b) do { (a) = (b); } while (0)
+#define	__this_cpu_read(a) (a)
+#define	__this_cpu_inc(a) do { (a)++; } while (0)
+#define	__this_cpu_dec(a) do { (a)--; } while (0)
 #define	irqs_disabled(...) (0)
 #define	SetPageReserved(...)   __nop
 #define	ClearPageReserved(...) __nop
@@ -167,8 +173,11 @@
 #define	kfree(ptr) free(ptr)
 #define	kstrdup(a,b) strdup(a)
 #define	might_sleep(x) __nop
+#define	might_sleep_if(x) __nop
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
+#define	swap(a, b) \
+    do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
 #define	usleep_range(_min,_max) usleep(_min)
 #define	__GFP_WAIT 0
 #define	__GFP_HIGH 0
@@ -261,6 +270,9 @@
 #define	jiffies_to_msecs(x) (x)
 #define	likely(...) __VA_ARGS__
 #define	unlikely(...) __VA_ARGS__
+#define	__round_mask(x, y) ((typeof(x))((y)-1))
+#define	round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
+#define	round_down(x, y) ((x) & ~__round_mask(x, y))
 #define	DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
 #define	max(a,b) (((a) > (b)) ? (a) : (b))
@@ -276,6 +288,8 @@
 #define	WARN(...) __nop
 #define	BUG_ON(x) ({ (x); })
 #define	WARN_ON(x) ({ (x); })
+#define	WARN_ON_ONCE(x) ({ (x); })
+#define	lockdep_set_class_and_name(...) __nop
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -310,6 +324,7 @@
 #define	smp_wmb() mb()
 #define	smp_mb() mb()
 #define	smp_rmb() mb()
+#define	smp_mb__after_clear_bit() mb()
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
 #define	__devinitconst
@@ -375,6 +390,9 @@
 #ifndef __force
 #define	__force
 #endif
+#define	DEFINE_PER_CPU(type, name) \
+    typeof(type) name
+
 #define	put_user(val, ptr) ({						\
 	int temp_err;							\
 	__typeof(val) temp_var = (val);					\
@@ -396,6 +414,9 @@
 #define	errno errno_v4l
 
 /* rcu - support */
+#define	RCU_INIT_POINTER(p, v) do {	\
+	(p) = (v);			\
+} while (0)
 #define	rcu_read_lock() atomic_lock()
 #define	rcu_read_unlock() atomic_unlock()
 #define	rcu_dereference(var)	\
