@@ -25,6 +25,7 @@
 
 #include <signal.h>
 
+static pthread_cond_t mutex_cond;
 static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
@@ -293,7 +294,7 @@ up(struct semaphore *sem)
 	atomic_lock();
 	sem->value++;
 	if (sem->value == 1)
-		pthread_cond_broadcast(&sema_cond);
+		pthread_cond_broadcast(&mutex_cond);
 	atomic_unlock();
 }
 
@@ -338,7 +339,9 @@ down(struct semaphore *sem)
 
 		drops = atomic_drop();
 		atomic_pre_sleep();
-		pthread_cond_wait(&sema_cond, atomic_get_lock());
+
+		pthread_cond_wait(&mutex_cond, atomic_get_lock());
+
 		atomic_post_sleep();
 		atomic_pickup(drops);
 	}
@@ -592,6 +595,7 @@ thread_init(void)
 
 	pthread_condattr_init(&cattr);
 	pthread_condattr_setclock(&cattr, CLOCK_MONOTONIC);
+	pthread_cond_init(&mutex_cond, &cattr);
 	pthread_cond_init(&sema_cond, &cattr);
 	pthread_condattr_destroy(&cattr);
 
@@ -603,6 +607,7 @@ thread_init(void)
 void
 thread_exit(void)
 {
+	pthread_cond_destroy(&mutex_cond);
 	pthread_cond_destroy(&sema_cond);
 }
 
