@@ -41,6 +41,7 @@ typedef struct wait_queue {
 typedef struct wait_queue_head {
 	int	sleep_ref;
 	int	sleep_count;
+	int	do_selwakeup;
 } wait_queue_head_t;
 
 #define	DECLARE_WAIT_QUEUE_HEAD(name) \

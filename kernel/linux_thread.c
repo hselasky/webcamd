@@ -120,41 +120,33 @@ wake_up_all_internal(void)
 	atomic_lock();
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
-
-	poll_wakeup_internal();
 }
 
 void
 wake_up(wait_queue_head_t *q)
 {
+	int do_poll;
 	atomic_lock();
 	q->sleep_ref++;
+	do_poll = q->do_selwakeup;
+	q->do_selwakeup = 0;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 
-	poll_wakeup_internal();
+	if (do_poll)
+		poll_wakeup_internal();
 }
 
 void
 wake_up_all(wait_queue_head_t *q)
 {
-	atomic_lock();
-	q->sleep_ref++;
-	pthread_cond_broadcast(&sema_cond);
-	atomic_unlock();
-
-	poll_wakeup_internal();
+	wake_up(q);
 }
 
 void
 wake_up_nr(wait_queue_head_t *q, uint32_t nr)
 {
-	atomic_lock();
-	q->sleep_ref++;
-	pthread_cond_broadcast(&sema_cond);
-	atomic_unlock();
-
-	poll_wakeup_internal();
+	wake_up(q);
 }
 
 void
@@ -352,8 +344,10 @@ down(struct semaphore *sem)
 void
 poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p)
 {
-	if (p && wq) {
-		/* XXX register file in polling table */
+	if (wq != NULL) {
+		atomic_lock();
+		wq->do_selwakeup = 1;
+		atomic_unlock();
 	}
 }
 
