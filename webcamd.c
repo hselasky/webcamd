@@ -26,6 +26,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/rtprio.h>
 #include <sys/time.h>
 #include <sys/filio.h>
 
@@ -33,7 +34,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <sched.h>
 #include <grp.h>
 #include <pwd.h>
 
@@ -593,13 +593,14 @@ main(int argc, char **argv)
 		    "Did you kldload cuse4bsd?");
 	}
 	if (do_realtime != 0) {
-		struct sched_param params;
+		struct rtprio rtp;
 
-		memset(&params, 0, sizeof(params));
+		memset(&rtp, 0, sizeof(rtp));
 
-		params.sched_priority = sched_get_priority_max(SCHED_FIFO) - 1;
+		rtp.type = RTP_PRIO_REALTIME;
+		rtp.prio = 8;
 
-		if (sched_setscheduler(getpid(), SCHED_FIFO, &params) == -1)
+		if (rtprio(RTP_SET, getpid(), &rtp) != 0)
 			printf("Cannot set realtime priority\n");
 	}
 	/* get all module parameters registered */
