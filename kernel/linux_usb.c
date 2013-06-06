@@ -29,6 +29,10 @@
 
 #include <linux/input.h>
 
+static int min_bufsize;
+module_param(min_bufsize, int, 0644);
+MODULE_PARM_DESC(min_bufsize, "Set minimum USB buffer size");
+
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
 	struct libusb20_device *pdev;
@@ -56,7 +60,7 @@ static struct usb_device *usb_linux_create_usb_device(struct usb_linux_softc *sc
 static void usb_linux_cleanup_interface(struct usb_device *, struct usb_interface *);
 static void usb_linux_complete(struct libusb20_transfer *);
 static int usb_unlink_urb_sub(struct urb *, uint8_t);
-static int usb_setup_endpoint(struct usb_device *dev, struct usb_host_endpoint *uhe, uint8_t do_setup);
+static int usb_setup_endpoint(struct usb_device *dev, struct usb_host_endpoint *uhe, int bufsize);
 static struct usb_host_endpoint *usb_find_host_endpoint(struct usb_device *dev, unsigned int pipe);
 
 /*------------------------------------------------------------------------*
@@ -579,7 +583,9 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 		atomic_unlock();
 		return (-EINVAL);
 	}
-	err = usb_setup_endpoint(urb->dev, uhe, 1);
+
+	err = usb_setup_endpoint(urb->dev, uhe,
+	    urb->transfer_buffer_length);
 	if (err) {
 		atomic_unlock();
 		return (-EPIPE);
@@ -727,7 +733,7 @@ usb_clear_halt(struct usb_device *dev, unsigned int pipe)
 		atomic_unlock();
 		return (-EINVAL);
 	}
-	err = usb_setup_endpoint(dev, uhe, 1);
+	err = usb_setup_endpoint(dev, uhe, 0);
 	atomic_unlock();
 	if (err)
 		return (-EPIPE);
@@ -859,6 +865,21 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
 	return (err);
 }
 
+static int
+usb_unsetup_endpoint(struct usb_device *dev,
+    struct usb_host_endpoint *uhe)
+{
+	if (uhe->bsd_xfer[0]) {
+		libusb20_tr_close(uhe->bsd_xfer[0]);
+		uhe->bsd_xfer[0] = NULL;
+	}
+	if (uhe->bsd_xfer[1]) {
+		libusb20_tr_close(uhe->bsd_xfer[1]);
+		uhe->bsd_xfer[1] = NULL;
+	}
+	return (0);
+}
+
 /*------------------------------------------------------------------------*
  *	usb_setup_endpoint
  *
@@ -872,25 +893,13 @@ usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index)
  *------------------------------------------------------------------------*/
 static int
 usb_setup_endpoint(struct usb_device *dev,
-    struct usb_host_endpoint *uhe, uint8_t do_setup)
+    struct usb_host_endpoint *uhe, int bufsize)
 {
-	uint16_t bufsize;
 	uint8_t type = uhe->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
 	uint8_t addr = uhe->desc.bEndpointAddress;
 	uint8_t ep_index = ((addr / 0x40) | (addr * 4)) % (16 * 4);
 	uint8_t speed;
 
-	if (do_setup == 0) {
-		if (uhe->bsd_xfer[0]) {
-			libusb20_tr_close(uhe->bsd_xfer[0]);
-			uhe->bsd_xfer[0] = NULL;
-		}
-		if (uhe->bsd_xfer[1]) {
-			libusb20_tr_close(uhe->bsd_xfer[1]);
-			uhe->bsd_xfer[1] = NULL;
-		}
-		return (0);
-	}
 	if (uhe->bsd_xfer[0] ||
 	    uhe->bsd_xfer[1]) {
 		/* transfer already setup */
@@ -931,13 +940,21 @@ usb_setup_endpoint(struct usb_device *dev,
 
 		speed = libusb20_dev_get_speed(dev->bsd_udev);
 
-		/* select a sensible buffer size */
+		/* figure out a sensible buffer size */
+		if (bufsize < 0)
+			bufsize = 0;
+		if (bufsize < min_bufsize)
+			bufsize = min_bufsize;
 		if (speed == LIBUSB20_SPEED_LOW) {
-			bufsize = 256;
-		} else if (speed == LIBUSB20_SPEED_FULL) {
-			bufsize = 4096;
+			if (bufsize < 256)
+				bufsize = 256;
+		} else if (type == USB_ENDPOINT_XFER_INT ||
+		    speed == LIBUSB20_SPEED_FULL) {
+			if (bufsize < 4096)
+				bufsize = 4096;
 		} else {
-			bufsize = 16384;
+			if (bufsize < 65536)
+				bufsize = 65536;
 		}
 
 		/* one transfer and one frame */
@@ -1420,10 +1437,10 @@ usb_linux_free_device(struct usb_device *dev)
 	uhe = dev->bsd_endpoint_start;
 	uhe_end = dev->bsd_endpoint_end;
 	while (uhe != uhe_end) {
-		err = usb_setup_endpoint(dev, uhe, 0);
+		err = usb_unsetup_endpoint(dev, uhe);
 		uhe++;
 	}
-	err = usb_setup_endpoint(dev, &dev->ep0, 0);
+	err = usb_unsetup_endpoint(dev, &dev->ep0);
 	atomic_unlock();
 
 	free(dev->product);
@@ -1526,7 +1543,7 @@ usb_linux_cleanup_interface(struct usb_device *dev,
 		uhe = uhi->endpoint;
 		uhe_end = uhi->endpoint + uhi->desc.bNumEndpoints;
 		while (uhe != uhe_end) {
-			err = usb_setup_endpoint(dev, uhe, 0);
+			err = usb_unsetup_endpoint(dev, uhe);
 			uhe++;
 		}
 		uhi++;
@@ -1734,15 +1751,10 @@ usb_linux_non_isoc_callback(struct libusb20_transfer *xfer)
 
 		actlen = libusb20_tr_get_actual_length(xfer);
 
-		urb->bsd_length_rem -= actlen;
-		urb->bsd_data_ptr += actlen;
-		urb->actual_length += actlen;
+		urb->actual_length = actlen;
 
 		/* check for short transfer */
-		if ((urb->bsd_length_rem != 0) &&
-		    (actlen < max_bulk)) {
-			urb->bsd_length_rem = 0;
-
+		if (actlen < max_bulk) {
 			/* short transfer */
 			if (urb->transfer_flags & URB_SHORT_NOT_OK) {
 				urb->status = -EPIPE;
@@ -1750,10 +1762,6 @@ usb_linux_non_isoc_callback(struct libusb20_transfer *xfer)
 				urb->status = 0;
 			}
 		} else {
-			/* check remainder */
-			if (urb->bsd_length_rem > 0) {
-				goto setup_bulk;
-			}
 			/* success */
 			urb->status = 0;
 		}
@@ -1776,26 +1784,30 @@ tr_setup:
 
 		libusb20_tr_set_priv_sc1(xfer, urb);
 
-		/* setup data transfer */
+		/* assert valid transfer size */
+		if (urb->transfer_buffer_length < 0 ||
+		    urb->transfer_buffer_length > max_bulk) {
+			urb->status = -EFBIG;
 
-		urb->bsd_length_rem = urb->transfer_buffer_length;
-		urb->bsd_data_ptr = urb->transfer_buffer;
-		urb->actual_length = 0;
-
-setup_bulk:
-		if (max_bulk > urb->bsd_length_rem) {
-			max_bulk = urb->bsd_length_rem;
+			/* call callback */
+			urb->bsd_no_resubmit = 1;
+			usb_linux_complete(xfer);
+			urb->bsd_no_resubmit = 0;
+			goto tr_setup;
 		}
+
 		/* check if we need to force a short transfer */
 
-		if ((max_bulk == urb->bsd_length_rem) &&
-		    (urb->transfer_flags & URB_ZERO_PACKET)) {
+		if (urb->transfer_flags & URB_ZERO_PACKET) {
 			libusb20_tr_set_flags(xfer, LIBUSB20_TRANSFER_FORCE_SHORT);
 		} else {
 			libusb20_tr_set_flags(xfer, 0);
 		}
 
-		libusb20_tr_setup_bulk(xfer, urb->bsd_data_ptr, max_bulk, urb->timeout);
+		/* setup data transfer */
+
+		libusb20_tr_setup_bulk(xfer, urb->transfer_buffer,
+		    urb->transfer_buffer_length, urb->timeout);
 		libusb20_tr_submit(xfer);
 		break;
 

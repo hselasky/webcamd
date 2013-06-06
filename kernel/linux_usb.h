@@ -576,15 +576,13 @@ struct urb {
 	struct usb_device *dev;		/* (in) pointer to associated device */
 	unsigned int pipe;		/* (in) pipe */
 	uint8_t *setup_packet;		/* (in) setup packet (control only) */
-	uint8_t *bsd_data_ptr;
 	void   *transfer_buffer;	/* (in) associated data buffer */
 	void   *context;		/* (in) context for completion */
 	usb_complete_t complete;	/* (in) completion routine */
 
 	uint32_t transfer_buffer_length;/* (in) data buffer length */
-	uint32_t bsd_length_rem;
 	uint32_t actual_length;		/* (return) actual transfer length */
-	uint32_t timeout;		/* FreeBSD specific */
+	uint32_t timeout;		/* (in) FreeBSD specific */
 
 	uint16_t transfer_flags;	/* (in) */
 #define	URB_SHORT_NOT_OK	0x0001	/* report short transfers like errors */
@@ -605,8 +603,7 @@ struct urb {
 
 	uint8_t	setup_dma;		/* (in) not used on FreeBSD */
 	dma_addr_t transfer_dma;	/* (in) not used on FreeBSD */
-	uint8_t	bsd_isread;
-	uint8_t	bsd_no_resubmit;
+	uint8_t	bsd_no_resubmit;	/* (internal) FreeBSD specific */
 
 	struct usb_iso_packet_descriptor iso_frame_desc[];	/* (in) ISO ONLY */
 };
