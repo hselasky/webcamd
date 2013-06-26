@@ -24,8 +24,8 @@
 +
 +		/* XXX override driver parameters */
 +		stream->props.count = 2;
-+		if (stream->props.u.bulk.buffersize < 16384)
-+			stream->props.u.bulk.buffersize = 16384;
++		if (stream->props.u.bulk.buffersize < 131072)
++			stream->props.u.bulk.buffersize = 131072;
  		ret = usb_alloc_stream_buffers(stream, stream->props.count,
  				stream->props.u.bulk.buffersize);
  		if (ret < 0)

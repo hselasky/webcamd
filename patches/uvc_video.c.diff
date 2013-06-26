@@ -47,9 +47,9 @@ diff -u -r media_tree/drivers/media/video/uvc/uvc_video.c media_tree/drivers/med
 -
 -	/* roughly compute size for buffers */
 -	if (stream->dev->udev->speed == USB_SPEED_FULL) {
--		size = 4096;
+-		size = 8192;
 -	} else {
--		size = 16384;
+-		size = 131072;
 -	}
 -	/* align to packet boundary */
 -	size += (psize - (size % psize)) % psize;
