@@ -260,6 +260,9 @@ SRCS+= \
 	rtl2832.c \
 	m88rs2000.c \
 	af9033.c \
+	m88ds3103.c \
+	m88dc2800.c \
+	sit2.c \
 	v4l2-dev.c \
 	v4l2-ioctl.c \
 	v4l2-device.c \
@@ -314,6 +317,7 @@ SRCS+= \
 	rc-dm1105-nec.c \
 	rc-dntv-live-dvb-t.c \
 	rc-dntv-live-dvbt-pro.c \
+	rc-dvbsky.c \
 	rc-em-terratec.c \
 	rc-encore-enltv2.c \
 	rc-encore-enltv.c \
@@ -483,6 +487,7 @@ SRCS+= \
 	mxl111sf-demod.c \
 	mxl111sf-tuner.c \
 	rtl28xxu.c \
+	dvbsky.c \
 	smsusb.c \
 	flexcop-usb.c \
 	zr364xx.c \

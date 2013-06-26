@@ -70,6 +70,8 @@
 #define	CONFIG_DVB_LGS8GXX /* y */
 #define	CONFIG_DVB_LNBP21 /* y */
 #define	CONFIG_DVB_LNBP22 /* y */
+#define	CONFIG_DVB_M88DC2800 /* y */
+#define	CONFIG_DVB_M88DS3103 /* y */
 #define	CONFIG_DVB_M88RS2000 /* y */
 #undef	CONFIG_DVB_MANTIS /* n */
 #define	CONFIG_DVB_MAX_ADAPTERS 8
@@ -94,6 +96,7 @@
 #define	CONFIG_DVB_S5H1432 /* y */
 #define	CONFIG_DVB_S921 /* y */
 #define	CONFIG_DVB_SI21XX /* y */
+#define	CONFIG_DVB_SIT2 /* y */
 #define	CONFIG_DVB_SP8870 /* y */
 #define	CONFIG_DVB_SP887X /* y */
 #define	CONFIG_DVB_STB0899 /* y */
@@ -146,6 +149,7 @@
 #define	CONFIG_DVB_USB_DIGITV /* y */
 #define	CONFIG_DVB_USB_DTT200U /* y */
 #define	CONFIG_DVB_USB_DTV5100 /* y */
+#define	CONFIG_DVB_USB_DVBSKY /* y */
 #define	CONFIG_DVB_USB_DW2102 /* y */
 #define	CONFIG_DVB_USB_EC168 /* y */
 #define	CONFIG_DVB_USB_FRIIO /* y */
@@ -561,6 +565,7 @@
 #undef	CONFIG_VIDEO_MEM2MEM_DEINTERLACE /* n */
 #undef	CONFIG_VIDEO_MEM2MEM_TESTDEV /* n */
 #undef	CONFIG_VIDEO_MEYE /* n */
+#undef	CONFIG_VIDEO_ML86V7667 /* n */
 #undef	CONFIG_VIDEO_MMP_CAMERA /* n */
 #define	CONFIG_VIDEO_MSP3400 /* y */
 #undef	CONFIG_VIDEO_MT9M032 /* n */
@@ -615,6 +620,7 @@
 #define	CONFIG_VIDEO_TEA6415C /* y */
 #define	CONFIG_VIDEO_TEA6420 /* y */
 #define	CONFIG_VIDEO_THS7303 /* y */
+#undef	CONFIG_VIDEO_THS8200 /* n */
 #undef	CONFIG_VIDEO_TIMBERDALE /* n */
 #undef	CONFIG_VIDEO_TLG2300 /* n */
 #define	CONFIG_VIDEO_TLV320AIC23B /* y */
