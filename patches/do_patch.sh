@@ -135,4 +135,8 @@ sed -e "s/[ 	]info[(]/ itx_info(/g" -i .orig $(find_media_file it913x.c)
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf-tuner.c)
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf.c)
 
+# DVBSKY support
+echo "Looking for DVBSKY patches ..."
+[ -f dvbsky-linux-3.9-hps-v2.diff ] && (cat dvbsky-linux-3.9-hps-v2.diff | patch $OPT -d ../media_tree -p1)
+
 exit 0
