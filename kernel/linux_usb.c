@@ -952,8 +952,8 @@ usb_setup_endpoint(struct usb_device *dev,
 			if (bufsize < 4096)
 				bufsize = 4096;
 		} else {
-			if (bufsize < 65536)
-				bufsize = 65536;
+			if (bufsize < 131072)
+				bufsize = 131072;
 		}
 
 		/* one transfer and one frame */
@@ -1806,6 +1806,16 @@ tr_setup:
 		libusb20_tr_setup_bulk(xfer, urb->transfer_buffer,
 		    urb->transfer_buffer_length, urb->timeout);
 		libusb20_tr_submit(xfer);
+
+		/* get other transfer */
+		if (xfer == uhe->bsd_xfer[0])
+			xfer = uhe->bsd_xfer[1];
+		else
+			xfer = uhe->bsd_xfer[0];
+
+		/* start the other transfer, if not already started */
+		if (xfer != NULL)
+			libusb20_tr_start(xfer);
 		break;
 
 	default:
