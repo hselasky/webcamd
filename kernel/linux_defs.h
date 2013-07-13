@@ -285,7 +285,7 @@
 #define	KBUILD_MODNAME ""
 #define	KERN_NOTICE ""
 #define	BUG(...) __nop
-#define	WARN(...) __nop
+#define	WARN(x,...) ({ (x); })
 #define	BUG_ON(x) ({ (x); })
 #define	WARN_ON(x) ({ (x); })
 #define	WARN_ON_ONCE(x) ({ (x); })

@@ -65,6 +65,7 @@ for F in \
 ../media_tree/drivers/media/usb/dvb-usb-v2/it913x.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf-tuner.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf.c \
+../media_tree/drivers/media/i2c/tvp514x.c \
 ../media_tree/drivers/input/tablet/wacom.h
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
@@ -104,6 +105,7 @@ find_media_file it913x.c
 find_media_file mxl111sf-tuner.c
 find_media_file mxl111sf.c
 find_media_file wacom.h
+find_media_file tvp514x.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
@@ -122,6 +124,7 @@ patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
 #patch $OPT $(find_media_file ac97_codec.h) ac97_codec.h.diff
 patch $OPT $(find_media_file ca.h) ca.h.diff
 patch $OPT $(find_media_file wacom.h) wacom.h.diff
+patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)

@@ -56,6 +56,7 @@ media_tree/drivers/media/usb/hdpvr \
 media_tree/drivers/media/usb/pvrusb2 \
 media_tree/drivers/media/usb/usbvision \
 media_tree/drivers/media/usb/em28xx \
+media_tree/drivers/media/usb/usbtv \
 media_tree/drivers/media/mmc \
 media_tree/drivers/media/mmc/siano \
 media_tree/drivers/media/firewire \
@@ -270,6 +271,8 @@ SRCS+= \
 	v4l2-event.c \
 	v4l2-ctrls.c \
 	v4l2-subdev.c \
+	v4l2-clk.c \
+	v4l2-async.c \
 	v4l2-int-device.c \
 	v4l2-common.c \
 	tuner-core.c \
@@ -623,6 +626,7 @@ SRCS+= \
 	em28xx-vbi.c \
 	em28xx-camera.c \
 	em28xx-dvb.c \
+	usbtv.c \
 	radio-shark.c \
 	radio-shark2.c \
 	radio-tea5777.c \

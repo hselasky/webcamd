@@ -637,6 +637,7 @@
 #undef	CONFIG_VIDEO_UDA1342 /* n */
 #define	CONFIG_VIDEO_UPD64031A /* y */
 #define	CONFIG_VIDEO_UPD64083 /* y */
+#define	CONFIG_VIDEO_USBTV /* y */
 #define	CONFIG_VIDEO_USBVISION /* y */
 #define	CONFIG_VIDEO_V4L1_COMPAT /* y */
 #define	CONFIG_VIDEO_V4L2 /* y */
