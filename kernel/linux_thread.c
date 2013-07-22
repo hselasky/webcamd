@@ -129,7 +129,6 @@ wake_up(wait_queue_head_t *q)
 	atomic_lock();
 	q->sleep_ref++;
 	do_poll = q->do_selwakeup;
-	q->do_selwakeup = 0;
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 
@@ -345,6 +344,7 @@ void
 poll_wait(struct file *filp, wait_queue_head_t *wq, poll_table * p)
 {
 	if (wq != NULL) {
+		/* mark queue as belonging to a poller */
 		atomic_lock();
 		wq->do_selwakeup = 1;
 		atomic_unlock();
