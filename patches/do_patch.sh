@@ -23,6 +23,7 @@ for F in \
 ../media_tree/drivers/media/usb/uvc/uvcvideo.h \
 ../media_tree/drivers/media/video/uvc/uvc_video.c \
 ../media_tree/drivers/media/video/uvc/uvcvideo.h \
+../media_tree/drivers/media/v4l2-core/v4l2-async.c \
 ../media_tree/drivers/media/v4l2-core/v4l2-dev.c \
 ../media_tree/drivers/media/v4l2-core/videobuf2-core.c \
 ../media_tree/drivers/media/v4l2-core/videobuf2-memops.c \
@@ -43,8 +44,6 @@ for F in \
 ../media_tree/drivers/media/video/gspca/gspca.c \
 ../media_tree/drivers/media/usb/stkwebcam/stk-webcam.h \
 ../media_tree/drivers/media/video/stk-webcam.h \
-../media_tree/include/uapi/sound/ac97_codec.h \
-../media_tree/include/sound/ac97_codec.h \
 ../media_tree/include/uapi/linux/dvb/ca.h \
 ../media_tree/include/linux/dvb/ca.h \
 ../media_tree/drivers/media/tuners/tda18212.c \
@@ -66,6 +65,7 @@ for F in \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf-tuner.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf.c \
 ../media_tree/drivers/media/i2c/tvp514x.c \
+../media_tree/drivers/media/i2c/adv7343.c \
 ../media_tree/drivers/input/tablet/wacom.h
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
@@ -81,6 +81,7 @@ find_media_file dvb_frontend.c
 find_media_file uvc_video.c
 find_media_file uvcvideo.h
 find_media_file v4l2-dev.c
+find_media_file v4l2-async.c
 find_media_file videobuf2-core.c
 find_media_file videobuf2-memops.c
 find_media_file videobuf2-vmalloc.c
@@ -91,7 +92,6 @@ find_media_file usb-urb.c
 find_media_file usb_urb.c
 find_media_file gspca.c
 find_media_file stk-webcam.h
-#find_media_file ac97_codec.h
 find_media_file ca.h
 find_media_file tda18212.c
 find_media_file cx24123.c
@@ -106,11 +106,13 @@ find_media_file mxl111sf-tuner.c
 find_media_file mxl111sf.c
 find_media_file wacom.h
 find_media_file tvp514x.c
+find_media_file adv7343.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
 patch $OPT -R $(find_media_file uvcvideo.h) uvcvideo.h.diff
 patch $OPT -R $(find_media_file v4l2-dev.c) v4l2-dev.c.diff
+patch $OPT $(find_media_file v4l2-async.c) v4l2-async.c.diff
 patch $OPT $(find_media_file videobuf2-core.c) videobuf2-core.c.diff
 patch $OPT $(find_media_file videobuf2-memops.c) videobuf2-memops.c.diff
 patch $OPT $(find_media_file videobuf2-vmalloc.c) videobuf2-vmalloc.c.diff
@@ -121,10 +123,10 @@ patch $OPT $(find_media_file usb-urb.c) usb-urb.c.diff
 patch $OPT $(find_media_file usb_urb.c) usb_urb.c.diff
 patch $OPT $(find_media_file gspca.c) gspca.diff 
 patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
-#patch $OPT $(find_media_file ac97_codec.h) ac97_codec.h.diff
 patch $OPT $(find_media_file ca.h) ca.h.diff
 patch $OPT $(find_media_file wacom.h) wacom.h.diff
 patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
+patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)
@@ -139,7 +141,6 @@ sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.e
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf.c)
 
 # DVBSKY support
-echo "Looking for DVBSKY patches ..."
-[ -f dvbsky-linux-3.9-hps-v2.diff ] && (cat dvbsky-linux-3.9-hps-v2.diff | patch $OPT -d ../media_tree -p1)
+[ -f dvbsky-linux-3.9-hps-v2.diff ] && (cat dvbsky-linux-3.9-hps-v2.diff | patch $OPT -d ../media_tree -p1) && echo "Applied DVBSKY patches ..."
 
 exit 0

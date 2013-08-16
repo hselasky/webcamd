@@ -576,3 +576,10 @@ i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr, unsigned short flags,
 
 	return res;
 }
+
+struct i2c_client *
+i2c_verify_client(struct device *dev)
+{
+	return NULL;		/* NOT supported */
+}
+
