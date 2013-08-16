@@ -263,8 +263,7 @@ package:
 		patches/do_patch.sh \
 		patches/*.diff \
 		tools/linux_make/*.[ch] \
-		tools/linux_make/Makefile \
-		v4l2-async.c
+		tools/linux_make/Makefile
 
 	rm -rf webcamd-${VERSION}
 
