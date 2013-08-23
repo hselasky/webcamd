@@ -357,6 +357,19 @@ atomic_dec_and_test(atomic_t *v)
 }
 
 int
+atomic_cmpxchg(atomic_t *v, int old, int new)
+{
+	int prev;
+
+	atomic_lock();
+	prev = v->counter;
+	if (prev == old)
+		v->counter = new;
+	atomic_unlock();
+	return (prev);
+}
+
+int
 test_bit(int nr, const void *addr)
 {
 	unsigned long mask = BIT_MASK(nr);
@@ -2416,4 +2429,29 @@ void
 dma_buf_vunmap(struct dma_buf *buf, void *vaddr)
 {
 
+}
+
+uint32_t
+ror32(uint32_t x, uint8_t n)
+{
+	n &= 0x1f;
+	if (n == 0)
+		return (x);
+	return ((x >> n) | (x << (32 - n)));
+}
+
+unsigned long
+gcd(unsigned long a, unsigned long b)
+{
+	unsigned long r;
+
+	if (a < b)
+		swap(a, b);
+	if (!b)
+		return (a);
+	while ((r = (a % b)) != 0) {
+		a = b;
+		b = r;
+	}
+	return (b);
 }

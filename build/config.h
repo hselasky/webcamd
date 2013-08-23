@@ -306,6 +306,7 @@
 #undef	CONFIG_RADIO_SI470X /* n */
 #undef	CONFIG_RADIO_SI4713 /* n */
 #undef	CONFIG_RADIO_SI476X /* n */
+#define	CONFIG_RADIO_TEA575X /* y */
 #define	CONFIG_RADIO_TEA5764 /* y */
 #define	CONFIG_RADIO_TEF6862 /* y */
 #undef	CONFIG_RADIO_TERRATEC /* n */
@@ -476,6 +477,7 @@
 #define	CONFIG_USB_GSPCA_SQ905C /* y */
 #define	CONFIG_USB_GSPCA_SQ930X /* y */
 #define	CONFIG_USB_GSPCA_STK014 /* y */
+#define	CONFIG_USB_GSPCA_STK1135 /* y */
 #define	CONFIG_USB_GSPCA_STV0680 /* y */
 #define	CONFIG_USB_GSPCA_SUNPLUS /* y */
 #define	CONFIG_USB_GSPCA_T613 /* y */
@@ -489,6 +491,7 @@
 #define	CONFIG_USB_M5602 /* y */
 #define	CONFIG_USB_MA901 /* y */
 #define	CONFIG_USB_MR800 /* y */
+#define	CONFIG_USB_MSI3101 /* y */
 #define	CONFIG_USB_PWC /* y */
 #define	CONFIG_USB_S2255 /* y */
 #define	CONFIG_USB_SI470X /* y */
@@ -589,6 +592,7 @@
 #undef	CONFIG_VIDEO_PVRUSB2_DEBUGIFC /* n */
 #define	CONFIG_VIDEO_PVRUSB2_DVB /* y */
 #define	CONFIG_VIDEO_PVRUSB2_SYSFS /* y */
+#undef	CONFIG_VIDEO_RENESAS_VSP1 /* n */
 #undef	CONFIG_VIDEO_S3C_CAMIF /* n */
 #undef	CONFIG_VIDEO_S5C73M3 /* n */
 #undef	CONFIG_VIDEO_S5K4ECGX /* n */

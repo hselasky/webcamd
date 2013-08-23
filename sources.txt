@@ -4,6 +4,6 @@ Media tree sources used:
 git clone git://linuxtv.org/media_tree.git
 git checkout remotes/origin/master
 
-top commit dfb9f94e8e5e7f73c8e2bcb7d4fb1de57e7c333d
+top commit 976f375df1730dd16aa7c101298ec47bdd338d79
 
 --HPS

@@ -288,6 +288,30 @@ tools/linux_make/linux_make:
 	make -C tools/linux_make
 
 configure: tools/linux_make/linux_make
+	@echo "Configuring webcamd for:"
+	@echo "#" > config
+	@echo "# This file has been automatically generated" >> config
+	@echo "# Please do not edit" >> config
+	@echo "#" >> config
+
+	@(cat config.in ; echo "") >> config
+
+.if defined(HAVE_DVB_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * DVB devices"
+	@(cat config_dvb.in ; echo "") >> config
+.endif
+.if defined(HAVE_WEBCAM_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * Webcam devices"
+	@(cat config_webcam.in ; echo "") >> config
+.endif
+.if defined(HAVE_INPUT_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * Input devices"
+	@(cat config_input.in ; echo "") >> config
+.endif
+.if defined(HAVE_RADIO_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * Radio devices"
+	@(cat config_radio.in ; echo "") >> config
+.endif
 	tools/linux_make/linux_make -c config \
 		-i media_tree/drivers/input \
 		-i media_tree/drivers/media \

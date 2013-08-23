@@ -79,6 +79,7 @@ int	atomic_add_unless(atomic_t *, int, int);
 void	atomic_set(atomic_t *, int);
 int	atomic_read(const atomic_t *);
 int	atomic_dec_and_test(atomic_t *);
+int	atomic_cmpxchg(atomic_t *, int, int);
 
 /* Bit-operations */
 int	test_bit(int nr, const void *addr);
@@ -259,5 +260,8 @@ void   *devres_alloc(dr_release_t, size_t, gfp_t);
 void	devres_free(void *);
 void	devres_add(struct device *, void *);
 int	devres_destroy(struct device *, dr_release_t, dr_match_t, void *);
+
+uint32_t ror32(uint32_t, uint8_t);
+unsigned long gcd(unsigned long, unsigned long);
 
 #endif					/* _LINUX_FUNC_H_ */

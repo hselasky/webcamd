@@ -1,0 +1,73 @@
+diff --git a/drivers/staging/media/msi3101/sdr-msi3101.c b/drivers/staging/media/msi3101/sdr-msi3101.c
+index eebe1d0..449d55b 100644
+--- a/drivers/staging/media/msi3101/sdr-msi3101.c
++++ b/drivers/staging/media/msi3101/sdr-msi3101.c
+@@ -423,7 +423,7 @@ struct msi3101_state {
+ 
+ 	u32 next_sample; /* for track lost packets */
+ 	u32 sample; /* for sample rate calc */
+-	unsigned long jiffies;
++	unsigned long jiffies_last;
+ 	unsigned int sample_ctrl_bit[4];
+ };
+ 
+@@ -569,11 +569,11 @@ static int msi3101_convert_stream_504(struct msi3101_state *s, u32 *dst,
+ 	}
+ 
+ 	/* calculate samping rate and output it in 10 seconds intervals */
+-	if ((s->jiffies + msecs_to_jiffies(10000)) <= jiffies) {
++	if ((s->jiffies_last + msecs_to_jiffies(10000)) <= jiffies) {
+ 		unsigned long jiffies_now = jiffies;
+-		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies);
++		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies_last);
+ 		unsigned int samples = sample_num[i_max - 1] - s->sample;
+-		s->jiffies = jiffies_now;
++		s->jiffies_last = jiffies_now;
+ 		s->sample = sample_num[i_max - 1];
+ 		dev_dbg(&s->udev->dev,
+ 				"slen=%d samples=%u msecs=%lu sampling rate=%lu\n",
+@@ -677,11 +677,11 @@ static int msi3101_convert_stream_384(struct msi3101_state *s, u32 *dst,
+ 	}
+ 
+ 	/* calculate samping rate and output it in 10 seconds intervals */
+-	if ((s->jiffies + msecs_to_jiffies(10000)) <= jiffies) {
++	if ((s->jiffies_last + msecs_to_jiffies(10000)) <= jiffies) {
+ 		unsigned long jiffies_now = jiffies;
+-		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies);
++		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies_last);
+ 		unsigned int samples = sample_num[i_max - 1] - s->sample;
+-		s->jiffies = jiffies_now;
++		s->jiffies_last = jiffies_now;
+ 		s->sample = sample_num[i_max - 1];
+ 		dev_dbg(&s->udev->dev,
+ 				"slen=%d samples=%u msecs=%lu sampling rate=%lu bits=%d.%d.%d.%d\n",
+@@ -766,11 +766,11 @@ static int msi3101_convert_stream_336(struct msi3101_state *s, u32 *dst,
+ 	}
+ 
+ 	/* calculate samping rate and output it in 10 seconds intervals */
+-	if ((s->jiffies + msecs_to_jiffies(10000)) <= jiffies) {
++	if ((s->jiffies_last + msecs_to_jiffies(10000)) <= jiffies) {
+ 		unsigned long jiffies_now = jiffies;
+-		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies);
++		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies_last);
+ 		unsigned int samples = sample_num[i_max - 1] - s->sample;
+-		s->jiffies = jiffies_now;
++		s->jiffies_last = jiffies_now;
+ 		s->sample = sample_num[i_max - 1];
+ 		dev_dbg(&s->udev->dev,
+ 				"slen=%d samples=%u msecs=%lu sampling rate=%lu\n",
+@@ -853,11 +853,11 @@ static int msi3101_convert_stream_252(struct msi3101_state *s, u32 *dst,
+ 	}
+ 
+ 	/* calculate samping rate and output it in 10 seconds intervals */
+-	if ((s->jiffies + msecs_to_jiffies(10000)) <= jiffies) {
++	if ((s->jiffies_last + msecs_to_jiffies(10000)) <= jiffies) {
+ 		unsigned long jiffies_now = jiffies;
+-		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies);
++		unsigned long msecs = jiffies_to_msecs(jiffies_now) - jiffies_to_msecs(s->jiffies_last);
+ 		unsigned int samples = sample_num[i_max - 1] - s->sample;
+-		s->jiffies = jiffies_now;
++		s->jiffies_last = jiffies_now;
+ 		s->sample = sample_num[i_max - 1];
+ 		dev_dbg(&s->udev->dev,
+ 				"slen=%d samples=%u msecs=%lu sampling rate=%lu\n",

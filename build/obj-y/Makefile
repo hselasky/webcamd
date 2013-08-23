@@ -66,6 +66,7 @@ media_tree/drivers/staging/media \
 media_tree/drivers/staging/media/as102 \
 media_tree/drivers/staging/media/cxd2099 \
 media_tree/drivers/staging/media/lirc \
+media_tree/drivers/staging/media/msi3101 \
 media_tree/sound/i2c/other \
 contrib/dvb-usb \
 
@@ -275,6 +276,7 @@ SRCS+= \
 	v4l2-async.c \
 	v4l2-int-device.c \
 	v4l2-common.c \
+	v4l2-dv-timings.c \
 	tuner-core.c \
 	videobuf-core.c \
 	videobuf-vmalloc.c \
@@ -542,6 +544,7 @@ SRCS+= \
 	sq930x.c \
 	sunplus.c \
 	stk014.c \
+	stk1135.c \
 	stv0680.c \
 	t613.c \
 	topro.c \
@@ -637,6 +640,7 @@ SRCS+= \
 	radio-tea5764.c \
 	saa7706h.c \
 	tef6862.c \
+	tea575x.c \
 	as102_drv.c \
 	as102_fw.c \
 	as10x_cmd.c \
@@ -646,7 +650,7 @@ SRCS+= \
 	as10x_cmd_cfg.c \
 	cxd2099.c \
 	lirc_igorplugusb.c \
-	tea575x-tuner.c \
+	sdr-msi3101.c \
 	tbs-qboxs2.c \
 
 .if defined(LIB)

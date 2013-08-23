@@ -37,6 +37,7 @@ for F in \
 ../media_tree/include/uapi/linux/input.h \
 ../media_tree/include/linux/input.h \
 ../media_tree/drivers/staging/media/as102/as102_drv.h \
+../media_tree/drivers/staging/media/msi3101/sdr-msi3101.c \
 ../media_tree/drivers/media/usb/dvb-usb/usb-urb.c \
 ../media_tree/drivers/media/dvb/dvb-usb/usb-urb.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/usb_urb.c \
@@ -107,6 +108,7 @@ find_media_file mxl111sf.c
 find_media_file wacom.h
 find_media_file tvp514x.c
 find_media_file adv7343.c
+find_media_file sdr-msi3101.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
@@ -127,6 +129,7 @@ patch $OPT $(find_media_file ca.h) ca.h.diff
 patch $OPT $(find_media_file wacom.h) wacom.h.diff
 patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
 patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
+patch $OPT $(find_media_file sdr-msi3101.c) sdr-msi3101.c.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)
