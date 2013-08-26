@@ -255,8 +255,12 @@ package:
 		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
 		sources.txt \
 		config \
+		COPYING \
 		${SRCPATHS} \
 		build \
+		media_tree/COPYING \
+		media_tree/CREDITS \
+		media_tree/README \
 		media_tree/include \
 		media_tree/lib/idr.c \
 		media_tree/lib/kfifo.c \

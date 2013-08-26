@@ -1,0 +1,18 @@
+The code and patches under the "media_tree" and the "patches"
+directory are covered by the GPLv2 license. See "media_tree/COPYING"
+for more information. The rest of the code is covered by the 2-clause
+BSD license or as noted in the source and header files. Sometimes
+helper functions are copied from the Linux-kernel and these will
+remain GPLv2 licensed even though mixed with 2-clause BSD licensed
+code. If in doubt about the copying rules send an e-mail to
+hselasky@freebsd.org to get any issues clarified. Webcamd can ship
+sources for some binary only drivers available for Linux. Before
+making hardware clones using drivers available from this distribution
+I recommend asking the driver authors if it is fine to avoid any post
+flame-wars in the linux media e-mailing lists due to some driver
+writers having various business interests in the hardware supported by
+their drivers.
+
+Thank you for reading! Hope you enjoy using webcamd on your computer!
+
+--HPS
