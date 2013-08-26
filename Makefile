@@ -255,6 +255,7 @@ package:
 		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
 		sources.txt \
 		config \
+		config*.in \
 		COPYING \
 		${SRCPATHS} \
 		build \
