@@ -69,6 +69,7 @@
 #define	irqs_disabled(...) (0)
 #define	SetPageReserved(...)   __nop
 #define	ClearPageReserved(...) __nop
+#define	ETH_ALEN 6
 #define	_PAGE_PRESENT   0
 #define	_PAGE_RW        0
 #define	_PAGE_USER      0
@@ -344,16 +345,22 @@
 #define	time_is_before_eq_jiffies(a) time_after_eq(jiffies,a)
 #define	__attribute_const__
 #define	noinline
+#define	__cpu_to_be64(x) cpu_to_be64(x)
 #define	__cpu_to_be32(x) cpu_to_be32(x)
 #define	__cpu_to_be16(x) cpu_to_be16(x)
+#define	__cpu_to_le64(x) cpu_to_le64(x)
 #define	__cpu_to_le32(x) cpu_to_le32(x)
 #define	__cpu_to_le16(x) cpu_to_le16(x)
+#define	__le64_to_cpu(x) le64_to_cpu(x)
 #define	__le32_to_cpu(x) le32_to_cpu(x)
 #define	__le16_to_cpu(x) le16_to_cpu(x)
+#define	__le64_to_cpus(p) le64_to_cpus(p)
 #define	__le32_to_cpus(p) le32_to_cpus(p)
 #define	__le16_to_cpus(p) le16_to_cpus(p)
+#define	__be64_to_cpu(x) be64_to_cpu(x)
 #define	__be32_to_cpu(x) be32_to_cpu(x)
 #define	__be16_to_cpu(x) be16_to_cpu(x)
+#define	__be64_to_cpus(p) be64_to_cpus(p)
 #define	__be32_to_cpus(p) be32_to_cpus(p)
 #define	__be16_to_cpus(p) be16_to_cpus(p)
 #define	NSEC_PER_USEC	1000
@@ -484,8 +491,10 @@ typedef u64 dma64_addr_t;
 typedef u64 sector_t;
 typedef unsigned short __le16;
 typedef unsigned int __le32;
+typedef unsigned long long __le64;
 typedef unsigned short __be16;
 typedef unsigned int __be32;
+typedef unsigned long long __be64;
 typedef unsigned int uint;
 typedef int irqreturn_t;
 typedef off_t __kernel_off_t;

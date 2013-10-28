@@ -45,6 +45,8 @@ struct device_attribute dev_attr_mouse_middle;
 struct device_attribute dev_attr_mouse_right;
 struct device_attribute dev_attr_msc;
 struct device_attribute dev_attr_name;
+struct device_attribute dev_attr_debug;
+struct device_attribute dev_attr_index;
 struct device_attribute dev_attr_odm_code;
 struct device_attribute dev_attr_phys;
 struct device_attribute dev_attr_pointer_mode;

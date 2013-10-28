@@ -68,6 +68,21 @@ le32_to_cpus(uint32_t *p)
 	*p = temp;
 }
 
+void
+le64_to_cpus(uint64_t *p)
+{
+	uint64_t temp;
+
+	/* assuming that the pointer is correctly aligned */
+	temp = (((uint8_t *)p)[4] | (((uint8_t *)p)[5] << 8) |
+	    (((uint8_t *)p)[6] << 16) | (((uint8_t *)p)[7] << 24));
+	temp <<= 32;
+	temp |= (((uint8_t *)p)[0] | (((uint8_t *)p)[1] << 8) |
+	    (((uint8_t *)p)[2] << 16) | (((uint8_t *)p)[3] << 24));
+
+	*p = temp;
+}
+
 uint16_t
 be16_to_cpup(uint16_t *p)
 {

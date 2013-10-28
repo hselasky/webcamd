@@ -73,6 +73,15 @@ struct attribute_group {
 	struct attribute **attrs;
 };
 
+#define	ATTRIBUTE_GROUPS(name)					\
+static const struct attribute_group name##_group = {		\
+	.attrs = name##_attrs,					\
+};								\
+static const struct attribute_group *name##_groups[] = {	\
+	&name##_group,						\
+	NULL,							\
+}
+
 struct class_attribute {
 	struct attribute attr;
 	ssize_t (*show) (struct class *, char *buf);
@@ -108,6 +117,9 @@ struct device_type {
 	.show = _n##_show,				\
 }
 
+#define	__ATTR_RW(_n)				\
+	__ATTR(_n, 0666, _n##_show, _n##_store)
+
 #define	__ATTR_NULL { }
 
 #define	DEVICE_ATTR(_name,_mode,_show,_store)	\
@@ -115,10 +127,19 @@ struct device_attribute				\
 	device_attr_##_name =			\
         __ATTR(_name,_mode,_show,_store)
 
+#define	DEVICE_ATTR_RO(_name)				\
+struct device_attribute					\
+	device_attr_##_name = __ATTR_RO(_name)
+
+#define	DEVICE_ATTR_RW(_name)				\
+struct device_attribute					\
+	device_attr_##_name = __ATTR_RW(_name)
+
 struct class {
 	const char *name;
 	const char *nodename;
 	const struct device_attribute *dev_attrs;
+	const struct attribute_group **dev_groups;
 	int     (*dev_uevent) (struct device *, struct kobj_uevent_env *);
 	void    (*class_release) (struct class *);
 	void    (*dev_release) (struct device *);
@@ -314,6 +335,8 @@ extern struct device_attribute dev_attr_mouse_middle;
 extern struct device_attribute dev_attr_mouse_right;
 extern struct device_attribute dev_attr_msc;
 extern struct device_attribute dev_attr_name;
+extern struct device_attribute dev_attr_debug;
+extern struct device_attribute dev_attr_index;
 extern struct device_attribute dev_attr_odm_code;
 extern struct device_attribute dev_attr_phys;
 extern struct device_attribute dev_attr_pointer_mode;

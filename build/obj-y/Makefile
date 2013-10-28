@@ -231,6 +231,7 @@ SRCS+= \
 	dvb_dummy_fe.c \
 	af9013.c \
 	cx24116.c \
+	cx24117.c \
 	si21xx.c \
 	stv0288.c \
 	stb6000.c \

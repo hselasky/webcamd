@@ -51,6 +51,7 @@ uint64_t cpu_to_be64p(uint64_t *p);
 
 void	le16_to_cpus(uint16_t *p);
 void	le32_to_cpus(uint32_t *p);
+void	le64_to_cpus(uint64_t *p);
 
 void	put_unaligned_le32(uint32_t, void *);
 void	put_unaligned_be16(uint16_t, void *);

@@ -35,6 +35,7 @@
 #define	CONFIG_DVB_CX22702 /* y */
 #define	CONFIG_DVB_CX24110 /* y */
 #define	CONFIG_DVB_CX24116 /* y */
+#define	CONFIG_DVB_CX24117 /* y */
 #define	CONFIG_DVB_CX24123 /* y */
 #define	CONFIG_DVB_CXD2099 /* y */
 #define	CONFIG_DVB_CXD2820R /* y */
@@ -519,7 +520,9 @@
 #undef	CONFIG_VIDEO_ADV7183 /* n */
 #define	CONFIG_VIDEO_ADV7343 /* y */
 #undef	CONFIG_VIDEO_ADV7393 /* n */
+#undef	CONFIG_VIDEO_ADV7511 /* n */
 #undef	CONFIG_VIDEO_ADV7604 /* n */
+#undef	CONFIG_VIDEO_ADV7842 /* n */
 #define	CONFIG_VIDEO_AK881X /* y */
 #undef	CONFIG_VIDEO_APTINA_PLL /* n */
 #undef	CONFIG_VIDEO_AS3645A /* n */
