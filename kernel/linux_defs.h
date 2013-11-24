@@ -397,6 +397,7 @@
 #ifndef __force
 #define	__force
 #endif
+#define	numa_node_id(x) ((int)0)
 #define	DEFINE_PER_CPU(type, name) \
     typeof(type) name
 

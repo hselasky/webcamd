@@ -321,6 +321,7 @@
 #define	CONFIG_RC_CORE /* y */
 #undef	CONFIG_RC_LOOPBACK /* n */
 #define	CONFIG_RC_MAP /* y */
+#undef	CONFIG_RC_ST /* n */
 #undef	CONFIG_SMS_SDIO_DRV /* n */
 #undef	CONFIG_SMS_SIANO_DEBUGFS /* n */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
@@ -568,6 +569,7 @@
 #define	CONFIG_VIDEO_IR_I2C /* y */
 #undef	CONFIG_VIDEO_IVTV /* n */
 #define	CONFIG_VIDEO_KS0127 /* y */
+#undef	CONFIG_VIDEO_LM3560 /* n */
 #undef	CONFIG_VIDEO_M32R_AR_M64278 /* n */
 #define	CONFIG_VIDEO_M52790 /* y */
 #undef	CONFIG_VIDEO_M5MOLS /* n */
@@ -632,6 +634,7 @@
 #define	CONFIG_VIDEO_THS7303 /* y */
 #undef	CONFIG_VIDEO_THS8200 /* n */
 #undef	CONFIG_VIDEO_TIMBERDALE /* n */
+#undef	CONFIG_VIDEO_TI_VPE /* n */
 #undef	CONFIG_VIDEO_TLG2300 /* n */
 #define	CONFIG_VIDEO_TLV320AIC23B /* y */
 #undef	CONFIG_VIDEO_TM6000 /* n */
