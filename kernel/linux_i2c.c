@@ -125,7 +125,9 @@ i2c_del_adapter(struct i2c_adapter *adapt)
 struct i2c_client *
 i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 {
-	return (NULL);
+	static struct i2c_client dummy;
+	/* Fake successful return value. This address should not be used. */
+	return (&dummy);
 }
 
 
