@@ -1473,6 +1473,12 @@ jiffies_to_timeval(uint64_t j, struct timeval *tv)
 	tv->tv_sec = j / 1000ULL;
 }
 
+uint64_t
+round_jiffies_relative(uint64_t j)
+{
+	return (j);
+}
+
 int
 do_gettimeofday(struct timeval *tp)
 {

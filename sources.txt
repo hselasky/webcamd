@@ -1,9 +1,13 @@
 Media tree sources used:
 ========================
 
-git clone git://linuxtv.org/media_tree.git
-git checkout remotes/origin/master
+git clone git://github.com/torvalds/linux.git media_tree
+cd media_tree
+git remote add linuxtv git://linuxtv.org/media_tree.git
+git remote update
+git checkout -b media-master remotes/linuxtv/master 
+git pull . remotes/linuxtv/master
 
-top commit 80f93c7b0f4599ffbdac8d964ecd1162b8b618b9
+top commit cc58f4db5173f5cd039de4681ec4778b5cd71182
 
 --HPS

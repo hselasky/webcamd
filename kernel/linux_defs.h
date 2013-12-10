@@ -328,6 +328,10 @@
 #define	smp_mb__after_clear_bit() mb()
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
+#define	replace_fops(f, fops) do {	\
+	struct file *__file = (f);	\
+	__file->f_op = (fops);		\
+} while (0)
 #define	__devinitconst
 #define	__devinit
 #define	__devexit

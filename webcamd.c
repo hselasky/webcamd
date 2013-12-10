@@ -756,6 +756,12 @@ copy_from_user(void *to, const void *from, unsigned long n)
 
 static uint32_t zero_alloc[1];
 
+int
+is_vmalloc_addr(void *addr)
+{
+	return (cuse_is_vmalloc_addr(addr));
+}
+
 void   *
 malloc_vm(size_t size)
 {

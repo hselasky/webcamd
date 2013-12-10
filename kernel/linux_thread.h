@@ -192,6 +192,9 @@ void	init_completion(struct completion *x);
 
 #define	INIT_COMPLETION(x) \
     init_completion(&(x))
+#define	reinit_completion(x) \
+    init_completion(x)
+
 void	uninit_completion(struct completion *x);
 void	wait_for_completion(struct completion *x);
 int	wait_for_completion_interruptible(struct completion *x);

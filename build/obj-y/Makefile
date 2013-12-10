@@ -75,6 +75,7 @@ SRCS+= \
 	input-compat.c \
 	input-mt.c \
 	ff-core.c \
+	input-polldev.c \
 	joydev.c \
 	evdev.c \
 	acecad.c \
@@ -85,6 +86,7 @@ SRCS+= \
 	wacom_wac.c \
 	wacom_sys.c \
 	usbtouchscreen.c \
+	sur40.c \
 	msp3400-driver.c \
 	msp3400-kthreads.c \
 	cx25840-core.c \

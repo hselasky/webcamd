@@ -178,6 +178,7 @@
 #define	CONFIG_DVB_ZL10353 /* y */
 #define	CONFIG_FW_LOADER /* y */
 #define	CONFIG_I2C /* y */
+#undef	CONFIG_I2C_BCM2048 /* n */
 #define	CONFIG_I2C_SI470X /* y */
 #undef	CONFIG_I2C_SI4713 /* n */
 #define	CONFIG_INPUT /* y */
@@ -192,7 +193,7 @@
 #undef	CONFIG_INPUT_MISC /* n */
 #undef	CONFIG_INPUT_MOUSE /* n */
 #undef	CONFIG_INPUT_MOUSEDEV /* n */
-#undef	CONFIG_INPUT_POLLDEV /* n */
+#define	CONFIG_INPUT_POLLDEV /* y */
 #undef	CONFIG_INPUT_SPARSEKMAP /* n */
 #define	CONFIG_INPUT_TABLET /* y */
 #define	CONFIG_INPUT_TOUCHSCREEN /* y */
@@ -401,6 +402,7 @@
 #undef	CONFIG_TOUCHSCREEN_S3C2410 /* n */
 #undef	CONFIG_TOUCHSCREEN_ST1232 /* n */
 #undef	CONFIG_TOUCHSCREEN_STMPE /* n */
+#define	CONFIG_TOUCHSCREEN_SUR40 /* y */
 #undef	CONFIG_TOUCHSCREEN_TI_AM335X_TSC /* n */
 #undef	CONFIG_TOUCHSCREEN_TNETV107X /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHIT213 /* n */
@@ -441,6 +443,7 @@
 #undef	CONFIG_TOUCHSCREEN_WM97XX_ATMEL /* n */
 #undef	CONFIG_TOUCHSCREEN_WM97XX_MAINSTONE /* n */
 #undef	CONFIG_TOUCHSCREEN_WM97XX_ZYLONITE /* n */
+#undef	CONFIG_TOUCHSCREEN_ZFORCE /* n */
 #define	CONFIG_TTPCI_EEPROM /* y */
 #define	CONFIG_USB_DSBR /* y */
 #define	CONFIG_USB_GL860 /* y */
@@ -589,6 +592,7 @@
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_VIDEO_OMAP2 /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
+#undef	CONFIG_VIDEO_OMAP4 /* n */
 #undef	CONFIG_VIDEO_OV7640 /* n */
 #define	CONFIG_VIDEO_OV7670 /* y */
 #undef	CONFIG_VIDEO_OV9650 /* n */

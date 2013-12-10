@@ -38,6 +38,7 @@ typedef struct work_struct {
 
 #define	DECLARE_WORK(name, fn) struct work_struct name = { .func = fn }
 #define	to_delayed_work(pwork) ((struct delayed_work *)(pwork))
+#define	system_freezable_wq ((struct workqueue_struct *)0)
 
 typedef void (tasklet_func_t)(unsigned long);
 

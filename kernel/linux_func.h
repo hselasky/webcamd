@@ -167,6 +167,7 @@ int	register_chrdev_region(dev_t from, unsigned count, const char *name);
 void	unregister_chrdev_region(dev_t from, unsigned count);
 int	remap_vmalloc_range(struct vm_area_struct *vma, void *addr, unsigned long pgoff);
 void	jiffies_to_timeval(uint64_t j, struct timeval *tv);
+uint64_t round_jiffies_relative(uint64_t j);
 int	do_gettimeofday(struct timeval *tp);
 void	poll_initwait(struct poll_wqueues *pwq);
 void	poll_freewait(struct poll_wqueues *pwq);
@@ -231,6 +232,7 @@ int	usb_register_dev(struct usb_interface *, struct usb_class_driver *);
 void	usb_deregister_dev(struct usb_interface *, struct usb_class_driver *);
 struct usb_interface *usb_find_interface(struct usb_driver *, int);
 
+int	is_vmalloc_addr(void *);
 void   *malloc_vm(size_t);
 void	free_vm(void *);
 int	pidfile_create(int bus, int addr, int index);
