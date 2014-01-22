@@ -16,6 +16,7 @@ struct kobj_uevent_env;
 struct lock_class_key;
 struct module;
 struct mutex;
+struct notifier_block;
 struct page;
 struct pci_dev;
 struct poll_table_page;

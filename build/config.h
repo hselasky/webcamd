@@ -178,7 +178,6 @@
 #define	CONFIG_DVB_ZL10353 /* y */
 #define	CONFIG_FW_LOADER /* y */
 #define	CONFIG_I2C /* y */
-#undef	CONFIG_I2C_BCM2048 /* n */
 #define	CONFIG_I2C_SI470X /* y */
 #undef	CONFIG_I2C_SI4713 /* n */
 #define	CONFIG_INPUT /* y */
@@ -592,7 +591,6 @@
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_VIDEO_OMAP2 /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
-#undef	CONFIG_VIDEO_OMAP4 /* n */
 #undef	CONFIG_VIDEO_OV7640 /* n */
 #define	CONFIG_VIDEO_OV7670 /* y */
 #undef	CONFIG_VIDEO_OV9650 /* n */
