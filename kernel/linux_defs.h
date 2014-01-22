@@ -474,33 +474,33 @@
 
 struct kernel_param;
 
-typedef unsigned short umode_t;
-typedef signed char __s8;
-typedef unsigned char __u8;
-typedef signed short __s16;
-typedef unsigned short __u16;
-typedef signed int __s32;
-typedef unsigned int __u32;
-typedef signed long long __s64;
-typedef unsigned long long __u64;
-typedef signed char s8;
-typedef unsigned char u8;
-typedef signed short s16;
-typedef unsigned short u16;
-typedef signed int s32;
-typedef unsigned int u32;
+typedef uint16_t umode_t;
+typedef int8_t __s8;
+typedef uint8_t __u8;
+typedef int16_t __s16;
+typedef uint16_t __u16;
+typedef int32_t __s32;
+typedef uint32_t __u32;
+typedef int64_t __s64;
+typedef uint64_t __u64;
+typedef int8_t s8;
+typedef uint8_t u8;
+typedef int16_t s16;
+typedef uint16_t u16;
+typedef int32_t s32;
+typedef uint32_t u32;
 typedef int64_t s64;
 typedef uint64_t u64;
 typedef u64 dma_addr_t;
 typedef u64 dma64_addr_t;
 typedef u64 sector_t;
-typedef unsigned short __le16;
-typedef unsigned int __le32;
-typedef unsigned long long __le64;
-typedef unsigned short __be16;
-typedef unsigned int __be32;
-typedef unsigned long long __be64;
-typedef unsigned int uint;
+typedef uint16_t __le16;
+typedef uint32_t __le32;
+typedef uint64_t __le64;
+typedef uint16_t __be16;
+typedef uint32_t __be32;
+typedef uint64_t __be64;
+typedef uint32_t uint;
 typedef int irqreturn_t;
 typedef off_t __kernel_off_t;
 typedef int __kernel_pid_t;
@@ -509,7 +509,7 @@ typedef int __kernel_pid_t;
 typedef long long loff_t;
 
 #endif
-typedef unsigned int gfp_t;
+typedef uint32_t gfp_t;
 typedef uint32_t dev_t;
 typedef struct timespec ktime_t;
 
