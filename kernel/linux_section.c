@@ -25,43 +25,47 @@
 
 #include <linux/idr.h>
 
-extern struct module_init_struct __start_linux_parm_mod;
-extern struct module_init_struct __start_linux_init_mod;
-extern struct module_exit_struct __start_linux_exit_mod;
+SET_DECLARE(linux_parm_mod, module_init_t);
+SET_DECLARE(linux_init_mod, module_init_t);
+SET_DECLARE(linux_late_mod, module_init_t);
+SET_DECLARE(linux_exit_mod, module_exit_t);
 
 void
 linux_parm(void)
 {
-	struct module_init_struct *t = &__start_linux_parm_mod;
+	module_init_t **t = SET_BEGIN(linux_parm_mod);
+	module_init_t **t_end = SET_LIMIT(linux_parm_mod);
 
-	while (t->magic == MODULE_PARM_MAGIC) {
-		t->func();
-		t++;
-	}
+	for ( ; t != t_end; t++)
+		(**t)();
 }
 
 void
 linux_init(void)
 {
-	struct module_init_struct *t = &__start_linux_init_mod;
+	module_init_t **t = SET_BEGIN(linux_init_mod);
+	module_init_t **t_end = SET_LIMIT(linux_init_mod);
 
-	thread_init();
-
-	idr_init_cache();
-
-	while (t->magic == MODULE_INIT_MAGIC) {
-		t->func();
-		t++;
-	}
+	for ( ; t != t_end; t++)
+		(**t)();
 }
 
 void
 linux_exit(void)
 {
-	struct module_exit_struct *t = &__start_linux_exit_mod;
+	module_exit_t **t = SET_BEGIN(linux_exit_mod);
+	module_exit_t **t_end = SET_LIMIT(linux_exit_mod);
 
-	while (t->magic == MODULE_EXIT_MAGIC) {
-		t->func();
-		t++;
-	}
+	for ( ; t != t_end; t++)
+		(**t)();
+}
+
+void
+linux_late(void)
+{
+	module_init_t **t = SET_BEGIN(linux_late_mod);
+	module_init_t **t_end = SET_LIMIT(linux_late_mod);
+
+	for ( ; t != t_end; t++)
+		(**t)();
 }

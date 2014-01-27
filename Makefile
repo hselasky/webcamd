@@ -198,7 +198,7 @@ SRCS+= idr.c
 #
 # List of FreeBSD specific sources
 #
-SRCS+= linux_start_section.c
+SRCS+= linux_section.c
 SRCS+= linux_thread.c
 SRCS+= linux_defs.c
 SRCS+= linux_func.c

@@ -707,6 +707,7 @@ main(int argc, char **argv)
 	/* run rest of Linux init code */
 
 	linux_init();
+	linux_late();
 
 	if (vtuner_client == 0) {
 		if (usb_linux_probe_p(&u_unit, &u_addr, &u_index, &d_desc) < 0)

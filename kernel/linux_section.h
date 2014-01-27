@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2014 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,12 +23,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _LINUX_END_SECTION_H_
-#define	_LINUX_END_SECTION_H_
+#ifndef _LINUX_SECTION_H_
+#define	_LINUX_SECTION_H_
 
-#define	MODULE_PARM_MAGIC ((uint8_t *)0x123468CAU)
-#define	MODULE_INIT_MAGIC ((uint8_t *)0x123468ACU)
-#define	MODULE_EXIT_MAGIC ((uint8_t *)0x1246789FU)
+#include <sys/linker_set.h>
 
 typedef int (module_init_t)(void);
 typedef void (module_exit_t)(void);
@@ -43,18 +41,19 @@ struct module_exit_struct {
 	uint8_t *magic;
 };
 
+#define	module_parm_init(func)	\
+  TEXT_SET(linux_parm_mod, func);
+
+#define	module_init(func)	\
+  TEXT_SET(linux_init_mod, func);
+
+#define	module_exit(func)	\
+  TEXT_SET(linux_exit_mod, func);
+
+#define	late_initcall(func)	\
+  TEXT_SET(linux_late_mod, func);
+
 #define	subsys_initcall(f) module_init(f)
-
-#define	module_parm_init(func) static struct module_init_struct \
-  __attribute__((__section__("linux_parm_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_PARM_MAGIC };
-
-#define	module_init(func) static struct module_init_struct \
-  __attribute__((__section__("linux_init_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_INIT_MAGIC };
-
-#define	module_exit(func) static struct module_exit_struct \
-  __attribute__((__section__("linux_exit_mod"),__used__,__aligned__(1))) func##_p = { func, MODULE_EXIT_MAGIC };
-
-#define	late_initcall(x) module_init(x)	/* XXX FIXME LATER */
 
 #define	module_usb_driver(x) \
 static int x##_init(void) { return (usb_register(&(x)) ? -ENOMEM : 0); } \
@@ -75,4 +74,4 @@ void	linux_exit(void);
 int	linux_module_init_end(void);
 void	linux_module_exit_end(void);
 
-#endif					/* _LINUX_END_SECTION_H_ */
+#endif					/* _LINUX_SECTION_H_ */

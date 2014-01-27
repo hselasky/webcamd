@@ -58,6 +58,7 @@
 #include <libusb20_desc.h>
 
 #include <kernel/linux_defs.h>
+#include <kernel/linux_section.h>
 #include <kernel/linux_struct.h>
 #include <kernel/linux_file.h>
 #include <kernel/linux_func.h>
@@ -66,7 +67,6 @@
 #include <kernel/linux_task.h>
 #include <kernel/linux_thread.h>
 #include <kernel/linux_usb.h>
-#include <kernel/linux_start_section.h>
 #include <kernel/linux_firmware.h>
 #include <kernel/linux_mod_param.h>
 
