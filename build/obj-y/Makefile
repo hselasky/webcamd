@@ -13,6 +13,7 @@ media_tree/drivers/media/i2c/cx25840 \
 media_tree/drivers/media/i2c/soc_camera \
 media_tree/drivers/media/tuners \
 media_tree/drivers/media/dvb-frontends \
+media_tree/drivers/media/dvb-frontends/drx39xyj \
 media_tree/drivers/media/v4l2-core \
 media_tree/drivers/media/dvb-core \
 media_tree/drivers/media/rc \
@@ -50,7 +51,6 @@ media_tree/drivers/media/usb/gspca/m5602 \
 media_tree/drivers/media/usb/gspca/gl860 \
 media_tree/drivers/media/usb/pwc \
 media_tree/drivers/media/usb/cpia2 \
-media_tree/drivers/media/usb/sn9c102 \
 media_tree/drivers/media/usb/au0828 \
 media_tree/drivers/media/usb/hdpvr \
 media_tree/drivers/media/usb/pvrusb2 \
@@ -62,12 +62,16 @@ media_tree/drivers/media/mmc/siano \
 media_tree/drivers/media/firewire \
 media_tree/drivers/media/parport \
 media_tree/drivers/media/radio \
+media_tree/drivers/base/regmap \
 media_tree/drivers/staging/media \
 media_tree/drivers/staging/media/as102 \
 media_tree/drivers/staging/media/cxd2099 \
 media_tree/drivers/staging/media/lirc \
-media_tree/drivers/staging/media/msi3101 \
+media_tree/drivers/staging/media/sn9c102 \
+media_tree/drivers/staging/media/omap24xx \
+media_tree/drivers/staging/media/rtl2832u_sdr \
 media_tree/sound/i2c/other \
+media_tree/lib/lzo \
 contrib/dvb-usb \
 
 SRCS+= \
@@ -127,7 +131,6 @@ SRCS+= \
 	upd64031a.c \
 	upd64083.c \
 	ov7670.c \
-	tcm825x.c \
 	mt9v011.c \
 	sr030pc30.c \
 	ak881x.c \
@@ -160,6 +163,8 @@ SRCS+= \
 	e4000.c \
 	fc2580.c \
 	tua9001.c \
+	si2157.c \
+	m88ts2022.c \
 	fc0011.c \
 	fc0012.c \
 	fc0013.c \
@@ -235,6 +240,7 @@ SRCS+= \
 	cx24116.c \
 	cx24117.c \
 	si21xx.c \
+	si2168.c \
 	stv0288.c \
 	stb6000.c \
 	s921.c \
@@ -243,12 +249,14 @@ SRCS+= \
 	stv0900_sw.c \
 	stv090x.c \
 	stv6110x.c \
+	m88ds3103.c \
 	isl6423.c \
 	ec100.c \
 	hd29l2.c \
 	ds3000.c \
 	ts2020.c \
 	mb86a16.c \
+	drxj.c \
 	mb86a20s.c \
 	ix2505v.c \
 	stv0367.c \
@@ -258,14 +266,12 @@ SRCS+= \
 	cxd2820r_t2.c \
 	drxk_hard.c \
 	tda18271c2dd.c \
-	it913x-fe.c \
 	a8293.c \
 	tda10071.c \
 	rtl2830.c \
 	rtl2832.c \
 	m88rs2000.c \
 	af9033.c \
-	m88ds3103.c \
 	m88dc2800.c \
 	sit2.c \
 	v4l2-dev.c \
@@ -277,7 +283,6 @@ SRCS+= \
 	v4l2-subdev.c \
 	v4l2-clk.c \
 	v4l2-async.c \
-	v4l2-int-device.c \
 	v4l2-common.c \
 	v4l2-dv-timings.c \
 	tuner-core.c \
@@ -287,6 +292,7 @@ SRCS+= \
 	videobuf2-core.c \
 	videobuf2-memops.c \
 	videobuf2-vmalloc.c \
+	videobuf2-dvb.c \
 	dvbdev.c \
 	dmxdev.c \
 	dvb_demux.c \
@@ -397,6 +403,7 @@ SRCS+= \
 	rc-videomate-tv-pvr.c \
 	rc-winfast.c \
 	rc-winfast-usbii-deluxe.c \
+	rc-su3000.c \
 	rc-main.c \
 	ir-raw.c \
 	lirc_dev.c \
@@ -407,6 +414,7 @@ SRCS+= \
 	ir-sony-decoder.c \
 	ir-rc5-sz-decoder.c \
 	ir-sanyo-decoder.c \
+	ir-sharp-decoder.c \
 	ir-lirc-codec.c \
 	ati_remote.c \
 	imon.c \
@@ -485,7 +493,6 @@ SRCS+= \
 	az6007.c \
 	ce6230.c \
 	ec168.c \
-	it913x.c \
 	lmedm04.c \
 	gl861.c \
 	mxl111sf.c \
@@ -515,6 +522,7 @@ SRCS+= \
 	benq.c \
 	conex.c \
 	cpia1.c \
+	dtcs033.c \
 	etoms.c \
 	finepix.c \
 	jeilinj.c \
@@ -579,19 +587,6 @@ SRCS+= \
 	cpia2_v4l.c \
 	cpia2_usb.c \
 	cpia2_core.c \
-	sn9c102_core.c \
-	sn9c102_hv7131d.c \
-	sn9c102_hv7131r.c \
-	sn9c102_mi0343.c \
-	sn9c102_mi0360.c \
-	sn9c102_mt9v111.c \
-	sn9c102_ov7630.c \
-	sn9c102_ov7660.c \
-	sn9c102_pas106b.c \
-	sn9c102_pas202bcb.c \
-	sn9c102_tas5110c1b.c \
-	sn9c102_tas5110d.c \
-	sn9c102_tas5130d1b.c \
 	au0828-core.c \
 	au0828-i2c.c \
 	au0828-cards.c \
@@ -625,14 +620,15 @@ SRCS+= \
 	usbvision-video.c \
 	usbvision-i2c.c \
 	usbvision-cards.c \
-	em28xx-video.c \
+	em28xx-core.c \
 	em28xx-i2c.c \
 	em28xx-cards.c \
-	em28xx-core.c \
-	em28xx-vbi.c \
 	em28xx-camera.c \
+	em28xx-video.c \
+	em28xx-vbi.c \
 	em28xx-dvb.c \
-	usbtv.c \
+	usbtv-core.c \
+	usbtv-video.c \
 	radio-shark.c \
 	radio-shark2.c \
 	radio-tea5777.c \
@@ -644,6 +640,13 @@ SRCS+= \
 	saa7706h.c \
 	tef6862.c \
 	tea575x.c \
+	radio-raremono.c \
+	regmap.c \
+	regcache.c \
+	regcache-rbtree.c \
+	regcache-lzo.c \
+	regcache-flat.c \
+	regmap-i2c.c \
 	as102_drv.c \
 	as102_fw.c \
 	as10x_cmd.c \
@@ -653,7 +656,24 @@ SRCS+= \
 	as10x_cmd_cfg.c \
 	cxd2099.c \
 	lirc_igorplugusb.c \
-	sdr-msi3101.c \
+	sn9c102_core.c \
+	sn9c102_hv7131d.c \
+	sn9c102_hv7131r.c \
+	sn9c102_mi0343.c \
+	sn9c102_mi0360.c \
+	sn9c102_mt9v111.c \
+	sn9c102_ov7630.c \
+	sn9c102_ov7660.c \
+	sn9c102_pas106b.c \
+	sn9c102_pas202bcb.c \
+	sn9c102_tas5110c1b.c \
+	sn9c102_tas5110d.c \
+	sn9c102_tas5130d1b.c \
+	tcm825x.c \
+	v4l2-int-device.c \
+	rtl2832_sdr.c \
+	lzo1x_compress.c \
+	lzo1x_decompress_safe.c \
 	tbs-qboxs2.c \
 
 .if defined(LIB)

@@ -53,6 +53,9 @@ struct module_exit_struct {
 #define	late_initcall(func)	\
   TEXT_SET(linux_late_mod, func);
 
+#define	postcore_initcall(func)	\
+  TEXT_SET(linux_late_mod, func);
+
 #define	subsys_initcall(f) module_init(f)
 
 #define	module_usb_driver(x) \
@@ -69,6 +72,7 @@ module_exit(x##_exit)
 
 void	linux_parm(void);
 void	linux_init(void);
+void	linux_late(void);
 void	linux_exit(void);
 
 int	linux_module_init_end(void);

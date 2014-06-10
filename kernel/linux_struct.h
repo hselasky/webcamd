@@ -172,6 +172,7 @@ struct device {
 	void   *platform_data;
 	void   *driver_data;
 	const struct file_operations *fops;
+	const struct attribute_group *groups;
 	struct cdev *cdev;
 	struct class *class;
 	struct device_driver driver_static;
@@ -355,7 +356,6 @@ extern struct device_attribute dev_attr_pointer_mode;
 extern struct device_attribute dev_attr_poll;
 extern struct device_attribute dev_attr_product;
 extern struct device_attribute dev_attr_properties;
-extern struct device_attribute dev_attr_protocols;
 extern struct device_attribute dev_attr_rel;
 extern struct device_attribute dev_attr_size;
 extern struct device_attribute dev_attr_snd;

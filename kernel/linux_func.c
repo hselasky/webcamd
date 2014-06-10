@@ -269,6 +269,18 @@ devm_kzalloc(struct device *dev, size_t size, gfp_t gfp)
 }
 
 void   *
+devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
+{
+	return (malloc(size));
+}
+
+void
+devm_kfree(struct device *dev, void *ptr)
+{
+	free(ptr);
+}
+
+void   *
 dev_get_drvdata(const struct device *dev)
 {
 	return (dev->driver_data);
@@ -1234,6 +1246,23 @@ bitmap_clear(unsigned long *map, int start, int nr)
 	}
 }
 
+void
+bitmap_shift_right(unsigned long *dst, const unsigned long *src, int n, int nbits)
+{
+	int x;
+	int y;
+
+	for (x = 0; x < (nbits - n); x++) {
+		y = x + n;
+		if (src[y / BITS_PER_LONG] & BIT_MASK(y))
+			dst[x / BITS_PER_LONG] |= BIT_MASK(x);
+		else
+			dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
+	}
+	for ( ; x < nbits; x++)
+		dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
+}
+
 /*
  * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
  *
@@ -2034,6 +2063,23 @@ kstrtoint(const char *nptr, unsigned int base, int *res)
 	if (temp != (long long)(int)temp)
 		return (-ERANGE);
 
+	*res = temp;
+	return (0);
+}
+
+int
+kstrtoul(const char *nptr, unsigned int base, unsigned long *res)
+{
+	long long temp;
+	char *pp = NULL;
+
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoul(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
 	*res = temp;
 	return (0);
 }

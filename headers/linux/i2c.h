@@ -527,6 +527,7 @@ struct i2c_msg {
 #define I2C_FUNC_10BIT_ADDR		0x00000002
 #define I2C_FUNC_PROTOCOL_MANGLING	0x00000004 /* I2C_M_NOSTART etc. */
 #define I2C_FUNC_SMBUS_PEC		0x00000008
+#define I2C_FUNC_NOSTART		0x00000010 /* I2C_M_NOSTART */
 #define I2C_FUNC_SMBUS_BLOCK_PROC_CALL	0x00008000 /* SMBus 2.0 */
 #define I2C_FUNC_SMBUS_QUICK		0x00010000
 #define I2C_FUNC_SMBUS_READ_BYTE	0x00020000
@@ -751,5 +752,18 @@ static const unsigned short * const forces[] = { force,			\
 	force_##chip4, force_##chip5, force_##chip6,			\
 	force_##chip7, force_##chip8, NULL };				\
 I2C_CLIENT_INSMOD_COMMON
+
+static inline struct i2c_adapter *
+i2c_parent_is_i2c_adapter(const struct i2c_adapter *adapter)
+{
+#if IS_ENABLED(CONFIG_I2C_MUX)
+        struct device *parent = adapter->dev.parent;
+
+        if (parent != NULL)
+                return to_i2c_adapter(parent);
+        else
+#endif
+                return NULL;
+}
 #endif /* __KERNEL__ */
 #endif /* _LINUX_I2C_H */

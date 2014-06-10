@@ -60,6 +60,7 @@ typedef void (*usb_complete_t)(struct urb *);
 #define	USB_SPEED_FULL LIBUSB20_SPEED_FULL
 #define	USB_SPEED_HIGH LIBUSB20_SPEED_HIGH
 #define	USB_SPEED_VARIABLE LIBUSB20_SPEED_VARIABLE
+#define	USB_SPEED_WIRELESS LIBUSB20_SPEED_VARIABLE
 #define	USB_SPEED_SUPER LIBUSB20_SPEED_SUPER
 
 #define	USB_CTRL_GET_TIMEOUT    5000	/* ms */
@@ -774,5 +775,7 @@ int	usb_endpoint_maxp(const struct usb_endpoint_descriptor *);
 #define	usb_alloc_coherent(...) usb_buffer_alloc(__VA_ARGS__)
 #define	usb_free_coherent(...) usb_buffer_free(__VA_ARGS__)
 #define	usb_debug_root NULL
+
+#define	USB_STATE_URB_BUF 0x01
 
 #endif					/* _LINUX_USB_H_ */

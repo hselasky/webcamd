@@ -37,7 +37,6 @@ for F in \
 ../media_tree/include/uapi/linux/input.h \
 ../media_tree/include/linux/input.h \
 ../media_tree/drivers/staging/media/as102/as102_drv.h \
-../media_tree/drivers/staging/media/msi3101/sdr-msi3101.c \
 ../media_tree/drivers/media/usb/dvb-usb/usb-urb.c \
 ../media_tree/drivers/media/dvb/dvb-usb/usb-urb.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/usb_urb.c \
@@ -52,17 +51,14 @@ for F in \
 ../media_tree/drivers/media/dvb-frontends/cx24123.c \
 ../media_tree/drivers/media/dvb-frontends/dib3000mb.c \
 ../media_tree/drivers/media/dvb-frontends/dib3000mb_priv.h \
-../media_tree/drivers/media/dvb-frontends/it913x-fe.c \
 ../media_tree/drivers/media/dvb-frontends/m88rs2000.c \
 ../media_tree/drivers/media/dvb-frontends/tda18271c2dd.c \
 ../media_tree/drivers/media/dvb/frontends/cx24123.c \
 ../media_tree/drivers/media/dvb/frontends/dib3000mb.c \
 ../media_tree/drivers/media/dvb/frontends/dib3000mb_priv.h \
 ../media_tree/drivers/media/dvb/frontends/tda18271c2dd.c \
-../media_tree/drivers/media/dvb/frontends/it913x-fe.c \
 ../media_tree/drivers/media/dvb/frontends/m88rs2000.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/lmedm04.c \
-../media_tree/drivers/media/usb/dvb-usb-v2/it913x.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf-tuner.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf.c \
 ../media_tree/drivers/media/i2c/tvp514x.c \
@@ -100,21 +96,18 @@ find_media_file cx24123.c
 find_media_file dib3000mb.c
 find_media_file dib3000mb_priv.h
 find_media_file tda18271c2dd.c
-find_media_file it913x-fe.c
 find_media_file m88rs2000.c
 find_media_file lmedm04.c
-find_media_file it913x.c
 find_media_file mxl111sf-tuner.c
 find_media_file mxl111sf.c
 find_media_file wacom.h
 find_media_file tvp514x.c
 find_media_file adv7343.c
 find_media_file tvp7002.c
-find_media_file sdr-msi3101.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
-patch $OPT -R $(find_media_file uvcvideo.h) uvcvideo.h.diff
+patch $OPT $(find_media_file uvcvideo.h) uvcvideo.h.diff
 patch $OPT -R $(find_media_file v4l2-dev.c) v4l2-dev.c.diff
 patch $OPT $(find_media_file v4l2-async.c) v4l2-async.c.diff
 patch $OPT $(find_media_file videobuf2-core.c) videobuf2-core.c.diff
@@ -132,21 +125,18 @@ patch $OPT $(find_media_file wacom.h) wacom.h.diff
 patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
 patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
-patch $OPT $(find_media_file sdr-msi3101.c) sdr-msi3101.c.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)
 sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig $(find_media_file dib3000mb.c)
 sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/warn[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig $(find_media_file dib3000mb_priv.h)
 sed -e "s/sleep[(,]/do_&/g" -e "s/mdo_sleep/msleep/g" -i .orig $(find_media_file tda18271c2dd.c)
-sed -e "s/[ 	]info[(]/ itx_info(/g" -i .orig $(find_media_file it913x-fe.c)
 sed -e "s/[ 	]info[(]/ m88_info(/g" -i .orig $(find_media_file m88rs2000.c)
 sed -e "s/[ 	]info[(]/ med_info(/g" -i .orig $(find_media_file lmedm04.c)
-sed -e "s/[ 	]info[(]/ itx_info(/g" -i .orig $(find_media_file it913x.c)
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf-tuner.c)
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf.c)
 
 # DVBSKY support
-[ -f dvbsky-linux-3.9-hps-v2.diff ] && (cat dvbsky-linux-3.9-hps-v2.diff | patch $OPT -d ../media_tree -p1) && echo "Applied DVBSKY patches ..."
+[ -f dvbsky-linux-3.15-hps.diff ] && (cat dvbsky-linux-3.15-hps.diff | patch $OPT -d ../media_tree -p1) && echo "Applied DVBSKY patches ..."
 
 exit 0

@@ -137,12 +137,18 @@
 #define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_dbg_ratelimited(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_err_ratelimited(dev, fmt, ...) printk("ERR: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_info(dev, fmt, ...) printk("INFO: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_info_ratelimited(dev, fmt, ...) printk("INFO: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_warn(dev, fmt, ...) printk("WARN: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_warn_ratelimited(dev, fmt, ...) printk("WARN: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_notice(dev, fmt, ...) printk("NOTICE: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_notice_ratelimited(dev, fmt, ...) printk("NOTICE: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	info(fmt, ...) printk("INFO: " fmt "\n",## __VA_ARGS__)
 #define	warn(fmt, ...) printk("WARN: " fmt "\n",## __VA_ARGS__)
 #define	dbg(fmt, ...) printk("DBG: " fmt "\n",## __VA_ARGS__)
 #define	err(fmt, ...) printk("ERR: " fmt "\n",## __VA_ARGS__)
+#define	notice(fmt, ...) printk("NOTICE: " fmt "\n",## __VA_ARGS__)
 #define	kmem_cache_create(desc,size,align,arg,fn) ((struct kmem_cache *)(size))
 #define	kmem_cache_destroy(...) __nop
 #define	kmem_cache_free(ref,ptr) free(ptr)
@@ -150,6 +156,7 @@
 #define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, s)
+#define	krealloc(p,s,opt) realloc(p,s)
 #define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
 #define	dma_free_coherent(d,s,v,h) free(v)
 #define	vmalloc_32_user(s) malloc_vm(s)
@@ -218,6 +225,9 @@
 #ifndef BITS_PER_LONG
 #define	BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
 #endif
+#define	for_each_set_bit_from(b, addr, size) \
+    for ( ; (b) < (size); (b)++) \
+	if ((addr)[(b) / BITS_PER_LONG] & BIT((b) % BITS_PER_LONG))
 #define	BITS_TO_LONGS(n) (((n) + BITS_PER_LONG - 1) / BITS_PER_LONG)
 #define	BIT(n) (1UL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
@@ -234,6 +244,7 @@
 	asprintf(&temp_ptr, __VA_ARGS__);	\
 	temp_ptr;				\
 })
+#define	print_hex_dump(...) __nop
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	POLL_ERR POLLERR
 #define	IOCSIZE_MASK (_IOC_SIZEMASK << _IOC_SIZESHIFT)
@@ -287,9 +298,11 @@
 #define	KERN_NOTICE ""
 #define	BUG(...) __nop
 #define	WARN(x,...) ({ (x); })
+#define	WARN_ONCE(x,...) ({ (x); })
 #define	BUG_ON(x) ({ (x); })
 #define	WARN_ON(x) ({ (x); })
 #define	WARN_ON_ONCE(x) ({ (x); })
+#define	BUILD_BUG_ON(x) extern int dummy_array[(x) ? -1 : 1]
 #define	lockdep_set_class_and_name(...) __nop
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
@@ -308,8 +321,10 @@
 #define	assert_spin_locked(...) __nop
 #define	IS_ERR_VALUE(x) ((unsigned long)(x) >= (unsigned long)-(1<<14))
 #define	IS_ERR_OR_NULL(x) ((unsigned long)(x) == 0 || IS_ERR_VALUE(x))
+#define	ERR_CAST(x) ((void *)(long)(const void *)(x))
 #define	find_first_bit(addr, size) find_next_bit((addr), (size), 0)
 #define	find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
+#define	synchronize_sched() do { atomic_lock(); atomic_unlock(); } while (0)
 #define	signal_pending(...) check_signal()
 #define	down_write(...) __nop
 #define	down_read(...) __nop
@@ -326,6 +341,8 @@
 #define	smp_mb() mb()
 #define	smp_rmb() mb()
 #define	smp_mb__after_clear_bit() mb()
+#define	smp_mb__after_atomic() mb()
+#define	devres_find(...) NULL
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
 #define	replace_fops(f, fops) do {	\
@@ -348,6 +365,8 @@
 #define	time_is_after_eq_jiffies(a) time_before_eq(jiffies,a)
 #define	time_is_before_eq_jiffies(a) time_after_eq(jiffies,a)
 #define	__attribute_const__
+#undef __always_inline
+#define	__always_inline inline
 #define	noinline
 #define	__cpu_to_be64(x) cpu_to_be64(x)
 #define	__cpu_to_be32(x) cpu_to_be32(x)
@@ -367,6 +386,9 @@
 #define	__be64_to_cpus(p) be64_to_cpus(p)
 #define	__be32_to_cpus(p) be32_to_cpus(p)
 #define	__be16_to_cpus(p) be16_to_cpus(p)
+#define GP_DECONST(ptr) ((void *)(long)(ptr))
+#define	get_unaligned(x) ({ __typeof(*(x)) __temp; memcpy(GP_DECONST(&__temp), (x), sizeof(__temp)); __temp; })
+#define	put_unaligned(x, y) do { __typeof(*(y)) __temp = (x); memcpy((y), GP_DECONST(&__temp), sizeof(__temp)); } while (0)
 #define	NSEC_PER_USEC	1000
 #define	simple_strtoul strtoul
 #define	strict_strtoul(a,b,c) ({char *_pp; *(c) = strtoul(a,&_pp,b); _pp;})
@@ -384,6 +406,7 @@
 #define	wmb() __nop
 #define	min_t(cast,x,y) ((((cast)(x)) < ((cast)(y))) ? (cast)(x) : (cast)(y))
 #define	max_t(cast,x,y) ((((cast)(x)) > ((cast)(y))) ? (cast)(x) : (cast)(y))
+#define	clamp_val(x,y,z) clamp_t(typeof(x),x,y,z)
 #define	clamp(x,y,z) clamp_t(typeof(x),x,y,z)
 #define	clamp_t(cast,x,y,z) \
 ((cast)((((cast)(x)) < ((cast)(y))) ? ((cast)(y)) : \

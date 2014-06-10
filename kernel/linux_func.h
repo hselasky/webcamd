@@ -63,6 +63,8 @@ uint16_t get_unaligned_be16(const void *);
 uint16_t get_unaligned_le16(const void *);
 
 void   *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp);
+void   *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp);
+void	devm_kfree(struct device *dev, void *ptr);
 void   *dev_get_drvdata(const struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
 const char *dev_name(struct device *dev);
@@ -183,6 +185,7 @@ void	bitmap_zero(unsigned long *dst, int nbits);
 int	bitmap_subset(const unsigned long *, const unsigned long *, int);
 int	bitmap_full(const unsigned long *, int);
 void	bitmap_clear(unsigned long *, int, int);
+void	bitmap_shift_right(unsigned long *, const unsigned long *, int, int);
 int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
@@ -251,6 +254,7 @@ int	nonseekable_open(struct inode *inode, struct file *filp);
 int	kstrtos16(const char *, unsigned int, int16_t *);
 int	kstrtou16(const char *, unsigned int, uint16_t *);
 
+int	kstrtoul(const char *, unsigned int, unsigned long *);
 int	kstrtouint(const char *, unsigned int, unsigned int *);
 int	kstrtoint(const char *, unsigned int, int *);
 

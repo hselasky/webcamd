@@ -26,6 +26,9 @@
 /* NOTE: This code derives from i2c-core.c in Linux */
 
 #include <linux/i2c.h>
+#include <linux/idr.h>
+
+static DEFINE_IDR(i2c_adapter_idr);
 
 int
 i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
@@ -102,6 +105,30 @@ i2c_register_adapter(struct i2c_adapter *adap)
 	res = device_register(&adap->dev);
 
 	return (res);
+}
+
+static int
+i2c_add_numbered_adapter_sub(struct i2c_adapter *adap)
+{
+	int id;
+
+	atomic_lock();
+	id = idr_alloc(&i2c_adapter_idr, adap, adap->nr, adap->nr + 1,
+		       GFP_KERNEL);
+	atomic_unlock();
+	if (id < 0)
+		return ((id == -ENOSPC) ? -EBUSY : id);
+
+	return (i2c_register_adapter(adap));
+}
+
+int
+i2c_add_numbered_adapter(struct i2c_adapter *adap)
+{
+        if (adap->nr == -1) /* -1 means dynamically assign bus id */
+		return (i2c_add_adapter(adap));
+
+        return (i2c_add_numbered_adapter_sub(adap));
 }
 
 int

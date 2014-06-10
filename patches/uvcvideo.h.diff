@@ -1,16 +1,16 @@
-diff -u -r media_tree/drivers/media/video/uvc/uvcvideo.h media_tree/drivers/media/video/uvc/uvcvideo.h
---- media_tree/drivers/media/video/uvc/uvcvideo.h	2011-10-10 18:59:06.000000000 +0200
-+++ media_tree/drivers/media/video/uvc/uvcvideo.h	2012-01-05 17:11:09.000000000 +0100
-@@ -186,9 +186,9 @@
+diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
+index b1f69a6..e7c2233 100644
+--- a/drivers/media/usb/uvc/uvcvideo.h
++++ b/drivers/media/usb/uvc/uvcvideo.h
+@@ -124,9 +124,9 @@
  #define DRIVER_VERSION		"1.1.1"
  
  /* Number of isochronous URBs. */
--#define UVC_URBS		2U
-+#define UVC_URBS		5
+-#define UVC_URBS		5
++#define UVC_URBS		2U
  /* Maximum number of packets per URB. */
--#define UVC_MAX_PACKETS		128U	/* at 8000 FPS */
-+#define UVC_MAX_PACKETS		32
- /* Maximum number of video buffers. */
- #define UVC_MAX_VIDEO_BUFFERS	32
+-#define UVC_MAX_PACKETS		32
++#define UVC_MAX_PACKETS		128U	/* at 8000 FPS */
  /* Maximum status buffer size in bytes of interrupt URB. */
-
+ #define UVC_MAX_STATUS_SIZE	16
+ 

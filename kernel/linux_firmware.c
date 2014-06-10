@@ -25,8 +25,7 @@
 
 extern char global_fw_prefix[];
 
-#define	FW_DECONST(ptr) \
-	((void *)((const uint8_t *)(ptr) - (const uint8_t *)(0)))
+#define	FW_DECONST(ptr) ((void *)(long)(ptr))
 
 struct firmware_cb_arg {
 	const struct firmware *pfw;

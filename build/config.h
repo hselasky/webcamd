@@ -11,6 +11,7 @@
 #undef	CONFIG_BLACKFIN /* n */
 #undef	CONFIG_COMPAT /* n */
 #define	CONFIG_CYPRESS_FIRMWARE /* y */
+#undef	CONFIG_DEBUG_FS /* n */
 #define	CONFIG_DVB_A8293 /* y */
 #define	CONFIG_DVB_AF9013 /* y */
 #define	CONFIG_DVB_AF9033 /* y */
@@ -47,6 +48,7 @@
 #define	CONFIG_DVB_DIB8000 /* y */
 #define	CONFIG_DVB_DIB9000 /* y */
 #undef	CONFIG_DVB_DM1105 /* n */
+#define	CONFIG_DVB_DRX39XYJ /* y */
 #define	CONFIG_DVB_DRXD /* y */
 #define	CONFIG_DVB_DRXK /* y */
 #define	CONFIG_DVB_DS3000 /* y */
@@ -91,11 +93,13 @@
 #undef	CONFIG_DVB_PT1 /* n */
 #define	CONFIG_DVB_RTL2830 /* y */
 #define	CONFIG_DVB_RTL2832 /* y */
+#define	CONFIG_DVB_RTL2832_SDR /* y */
 #define	CONFIG_DVB_S5H1409 /* y */
 #define	CONFIG_DVB_S5H1411 /* y */
 #define	CONFIG_DVB_S5H1420 /* y */
 #define	CONFIG_DVB_S5H1432 /* y */
 #define	CONFIG_DVB_S921 /* y */
+#define	CONFIG_DVB_SI2168 /* y */
 #define	CONFIG_DVB_SI21XX /* y */
 #define	CONFIG_DVB_SIT2 /* y */
 #define	CONFIG_DVB_SP8870 /* y */
@@ -178,8 +182,9 @@
 #define	CONFIG_DVB_ZL10353 /* y */
 #define	CONFIG_FW_LOADER /* y */
 #define	CONFIG_I2C /* y */
+#undef	CONFIG_I2C_BCM2048 /* n */
+#define	CONFIG_I2C_MUX /* y */
 #define	CONFIG_I2C_SI470X /* y */
-#undef	CONFIG_I2C_SI4713 /* n */
 #define	CONFIG_INPUT /* y */
 #undef	CONFIG_INPUT_APMPOWER /* n */
 #undef	CONFIG_INPUT_EVBUG /* n */
@@ -201,6 +206,7 @@
 #undef	CONFIG_IR_FINTEK /* n */
 #undef	CONFIG_IR_GPIO_CIR /* n */
 #define	CONFIG_IR_IGUANA /* y */
+#undef	CONFIG_IR_IMG /* n */
 #define	CONFIG_IR_IMON /* y */
 #undef	CONFIG_IR_ITE_CIR /* n */
 #define	CONFIG_IR_JVC_DECODER /* y */
@@ -215,6 +221,7 @@
 #define	CONFIG_IR_REDRAT3 /* y */
 #undef	CONFIG_IR_RX51 /* n */
 #define	CONFIG_IR_SANYO_DECODER /* y */
+#define	CONFIG_IR_SHARP_DECODER /* y */
 #define	CONFIG_IR_SONY_DECODER /* y */
 #define	CONFIG_IR_STREAMZAP /* y */
 #define	CONFIG_IR_TTUSBIR /* y */
@@ -257,6 +264,8 @@
 #undef	CONFIG_LIRC_SIR /* n */
 #define	CONFIG_LIRC_STAGING /* y */
 #undef	CONFIG_LIRC_ZILOG /* n */
+#define	CONFIG_LZO_COMPRESS /* y */
+#define	CONFIG_LZO_DECOMPRESS /* y */
 #undef	CONFIG_MANTIS_CORE /* n */
 #undef	CONFIG_MEDIA_CONTROLLER /* n */
 #define	CONFIG_MEDIA_TUNER_E4000 /* y */
@@ -265,6 +274,7 @@
 #define	CONFIG_MEDIA_TUNER_FC0013 /* y */
 #define	CONFIG_MEDIA_TUNER_FC2580 /* y */
 #define	CONFIG_MEDIA_TUNER_IT913X /* y */
+#define	CONFIG_MEDIA_TUNER_M88TS2022 /* y */
 #define	CONFIG_MEDIA_TUNER_MAX2165 /* y */
 #define	CONFIG_MEDIA_TUNER_MC44S803 /* y */
 #define	CONFIG_MEDIA_TUNER_MT2060 /* y */
@@ -276,6 +286,7 @@
 #define	CONFIG_MEDIA_TUNER_MXL5007T /* y */
 #define	CONFIG_MEDIA_TUNER_QT1010 /* y */
 #define	CONFIG_MEDIA_TUNER_R820T /* y */
+#define	CONFIG_MEDIA_TUNER_SI2157 /* y */
 #define	CONFIG_MEDIA_TUNER_SIMPLE /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18212 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18218 /* y */
@@ -322,6 +333,12 @@
 #undef	CONFIG_RC_LOOPBACK /* n */
 #define	CONFIG_RC_MAP /* y */
 #undef	CONFIG_RC_ST /* n */
+#define	CONFIG_REGMAP /* y */
+#define	CONFIG_REGMAP_I2C /* y */
+#undef	CONFIG_REGMAP_IRQ /* n */
+#undef	CONFIG_REGMAP_MMIO /* n */
+#undef	CONFIG_REGMAP_SPI /* n */
+#undef	CONFIG_REGMAP_SPMI /* n */
 #undef	CONFIG_SMS_SDIO_DRV /* n */
 #undef	CONFIG_SMS_SIANO_DEBUGFS /* n */
 #define	CONFIG_SMS_SIANO_MDTV /* y */
@@ -361,7 +378,6 @@
 #undef	CONFIG_TOUCHSCREEN_AD7879_SPI /* n */
 #undef	CONFIG_TOUCHSCREEN_ADS7846 /* n */
 #undef	CONFIG_TOUCHSCREEN_ATMEL_MXT /* n */
-#undef	CONFIG_TOUCHSCREEN_ATMEL_TSADCC /* n */
 #undef	CONFIG_TOUCHSCREEN_AUO_PIXCIR /* n */
 #undef	CONFIG_TOUCHSCREEN_BU21013 /* n */
 #undef	CONFIG_TOUCHSCREEN_CY8CTMG110 /* n */
@@ -403,7 +419,6 @@
 #undef	CONFIG_TOUCHSCREEN_STMPE /* n */
 #define	CONFIG_TOUCHSCREEN_SUR40 /* y */
 #undef	CONFIG_TOUCHSCREEN_TI_AM335X_TSC /* n */
-#undef	CONFIG_TOUCHSCREEN_TNETV107X /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHIT213 /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHRIGHT /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHWIN /* n */
@@ -450,6 +465,7 @@
 #define	CONFIG_USB_GSPCA_BENQ /* y */
 #define	CONFIG_USB_GSPCA_CONEX /* y */
 #define	CONFIG_USB_GSPCA_CPIA1 /* y */
+#define	CONFIG_USB_GSPCA_DTCS033 /* y */
 #define	CONFIG_USB_GSPCA_ETOMS /* y */
 #define	CONFIG_USB_GSPCA_FINEPIX /* y */
 #define	CONFIG_USB_GSPCA_JEILINJ /* y */
@@ -495,8 +511,9 @@
 #define	CONFIG_USB_M5602 /* y */
 #define	CONFIG_USB_MA901 /* y */
 #define	CONFIG_USB_MR800 /* y */
-#define	CONFIG_USB_MSI3101 /* y */
+#undef	CONFIG_USB_MSI3101 /* n */
 #define	CONFIG_USB_PWC /* y */
+#define	CONFIG_USB_RAREMONO /* y */
 #define	CONFIG_USB_S2255 /* y */
 #define	CONFIG_USB_SI470X /* y */
 #define	CONFIG_USB_SN9C102 /* y */
@@ -508,6 +525,7 @@
 #define	CONFIG_VIDEOBUF2_CORE /* y */
 #undef	CONFIG_VIDEOBUF2_DMA_CONTIG /* n */
 #undef	CONFIG_VIDEOBUF2_DMA_SG /* n */
+#define	CONFIG_VIDEOBUF2_DVB /* y */
 #define	CONFIG_VIDEOBUF2_MEMOPS /* y */
 #define	CONFIG_VIDEOBUF2_VMALLOC /* y */
 #undef	CONFIG_VIDEOBUF_DMA_CONTIG /* n */
@@ -563,6 +581,7 @@
 #undef	CONFIG_VIDEO_EM28XX_ALSA /* n */
 #define	CONFIG_VIDEO_EM28XX_DVB /* y */
 #undef	CONFIG_VIDEO_EM28XX_RC /* n */
+#define	CONFIG_VIDEO_EM28XX_V4L2 /* y */
 #undef	CONFIG_VIDEO_GO7007 /* n */
 #define	CONFIG_VIDEO_HDPVR /* y */
 #undef	CONFIG_VIDEO_HEXIUM_GEMINI /* n */
@@ -572,6 +591,7 @@
 #undef	CONFIG_VIDEO_IVTV /* n */
 #define	CONFIG_VIDEO_KS0127 /* y */
 #undef	CONFIG_VIDEO_LM3560 /* n */
+#undef	CONFIG_VIDEO_LM3646 /* n */
 #undef	CONFIG_VIDEO_M32R_AR_M64278 /* n */
 #define	CONFIG_VIDEO_M52790 /* y */
 #undef	CONFIG_VIDEO_M5MOLS /* n */
@@ -591,6 +611,7 @@
 #undef	CONFIG_VIDEO_NOON010PC30 /* n */
 #undef	CONFIG_VIDEO_OMAP2 /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
+#undef	CONFIG_VIDEO_OMAP4 /* n */
 #undef	CONFIG_VIDEO_OV7640 /* n */
 #define	CONFIG_VIDEO_OV7670 /* y */
 #undef	CONFIG_VIDEO_OV9650 /* n */
@@ -603,8 +624,11 @@
 #undef	CONFIG_VIDEO_S3C_CAMIF /* n */
 #undef	CONFIG_VIDEO_S5C73M3 /* n */
 #undef	CONFIG_VIDEO_S5K4ECGX /* n */
+#undef	CONFIG_VIDEO_S5K5BAF /* n */
+#undef	CONFIG_VIDEO_S5K6A3 /* n */
 #undef	CONFIG_VIDEO_S5K6AA /* n */
 #define	CONFIG_VIDEO_SAA6588 /* y */
+#undef	CONFIG_VIDEO_SAA6752HS /* n */
 #define	CONFIG_VIDEO_SAA7110 /* y */
 #define	CONFIG_VIDEO_SAA711X /* y */
 #define	CONFIG_VIDEO_SAA7127 /* y */

@@ -64,7 +64,6 @@ struct device_attribute dev_attr_pointer_mode;
 struct device_attribute dev_attr_poll;
 struct device_attribute dev_attr_product;
 struct device_attribute dev_attr_properties;
-struct device_attribute dev_attr_protocols;
 struct device_attribute dev_attr_rel;
 struct device_attribute dev_attr_size;
 struct device_attribute dev_attr_snd;
@@ -82,3 +81,4 @@ struct device_attribute dev_attr_version;
 struct device_attribute dev_attr_wheel;
 struct device_attribute dev_attr_xtilt;
 struct device_attribute dev_attr_ytilt;
+

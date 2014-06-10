@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.13.0.7
+VERSION=	3.15.0.1
 PROG=		webcamd
 
 #
@@ -163,6 +163,11 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/common/b2c2
 CFLAGS+= -I${LINUXDIR}/drivers/media/usb/gspca
 CFLAGS+= -I${LINUXDIR}/drivers/media/usb/dvb-usb
 
+#
+# 3.15 paths
+#
+CFLAGS+= -I${LINUXDIR}/drivers/media/usb/dvb-usb-v2
+
 CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}/include/uapi
 
@@ -194,6 +199,7 @@ LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd ${PTHREAD_LIBS} -lutil
 #
 SRCS+= kfifo.c
 SRCS+= idr.c
+SRCS+= rbtree.c
 
 #
 # List of FreeBSD specific sources
@@ -209,6 +215,7 @@ SRCS+= linux_timer.c
 SRCS+= linux_usb.c
 SRCS+= linux_firmware.c
 SRCS+= linux_i2c.c
+SRCS+= linux_i2c_mux.c
 SRCS+= linux_mod_param.c
 
 SRCS+= webcamd.c
@@ -263,6 +270,7 @@ package:
 		media_tree/CREDITS \
 		media_tree/README \
 		media_tree/include \
+		media_tree/lib/rbtree.c \
 		media_tree/lib/idr.c \
 		media_tree/lib/kfifo.c \
 		patches/do_patch.sh \
@@ -320,7 +328,9 @@ configure: tools/linux_make/linux_make
 	tools/linux_make/linux_make -c config \
 		-i media_tree/drivers/input \
 		-i media_tree/drivers/media \
+		-i media_tree/drivers/base/regmap \
 		-i media_tree/drivers/staging/media \
 		-i media_tree/sound/i2c/other \
+		-i media_tree/lib/lzo \
 		-i contrib/dvb-usb \
 		-o build/
