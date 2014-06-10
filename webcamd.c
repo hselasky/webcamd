@@ -43,6 +43,8 @@
 
 #include <webcamd_hal.h>
 
+#include <linux/idr.h>
+
 static cuse_open_t v4b_open;
 static cuse_close_t v4b_close;
 static cuse_read_t v4b_read;
@@ -703,6 +705,11 @@ main(int argc, char **argv)
 
 	if (vtuner_client && vtuner_server)
 		v4b_errx(1, "Cannot specify both vTuner server and client");
+
+	/* system init */
+
+	thread_init();
+	idr_init_cache();
 
 	/* run rest of Linux init code */
 
