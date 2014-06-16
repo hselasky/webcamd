@@ -189,8 +189,10 @@ i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 			client->driver = drv;
 			client->dev.driver = &drv->driver;
 
-			if (drv->probe == NULL)
+			if (drv->probe == NULL) {
+				status = 0;
 				break;
+			}
 			status = drv->probe(client, drv->id_table + i);
 			if (status == 0)
 				break;
