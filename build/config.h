@@ -302,6 +302,7 @@
 #define	CONFIG_MEDIA_TUNER_XC5000 /* y */
 #define	CONFIG_MMU /* y */
 #undef	CONFIG_OF /* n */
+#undef	CONFIG_OF_TOUCHSCREEN /* n */
 #undef	CONFIG_RADIO_AZTECH /* n */
 #undef	CONFIG_RADIO_CADET /* n */
 #undef	CONFIG_RADIO_GEMTEK /* n */
@@ -417,6 +418,7 @@
 #undef	CONFIG_TOUCHSCREEN_S3C2410 /* n */
 #undef	CONFIG_TOUCHSCREEN_ST1232 /* n */
 #undef	CONFIG_TOUCHSCREEN_STMPE /* n */
+#undef	CONFIG_TOUCHSCREEN_SUN4I /* n */
 #define	CONFIG_TOUCHSCREEN_SUR40 /* y */
 #undef	CONFIG_TOUCHSCREEN_TI_AM335X_TSC /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHIT213 /* n */
