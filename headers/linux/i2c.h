@@ -170,6 +170,7 @@ struct i2c_driver {
 	int (*detect)(struct i2c_client *, int kind, struct i2c_board_info *);
 	const struct i2c_client_address_data *address_data;
 	struct list_head clients;
+	TAILQ_ENTRY(i2c_driver) entry;
 };
 #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
 

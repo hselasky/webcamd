@@ -28,7 +28,8 @@
 #include <linux/i2c.h>
 #include <linux/idr.h>
 
-static DEFINE_IDR(i2c_adapter_idr);
+static	DEFINE_IDR(i2c_adapter_idr);
+static TAILQ_HEAD(, i2c_driver) i2c_driver_head = TAILQ_HEAD_INITIALIZER(i2c_driver_head);
 
 int
 i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
@@ -83,13 +84,14 @@ __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 int
 i2c_register_driver(struct module *mod, struct i2c_driver *drv)
 {
+	TAILQ_INSERT_TAIL(&i2c_driver_head, drv, entry);
 	return (0);
 }
 
 void
 i2c_del_driver(struct i2c_driver *drv)
 {
-
+	TAILQ_REMOVE(&i2c_driver_head, drv, entry);
 }
 
 static int
@@ -114,7 +116,7 @@ i2c_add_numbered_adapter_sub(struct i2c_adapter *adap)
 
 	atomic_lock();
 	id = idr_alloc(&i2c_adapter_idr, adap, adap->nr, adap->nr + 1,
-		       GFP_KERNEL);
+	    GFP_KERNEL);
 	atomic_unlock();
 	if (id < 0)
 		return ((id == -ENOSPC) ? -EBUSY : id);
@@ -125,10 +127,10 @@ i2c_add_numbered_adapter_sub(struct i2c_adapter *adap)
 int
 i2c_add_numbered_adapter(struct i2c_adapter *adap)
 {
-        if (adap->nr == -1) /* -1 means dynamically assign bus id */
+	if (adap->nr == -1)		/* -1 means dynamically assign bus id */
 		return (i2c_add_adapter(adap));
 
-        return (i2c_add_numbered_adapter_sub(adap));
+	return (i2c_add_numbered_adapter_sub(adap));
 }
 
 int
@@ -152,11 +154,56 @@ i2c_del_adapter(struct i2c_adapter *adapt)
 struct i2c_client *
 i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 {
-	static struct i2c_client dummy;
-	/* Fake successful return value. This address should not be used. */
-	return (&dummy);
-}
+	struct i2c_client *client;
+	struct i2c_driver *drv;
+	int status = -1;
 
+	client = kzalloc(sizeof(*client), GFP_KERNEL);
+	if (client == NULL)
+		return (NULL);
+
+	client->adapter = adapt;
+
+	client->dev.platform_data = info->platform_data;
+
+	client->flags = info->flags;
+	client->addr = info->addr;
+	client->irq = info->irq;
+
+	strlcpy(client->name, info->type, sizeof(client->name));
+
+	client->dev.parent = &client->adapter->dev;
+
+	/* For 10-bit clients, add an arbitrary offset to avoid collisions */
+	dev_set_name(&client->dev, "%d-%04x", i2c_adapter_id(adapt),
+	    client->addr | ((client->flags & I2C_CLIENT_TEN)
+	    ? 0xa000 : 0));
+
+	TAILQ_FOREACH(drv, &i2c_driver_head, entry) {
+		uint32_t i;
+
+		for (i = 0; drv->id_table != NULL &&
+		    drv->id_table[i].name[0] != 0; i++) {
+			if (strcmp(drv->id_table[i].name, client->name) != 0)
+				continue;
+			client->driver = drv;
+			client->dev.driver = &drv->driver;
+
+			if (drv->probe == NULL)
+				break;
+			status = drv->probe(client, drv->id_table + i);
+			if (status == 0)
+				break;
+			client->driver = NULL;
+			client->dev.driver = NULL;
+		}
+	}
+	if (status != 0) {
+		kfree(client);
+		return (NULL);
+	}
+	return (client);
+}
 
 struct i2c_client *
 i2c_new_probed_device(struct i2c_adapter *adapt,
@@ -170,6 +217,13 @@ i2c_new_probed_device(struct i2c_adapter *adapt,
 void
 i2c_unregister_device(struct i2c_client *client)
 {
+	if (client == NULL)
+		return;
+
+	if (client->driver != NULL && client->driver->remove != NULL)
+		client->driver->remove(client);
+
+	kfree(client);
 }
 
 int
@@ -609,6 +663,5 @@ i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr, unsigned short flags,
 struct i2c_client *
 i2c_verify_client(struct device *dev)
 {
-	return NULL;		/* NOT supported */
+	return NULL;			/* NOT supported */
 }
-
