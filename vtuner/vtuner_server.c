@@ -468,6 +468,7 @@ vtuners_listen(const char *host, const char *port, int buffer)
 			continue;
 
 		flag = 1;
+		setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flag, (int)sizeof(flag));
 		setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &flag, (int)sizeof(flag));
 
 		setsockopt(s, SOL_SOCKET, SO_SNDBUF, &buffer, (int)sizeof(buffer));
