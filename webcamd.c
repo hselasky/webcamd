@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <grp.h>
 #include <pwd.h>
+#include <sysexits.h>
 
 #include <libutil.h>
 
@@ -89,11 +90,14 @@ const char *webcamd_devnames[F_V4B_MAX] = {
 	[F_V4B_JOYDEV] = "Einput/js%d",
 };
 
-static int u_unit = 0;
-static int u_addr = 0;
-static int u_index = 0;
+static int u_unit;
+static int u_addr;
+static int u_index;
 static int u_videodev = -1;
-static int do_fork = 0;
+static const char *u_devicename;
+static const char *u_serialname;
+static int do_list;
+static int do_fork;
 static int do_realtime = 1;
 static struct pidfh *local_pid = NULL;
 static const char *d_desc;
@@ -420,6 +424,9 @@ usage(void)
 	    "	-i <interface number>\n"
 	    "	-m <parameter>=<value>\n"
 	    "	-s Show available parameters\n"
+	    "	-l Show available USB devices\n"
+	    "	-S <SerialNumberString> as output by -l option\n"
+	    "	-N <DeviceNameString> as output by -l option\n"
 	    "	-v <video device number>\n"
 	    "	-B Run in background\n"
 	    "	-f <firmware path> [%s]\n"
@@ -432,7 +439,76 @@ usage(void)
 	    "	-h Print help\n",
 	    global_fw_prefix
 	);
-	exit(1);
+	exit(EX_USAGE);
+}
+
+static void
+find_devices(void)
+{
+	struct LIBUSB20_DEVICE_DESC_DECODED *pddesc;
+	struct libusb20_backend *pbe;
+	struct libusb20_device *pdev;
+	const char *ptr;
+	char ser[128];
+	char txt[128];
+	char *sub;
+	int found = 0;
+
+	pbe = libusb20_be_alloc_default();
+	if (pbe == NULL)
+		return;
+
+	pdev = NULL;
+	while ((pdev = libusb20_be_device_foreach(pbe, pdev))) {
+		if (libusb20_dev_get_mode(pdev) != LIBUSB20_MODE_HOST)
+			continue;
+
+		ptr = libusb20_dev_get_desc(pdev);
+		if (ptr != NULL) {
+			sub = strchr(ptr, '<');
+			if (sub == NULL)
+				strlcpy(txt, "unknown", sizeof(txt));
+			else
+				strlcpy(txt, sub + 1, sizeof(txt));
+			sub = strchr(txt, '>');
+			if (sub != NULL)
+				*sub = 0;
+		} else {
+			strlcpy(txt, "unknown", sizeof(txt));
+		}
+
+		pddesc = libusb20_dev_get_device_desc(pdev);
+		if (pddesc == NULL || pddesc->iSerialNumber == 0 ||
+		    libusb20_dev_open(pdev, 0) != 0 ||
+		    libusb20_dev_req_string_simple_sync(pdev,
+		    pddesc->iSerialNumber, ser, sizeof(ser)) != 0) {
+			strlcpy(ser, "unknown", sizeof(ser));
+		}
+		libusb20_dev_close(pdev);
+		if (do_list) {
+			printf("webcamd -d ugen%u.%u -N \"%s\" -S \"%s\"\n",
+			    libusb20_dev_get_bus_number(pdev),
+			    libusb20_dev_get_address(pdev),
+			    txt, ser);
+		}
+		if ((u_devicename == NULL || strcmp(txt, u_devicename) == 0) &&
+		    (u_serialname == NULL || strcmp(ser, u_serialname) == 0) &&
+		    (u_unit == 0 || (libusb20_dev_get_address(pdev) == u_addr &&
+		    libusb20_dev_get_bus_number(pdev) == u_unit))) {
+			u_unit = libusb20_dev_get_bus_number(pdev);
+			u_addr = libusb20_dev_get_address(pdev);
+			found = 1;
+			if (do_list == 0)
+				break;
+		}
+	}
+	libusb20_be_free(pbe);
+
+	if (do_list != 0)
+		exit(0);
+
+	if (found == 0)
+		v4b_errx(EX_SOFTWARE, "No USB device match found");
 }
 
 static void
@@ -479,7 +555,7 @@ id(const char *name, const char *type)
 
 	val = strtoul(name, &ep, 10);
 	if (*ep != '\0')
-		v4b_errx(1, "%s: illegal %s name", name, type);
+		v4b_errx(EX_USAGE, "%s: illegal %s name", name, type);
 	return (val);
 }
 
@@ -504,7 +580,7 @@ a_uid(const char *s)
 int
 main(int argc, char **argv)
 {
-	const char *params = "Bd:f:i:m:sv:hHrU:G:D:L:";
+	const char *params = "N:Bd:f:i:m:S:sv:hHrU:G:D:lL:";
 	char *ptr;
 	int opt;
 
@@ -521,6 +597,18 @@ main(int argc, char **argv)
 
 			if (sscanf(ptr, "%d.%d", &u_unit, &u_addr) != 2)
 				usage();
+			break;
+
+		case 'N':
+			u_devicename = optarg;
+			break;
+
+		case 'S':
+			u_serialname = optarg;
+			break;
+
+		case 'l':
+			do_list = 1;
 			break;
 
 		case 'i':
@@ -574,24 +662,27 @@ main(int argc, char **argv)
 	if (!gid_found)
 		a_gid("webcamd");
 
+	if (u_devicename != NULL || u_serialname != NULL || do_list != 0)
+		find_devices();
+
 	if (do_fork) {
 		/* need to daemonise before creating any threads */
 
 		if (u_addr == 0)
-			v4b_errx(1, "-B options requires a valid -d option");
+			v4b_errx(EX_USAGE, "-B options requires a valid -d or -S or -N option");
 
 		if (pidfile_create(u_unit, u_addr, u_index)) {
 			fprintf(stderr, "Webcamd is already running for "
 			    "ugen%d.%d.%d\n", u_unit, u_addr, u_index);
-			exit(1);
+			exit(EX_USAGE);
 		}
 		if (daemon(0, 0) != 0)
-			v4b_errx(1, "Cannot daemonize");
+			v4b_errx(EX_USAGE, "Cannot daemonize");
 	}
 	atexit(&v4b_exit);
 
 	if (cuse_init() != 0) {
-		v4b_errx(1, "Could not open /dev/cuse. "
+		v4b_errx(EX_USAGE, "Could not open /dev/cuse. "
 		    "Did you kldload cuse4bsd?");
 	}
 	if (do_realtime != 0) {
@@ -624,7 +715,7 @@ main(int argc, char **argv)
 		case 'm':
 			ptr = strstr(optarg, "=");
 			if (ptr == NULL) {
-				v4b_errx(1, "invalid parameter for "
+				v4b_errx(EX_USAGE, "invalid parameter for "
 				    "-m option: '%s'", optarg);
 			}
 			*ptr = 0;
@@ -638,13 +729,13 @@ main(int argc, char **argv)
 			host = optarg;
 			port = strstr(host, ":");
 			if (port == NULL) {
-				v4b_errx(1, "invalid syntax for "
+				v4b_errx(EX_USAGE, "invalid syntax for "
 				    "-D option: '%s'", optarg);
 			}
 			*port++ = 0;
 			ndev = strstr(port, ":");
 			if (ndev == NULL) {
-				v4b_errx(1, "invalid syntax for "
+				v4b_errx(EX_USAGE, "invalid syntax for "
 				    "-D option: '%s'", port);
 			}
 			*ndev++ = 0;
@@ -655,7 +746,7 @@ main(int argc, char **argv)
 			if (mod_set_param("vtuner_client.devices", ndev) < 0 ||
 			    mod_set_param("vtuner_client.host", host) < 0 ||
 			    mod_set_param("vtuner_client.port", port) < 0) {
-				v4b_errx(1, "Cannot set all module "
+				v4b_errx(EX_USAGE, "Cannot set all module "
 				    "parameters for vTuner client.");
 			}
 			break;
@@ -664,13 +755,13 @@ main(int argc, char **argv)
 			host = optarg;
 			port = strstr(host, ":");
 			if (port == NULL) {
-				v4b_errx(1, "invalid syntax for "
+				v4b_errx(EX_USAGE, "invalid syntax for "
 				    "-L option: '%s'", optarg);
 			}
 			*port++ = 0;
 			ndev = strstr(port, ":");
 			if (ndev == NULL) {
-				v4b_errx(1, "invalid syntax for "
+				v4b_errx(EX_USAGE, "invalid syntax for "
 				    "-L option: '%s'", port);
 			}
 			*ndev++ = 0;
@@ -681,7 +772,7 @@ main(int argc, char **argv)
 			if (mod_set_param("vtuner_server.devices", ndev) < 0 ||
 			    mod_set_param("vtuner_server.host", host) < 0 ||
 			    mod_set_param("vtuner_server.port", port) < 0) {
-				v4b_errx(1, "Cannot set all module "
+				v4b_errx(EX_USAGE, "Cannot set all module "
 				    "parameters for vTuner server.");
 			}
 			break;
@@ -704,7 +795,7 @@ main(int argc, char **argv)
 		vtuner_server = 1;
 
 	if (vtuner_client && vtuner_server)
-		v4b_errx(1, "Cannot specify both vTuner server and client");
+		v4b_errx(EX_USAGE, "Cannot specify both vTuner server and client");
 
 	/* system init */
 
@@ -718,7 +809,7 @@ main(int argc, char **argv)
 
 	if (vtuner_client == 0) {
 		if (usb_linux_probe_p(&u_unit, &u_addr, &u_index, &d_desc) < 0)
-			v4b_errx(1, "Cannot find USB device");
+			v4b_errx(EX_USAGE, "Cannot find USB device");
 	}
 	if (vtuner_server == 0) {
 		if (webcamd_hal_register)

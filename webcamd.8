@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd December 8, 2011
+.Dd August 19, 2014
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -33,18 +33,21 @@
 .Nd daemon to provide access to USB webcam and DVB devices
 .Sh SYNOPSIS
 .Nm
-.Op Fl d Ar [ugen]<unit>.<addr>
-.Op Fl i Ar <interface number>
-.Op Fl v Ar <video device number>
-.Op Fl m Ar <parameter>=<value>
+.Op Fl B
 .Op Fl D Ar <host:port:ndev>
 .Op Fl L Ar <host:port:ndev>
 .Op Fl U Ar <user>
 .Op Fl G Ar <group>
-.Op Fl B
-.Op Fl s
-.Op Fl r
 .Op Fl H
+.Op Fl N Ar <devicename>
+.Op Fl S Ar <deviceserialnumber>
+.Op Fl d Ar [ugen]<unit>.<addr>
+.Op Fl i Ar <interface number>
+.Op Fl v Ar <video device number>
+.Op Fl m Ar <parameter>=<value>
+.Op Fl r
+.Op Fl l
+.Op Fl s
 .Op Fl h
 .Sh DESCRIPTION
 .Nm
@@ -79,6 +82,7 @@ The following options are available:
 Run the daemon in background mode.
 .It Fl d
 Specify the <unit>.<addr> of the USB device to use.
+This option can be combined with -N and -S options.
 .It Fl f
 If the device requires a firmware file, specify the path to the firmware.
 The default firmware path is /boot/modules.
@@ -91,6 +95,15 @@ Note that escaping is not supported for strings.
 Specify the interface number to use.
 .It Fl r
 Do not set realtime priority.
+.It Fl S
+Attach to device matching the given serial number.
+This option can be combined with -d and -N options.
+.It Fl N
+Attach to device matching the given device name.
+This option can be combined with -d and -S options.
+.It Fl l
+List the available USB devices and the needed command line for binding
+to the given device.
 .It Fl s
 Show available parameters.
 .It Fl v
