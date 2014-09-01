@@ -37,6 +37,7 @@
 #include <grp.h>
 #include <pwd.h>
 #include <sysexits.h>
+#include <ctype.h>
 
 #include <libutil.h>
 
@@ -96,6 +97,7 @@ static int u_index;
 static int u_videodev = -1;
 static const char *u_devicename;
 static const char *u_serialname;
+static int u_match_index;
 static int do_list;
 static int do_fork;
 static int do_realtime = 1;
@@ -427,6 +429,7 @@ usage(void)
 	    "	-l Show available USB devices\n"
 	    "	-S <SerialNumberString> as output by -l option\n"
 	    "	-N <DeviceNameString> as output by -l option\n"
+	    "	-M <match index> for use with -S and -N options\n"
 	    "	-v <video device number>\n"
 	    "	-B Run in background\n"
 	    "	-f <firmware path> [%s]\n"
@@ -440,6 +443,41 @@ usage(void)
 	    global_fw_prefix
 	);
 	exit(EX_USAGE);
+}
+
+static const char string_unknown[] = { "unknown" };
+
+static void
+string_filter(char *ptr)
+{
+	char *old = ptr;
+	char *tmp = ptr;
+	char ch;
+
+	while ((ch = *ptr) != '\0') {
+		if (isalnum(ch) == 0)
+			*ptr = '-';
+		ptr++;
+	}
+	/* trim minus from tail */
+	while (ptr-- != old) {
+		ch = *ptr;
+		if (ch != '-')
+			break;
+		*ptr = '\0';
+	}
+
+	/* trim minus from head */
+	ptr = old;
+	while ((ch = *ptr) == '-')
+		ptr++;
+	while ((ch = *ptr) != '\0')
+		*old++ = *ptr++;
+	*old = '\0';
+
+	/* check if string is empty */
+	if (*tmp == '\0')
+		strcpy(tmp, string_unknown);
 }
 
 static void
@@ -467,14 +505,14 @@ find_devices(void)
 		if (ptr != NULL) {
 			sub = strchr(ptr, '<');
 			if (sub == NULL)
-				strlcpy(txt, "unknown", sizeof(txt));
+				strcpy(txt, string_unknown);
 			else
 				strlcpy(txt, sub + 1, sizeof(txt));
 			sub = strchr(txt, '>');
 			if (sub != NULL)
 				*sub = 0;
 		} else {
-			strlcpy(txt, "unknown", sizeof(txt));
+			strcpy(txt, string_unknown);
 		}
 
 		pddesc = libusb20_dev_get_device_desc(pdev);
@@ -482,11 +520,15 @@ find_devices(void)
 		    libusb20_dev_open(pdev, 0) != 0 ||
 		    libusb20_dev_req_string_simple_sync(pdev,
 		    pddesc->iSerialNumber, ser, sizeof(ser)) != 0) {
-			strlcpy(ser, "unknown", sizeof(ser));
+			strcpy(ser, string_unknown);
 		}
 		libusb20_dev_close(pdev);
+
+		string_filter(ser);
+		string_filter(txt);
+
 		if (do_list) {
-			printf("webcamd -d ugen%u.%u -N \"%s\" -S \"%s\"\n",
+			printf("webcamd -d ugen%u.%u -N %s -S %s -M 0\n",
 			    libusb20_dev_get_bus_number(pdev),
 			    libusb20_dev_get_address(pdev),
 			    txt, ser);
@@ -495,11 +537,13 @@ find_devices(void)
 		    (u_serialname == NULL || strcmp(ser, u_serialname) == 0) &&
 		    (u_unit == 0 || (libusb20_dev_get_address(pdev) == u_addr &&
 		    libusb20_dev_get_bus_number(pdev) == u_unit))) {
-			u_unit = libusb20_dev_get_bus_number(pdev);
-			u_addr = libusb20_dev_get_address(pdev);
-			found = 1;
-			if (do_list == 0)
-				break;
+
+			if (found++ == u_match_index) {
+				u_unit = libusb20_dev_get_bus_number(pdev);
+				u_addr = libusb20_dev_get_address(pdev);
+				if (do_list == 0)
+					break;
+			}
 		}
 	}
 	libusb20_be_free(pbe);
@@ -580,7 +624,7 @@ a_uid(const char *s)
 int
 main(int argc, char **argv)
 {
-	const char *params = "N:Bd:f:i:m:S:sv:hHrU:G:D:lL:";
+	const char *params = "N:Bd:f:i:M:m:S:sv:hHrU:G:D:lL:";
 	char *ptr;
 	int opt;
 
@@ -597,6 +641,10 @@ main(int argc, char **argv)
 
 			if (sscanf(ptr, "%d.%d", &u_unit, &u_addr) != 2)
 				usage();
+			break;
+
+		case 'M':
+			u_match_index = atoi(optarg);
 			break;
 
 		case 'N':

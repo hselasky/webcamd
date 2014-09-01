@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd August 19, 2014
+.Dd September 1, 2014
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -39,6 +39,7 @@
 .Op Fl U Ar <user>
 .Op Fl G Ar <group>
 .Op Fl H
+.Op Fl M Ar <matchindex>
 .Op Fl N Ar <devicename>
 .Op Fl S Ar <deviceserialnumber>
 .Op Fl d Ar [ugen]<unit>.<addr>
@@ -98,6 +99,11 @@ Do not set realtime priority.
 .It Fl S
 Attach to device matching the given serial number.
 This option can be combined with -d and -N options.
+.It Fl M
+Specify the match index when using -S and -N options.
+This option is useful when multiple USB devices share the same serial
+and devicename to be able to distinguish them.
+Default is zero.
 .It Fl N
 Attach to device matching the given device name.
 This option can be combined with -d and -S options.
