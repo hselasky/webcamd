@@ -480,6 +480,51 @@ string_filter(char *ptr)
 		strcpy(tmp, string_unknown);
 }
 
+struct find_match {
+	struct find_match *next;
+	char *ser;
+	char *txt;
+	uint32_t match_num;
+};
+
+static struct find_match *
+new_match(struct find_match **ppfirst, const char *ser, const char *txt)
+{
+	struct find_match *ptr;
+
+	for (ptr = *ppfirst; ptr != 0; ptr = ptr->next) {
+		if (strcmp(ptr->ser, ser) == 0 &&
+		    strcmp(ptr->txt, txt) == 0) {
+			ptr->match_num++;
+			return (ptr);
+		}
+	}
+	ptr = malloc(sizeof(*ptr) + strlen(ser) + strlen(txt) + 2);
+	if (ptr == NULL)
+		v4b_errx(EX_SOFTWARE, "Out of memory");
+	ptr->txt = (char *)(ptr + 1);
+	strcpy(ptr->txt, txt);
+	ptr->ser = ptr->txt + strlen(txt) + 1;
+	strcpy(ptr->ser, ser);
+	ptr->match_num = 0;
+	ptr->next = *ppfirst;
+	*ppfirst = ptr;
+	return (ptr);
+}
+
+static void
+free_match(struct find_match **ppfirst)
+{
+	struct find_match *ptr;
+	while (1) {
+		ptr = *ppfirst;
+		if (ptr == NULL)
+			break;
+		*ppfirst = ptr->next;
+		free(ptr);
+	}
+}
+
 static void
 find_devices(void)
 {
@@ -491,6 +536,9 @@ find_devices(void)
 	char txt[128];
 	char *sub;
 	int found = 0;
+	int match_number = 0;
+	struct find_match *first_match = NULL;
+	struct find_match *curr_match;
 
 	pbe = libusb20_be_alloc_default();
 	if (pbe == NULL)
@@ -528,31 +576,34 @@ find_devices(void)
 		string_filter(txt);
 
 		if (do_list) {
-			printf("webcamd -d ugen%u.%u -N %s -S %s -M 0\n",
+			curr_match = new_match(&first_match, ser, txt);
+
+			printf("webcamd [-d ugen%u.%u] -N %s -S %s -M %d\n",
 			    libusb20_dev_get_bus_number(pdev),
 			    libusb20_dev_get_address(pdev),
-			    txt, ser);
-		}
-		if ((u_devicename == NULL || strcmp(txt, u_devicename) == 0) &&
+			    txt, ser, curr_match->match_num);
+
+		} else if ((u_devicename == NULL || strcmp(txt, u_devicename) == 0) &&
 		    (u_serialname == NULL || strcmp(ser, u_serialname) == 0) &&
-		    (u_unit == 0 || (libusb20_dev_get_address(pdev) == u_addr &&
+		    (u_addr == 0 || (libusb20_dev_get_address(pdev) == u_addr &&
 		    libusb20_dev_get_bus_number(pdev) == u_unit))) {
 
 			if (found++ == u_match_index) {
 				u_unit = libusb20_dev_get_bus_number(pdev);
 				u_addr = libusb20_dev_get_address(pdev);
-				if (do_list == 0)
-					break;
+				libusb20_be_free(pbe);
+				free_match(&first_match);
+				return;
 			}
 		}
 	}
 	libusb20_be_free(pbe);
+	free_match(&first_match);
 
 	if (do_list != 0)
 		exit(0);
 
-	if (found == 0)
-		v4b_errx(EX_SOFTWARE, "No USB device match found");
+	v4b_errx(EX_SOFTWARE, "No USB device match found");
 }
 
 static void
