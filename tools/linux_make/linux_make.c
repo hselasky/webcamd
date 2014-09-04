@@ -55,7 +55,7 @@ typedef TAILQ_ENTRY(makefile) makefile_entry_t;
 
 #if 0
 void
-style_fix()
+style_fix(void)
 {
 }
 
@@ -65,6 +65,8 @@ struct node {
 	node_entry_t entry;
 	node_head_t children;
 	char   *name;			/* obj-y/obj-m/obj-n/xxx.o */
+	char   *path;			/* relative path to file */
+	uint32_t id_number;		/* unique node ID */
 };
 
 struct directory {
@@ -111,7 +113,7 @@ strcatdup(const char *a, const char *b)
 }
 
 static struct node *
-new_node()
+new_node(void)
 {
 	struct node *temp;
 
@@ -124,7 +126,7 @@ new_node()
 }
 
 static struct directory *
-new_directory()
+new_directory(void)
 {
 	struct directory *temp;
 
@@ -382,12 +384,13 @@ add_node(node_head_t *head, char *name)
 }
 
 static void
-add_child(struct node *parent, char *name)
+add_child(struct node *parent, char *path, char *name)
 {
 	struct node *node;
 
 	node = new_node();
 	node->name = name;
+	node->path = path;
 
 	TAILQ_INSERT_TAIL(&parent->children, node, entry);
 }
@@ -462,7 +465,7 @@ resolve_nodes(void)
 }
 
 static void
-objs_exec(char *ptr, void (*fn) (char *name))
+objs_exec(struct node *parent, void (*fn) (struct node *, const char *))
 {
 	static int recurse;
 
@@ -473,11 +476,11 @@ objs_exec(char *ptr, void (*fn) (char *name))
 
 	if (recurse > 64) {
 		errx(EX_SOFTWARE, "Recursive object "
-		    "execute limit of 64 exceeded for '%s'.", ptr);
+		    "execute limit of 64 exceeded for '%s'.", parent->name);
 	}
 	recurse++;
 
-	temp = strcatdup(ptr, "");
+	temp = strcatdup(parent->name, "");
 	len = strlen(temp);
 
 	if ((len >= 2) && (temp[len - 2] == '.' && temp[len - 1] == 'o')) {
@@ -497,15 +500,14 @@ objs_exec(char *ptr, void (*fn) (char *name))
 			    strcmp(n0->name + len, "-m") == 0 ||
 			    strcmp(n0->name + len, "-objs") == 0) {
 
-				TAILQ_FOREACH(n1, &n0->children, entry) {
-					objs_exec(n1->name, fn);
-				}
+				TAILQ_FOREACH(n1, &n0->children, entry)
+				    objs_exec(n1, fn);
 				goto done;
 			}
 		}
 	}
 
-	fn(temp);
+	fn(parent, temp);
 
 done:
 	free(temp);
@@ -884,7 +886,7 @@ parse_makefile(char *path)
 					parse_makefile(strcatdup(path, child));
 
 			} else {
-				add_child(node, child);
+				add_child(node, strcatdup(path, ""), child);
 			}
 		}
 	}
@@ -896,10 +898,28 @@ parse_makefile(char *path)
 	recurse--;
 }
 
+static uint32_t id_last;
+
 static void
-print_source(char *name)
+build_id(struct node *ptr, const char *name)
 {
-	printf("\t%s.c \\\n", name);
+	ptr->id_number = id_last++;
+	if (id_last == 0)
+		errx(EX_SOFTWARE, "Out of ID numbers.");
+}
+
+static void
+build_source(struct node *ptr, const char *name)
+{
+	printf("obj-%u-of-%u-%s.o: %s%s.c\n", ptr->id_number, id_last, name, ptr->path, name);
+	printf("\t" "${CC} -c -DCURR_FILE_NAME=\\\"%s\\\" ${CFLAGS} -o obj-%u-of-%u-%s.o %s%s.c\n",
+	    name, ptr->id_number, id_last, name, ptr->path, name);
+}
+
+static void
+build_objects(struct node *ptr, const char *name)
+{
+	printf("\t" "obj-%u-of-%u-%s.o \\\n", ptr->id_number, id_last, name);
 }
 
 static void
@@ -914,7 +934,7 @@ output_makefile(char *name)
 	    "#\n"
 	    "\n");
 
-	printf("SRCPATHS+= \\\n");
+	printf("PKGPATHS+= \\\n");
 
 	TAILQ_FOREACH(dir, &rootDirectory, entry) {
 		int c;
@@ -935,13 +955,25 @@ output_makefile(char *name)
 			dir->name[len - 1] = c;
 	}
 
-	printf("\n"
-	    "SRCS+= \\\n");
-
 	n0 = add_node(&rootNode, strcatdup(name, ""));
 
+	id_last = 0;
+
 	TAILQ_FOREACH(n1, &n0->children, entry) {
-		objs_exec(n1->name, &print_source);
+		objs_exec(n1, &build_id);
+	}
+
+	printf("\n"
+	    "OBJS+= \\\n");
+
+	TAILQ_FOREACH(n1, &n0->children, entry) {
+		objs_exec(n1, &build_objects);
+	}
+
+	printf("\n");
+
+	TAILQ_FOREACH(n1, &n0->children, entry) {
+		objs_exec(n1, &build_source);
 	}
 
 	printf("\n");
