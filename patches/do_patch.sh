@@ -64,7 +64,8 @@ for F in \
 ../media_tree/drivers/media/i2c/tvp514x.c \
 ../media_tree/drivers/media/i2c/adv7343.c \
 ../media_tree/drivers/media/i2c/tvp7002.c \
-../media_tree/drivers/input/tablet/wacom.h
+../media_tree/drivers/input/tablet/wacom.h \
+../media_tree/drivers/hid/wacom.h
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
 done
@@ -137,6 +138,6 @@ sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.e
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf.c)
 
 # DVBSKY support
-[ -f dvbsky-linux-3.15-hps.diff ] && (cat dvbsky-linux-3.15-hps.diff | patch $OPT -d ../media_tree -p1) && echo "Applied DVBSKY patches ..."
+[ -f dvbsky-linux-3.17-hps.diff ] && (cat dvbsky-linux-3.17-hps.diff | patch $OPT -d ../media_tree -p1) && echo "Applied DVBSKY patches ..."
 
 exit 0
