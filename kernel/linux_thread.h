@@ -91,7 +91,8 @@ void	schedule(void);
 
 typedef int wait_on_bit_fn_t (void *);
 
-int	wait_on_bit(void *, int, wait_on_bit_fn_t *, unsigned);
+int	wait_on_bit_action(void *, int, wait_on_bit_fn_t *, unsigned);
+int	wait_on_bit(void *, int, unsigned);
 void	wake_up_bit(void *, int);
 
 #define	wait_event(wq, condition)		\
@@ -197,8 +198,9 @@ void	init_completion(struct completion *x);
 
 void	uninit_completion(struct completion *x);
 void	wait_for_completion(struct completion *x);
+uint64_t wait_for_completion_timeout(struct completion *x, uint64_t);
 int	wait_for_completion_interruptible(struct completion *x);
-uint64_t wait_for_completion_timeout(struct completion *x, uint64_t timeout);
+int64_t	wait_for_completion_interruptible_timeout(struct completion *, uint64_t);
 
 #define	complete_all(x)	complete(x)
 void	complete(struct completion *x);

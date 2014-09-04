@@ -7,9 +7,14 @@ int	zero_nop(void);
 
 #define	device_create_file(...) zero_nop()
 #define	device_remove_file(...) zero_nop()
+#define	device_create_bin_file(...) zero_nop()
+#define	device_remove_bin_file(...) zero_nop()
 #define	device_set_wakeup_enable(...) zero_nop()
 #define	device_set_wakeup_capable(...) zero_nop()
 #define	device_set_wakeup_disable(...) zero_nop()
+
+#define	driver_create_file(...) zero_nop()
+#define	driver_remove_file(...) zero_nop()
 
 int	printk_nop(void);
 
@@ -53,12 +58,17 @@ void	le16_to_cpus(uint16_t *p);
 void	le32_to_cpus(uint32_t *p);
 void	le64_to_cpus(uint64_t *p);
 
+void	put_unaligned_le64(uint64_t, void *);
+void	put_unaligned_be64(uint64_t, void *);
 void	put_unaligned_le32(uint32_t, void *);
+void	put_unaligned_be32(uint32_t, void *);
 void	put_unaligned_be16(uint16_t, void *);
 void	put_unaligned_le16(uint16_t, void *);
 
 uint64_t get_unaligned_le64(const void *);
+uint64_t get_unaligned_be64(const void *);
 uint32_t get_unaligned_le32(const void *);
+uint32_t get_unaligned_be32(const void *);
 uint16_t get_unaligned_be16(const void *);
 uint16_t get_unaligned_le16(const void *);
 
@@ -120,11 +130,14 @@ unsigned long hweight64(uint64_t w);
 unsigned long copy_to_user(void *to, const void *from, unsigned long n);
 unsigned long copy_from_user(void *to, const void *from, unsigned long n);
 void	kref_get(struct kref *kref);
+int	kref_get_unless_zero(struct kref *kref);
 int	kref_put(struct kref *kref, void (*release) (struct kref *kref));
 void	kref_init(struct kref *kref);
 struct device *get_device(struct device *dev);
 void	put_device(struct device *dev);
 int	device_move(struct device *dev, struct device *new_parent, int how);
+int	bus_register(struct bus_type *);
+int	bus_unregister(struct bus_type *);
 int	device_add(struct device *dev);
 void	device_del(struct device *dev);
 int	device_register(struct device *dev);
@@ -190,6 +203,8 @@ int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
 uint64_t div_round_closest_u64(uint64_t rem, uint64_t div);
+struct timespec ktime_mono_to_real(struct timespec);
+struct timespec ktime_get_real(void);
 struct timespec ktime_get(void);
 struct timeval ktime_to_timeval(const struct timespec ts);
 void	ktime_get_ts(struct timespec *ts);
@@ -201,6 +216,7 @@ struct timespec ktime_add_us(const struct timespec, const uint64_t);
 int64_t	ktime_us_delta(const struct timespec, const struct timespec);
 int64_t	ktime_to_us(const struct timespec);
 void	msleep(uint32_t ms);
+void	ssleep(uint32_t s);
 uint32_t msleep_interruptible(uint32_t ms);
 void	request_module(const char *fmt,...);
 int	device_can_wakeup(struct device *dev);
@@ -222,9 +238,12 @@ uint64_t div_u64_rem(uint64_t, uint32_t, uint32_t *);
 uint64_t div_u64(uint64_t, uint32_t);
 
 #define	do_div(r,d) do_div(&(r),(d))
-int	sysfs_create_group(struct kobject *kobj, const struct attribute_group *grp);
-void	sysfs_remove_group(struct kobject *kobj, const struct attribute_group *grp);
+int	sysfs_create_group(struct kobject *, const struct attribute_group *);
+void	sysfs_remove_group(struct kobject *, const struct attribute_group *);
+int	sysfs_create_bin_file(struct kobject *, struct bin_attribute *);
+int	sysfs_remove_bin_file(struct kobject *, struct bin_attribute *);
 void   *pci_alloc_consistent(struct pci_dev *hwdev, size_t size, dma_addr_t *dma_addr);
+void   *pci_zalloc_consistent(struct pci_dev *hwdev, size_t size, dma_addr_t *dma_addr);
 void	pci_free_consistent(struct pci_dev *hwdev, size_t size, void *vaddr, dma_addr_t dma_handle);
 int	add_uevent_var(struct kobj_uevent_env *env, const char *format,...);
 struct class *class_create(struct module *owner, const char *name);
@@ -253,7 +272,8 @@ int	nonseekable_open(struct inode *inode, struct file *filp);
 
 int	kstrtos16(const char *, unsigned int, int16_t *);
 int	kstrtou16(const char *, unsigned int, uint16_t *);
-
+int	kstrtos8(const char *, unsigned int, int8_t *);
+int	kstrtou8(const char *, unsigned int, uint8_t *);
 int	kstrtoul(const char *, unsigned int, unsigned long *);
 int	kstrtouint(const char *, unsigned int, unsigned int *);
 int	kstrtoint(const char *, unsigned int, int *);
@@ -270,5 +290,6 @@ int	devres_destroy(struct device *, dr_release_t, dr_match_t, void *);
 
 uint32_t ror32(uint32_t, uint8_t);
 unsigned long gcd(unsigned long, unsigned long);
+void	get_random_bytes(void *, int);
 
 #endif					/* _LINUX_FUNC_H_ */

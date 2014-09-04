@@ -126,6 +126,7 @@ void
 wake_up(wait_queue_head_t *q)
 {
 	int do_poll;
+
 	atomic_lock();
 	q->sleep_ref++;
 	do_poll = q->do_selwakeup;
@@ -156,11 +157,13 @@ __wait_event(wait_queue_head_t *q)
 	drops = atomic_drop();
 	atomic_pre_sleep();
 
-	q->sleep_count++;
+	if (q != NULL)
+		q->sleep_count++;
 
 	pthread_cond_wait(&sema_cond, atomic_get_lock());
 
-	q->sleep_count--;
+	if (q != NULL)
+		q->sleep_count--;
 
 	atomic_post_sleep();
 	atomic_pickup(drops);
@@ -250,14 +253,33 @@ schedule(void)
 	schedule_timeout(4);
 }
 
+static int
+wait_for_bit(void *arg)
+{
+	if (check_signal())
+		return (1);
+	__wait_event(NULL);
+	return (0);
+}
+
 int
-wait_on_bit(void *word, int bit, wait_on_bit_fn_t *action, unsigned mode)
+wait_on_bit_action(void *word, int bit, wait_on_bit_fn_t *action,
+    unsigned mode)
 {
 	int ret = 0;
 
+	atomic_lock();
 	while (test_bit(bit, word) && !ret)
 		ret = action(word);
+	atomic_unlock();
+
 	return (ret);
+}
+
+int
+wait_on_bit(void *word, int bit, unsigned mode)
+{
+	return (wait_on_bit_action(word, bit, &wait_for_bit, mode));
 }
 
 void
@@ -394,6 +416,36 @@ wait_for_completion(struct completion *x)
 	x->done--;
 	atomic_unlock();
 }
+
+int64_t
+wait_for_completion_interruptible_timeout(struct completion *x,
+    uint64_t timeout)
+{
+	struct timespec ts[2];
+	int64_t ret = timeout;
+
+	__wait_get_timeout(ret, ts);
+
+	atomic_lock();
+	while (1) {
+		if (x->done != 0) {
+			x->done--;
+			break;
+		}
+		if (check_signal()) {
+			ret = -ERESTARTSYS;
+			break;
+		}
+		if (__wait_event_timed(&x->wait, ts)) {
+			ret = 0;
+			break;
+		}
+	}
+	atomic_unlock();
+
+	return (ret);
+}
+
 
 uint64_t
 wait_for_completion_timeout(struct completion *x,

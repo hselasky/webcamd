@@ -1,13 +1,14 @@
 #ifndef _LINUX_STRUCT_H_
 #define	_LINUX_STRUCT_H_
 
+struct bus_type;
 struct cdev;
 struct class;
 struct cpumask;
-struct dev_pm_ops;
 struct device;
 struct device_driver;
 struct dmi_system_id;
+struct fb_videomode;
 struct file;
 struct inode;
 struct input_device_id;
@@ -16,7 +17,6 @@ struct kobj_uevent_env;
 struct lock_class_key;
 struct module;
 struct mutex;
-struct notifier_block;
 struct page;
 struct pci_dev;
 struct poll_table_page;
@@ -31,9 +31,23 @@ struct vm_operations_struct;
 
 #define	LINUX_VMA_MAX 16
 
+#define	SET_SYSTEM_SLEEP_PM_OPS(...)
+struct dev_pm_ops {
+};
+
+struct notifier_block {
+	int     (*notifier_call) (struct notifier_block *, unsigned long, void *);
+	struct notifier_block *next;
+	int	priority;
+};
+
 enum dma_data_direction {
 	DMA_DATA_DIRECTION_DUMMY
 };
+
+typedef struct pm_message {
+	int	event;
+} pm_message_t;
 
 typedef struct poll_table_struct {
 }	poll_table;
@@ -65,13 +79,21 @@ struct attribute {
 };
 
 struct bin_attribute {
-	const char *name;
-	mode_t	mode;
+	struct attribute attr;
+	size_t	size;
+	void   *private;
+	ssize_t (*read) (struct file *, struct kobject *, struct bin_attribute *,
+	    	char  *, loff_t, size_t);
+	ssize_t (*write) (struct file *, struct kobject *, struct bin_attribute *,
+	    	char  *, loff_t, size_t);
+	int     (*mmap) (struct file *, struct kobject *, struct bin_attribute *,
+	    	struct	vm_area_struct *);
 };
 
 struct attribute_group {
 	const char *name;
 	struct attribute **attrs;
+	struct bin_attribute **bin_attrs;
 };
 
 #define	ATTRIBUTE_GROUPS(name)					\
@@ -91,8 +113,20 @@ struct class_attribute {
 
 struct device_attribute {
 	struct attribute attr;
-	ssize_t (*show) (struct device *, struct device_attribute *, char *buf);
-	ssize_t (*store) (struct device *, struct device_attribute *, const char *buf, size_t count);
+	ssize_t (*show) (struct device *, struct device_attribute *, char *);
+	ssize_t (*store) (struct device *, struct device_attribute *, const char *, size_t);
+};
+
+struct bus_attribute {
+	struct attribute attr;
+	ssize_t (*show) (struct bus_type *, char *);
+	ssize_t (*store) (struct bus_type *, const char *, size_t);
+};
+
+struct driver_attribute {
+	struct attribute attr;
+	ssize_t (*show) (struct device_driver *, char *);
+	ssize_t (*store) (struct device_driver *, const char *, size_t);
 };
 
 struct device_type {
@@ -123,6 +157,14 @@ struct device_type {
 
 #define	__ATTR_NULL { }
 
+#define	__BIN_ATTR(_name, _mode, _read, _write, _size)		\
+{								\
+	.attr = { .name = __stringify(_name), .mode = _mode },	\
+	.read	= (_read),					\
+	.write	= (_write),					\
+	.size	= (_size),					\
+}
+
 #define	DEVICE_ATTR(_name,_mode,_show,_store)	\
 struct device_attribute				\
 	device_attr_##_name =			\
@@ -135,6 +177,23 @@ struct device_attribute					\
 #define	DEVICE_ATTR_RW(_name)				\
 struct device_attribute					\
 	device_attr_##_name = __ATTR_RW(_name)
+
+#define	DRIVER_ATTR(_name,_mode,_show,_store)	\
+struct driver_attribute				\
+	driver_attr_##_name =			\
+        __ATTR(_name,_mode,_show,_store)
+
+#define	DRIVER_ATTR_RO(_name)				\
+struct driver_attribute					\
+	driver_attr_##_name = __ATTR_RO(_name)
+
+#define	DRIVER_ATTR_RW(_name)				\
+struct driver_attribute					\
+	driver_attr_##_name = __ATTR_RW(_name)
+
+#define	BIN_ATTR(_name, _mode, _read, _write, _size)	\
+struct bin_attribute bin_attr_##_name =			\
+    __BIN_ATTR(_name, _mode, _read, _write, _size)
 
 struct class {
 	const char *name;
@@ -153,12 +212,41 @@ struct device_driver {
 	const char *name;
 	struct module *owner;
 	const struct dev_pm_ops *pm;
+	struct bus_type *bus;
+	const char *mod_name;
+
+	TAILQ_ENTRY(device_driver) entry;
 };
 
 typedef void device_release_t (struct device *);
 
 typedef void (*dr_release_t)(struct device *dev, void *res);
 typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);
+
+struct bus_type {
+	const char *name;
+	const char *dev_name;
+	struct device *dev_root;
+	struct bus_attribute *bus_attrs;
+	struct device_attribute *dev_attrs;
+	struct driver_attribute *drv_attrs;
+	const struct attribute_group **bus_groups;
+	const struct attribute_group **dev_groups;
+	const struct attribute_group **drv_groups;
+
+	int     (*match) (struct device *dev, struct device_driver *drv);
+	int     (*uevent) (struct device *dev, struct kobj_uevent_env *env);
+	int     (*probe) (struct device *dev);
+	int     (*remove) (struct device *dev);
+	void    (*shutdown) (struct device *dev);
+
+	int     (*suspend) (struct device *dev, pm_message_t state);
+	int     (*resume) (struct device *dev);
+
+	const struct dev_pm_ops *pm;
+
+	TAILQ_ENTRY(bus_type) entry;
+};
 
 struct device {
 	int	minor;
@@ -173,6 +261,7 @@ struct device {
 	void   *driver_data;
 	const struct file_operations *fops;
 	const struct attribute_group *groups;
+	struct bus_type *bus;
 	struct cdev *cdev;
 	struct class *class;
 	struct device_driver driver_static;
@@ -316,6 +405,14 @@ struct va_format {
 };
 
 extern struct device_attribute dev_attr_abs;
+extern struct device_attribute dev_attr_activate_slack;
+extern struct device_attribute dev_attr_activation_height;
+extern struct device_attribute dev_attr_activation_width;
+extern struct device_attribute dev_attr_actual_cpi;
+extern struct device_attribute dev_attr_actual_dpi;
+extern struct device_attribute dev_attr_actual_profile;
+extern struct device_attribute dev_attr_actual_sensitivity_x;
+extern struct device_attribute dev_attr_actual_sensitivity_y;
 extern struct device_attribute dev_attr_associate_remote;
 extern struct device_attribute dev_attr_bustype;
 extern struct device_attribute dev_attr_button0_rawimg;
@@ -328,6 +425,7 @@ extern struct device_attribute dev_attr_button6_rawimg;
 extern struct device_attribute dev_attr_button7_rawimg;
 extern struct device_attribute dev_attr_buttons_luminance;
 extern struct device_attribute dev_attr_coordinate_mode;
+extern struct device_attribute dev_attr_deactivate_slack;
 extern struct device_attribute dev_attr_debug;
 extern struct device_attribute dev_attr_delay;
 extern struct device_attribute dev_attr_diagnostic;
@@ -336,14 +434,21 @@ extern struct device_attribute dev_attr_event_count;
 extern struct device_attribute dev_attr_execute;
 extern struct device_attribute dev_attr_ff;
 extern struct device_attribute dev_attr_firmware_code;
+extern struct device_attribute dev_attr_firmware_version;
 extern struct device_attribute dev_attr_imon_clock;
 extern struct device_attribute dev_attr_index;
 extern struct device_attribute dev_attr_jitter;
 extern struct device_attribute dev_attr_key;
+extern struct device_attribute dev_attr_key_mask;
 extern struct device_attribute dev_attr_led;
 extern struct device_attribute dev_attr_max;
+extern struct device_attribute dev_attr_max_power;
 extern struct device_attribute dev_attr_min;
+extern struct device_attribute dev_attr_min_height;
+extern struct device_attribute dev_attr_min_width;
 extern struct device_attribute dev_attr_modalias;
+extern struct device_attribute dev_attr_mode;
+extern struct device_attribute dev_attr_mode_key;
 extern struct device_attribute dev_attr_model_code;
 extern struct device_attribute dev_attr_mouse_left;
 extern struct device_attribute dev_attr_mouse_middle;
@@ -354,11 +459,20 @@ extern struct device_attribute dev_attr_odm_code;
 extern struct device_attribute dev_attr_phys;
 extern struct device_attribute dev_attr_pointer_mode;
 extern struct device_attribute dev_attr_poll;
+extern struct device_attribute dev_attr_power_mode;
 extern struct device_attribute dev_attr_product;
+extern struct device_attribute dev_attr_product_id;
 extern struct device_attribute dev_attr_properties;
+extern struct device_attribute dev_attr_quirks;
 extern struct device_attribute dev_attr_rel;
+extern struct device_attribute dev_attr_release_version;
+extern struct device_attribute dev_attr_sensor_logical_height;
+extern struct device_attribute dev_attr_sensor_logical_width;
+extern struct device_attribute dev_attr_sensor_physical_height;
+extern struct device_attribute dev_attr_sensor_physical_width;
 extern struct device_attribute dev_attr_size;
 extern struct device_attribute dev_attr_snd;
+extern struct device_attribute dev_attr_startup_profile;
 extern struct device_attribute dev_attr_status0_luminance;
 extern struct device_attribute dev_attr_status1_luminance;
 extern struct device_attribute dev_attr_status_led0_select;
@@ -366,10 +480,13 @@ extern struct device_attribute dev_attr_status_led1_select;
 extern struct device_attribute dev_attr_stylus_lower;
 extern struct device_attribute dev_attr_stylus_upper;
 extern struct device_attribute dev_attr_sw;
+extern struct device_attribute dev_attr_tcu;
 extern struct device_attribute dev_attr_tool_mode;
 extern struct device_attribute dev_attr_uniq;
 extern struct device_attribute dev_attr_vendor;
+extern struct device_attribute dev_attr_vendor_id;
 extern struct device_attribute dev_attr_version;
+extern struct device_attribute dev_attr_weight;
 extern struct device_attribute dev_attr_wheel;
 extern struct device_attribute dev_attr_xtilt;
 extern struct device_attribute dev_attr_ytilt;

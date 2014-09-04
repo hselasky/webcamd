@@ -776,6 +776,16 @@ int	usb_endpoint_maxp(const struct usb_endpoint_descriptor *);
 #define	usb_free_coherent(...) usb_buffer_free(__VA_ARGS__)
 #define	usb_debug_root NULL
 
+#define	to_usb_interface(d) container_of(d, struct usb_interface, dev)
+
 #define	USB_STATE_URB_BUF 0x01
+
+int	usb_autopm_get_interface_async(struct usb_interface *);
+int	usb_autopm_get_interface_no_resume(struct usb_interface *);
+int	usb_autopm_get_interface_no_suspend(struct usb_interface *);
+
+void	usb_autopm_put_interface_async(struct usb_interface *);
+void	usb_autopm_put_interface_no_suspend(struct usb_interface *);
+void	usb_autopm_put_interface_no_resume(struct usb_interface *);
 
 #endif					/* _LINUX_USB_H_ */

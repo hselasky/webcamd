@@ -36,8 +36,8 @@ linux_parm(void)
 	module_init_t **t = SET_BEGIN(linux_parm_mod);
 	module_init_t **t_end = SET_LIMIT(linux_parm_mod);
 
-	for ( ; t != t_end; t++)
-		(**t)();
+	for (; t != t_end; t++)
+		(**t) ();
 }
 
 void
@@ -46,8 +46,8 @@ linux_init(void)
 	module_init_t **t = SET_BEGIN(linux_init_mod);
 	module_init_t **t_end = SET_LIMIT(linux_init_mod);
 
-	for ( ; t != t_end; t++)
-		(**t)();
+	for (; t != t_end; t++)
+		(**t) ();
 }
 
 void
@@ -56,8 +56,8 @@ linux_exit(void)
 	module_exit_t **t = SET_BEGIN(linux_exit_mod);
 	module_exit_t **t_end = SET_LIMIT(linux_exit_mod);
 
-	for ( ; t != t_end; t++)
-		(**t)();
+	for (; t != t_end; t++)
+		(**t) ();
 }
 
 void
@@ -66,6 +66,6 @@ linux_late(void)
 	module_init_t **t = SET_BEGIN(linux_late_mod);
 	module_init_t **t_end = SET_LIMIT(linux_late_mod);
 
-	for ( ; t != t_end; t++)
-		(**t)();
+	for (; t != t_end; t++)
+		(**t) ();
 }

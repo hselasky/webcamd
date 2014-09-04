@@ -27,7 +27,7 @@
 #define	_LINUX_DEFS_H_
 
 /*
- * Stripped down version of the Linux defines
+ * Linux kernel defines from various header files
  */
 
 #define	DIV_ROUND_CLOSEST(rem, div) \
@@ -38,6 +38,13 @@
  ((((typeof(div))-1) <= 0) ?	    \
   div_round_closest_s32(rem,div) :  \
   div_round_closest_u32(rem,div)))
+
+#define	mult_frac(x, numer, denom)			\
+({							\
+	typeof(x) quot = (x) / (denom);                 \
+	typeof(x) rem  = (x) % (denom);                 \
+        (quot * (numer)) + ((rem * (numer)) / (denom)); \
+})
 
 #define	is_power_of_2(x) (((-(x)) & (x)) == (x))
 #define	__nop do {} while (0)
@@ -80,6 +87,8 @@
 #define	ALIGN(x,a)		(((x)+(a)-1)&(~((a)-1)))
 #define	PAGE_OFFSET	0
 #define	__pa(x)                 ((unsigned long)(x)-PAGE_OFFSET)
+#define	S_IRWXG 00070
+#define	S_IRWXU 00700
 #define	S_IRUSR 00400
 #define	S_IWUSR 00200
 #define	S_IXUSR 00100
@@ -115,6 +124,8 @@
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	MODULE_SUPPORTED_DEVICE(...)
 #define	MODULE_FIRMWARE(...)
+#define	IS_MODULE(...) 0
+#define	IS_BUILTIN(x,...) defined(x##__VA_ARGS__)
 #define	IS_ENABLED(x,...) defined(x##__VA_ARGS__)
 #define	THIS_MODULE (NULL)
 #ifdef HAVE_DEBUG
@@ -133,6 +144,7 @@
 #define	pr_debug(...) __nop
 #define	pr_warn(...) __nop
 #define	pr_warning(...) __nop
+#define	pr_emerg(...) __nop
 #define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	dev_dbg_ratelimited(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
@@ -155,9 +167,9 @@
 #define	kmem_cache_alloc(ref,g) malloc((long)(ref))
 #define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
 #define	kmalloc(s,opt) malloc(s)
-#define	kzalloc(s,opt) calloc(1, s)
-#define	krealloc(p,s,opt) realloc(p,s)
-#define	dma_alloc_coherent(d,s,h,g) calloc(1, s)
+#define	kzalloc(s,opt) calloc(1, (s))
+#define	krealloc(p,s,opt) realloc(p,(s))
+#define	dma_alloc_coherent(d,s,h,g) calloc(1,(s))
 #define	dma_free_coherent(d,s,v,h) free(v)
 #define	vmalloc_32_user(s) malloc_vm(s)
 #define	vmalloc_user(s) malloc_vm(s)
@@ -177,6 +189,7 @@
 #define	kobject_get_path(...) strdup("webcamd")
 #define	kobject_put(...) __nop
 #define	kobject_get(...) __nop
+#define	kobject_uevent(...) __nop
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(ptr)
 #define	kstrdup(a,b) strdup(a)
@@ -219,6 +232,7 @@
 #define	TASK_NONINTERACTIVE     64
 #define	no_llseek	NULL
 #define	default_llseek	NULL
+#define	GENMASK(lo, hi) (((1ULL << ((hi) - (lo) + 1)) - 1) << (lo))
 #define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
 #define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #define	BITS_PER_BYTE 8
@@ -304,6 +318,7 @@
 #define	WARN_ON_ONCE(x) ({ (x); })
 #define	BUILD_BUG_ON(x) extern int dummy_array[(x) ? -1 : 1]
 #define	lockdep_set_class_and_name(...) __nop
+#define	lockdep_assert_held(...) __nop
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -386,7 +401,7 @@
 #define	__be64_to_cpus(p) be64_to_cpus(p)
 #define	__be32_to_cpus(p) be32_to_cpus(p)
 #define	__be16_to_cpus(p) be16_to_cpus(p)
-#define GP_DECONST(ptr) ((void *)(long)(ptr))
+#define	GP_DECONST(ptr) ((void *)(long)(ptr))
 #define	get_unaligned(x) ({ __typeof(*(x)) __temp; memcpy(GP_DECONST(&__temp), (x), sizeof(__temp)); __temp; })
 #define	put_unaligned(x, y) do { __typeof(*(y)) __temp = (x); memcpy((y), GP_DECONST(&__temp), sizeof(__temp)); } while (0)
 #define	NSEC_PER_USEC	1000
@@ -400,6 +415,7 @@
 #define	ENOTSUPP ENOTSUP
 #define	EREMOTEIO EIO
 #define	EBADRQC EBADMSG
+#define	MAX_SCHEDULE_TIMEOUT LONG_MAX
 #define	I2C_NAME_SIZE 20
 #define	__SPIN_LOCK_UNLOCKED(...) {}
 #define	in_interrupt() 0
@@ -481,6 +497,11 @@
 #define	IRQ_NONE 0
 #define	IRQ_HANDLED 1
 
+#define	PLATFORM_DEVID_NONE (-1)
+#define	PLATFORM_DEVID_AUTO (-2)
+
+#define	DPM_ORDER_NONE 0
+
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #ifndef __LITTLE_ENDIAN
@@ -527,6 +548,7 @@ typedef uint32_t uint;
 typedef int irqreturn_t;
 typedef off_t __kernel_off_t;
 typedef int __kernel_pid_t;
+typedef unsigned long phys_addr_t;
 
 #ifndef __GLIBC__
 typedef long long loff_t;

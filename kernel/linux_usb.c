@@ -30,6 +30,7 @@
 #include <linux/input.h>
 
 static int min_bufsize;
+
 module_param(min_bufsize, int, 0644);
 MODULE_PARM_DESC(min_bufsize, "Set minimum USB buffer size");
 
@@ -583,7 +584,6 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 		atomic_unlock();
 		return (-EINVAL);
 	}
-
 	err = usb_setup_endpoint(urb->dev, uhe,
 	    urb->transfer_buffer_length);
 	if (err) {
@@ -1792,7 +1792,6 @@ tr_setup:
 			urb->bsd_no_resubmit = 0;
 			goto tr_setup;
 		}
-
 		/* check if we need to force a short transfer */
 
 		if (urb->transfer_flags & URB_ZERO_PACKET) {
@@ -2266,4 +2265,40 @@ usb_translate_errors(int error_code)
 	default:
 		return (-EIO);
 	}
+}
+
+int
+usb_autopm_get_interface_async(struct usb_interface *intf)
+{
+	return (0);
+}
+
+int
+usb_autopm_get_interface_no_suspend(struct usb_interface *intf)
+{
+	return (0);
+}
+
+int
+usb_autopm_get_interface_no_resume(struct usb_interface *intf)
+{
+	return (0);
+}
+
+void
+usb_autopm_put_interface_async(struct usb_interface *intf)
+{
+
+}
+
+void
+usb_autopm_put_interface_no_suspend(struct usb_interface *intf)
+{
+
+}
+
+void
+usb_autopm_put_interface_no_resume(struct usb_interface *intf)
+{
+
 }

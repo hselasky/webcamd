@@ -157,17 +157,75 @@ cpu_to_be64p(uint64_t *p)
 }
 
 void
+put_unaligned_le64(uint64_t val, void *_ptr)
+{
+	uint8_t *ptr = _ptr;
+
+	ptr[0] = val;
+	val >>= 8;
+	ptr[1] = val;
+	val >>= 8;
+	ptr[2] = val;
+	val >>= 8;
+	ptr[3] = val;
+	val >>= 8;
+	ptr[4] = val;
+	val >>= 8;
+	ptr[5] = val;
+	val >>= 8;
+	ptr[6] = val;
+	val >>= 8;
+	ptr[7] = val;
+}
+
+void
+put_unaligned_be64(uint64_t val, void *_ptr)
+{
+	uint8_t *ptr = _ptr;
+
+	ptr[7] = val;
+	val >>= 8;
+	ptr[6] = val;
+	val >>= 8;
+	ptr[5] = val;
+	val >>= 8;
+	ptr[4] = val;
+	val >>= 8;
+	ptr[3] = val;
+	val >>= 8;
+	ptr[2] = val;
+	val >>= 8;
+	ptr[1] = val;
+	val >>= 8;
+	ptr[0] = val;
+}
+
+void
 put_unaligned_le32(uint32_t val, void *_ptr)
 {
 	uint8_t *ptr = _ptr;
 
-	ptr[0] = val & 0xFF;
+	ptr[0] = val;
 	val >>= 8;
-	ptr[1] = val & 0xFF;
+	ptr[1] = val;
 	val >>= 8;
-	ptr[2] = val & 0xFF;
+	ptr[2] = val;
 	val >>= 8;
-	ptr[3] = val & 0xFF;
+	ptr[3] = val;
+}
+
+void
+put_unaligned_be32(uint32_t val, void *_ptr)
+{
+	uint8_t *ptr = _ptr;
+
+	ptr[3] = val;
+	val >>= 8;
+	ptr[2] = val;
+	val >>= 8;
+	ptr[1] = val;
+	val >>= 8;
+	ptr[0] = val;
 }
 
 void
@@ -175,8 +233,8 @@ put_unaligned_be16(uint16_t val, void *_ptr)
 {
 	uint8_t *ptr = _ptr;
 
-	ptr[0] = (val >> 8) & 0xFF;
-	ptr[1] = val & 0xFF;
+	ptr[0] = (val >> 8);
+	ptr[1] = val;
 }
 
 void
@@ -184,9 +242,9 @@ put_unaligned_le16(uint16_t val, void *_ptr)
 {
 	uint8_t *ptr = _ptr;
 
-	ptr[0] = val & 0xFF;
+	ptr[0] = val;
 	val >>= 8;
-	ptr[1] = val & 0xFF;
+	ptr[1] = val;
 }
 
 uint64_t
@@ -213,6 +271,30 @@ get_unaligned_le64(const void *_ptr)
 	return (val);
 }
 
+uint64_t
+get_unaligned_be64(const void *_ptr)
+{
+	const uint8_t *ptr = _ptr;
+	uint64_t val;
+
+	val = ptr[0];
+	val <<= 8;
+	val |= ptr[1];
+	val <<= 8;
+	val |= ptr[2];
+	val <<= 8;
+	val |= ptr[3];
+	val <<= 8;
+	val |= ptr[4];
+	val <<= 8;
+	val |= ptr[5];
+	val <<= 8;
+	val |= ptr[6];
+	val <<= 8;
+	val |= ptr[7];
+	return (val);
+}
+
 uint32_t
 get_unaligned_le32(const void *_ptr)
 {
@@ -226,6 +308,22 @@ get_unaligned_le32(const void *_ptr)
 	val |= ptr[1];
 	val <<= 8;
 	val |= ptr[0];
+	return (val);
+}
+
+uint32_t
+get_unaligned_be32(const void *_ptr)
+{
+	const uint8_t *ptr = _ptr;
+	uint32_t val;
+
+	val = ptr[0];
+	val <<= 8;
+	val |= ptr[1];
+	val <<= 8;
+	val |= ptr[2];
+	val <<= 8;
+	val |= ptr[3];
 	return (val);
 }
 
@@ -578,6 +676,9 @@ static uint32_t cdev_mm[F_V4B_MAX][SUB_MAX];
 
 static int dvb_swap_fe;
 
+static TAILQ_HEAD(, bus_type) bus_type_head = TAILQ_HEAD_INITIALIZER(bus_type_head);
+static TAILQ_HEAD(, device_driver) device_driver_head = TAILQ_HEAD_INITIALIZER(device_driver_head);
+
 module_param_named(dvb_swap_fe, dvb_swap_fe, int, 0644);
 MODULE_PARM_DESC(dvb_swap_fe, "swap default DVB frontend, 0..3");
 
@@ -811,6 +912,12 @@ kref_get(struct kref *kref)
 }
 
 int
+kref_get_unless_zero(struct kref *kref)
+{
+	return (atomic_add_unless(&kref->refcount, 1, 0));
+}
+
+int
 kref_put(struct kref *kref, void (*release) (struct kref *kref))
 {
 	if (atomic_dec(&kref->refcount) == 0) {
@@ -863,17 +970,77 @@ device_move(struct device *dev, struct device *new_parent, int how)
 }
 
 int
+driver_register(struct device_driver *drv)
+{
+	TAILQ_INSERT_TAIL(&device_driver_head, drv, entry);
+	return (0);
+}
+
+int
+driver_unregister(struct device_driver *drv)
+{
+	if (drv->entry.tqe_prev == NULL)
+		return (-EINVAL);
+	TAILQ_REMOVE(&device_driver_head, drv, entry);
+	drv->entry.tqe_prev = NULL;
+	return (0);
+}
+
+int
+bus_register(struct bus_type *bus)
+{
+	TAILQ_INSERT_TAIL(&bus_type_head, bus, entry);
+	return (0);
+}
+
+int
+bus_unregister(struct bus_type *bus)
+{
+	if (bus->entry.tqe_prev == NULL)
+		return (-EINVAL);
+	TAILQ_REMOVE(&bus_type_head, bus, entry);
+	bus->entry.tqe_prev = NULL;
+	return (0);
+}
+
+int
 device_add(struct device *dev)
 {
-	/* TODO */
-	get_device(dev);
-	return (0);
+	struct device_driver *drv;
+
+	if (dev->bus == NULL) {
+		get_device(dev);
+		return (0);
+	}
+	TAILQ_FOREACH(drv, &device_driver_head, entry) {
+		if (drv->bus != dev->bus)
+			continue;
+
+		dev->driver = drv;
+
+		if (dev->bus->match != NULL) {
+			if (dev->bus->match(dev, drv) == 0)
+				continue;
+		}
+		if (dev->bus->probe != NULL) {
+			if (dev->bus->probe(dev))
+				continue;
+		}
+		get_device(dev);
+		return (0);
+	}
+
+	dev->driver = NULL;
+	return (-ENXIO);
 }
 
 void
 device_del(struct device *dev)
 {
-	/* TODO */
+	if (dev->bus != NULL && dev->bus->remove != NULL) {
+		dev->bus->remove(dev);
+	}
+	dev->driver = NULL;
 	put_device(dev);
 }
 
@@ -887,7 +1054,6 @@ void
 device_unregister(struct device *dev)
 {
 	device_del(dev);
-	put_device(dev);
 }
 
 struct device *
@@ -1259,7 +1425,7 @@ bitmap_shift_right(unsigned long *dst, const unsigned long *src, int n, int nbit
 		else
 			dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
 	}
-	for ( ; x < nbits; x++)
+	for (; x < nbits; x++)
 		dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
 }
 
@@ -1557,6 +1723,22 @@ div_round_closest_u64(uint64_t rem, uint64_t div)
 }
 
 struct timespec
+ktime_mono_to_real(struct timespec arg)
+{
+	return (arg);
+}
+
+struct timespec
+ktime_get_real(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_REALTIME_FAST, &ts);
+
+	return (ts);
+}
+
+struct timespec
 ktime_get(void)
 {
 	struct timespec ts;
@@ -1717,6 +1899,12 @@ msleep(uint32_t ms)
 	atomic_unlock();
 }
 
+void
+ssleep(uint32_t s)
+{
+	msleep(s * 1000);
+}
+
 uint32_t
 msleep_interruptible(uint32_t ms)
 {
@@ -1832,6 +2020,25 @@ void
 sysfs_remove_group(struct kobject *kobj,
     const struct attribute_group *grp)
 {
+}
+
+int
+sysfs_create_bin_file(struct kobject *kobj, struct bin_attribute *attr)
+{
+	return (0);
+}
+
+int
+sysfs_remove_bin_file(struct kobject *kobj, struct bin_attribute *attr)
+{
+	return (0);
+}
+
+void   *
+pci_zalloc_consistent(struct pci_dev *hwdev, size_t size,
+    dma_addr_t *dma_addr)
+{
+	return (pci_alloc_consistent(hwdev, size, dma_addr));
 }
 
 void   *
@@ -2028,6 +2235,46 @@ kstrtou16(const char *nptr, unsigned int base, uint16_t *res)
 }
 
 int
+kstrtos8(const char *nptr, unsigned int base, int8_t *res)
+{
+	long long temp;
+	char *pp = NULL;
+
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoll(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
+	if (temp != (long long)(int8_t)temp)
+		return (-ERANGE);
+
+	*res = temp;
+	return (0);
+}
+
+int
+kstrtou8(const char *nptr, unsigned int base, uint8_t *res)
+{
+	unsigned long long temp;
+	char *pp = NULL;
+
+	*res = 0;
+
+	if (base < 2 || base > 35)
+		return (-EINVAL);
+	temp = strtoull(nptr, &pp, base);
+	if (pp && pp[0])
+		return (-EINVAL);
+	if (temp != (unsigned long long)(uint8_t)temp)
+		return (-ERANGE);
+
+	*res = temp;
+	return (0);
+}
+
+int
 kstrtouint(const char *nptr, unsigned int base, unsigned int *res)
 {
 	unsigned long long temp;
@@ -2146,6 +2393,11 @@ int
 power_supply_powers(struct power_supply *psy, struct device *dev)
 {
 	return (0);
+}
+
+void
+power_supply_changed(struct power_supply *psy)
+{
 }
 
 int
@@ -2521,4 +2773,11 @@ gcd(unsigned long a, unsigned long b)
 		b = r;
 	}
 	return (b);
+}
+
+void
+get_random_bytes(void *buf, int nbytes)
+{
+	while (nbytes--)
+		*((char *)buf + nbytes) = rand();
 }

@@ -667,3 +667,10 @@ i2c_verify_client(struct device *dev)
 {
 	return NULL;			/* NOT supported */
 }
+
+int
+i2c_probe_func_quick_read(struct i2c_adapter *adap, unsigned short addr)
+{
+	return i2c_smbus_xfer(adap, addr, 0, I2C_SMBUS_READ, 0,
+	    I2C_SMBUS_QUICK, NULL) >= 0;
+}

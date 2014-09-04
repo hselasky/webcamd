@@ -38,6 +38,10 @@ struct mod_param {
 	uint16_t perm;
 };
 
+#ifndef CURR_FILE_NAME
+#define	CURR_FILE_NAME "webcamd"
+#endif
+
 #define	module_param_string(id, var, _size, _perm)	\
 static struct mod_param mod_param_##id = {		\
     .name = CURR_FILE_NAME "." #id,			\
@@ -74,6 +78,9 @@ module_parm_init(mod_param_##id##_init)
 static struct mod_param mod_param_##id;
 
 #define	module_param_array(id, ...)		\
+static struct mod_param mod_param_##id;
+
+#define	module_param_array_named(id, ...)		\
 static struct mod_param mod_param_##id;
 
 #define	MODULE_PARM_DESC(id, desc)			\
