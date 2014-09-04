@@ -584,6 +584,7 @@ struct urb {
 	uint32_t transfer_buffer_length;/* (in) data buffer length */
 	uint32_t actual_length;		/* (return) actual transfer length */
 	uint32_t timeout;		/* (in) FreeBSD specific */
+	uint32_t reject;		/* (internal) reject URB */
 
 	uint16_t transfer_flags;	/* (in) */
 #define	URB_SHORT_NOT_OK	0x0001	/* report short transfers like errors */
@@ -787,5 +788,8 @@ int	usb_autopm_get_interface_no_suspend(struct usb_interface *);
 void	usb_autopm_put_interface_async(struct usb_interface *);
 void	usb_autopm_put_interface_no_suspend(struct usb_interface *);
 void	usb_autopm_put_interface_no_resume(struct usb_interface *);
+
+void	usb_block_urb(struct urb *);
+void	usb_unblock_urb(struct urb *);
 
 #endif					/* _LINUX_USB_H_ */

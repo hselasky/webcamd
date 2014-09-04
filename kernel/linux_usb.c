@@ -574,11 +574,14 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	struct usb_host_endpoint *uhe;
 	int err;
 
-	if (urb == NULL) {
+	if (urb == NULL)
 		return (-EINVAL);
-	}
-	atomic_lock();
 
+	atomic_lock();
+	if (urb->reject != 0) {
+		atomic_unlock();
+		return (-ENXIO);
+	}
 	uhe = usb_find_host_endpoint(urb->dev, urb->pipe);
 	if (uhe == NULL) {
 		atomic_unlock();
@@ -2301,4 +2304,24 @@ void
 usb_autopm_put_interface_no_resume(struct usb_interface *intf)
 {
 
+}
+
+void
+usb_block_urb(struct urb *urb)
+{
+	if (urb == NULL)
+		return;
+	atomic_lock();
+	urb->reject++;
+	atomic_unlock();
+}
+
+void
+usb_unblock_urb(struct urb *urb)
+{
+	if (urb == NULL)
+		return;
+	atomic_lock();
+	urb->reject--;
+	atomic_unlock();
 }
