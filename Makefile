@@ -132,7 +132,6 @@ SRCPATHS+= vtuner
 # List of compiler flags
 #
 CFLAGS+= -D_GNU_SOURCE
-CFLAGS+= -DCURR_FILE_NAME=\"${.TARGET:C/\.o//g}\"
 CFLAGS+= -DBITS_PER_LONG=${BITS_PER_LONG}
 CFLAGS+= -DLINUX
 CFLAGS+= -Wall -Wno-pointer-sign -Wno-unused-variable
@@ -265,6 +264,7 @@ package:
 		config*.in \
 		COPYING \
 		${SRCPATHS} \
+		${PKGPATHS} \
 		build \
 		media_tree/COPYING \
 		media_tree/CREDITS \
@@ -326,6 +326,7 @@ configure: tools/linux_make/linux_make
 	@(cat config_radio.in ; echo "") >> config
 .endif
 	tools/linux_make/linux_make -c config \
+		-i media_tree/drivers/hid \
 		-i media_tree/drivers/input \
 		-i media_tree/drivers/media \
 		-i media_tree/drivers/base/regmap \
