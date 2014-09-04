@@ -410,7 +410,7 @@
 #define	simple_strtol strtol
 #define	strict_strtol(a,b,c) ({char *_pp; *(c) = strtol(a,&_pp,b); _pp;})
 #define	noop_llseek 0
-#define	ETIME ETIMEDOUT
+#define	ETIME ECANCELED
 #define	ENOSR ENOBUFS
 #define	ENOTSUPP ENOTSUP
 #define	EREMOTEIO EIO
