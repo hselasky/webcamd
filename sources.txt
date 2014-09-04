@@ -5,6 +5,6 @@ git clone git://github.com/torvalds/linux.git media_tree
 cd media_tree
 git checkout -b media-webcamd origin/master
 
-top commit 7171511eaec5bf23fb06078f59784a3a0626b38f
+top commit 7505ceaf863590b24a4c0c83b64817d26e0d51e3
 
 --HPS
