@@ -183,7 +183,7 @@
 #define	CONFIG_DVB_ZL10353 /* y */
 #define	CONFIG_FW_LOADER /* y */
 #define	CONFIG_HID /* y */
-#define	CONFIG_HIDRAW /* y */
+#undef	CONFIG_HIDRAW /* n */
 #define	CONFIG_HID_A4TECH /* y */
 #define	CONFIG_HID_ACRUX /* y */
 #define	CONFIG_HID_APPLE /* y */
