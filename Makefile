@@ -227,7 +227,8 @@ package:
 	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" \
 		--exclude=".svn" --exclude="*.orig" --exclude="*.rej" \
 		--exclude="temp" \
-		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch8] \
+		Makefile man4/*.4 dummy headers tests/*.[ch] \
+		webcamd*.[ch] webcamd.8 \
 		sources.txt \
 		config \
 		config*.in \
