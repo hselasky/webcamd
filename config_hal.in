@@ -1,0 +1,5 @@
+#
+# HAL configuration
+#
+CONFIG_WEBCAMD_HAL=y
+

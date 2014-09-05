@@ -35,23 +35,7 @@
  * Rewritten by: Hans Petter Selasky <hselasky@FreeBSD.org>
  */
 
-#include <webcamd_hal.h>
-
-#ifndef HAVE_HAL
-
-void
-hal_init(int bus, int addr, int iface, const char *desc)
-{
-	return;
-}
-
-void
-hal_add_device(const char *devname)
-{
-	return;
-}
-
-#else
+#include <kernel/linux_hal.h>
 
 /* Include V4L1 header file from the local system folder: */
 #include <linux/videodev.h>
@@ -319,5 +303,3 @@ hal_add_device(const char *devname)
 		free(pinput);
 	}
 }
-
-#endif

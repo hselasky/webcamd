@@ -26,7 +26,23 @@
 #ifndef _WEBCAMD_HAL_H_
 #define	_WEBCAMD_HAL_H_
 
+#ifdef CONFIG_WEBCAMD_HAL
 void	hal_init(int bus, int addr, int iface, const char *desc);
 void	hal_add_device(const char *devname);
+
+#else
+static inline void
+hal_init(int bus, int addr, int iface, const char *desc)
+{
+	return;
+}
+
+static inline void
+hal_add_device(const char *devname)
+{
+	return;
+}
+
+#endif
 
 #endif					/* _WEBCAMD_HAL_H_ */

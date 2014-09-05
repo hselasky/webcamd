@@ -1,7 +1,7 @@
 #
 # $FreeBSD: $
 #
-# Copyright (c) 2010-2012 Hans Petter Selasky. All rights reserved.
+# Copyright (c) 2010-2014 Hans Petter Selasky. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	3.16.0.2
+VERSION=	3.17.0.1
 PROG=		webcamd
 
 #
@@ -120,13 +120,7 @@ PTHREAD_LIBS?=	-lpthread
 
 .include "${.CURDIR}/build/obj-y/Makefile"
 
-#
-# List of source paths
-#
-SRCPATHS+= kernel
-SRCPATHS+= vtuner
-
-.PATH: ${.CURDIR} ${SRCPATHS} ${LINUXDIR}/lib
+.PATH: ${.CURDIR} ${LINUXDIR}/lib
 
 #
 # List of compiler flags
@@ -178,7 +172,7 @@ CFLAGS+= -include webcamd_global.h
 .if defined(HAVE_HAL)
 HAL_CFLAGS!= pkg-config --cflags hal
 HAL_LDFLAGS!= pkg-config --libs hal
-CFLAGS+= ${HAL_CFLAGS} -DHAVE_HAL
+CFLAGS+= ${HAL_CFLAGS}
 LDFLAGS+= ${HAL_LDFLAGS}
 .endif
 
@@ -194,43 +188,12 @@ CFLAGS+= -g
 LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd ${PTHREAD_LIBS} -lutil
 
 #
-# List of Linux specific sources
+# List of source files which need to be built separately:
 #
 SRCS+= kfifo.c
 SRCS+= idr.c
 SRCS+= rbtree.c
-
-#
-# List of FreeBSD specific sources
-#
-SRCS+= linux_section.c
-SRCS+= linux_thread.c
-SRCS+= linux_defs.c
-SRCS+= linux_func.c
-SRCS+= linux_file.c
-SRCS+= linux_struct.c
-SRCS+= linux_task.c
-SRCS+= linux_timer.c
-SRCS+= linux_usb.c
-SRCS+= linux_firmware.c
-SRCS+= linux_i2c.c
-SRCS+= linux_i2c_mux.c
-SRCS+= linux_mod_param.c
-
 SRCS+= webcamd.c
-SRCS+= webcamd_hal.c
-
-.if defined(HAVE_VTUNER_CLIENT) || defined(HAVE_VTUNER_SERVER)
-SRCS+= vtuner_common.c
-.endif
-
-.if defined(HAVE_VTUNER_CLIENT)
-SRCS+= vtuner_client.c
-.endif
-
-.if defined(HAVE_VTUNER_SERVER)
-SRCS+= vtuner_server.c
-.endif
 
 .include <bsd.prog.mk>
 
@@ -258,12 +221,11 @@ package:
 	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" \
 		--exclude=".svn" --exclude="*.orig" --exclude="*.rej" \
 		--exclude="temp" \
-		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch] webcamd.8 \
+		Makefile man4/*.4 dummy headers tests/*.[ch] webcamd*.[ch8] \
 		sources.txt \
 		config \
 		config*.in \
 		COPYING \
-		${SRCPATHS} \
 		${PKGPATHS} \
 		build \
 		media_tree/COPYING \
@@ -325,7 +287,21 @@ configure: tools/linux_make/linux_make
 	@echo " * Radio devices"
 	@(cat config_radio.in ; echo "") >> config
 .endif
+.if defined(HAVE_HAL) || defined(HAVE_ALL_DRV)
+	@echo " * HAL support"
+	@(cat config_hal.in ; echo "") >> config
+.endif
+.if defined(HAVE_VTUNER_CLIENT) || defined(HAVE_ALL_DRV)
+	@echo " * VirtualTuner client"
+	@(cat config_vtuner_client.in ; echo "") >> config
+.endif
+.if defined(HAVE_VTUNER_SERVER) || defined(HAVE_ALL_DRV)
+	@echo " * VirtualTuner server"
+	@(cat config_vtuner_server.in ; echo "") >> config
+.endif
 	tools/linux_make/linux_make -c config \
+		-i kernel \
+		-i vtuner \
 		-i media_tree/drivers/hid \
 		-i media_tree/drivers/input \
 		-i media_tree/drivers/media \

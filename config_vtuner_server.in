@@ -1,0 +1,6 @@
+#
+# VirtualTuner server configuration
+#
+CONFIG_WEBCAMD_VT=y
+CONFIG_WEBCAMD_VT_SERVER=y
+
