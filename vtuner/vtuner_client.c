@@ -43,9 +43,13 @@
 #include <netinet/tcp.h>
 #include <signal.h>
 
+#ifdef HAVE_CUSE
+#include <cuse.h>
+#else
 #include <cuse4bsd.h>
+#endif
 
-#include <webcamd_hal.h>
+#include <kernel/linux_hal.h>
 
 #define	VTUNER_MODULE_VERSION "1.0-hps"
 

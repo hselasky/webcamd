@@ -26,7 +26,11 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 
+#ifdef HAVE_CUSE
+#include <cuse.h>
+#else
 #include <cuse4bsd.h>
+#endif
 
 struct cdev_handle *
 linux_open(int f_v4b, int fflags)

@@ -41,9 +41,13 @@
 
 #include <libutil.h>
 
+#ifdef HAVE_CUSE
+#include <cuse.h>
+#else
 #include <cuse4bsd.h>
+#endif
 
-#include <webcamd_hal.h>
+#include <kernel/linux_hal.h>
 
 #include <linux/idr.h>
 
@@ -441,13 +445,14 @@ usage(void)
 	    "	-H Register device by HAL daemon\n"
 	    "	-D <host:port:ndev> Connect to remote host instead of USB\n"
 	    "	-L <host:port:ndev> Make DVB device available from TCP/IP\n"
-	    "	-h Print help\n",
+	    "	-h Print help\n"
+	    "NOTE: The minimum options needed is one of -d, -S, -s, -l, -N or -D\n",
 	    global_fw_prefix
 	);
 	exit(EX_USAGE);
 }
 
-static const char string_unknown[] = { "unknown" };
+static const char string_unknown[] = {"unknown"};
 
 static void
 string_filter(char *ptr)
@@ -484,8 +489,8 @@ string_filter(char *ptr)
 
 struct find_match {
 	struct find_match *next;
-	char *ser;
-	char *txt;
+	char   *ser;
+	char   *txt;
 	uint32_t match_num;
 };
 
@@ -518,6 +523,7 @@ static void
 free_match(struct find_match **ppfirst)
 {
 	struct find_match *ptr;
+
 	while (1) {
 		ptr = *ppfirst;
 		if (ptr == NULL)
@@ -540,11 +546,11 @@ find_devices(void)
 	int found = 0;
 	int match_number = 0;
 	struct find_match *first_match = NULL;
-	struct find_match *curr_match;
+	struct find_match *curr_match = NULL;
 
 	pbe = libusb20_be_alloc_default();
 	if (pbe == NULL)
-		return;
+		v4b_errx(EX_SOFTWARE, "Cannot allocate USB backend");
 
 	pdev = NULL;
 	while ((pdev = libusb20_be_device_foreach(pbe, pdev))) {
@@ -586,8 +592,8 @@ find_devices(void)
 			    txt, ser, curr_match->match_num);
 
 		} else if ((u_devicename == NULL || strcmp(txt, u_devicename) == 0) &&
-		    (u_serialname == NULL || strcmp(ser, u_serialname) == 0) &&
-		    (u_addr == 0 || (libusb20_dev_get_address(pdev) == u_addr &&
+			    (u_serialname == NULL || strcmp(ser, u_serialname) == 0) &&
+			    (u_addr == 0 || (libusb20_dev_get_address(pdev) == u_addr &&
 		    libusb20_dev_get_bus_number(pdev) == u_unit))) {
 
 			if (found++ == u_match_index) {
@@ -602,7 +608,7 @@ find_devices(void)
 	libusb20_be_free(pbe);
 	free_match(&first_match);
 
-	if (do_list != 0)
+	if (do_list != 0 && curr_match != NULL)
 		exit(0);
 
 	v4b_errx(EX_SOFTWARE, "No USB device match found");
@@ -766,15 +772,15 @@ main(int argc, char **argv)
 	if (!gid_found)
 		a_gid("webcamd");
 
-	if (u_devicename != NULL || u_serialname != NULL || do_list != 0)
+	if (u_devicename != NULL || u_serialname != NULL || do_list != 0) {
 		find_devices();
-
+	} else if (u_addr == 0 && opt_vtuner_client == 0) {
+		/* list devices by default if no option was specified */
+		do_list = 1;
+		find_devices();
+	}
 	if (do_fork) {
 		/* need to daemonise before creating any threads */
-
-		if (u_addr == 0 && opt_vtuner_client == 0)
-			v4b_errx(EX_USAGE, "-B options requires a valid -d, -S, -N or -D option");
-
 		if (pidfile_create(u_unit, u_addr, u_index)) {
 			fprintf(stderr, "Webcamd is already running for "
 			    "ugen%d.%d.%d\n", u_unit, u_addr, u_index);
@@ -890,7 +896,6 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-
 	if (mod_get_int_param("vtuner_client.devices") != 0)
 		vtuner_client = 1;
 

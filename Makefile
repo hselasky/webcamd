@@ -185,8 +185,14 @@ CFLAGS+= -g
 #
 # List of linker flags
 #
-LDFLAGS+= -L${LIBDIR} -lusb -lcuse4bsd ${PTHREAD_LIBS} -lutil
+LDFLAGS+= -L${LIBDIR} -lusb ${PTHREAD_LIBS} -lutil
 
+.if defined(HAVE_CUSE)
+CFLAGS+= -DHAVE_CUSE
+LDFLAGS+= -lcuse
+.else
+LDFLAGS+= -lcuse4bsd
+.endif
 #
 # List of source files which need to be built separately:
 #
