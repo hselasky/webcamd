@@ -690,7 +690,7 @@ main(int argc, char **argv)
 	const char *params = "N:Bd:f:i:M:m:S:sv:hHrU:G:D:lL:";
 	char *ptr;
 	int opt;
-	int opt_vtuner_client = 0;
+	int opt_valid = 0;
 
 	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
@@ -728,11 +728,11 @@ main(int argc, char **argv)
 			break;
 
 		case 'D':
-			opt_vtuner_client = 1;
-			break;
 		case 'L':
-		case 'm':
 		case 's':
+			opt_valid = 1;
+			break;
+		case 'm':
 			break;
 
 		case 'v':
@@ -778,7 +778,7 @@ main(int argc, char **argv)
 
 	if (u_devicename != NULL || u_serialname != NULL || do_list != 0) {
 		find_devices();
-	} else if (u_addr == 0 && opt_vtuner_client == 0) {
+	} else if (u_addr == 0 && opt_valid == 0) {
 		/* list devices by default if no option was specified */
 		do_list = 1;
 		find_devices();
