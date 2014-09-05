@@ -284,8 +284,10 @@ hal_add_device(const char *devname)
 		libhal_changeset_set_property_string(cset, "input.device", devpath);
 		libhal_changeset_set_property_string(cset, "input.originating_device", hal_dev);
 		libhal_changeset_set_property_string(cset, "input.product", hal_desc);
-		if (strcmp(hal_desc, "wacom") == 0)
-			libhal_changeset_set_property_string(cset, "input.x11_driver", hal_desc);
+
+		/* XXX currently wacom is the only Linux Event device driver we have XXX */
+		if (strcmp(hal_desc, "wacom") == 0 || strcmp(hal_desc, "usbhid") == 0)
+			libhal_changeset_set_property_string(cset, "input.x11_driver", "wacom");
 
 		libhal_changeset_set_property_string(cset, "linux.device_file", devpath);
 		libhal_changeset_set_property_int(cset, "linux.hotplug_type", 2);
