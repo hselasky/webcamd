@@ -577,6 +577,9 @@ find_devices(void)
 	if (pbe == NULL)
 		v4b_errx(EX_SOFTWARE, "Cannot allocate USB backend");
 
+	if (do_list != 0)
+		printf("Available device(s):\n");
+
 	pdev = NULL;
 	while ((pdev = libusb20_be_device_foreach(pbe, pdev))) {
 		if (libusb20_dev_get_mode(pdev) != LIBUSB20_MODE_HOST)
