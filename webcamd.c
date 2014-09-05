@@ -608,8 +608,12 @@ find_devices(void)
 	libusb20_be_free(pbe);
 	free_match(&first_match);
 
-	if (do_list != 0 && curr_match != NULL)
-		exit(0);
+	if (do_list != 0) {
+		printf("Show webcamd usage:\n"
+		    "webcamd -h\n");
+		if (curr_match != NULL)
+			exit(0);
+	}
 
 	v4b_errx(EX_SOFTWARE, "No USB device match found");
 }
