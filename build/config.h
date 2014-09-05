@@ -199,7 +199,7 @@
 #define	CONFIG_HID_ELO /* y */
 #define	CONFIG_HID_EMS_FF /* y */
 #define	CONFIG_HID_EZKEY /* y */
-#define	CONFIG_HID_GENERIC /* y */
+#undef	CONFIG_HID_GENERIC /* n */
 #define	CONFIG_HID_GREENASIA /* y */
 #define	CONFIG_HID_GT683R /* y */
 #define	CONFIG_HID_GYRATION /* y */
