@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd September 1, 2014
+.Dd September 4, 2014
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -43,7 +43,7 @@
 .Op Fl N Ar <devicename>
 .Op Fl S Ar <deviceserialnumber>
 .Op Fl d Ar [ugen]<unit>.<addr>
-.Op Fl i Ar <interface number>
+.Op Fl i Ar <interface or client number>
 .Op Fl v Ar <video device number>
 .Op Fl m Ar <parameter>=<value>
 .Op Fl r
@@ -127,6 +127,11 @@ Enable vTuner client support.
 Connect to one or more remote DVB device instead of using USB.
 The vTuner protocol needs eight ports for normal operation which are allocated back to back.
 One port for control communication and the other port for data communication.
+NOTE: If you want to start multiple vTuner clients in the background by use of the
+.Fl B
+option, you need to supply a unique interface number for each client using th
+.Fl i
+option.
 .It Fl L
 Enable vTuner server support.
 Make the DVB device available on TCP/IP instead of Cuse4BSD.

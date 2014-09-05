@@ -68,7 +68,7 @@ static struct cuse_methods v4b_methods = {
  * group from "A" to "Z". This letter is removed when creating the
  * character device.
  */
-#define	UNIT_MAX ('F' - 'A')
+#define	UNIT_MAX ('G' - 'A')
 
 const char *webcamd_devnames[F_V4B_MAX] = {
 
@@ -89,6 +89,8 @@ const char *webcamd_devnames[F_V4B_MAX] = {
 	[F_V4B_EVDEV] = "Dinput/event%d",
 
 	[F_V4B_JOYDEV] = "Einput/js%d",
+
+	[F_V4B_ROCCAT] = "Froccat%d",
 };
 
 static int u_unit;
@@ -423,7 +425,7 @@ usage(void)
 	fprintf(stderr,
 	    "usage: webcamd -d [ugen]<unit>.<addr> -i 0 -v -1 -B\n"
 	    "	-d <USB device>\n"
-	    "	-i <interface number>\n"
+	    "	-i <interface or client number>\n"
 	    "	-m <parameter>=<value>\n"
 	    "	-s Show available parameters\n"
 	    "	-l Show available USB devices\n"
@@ -678,6 +680,7 @@ main(int argc, char **argv)
 	const char *params = "N:Bd:f:i:M:m:S:sv:hHrU:G:D:lL:";
 	char *ptr;
 	int opt;
+	int opt_vtuner_client = 0;
 
 	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
@@ -715,6 +718,8 @@ main(int argc, char **argv)
 			break;
 
 		case 'D':
+			opt_vtuner_client = 1;
+			break;
 		case 'L':
 		case 'm':
 		case 's':
@@ -767,8 +772,8 @@ main(int argc, char **argv)
 	if (do_fork) {
 		/* need to daemonise before creating any threads */
 
-		if (u_addr == 0)
-			v4b_errx(EX_USAGE, "-B options requires a valid -d or -S or -N option");
+		if (u_addr == 0 && opt_vtuner_client == 0)
+			v4b_errx(EX_USAGE, "-B options requires a valid -d, -S, -N or -D option");
 
 		if (pidfile_create(u_unit, u_addr, u_index)) {
 			fprintf(stderr, "Webcamd is already running for "
@@ -880,7 +885,6 @@ main(int argc, char **argv)
 			printf("List of available parameters:\n");
 			mod_show_params();
 			exit(0);
-			break;
 
 		default:
 			break;
