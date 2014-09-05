@@ -15,6 +15,10 @@ int	zero_nop(void);
 
 #define	driver_create_file(...) zero_nop()
 #define	driver_remove_file(...) zero_nop()
+#define	driver_attach(...) zero_nop()
+
+int driver_register(struct device_driver *);
+int driver_unregister(struct device_driver *);
 
 int	printk_nop(void);
 
@@ -77,7 +81,7 @@ void   *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp);
 void	devm_kfree(struct device *dev, void *ptr);
 void   *dev_get_drvdata(const struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
-const char *dev_name(struct device *dev);
+const char *dev_name(const struct device *dev);
 int	vm_insert_page(struct vm_area_struct *vma, unsigned long start, struct page *page);
 int	remap_pfn_range(struct vm_area_struct *, unsigned long addr, unsigned long pfn, unsigned long size, int);
 void	vfree(void *);

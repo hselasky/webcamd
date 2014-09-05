@@ -260,7 +260,7 @@ struct device {
 	void   *platform_data;
 	void   *driver_data;
 	const struct file_operations *fops;
-	const struct attribute_group *groups;
+	const struct attribute_group **groups;
 	struct bus_type *bus;
 	struct cdev *cdev;
 	struct class *class;
@@ -364,6 +364,7 @@ enum {
 	F_V4B_LIRC,
 	F_V4B_EVDEV,
 	F_V4B_JOYDEV,
+	F_V4B_ROCCAT,
 	F_V4B_MAX,
 };
 

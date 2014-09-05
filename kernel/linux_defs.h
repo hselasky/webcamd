@@ -136,6 +136,9 @@
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	printk_timed_ratelimit(...) printk_nop()
+#ifdef HAVE_DEBUG
+#define	pr_fmt(...) __VA_ARGS__
+#endif
 #define	pr_err_ratelimited(...) __nop
 #define	pr_cont(...) __nop
 #define	pr_err(...) __nop
@@ -145,17 +148,17 @@
 #define	pr_warn(...) __nop
 #define	pr_warning(...) __nop
 #define	pr_emerg(...) __nop
-#define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_dbg_ratelimited(dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_err_ratelimited(dev, fmt, ...) printk("ERR: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_info(dev, fmt, ...) printk("INFO: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_info_ratelimited(dev, fmt, ...) printk("INFO: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_dbg(dev, fmt, ...) printk("DBG: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_debug(dev, fmt, ...) printk("DBG: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_dbg_ratelimited(dev, fmt, ...) printk("DBG: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_err(dev, fmt, ...) printk("ERR: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_err_ratelimited(dev, fmt, ...) printk("ERR: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_info(dev, fmt, ...) printk("INFO: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_info_ratelimited(dev, fmt, ...) printk("INFO: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
 #define	dev_warn(dev, fmt, ...) printk("WARN: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_warn_ratelimited(dev, fmt, ...) printk("WARN: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_notice(dev, fmt, ...) printk("NOTICE: %s: " fmt, dev_name(dev),## __VA_ARGS__)
-#define	dev_notice_ratelimited(dev, fmt, ...) printk("NOTICE: %s: " fmt, dev_name(dev),## __VA_ARGS__)
+#define	dev_warn_ratelimited(dev, fmt, ...) printk("WARN: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_notice(dev, fmt, ...) printk("NOTICE: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_notice_ratelimited(dev, fmt, ...) printk("NOTICE: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
 #define	info(fmt, ...) printk("INFO: " fmt "\n",## __VA_ARGS__)
 #define	warn(fmt, ...) printk("WARN: " fmt "\n",## __VA_ARGS__)
 #define	dbg(fmt, ...) printk("DBG: " fmt "\n",## __VA_ARGS__)
@@ -163,14 +166,14 @@
 #define	notice(fmt, ...) printk("NOTICE: " fmt "\n",## __VA_ARGS__)
 #define	kmem_cache_create(desc,size,align,arg,fn) ((struct kmem_cache *)(size))
 #define	kmem_cache_destroy(...) __nop
-#define	kmem_cache_free(ref,ptr) free(ptr)
+#define	kmem_cache_free(ref,ptr) free(GP_DECONST(ptr))
 #define	kmem_cache_alloc(ref,g) malloc((long)(ref))
 #define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, (s))
 #define	krealloc(p,s,opt) realloc(p,(s))
 #define	dma_alloc_coherent(d,s,h,g) calloc(1,(s))
-#define	dma_free_coherent(d,s,v,h) free(v)
+#define	dma_free_coherent(d,s,v,h) free(GP_DECONST(v))
 #define	vmalloc_32_user(s) malloc_vm(s)
 #define	vmalloc_user(s) malloc_vm(s)
 #define	vmalloc_32(s) malloc_vm(s)
@@ -191,7 +194,7 @@
 #define	kobject_get(...) __nop
 #define	kobject_uevent(...) __nop
 #define	vfree(ptr) free_vm(ptr)
-#define	kfree(ptr) free(ptr)
+#define	kfree(ptr) free(GP_DECONST(ptr))
 #define	kstrdup(a,b) strdup(a)
 #define	might_sleep(x) __nop
 #define	might_sleep_if(x) __nop
@@ -371,6 +374,7 @@
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
 #define	set_current_state(...) __nop
+#define	task_pid_nr(...) (1)
 #define	time_after(a,b) (((long)(b) - (long)(a)) < 0)
 #define	time_after_eq(a,b) (((long)(b) - (long)(a)) <= 0)
 #define	time_before(a,b) time_after(b,a)

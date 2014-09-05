@@ -391,7 +391,7 @@ dev_set_drvdata(struct device *dev, void *data)
 }
 
 const char *
-dev_name(struct device *dev)
+dev_name(const struct device *dev)
 {
 	if (dev == NULL)
 		return ("NULL");
@@ -665,6 +665,7 @@ done:
 	return (cdev);
 }
 
+#define	ROCCAT_MAJOR 35
 #define	LIRC_MAJOR 14
 #define	EVDEV_MINOR_BASE 64
 #define	JOYDEV_MINOR_BASE 0
@@ -718,6 +719,14 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 			break;
 		cdev_registry[F_V4B_LIRC][subdev] = cdev;
 		cdev_mm[F_V4B_LIRC][subdev] = mm;
+		break;
+
+	case MKDEV(ROCCAT_MAJOR, 0):
+		subdev = mm & 0xFF;
+		if (subdev >= F_V4B_SUBDEV_MAX)
+			break;
+		cdev_registry[F_V4B_ROCCAT][subdev] = cdev;
+		cdev_mm[F_V4B_ROCCAT][subdev] = mm;
 		break;
 
 	case MKDEV(VIDEO_MAJOR, 0):
@@ -1611,6 +1620,9 @@ alloc_chrdev_region(dev_t *pdev, unsigned basemin, unsigned count, const char *n
 {
 	if (strcmp(name, "BaseRemoteCtl") == 0) {
 		*pdev = MKDEV(LIRC_MAJOR, basemin);
+		return (0);
+	} else if (strcmp(name, "roccat") == 0) {
+		*pdev = MKDEV(ROCCAT_MAJOR, basemin);
 		return (0);
 	}
 	printf("alloc_chrdev_region: Unknown region name: '%s'\n", name);

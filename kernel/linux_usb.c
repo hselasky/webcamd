@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2011 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2014 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1147,7 +1147,8 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 		id = pcfg->interface + i;
 
 		p_ud->bsd_config.interface[i] = p_ui;
-		p_ui->dev.driver_static.name = "webcamd";
+		p_ui->dev.parent = &p_ud->dev;
+		p_ui->dev.driver_static.name = "webcamd-usb-interface";
 		p_ui->dev.driver = &p_ui->dev.driver_static;
 		p_ui->altsetting = p_uhi;
 		p_ui->cur_altsetting = p_uhi;
