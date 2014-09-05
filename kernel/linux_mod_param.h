@@ -57,22 +57,33 @@ static int mod_param_##id##_init(void)			\
 }							\
 module_parm_init(mod_param_##id##_init)
 
-#define	module_param_named(id, var, _type, _perm)	\
-static struct mod_param mod_param_##id = {		\
-    .name = CURR_FILE_NAME "." #id,			\
-    .ptr = &(var),					\
-    .type = #_type,					\
-    .perm = (_perm),					\
-};							\
-static int mod_param_##id##_init(void)			\
-{							\
-  mod_param_register(&mod_param_##id);			\
-  return (0);						\
-}							\
+#define	module_param_named(id, v, _type, _perm)	\
+static struct mod_param mod_param_##id = {	\
+    .name = CURR_FILE_NAME "." #id,		\
+    .ptr = &(v),				\
+    .type = #_type,				\
+    .perm = (_perm),				\
+};						\
+static int mod_param_##id##_init(void)		\
+{						\
+  mod_param_register(&mod_param_##id);		\
+  return (0);					\
+}						\
 module_parm_init(mod_param_##id##_init)
 
-#define	module_param(name, type, perm)		\
-    module_param_named(name, name, type, perm)
+#define	module_param(id, _type, _perm)		\
+static struct mod_param mod_param_##id = {	\
+    .name = CURR_FILE_NAME "." #id,		\
+    .ptr = &(id),				\
+    .type = #_type,				\
+    .perm = (_perm),				\
+};						\
+static int mod_param_##id##_init(void)		\
+{						\
+  mod_param_register(&mod_param_##id);		\
+  return (0);					\
+}						\
+module_parm_init(mod_param_##id##_init)
 
 #define	module_param_call(id, ...)		\
 static struct mod_param mod_param_##id;
