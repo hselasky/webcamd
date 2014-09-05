@@ -784,5 +784,9 @@
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
 #undef	CONFIG_VIDEO_ZORAN /* n */
+#define	CONFIG_WEBCAMD_HAL /* y */
+#define	CONFIG_WEBCAMD_VT /* y */
+#define	CONFIG_WEBCAMD_VT_CLIENT /* y */
+#define	CONFIG_WEBCAMD_VT_SERVER /* y */
 
 #endif			/* _ROOT_CONFIG_H_ */
