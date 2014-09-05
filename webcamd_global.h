@@ -80,6 +80,10 @@ extern uid_t v4b_get_uid(void);
 extern gid_t v4b_get_gid(void);
 extern int v4b_get_perm(void);
 
+extern unsigned short webcamd_vendor;
+extern unsigned short webcamd_product;
+extern unsigned int webcamd_speed;
+
 #define	getmode __getmode
 #define	setmode __setmode
 #define	sync __sync
@@ -87,4 +91,9 @@ extern int v4b_get_perm(void);
 #ifndef O_CLOEXEC
 #define	O_CLOEXEC	0x00100000
 #endif
+
+#define	WEBCAMD_IOCTL_GET_USB_VENDOR_ID _IOR('q', 250, unsigned short)
+#define	WEBCAMD_IOCTL_GET_USB_PRODUCT_ID _IOR('q', 251, unsigned short)
+#define	WEBCAMD_IOCTL_GET_USB_SPEED _IOR('q', 252, unsigned int)
+
 #endif					/* _WEBCAMD_GLOBAL_H_ */

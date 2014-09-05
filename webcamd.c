@@ -268,6 +268,10 @@ v4b_write(struct cuse_dev *cdev, int fflags,
 	return (v4b_convert_error(error));
 }
 
+unsigned short webcamd_vendor;
+unsigned short webcamd_product;
+unsigned int webcamd_speed;
+
 static int
 v4b_ioctl(struct cuse_dev *cdev, int fflags,
     unsigned long cmd, void *peer_data)
@@ -307,6 +311,27 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 			error = -EFAULT;
 			goto done;
 		}
+	} else if ((cmd == WEBCAMD_IOCTL_GET_USB_VENDOR_ID) && (error < 0)) {
+		if (copy_to_user(peer_data, &webcamd_vendor,
+		    sizeof(webcamd_vendor)) != 0) {
+			error = -EFAULT;
+			goto done;
+		}
+		error = 0;
+	} else if ((cmd == WEBCAMD_IOCTL_GET_USB_PRODUCT_ID) && (error < 0)) {
+		if (copy_to_user(peer_data, &webcamd_product,
+		    sizeof(webcamd_product)) != 0) {
+			error = -EFAULT;
+			goto done;
+		}
+		error = 0;
+	} else if ((cmd == WEBCAMD_IOCTL_GET_USB_SPEED) && (error < 0)) {
+		if (copy_to_user(peer_data, &webcamd_speed,
+		    sizeof(webcamd_speed)) != 0) {
+			error = -EFAULT;
+			goto done;
+		}
+		error = 0;
 	}
 done:
 	return (v4b_convert_error(error));
@@ -614,7 +639,6 @@ find_devices(void)
 		if (curr_match != NULL)
 			exit(0);
 	}
-
 	v4b_errx(EX_SOFTWARE, "No USB device match found");
 }
 

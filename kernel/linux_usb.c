@@ -389,6 +389,23 @@ next_dev:
 	return (-ENXIO);
 
 found:
+	switch (libusb20_dev_get_speed(pdev)) {
+	case LIBUSB20_SPEED_LOW:
+		webcamd_speed = 1;
+		break;
+	case LIBUSB20_SPEED_FULL:
+		webcamd_speed = 12;
+		break;
+	case LIBUSB20_SPEED_SUPER:
+		webcamd_speed = 5000;
+		break;
+	default:
+		webcamd_speed = 480;
+		break;
+	}
+	webcamd_vendor = libusb20_dev_get_device_desc(pdev)->idVendor;
+	webcamd_product = libusb20_dev_get_device_desc(pdev)->idProduct;
+
 	*p_bus = libusb20_dev_get_bus_number(pdev);
 	*p_addr = libusb20_dev_get_address(pdev);
 	*p_index = index_copy;

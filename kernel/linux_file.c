@@ -116,19 +116,21 @@ int
 linux_ioctl(struct cdev_handle *handle, int fflags,
     unsigned int cmd, void *arg)
 {
+	int retval = -EINVAL;
+
 	if (handle == NULL)
-		return (-EINVAL);
+		goto done;
 
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
 	if (handle->fixed_file.f_op->unlocked_ioctl != NULL)
-		return (handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
-		    cmd, (long)arg));
+		retval = handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
+		    cmd, (long)arg);
 	else if (handle->fixed_file.f_op->ioctl != NULL)
-		return (handle->fixed_file.f_op->ioctl(&handle->fixed_inode,
-		    &handle->fixed_file, cmd, (long)arg));
-	else
-		return (-EINVAL);
+		retval = handle->fixed_file.f_op->ioctl(&handle->fixed_inode,
+		    &handle->fixed_file, cmd, (long)arg);
+done:
+	return (retval);
 }
 
 int
