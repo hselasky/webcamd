@@ -65,7 +65,8 @@ for F in \
 ../media_tree/drivers/media/i2c/adv7343.c \
 ../media_tree/drivers/media/i2c/tvp7002.c \
 ../media_tree/drivers/input/tablet/wacom.h \
-../media_tree/drivers/hid/wacom.h
+../media_tree/drivers/hid/wacom.h \
+../media_tree/drivers/media/rc/rc-main.c
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
 done
@@ -105,6 +106,7 @@ find_media_file wacom.h
 find_media_file tvp514x.c
 find_media_file adv7343.c
 find_media_file tvp7002.c
+find_media_file rc-main.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
@@ -126,6 +128,7 @@ patch $OPT $(find_media_file wacom.h) wacom.h.diff
 patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
 patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
+patch $OPT $(find_media_file rc-main.c) rc-main.c.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)
