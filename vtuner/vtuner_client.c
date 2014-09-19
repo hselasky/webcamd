@@ -960,7 +960,7 @@ vtunerc_init(void)
 			continue;
 		}
 
-		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_FRONTEND] + 1, unit);
+		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_FRONTEND] + 1, unit, 0);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
@@ -970,7 +970,7 @@ vtunerc_init(void)
 		if (webcamd_hal_register)
 			hal_add_device(buf);
 
-		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DVR] + 1, unit);
+		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DVR] + 1, unit, 0);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
@@ -980,7 +980,7 @@ vtunerc_init(void)
 		if (webcamd_hal_register)
 			hal_add_device(buf);
 
-		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DEMUX] + 1, unit);
+		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DEMUX] + 1, unit, 0);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
