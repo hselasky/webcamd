@@ -29,7 +29,7 @@ struct usb_interface;
 struct vm_area_struct;
 struct vm_operations_struct;
 
-#define	LINUX_VMA_MAX 16
+#define	LINUX_VMA_MAX 128
 
 #define	SET_SYSTEM_SLEEP_PM_OPS(...)
 struct dev_pm_ops {
