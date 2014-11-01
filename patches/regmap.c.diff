@@ -1,0 +1,21 @@
+diff --git a/drivers/base/regmap/regmap.c b/drivers/base/regmap/regmap.c
+index d2f8a81..61b70ad 100644
+--- a/drivers/base/regmap/regmap.c
++++ b/drivers/base/regmap/regmap.c
+@@ -487,6 +487,7 @@ static enum regmap_endian regmap_get_val_endian(struct device *dev,
+ 	if (endian != REGMAP_ENDIAN_DEFAULT)
+ 		return endian;
+ 
++#if IS_ENABLED(CONFIG_OF)
+ 	/* If the dev and dev->of_node exist try to get endianness from DT */
+ 	if (dev && dev->of_node) {
+ 		np = dev->of_node;
+@@ -501,7 +502,7 @@ static enum regmap_endian regmap_get_val_endian(struct device *dev,
+ 		if (endian != REGMAP_ENDIAN_DEFAULT)
+ 			return endian;
+ 	}
+-
++#endif
+ 	/* Retrieve the endianness specification from the bus config */
+ 	if (bus && bus->val_format_endian_default)
+ 		endian = bus->val_format_endian_default;

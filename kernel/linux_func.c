@@ -2175,6 +2175,18 @@ div64_u64(uint64_t rem, uint64_t div)
 	return (rem / div);
 }
 
+int64_t
+div64_s64(int64_t rem, int64_t div)
+{
+	return (rem / div);
+}
+
+int64_t
+div_s64(int64_t rem, int32_t div)
+{
+        return (rem / (int64_t)div);
+}
+
 uint64_t
 div_u64(uint64_t rem, uint32_t div)
 {
@@ -2793,3 +2805,14 @@ get_random_bytes(void *buf, int nbytes)
 	while (nbytes--)
 		*((char *)buf + nbytes) = rand();
 }
+
+const char *
+dev_driver_string(const struct device *dev)
+{
+	struct device_driver *drv;
+	drv = dev->driver;
+	return (drv ? drv->name :
+	    (dev->bus ? dev->bus->name :
+	    (dev->class ? dev->class->name : "")));
+}
+

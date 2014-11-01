@@ -238,8 +238,10 @@ struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
 uint32_t do_div(uint64_t *rem, uint32_t div);
 uint64_t div64_u64(uint64_t, uint64_t);
+int64_t div64_s64(int64_t, int64_t);
 uint64_t div_u64_rem(uint64_t, uint32_t, uint32_t *);
 uint64_t div_u64(uint64_t, uint32_t);
+int64_t div_s64(int64_t, int32_t);
 
 #define	do_div(r,d) do_div(&(r),(d))
 int	sysfs_create_group(struct kobject *, const struct attribute_group *);
@@ -295,5 +297,7 @@ int	devres_destroy(struct device *, dr_release_t, dr_match_t, void *);
 uint32_t ror32(uint32_t, uint8_t);
 unsigned long gcd(unsigned long, unsigned long);
 void	get_random_bytes(void *, int);
+
+const char *dev_driver_string(const struct device *);
 
 #endif					/* _LINUX_FUNC_H_ */

@@ -2343,3 +2343,9 @@ usb_unblock_urb(struct urb *urb)
 	urb->reject--;
 	atomic_unlock();
 }
+
+void
+usb_queue_reset_device(struct usb_interface *intf)
+{
+
+}

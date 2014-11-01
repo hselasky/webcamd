@@ -1,10 +1,10 @@
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index 4555baa..465bdd3 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.c
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -1711,7 +1711,8 @@ static int dvb_frontend_ioctl(struct file *file,
- 	if (down_interruptible (&fepriv->sem))
- 		return -ERESTARTSYS;
+diff --git a/drivers/media/dvb-core/dvb_frontend.c b/drivers/media/dvb-core/dvb_frontend.c
+index b8579ee..f3ced49 100644
+--- a/drivers/media/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb-core/dvb_frontend.c
+@@ -1914,7 +1914,8 @@ static int dvb_frontend_ioctl(struct file *file,
+ 		return -EPERM;
+ 	}
  
 -	if ((cmd == FE_SET_PROPERTY) || (cmd == FE_GET_PROPERTY))
 +	if ((cmd == FE_SET_PROPERTY) || (cmd == FE_GET_PROPERTY) ||
@@ -12,12 +12,12 @@ index 4555baa..465bdd3 100644
  		err = dvb_frontend_ioctl_properties(file, cmd, parg);
  	else {
  		c->state = DTV_UNDEFINED;
-@@ -1770,7 +1771,7 @@ static int dvb_frontend_ioctl_properties(struct file *file,
- 			dprintk("%s() Property cache is full, tuning\n", __func__);
+@@ -1971,7 +1972,7 @@ static int dvb_frontend_ioctl_properties(struct file *file,
+ 		if (c->state == DTV_TUNE)
+ 			dev_dbg(fe->dvb->device, "%s: Property cache is full, tuning\n", __func__);
  
- 	} else
--	if(cmd == FE_GET_PROPERTY) {
-+	if(cmd == FE_GET_PROPERTY || cmd == FE_GET_PROPERTY_OLD) {
- 		tvps = (struct dtv_properties __user *)parg;
+-	} else if (cmd == FE_GET_PROPERTY) {
++	} else if (cmd == FE_GET_PROPERTY || cmd == FE_GET_PROPERTY_OLD) {
+ 		dev_dbg(fe->dvb->device, "%s: properties.num = %d\n", __func__, tvps->num);
+ 		dev_dbg(fe->dvb->device, "%s: properties.props = %p\n", __func__, tvps->props);
  
- 		dprintk("%s() properties.num = %d\n", __func__, tvps->num);

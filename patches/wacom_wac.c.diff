@@ -1,0 +1,24 @@
+diff --git a/drivers/hid/wacom_wac.c b/drivers/hid/wacom_wac.c
+index aa6a08e..f638661 100644
+--- a/drivers/hid/wacom_wac.c
++++ b/drivers/hid/wacom_wac.c
+@@ -1391,7 +1391,8 @@ static int wacom_bpt_pen(struct wacom_wac *wacom)
+ 	    return 0;
+ 
+ 	if (data[0] == WACOM_REPORT_USB) {
+-		if (features->type == INTUOSHT && features->touch_max) {
++		if (features->type == INTUOSHT && features->touch_max != 0 &&
++		    wacom->shared->touch_input != NULL) {
+ 			input_report_switch(wacom->shared->touch_input,
+ 					    SW_MUTE_DEVICE, data[8] & 0x40);
+ 			input_sync(wacom->shared->touch_input);
+@@ -1484,7 +1485,8 @@ static int wacom_wireless_irq(struct wacom_wac *wacom, size_t len)
+ 		int pid, battery, ps_connected;
+ 
+ 		if ((wacom->shared->type == INTUOSHT) &&
+-				wacom->shared->touch_max) {
++			wacom->shared->touch_max != 0 &&
++			wacom->shared->touch_input != NULL) {
+ 			input_report_switch(wacom->shared->touch_input,
+ 					SW_MUTE_DEVICE, data[5] & 0x40);
+ 			input_sync(wacom->shared->touch_input);

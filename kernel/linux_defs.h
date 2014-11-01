@@ -130,8 +130,10 @@
 #define	THIS_MODULE (NULL)
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
+#define	printk_once(...) printf(__VA_ARGS__)
 #else
 #define	printk(...) printk_nop()
+#define	printk_once(...) printk_nop()
 #endif
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()

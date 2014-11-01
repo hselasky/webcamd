@@ -792,4 +792,6 @@ void	usb_autopm_put_interface_no_resume(struct usb_interface *);
 void	usb_block_urb(struct urb *);
 void	usb_unblock_urb(struct urb *);
 
+void	usb_queue_reset_device(struct usb_interface *);
+
 #endif					/* _LINUX_USB_H_ */
