@@ -118,7 +118,7 @@ MLINKS=
 BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./long_size_test
 PTHREAD_LIBS?=	-lpthread
 
-.if exist(${.CURDIR}/build/obj-y/Makefile)
+.if exists(${.CURDIR}/build/obj-y/Makefile)
 .include "${.CURDIR}/build/obj-y/Makefile"
 .endif
 
