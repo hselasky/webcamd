@@ -64,7 +64,7 @@ vtuner_hdr_byteswap(struct vtuner_message *msg)
 }
 
 void
-vtuner_body_byteswap(struct vtuner_message *msg, int type)
+vtuner_body_byteswap(struct vtuner_message *msg, u32 type)
 {
 	int i;
 
