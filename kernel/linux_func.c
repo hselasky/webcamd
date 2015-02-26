@@ -372,6 +372,17 @@ devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
 	return (malloc(size));
 }
 
+void   *
+devm_kmalloc_array(struct device *dev,
+    size_t n, size_t size, gfp_t flags)
+{
+	size_t total = n * size;
+
+	if (size != 0 && total / size != n)
+		return (NULL);		/* overflow */
+	return (malloc(total));
+}
+
 void
 devm_kfree(struct device *dev, void *ptr)
 {
@@ -2184,7 +2195,7 @@ div64_s64(int64_t rem, int64_t div)
 int64_t
 div_s64(int64_t rem, int32_t div)
 {
-        return (rem / (int64_t)div);
+	return (rem / (int64_t)div);
 }
 
 uint64_t
@@ -2810,9 +2821,9 @@ const char *
 dev_driver_string(const struct device *dev)
 {
 	struct device_driver *drv;
+
 	drv = dev->driver;
 	return (drv ? drv->name :
 	    (dev->bus ? dev->bus->name :
 	    (dev->class ? dev->class->name : "")));
 }
-
