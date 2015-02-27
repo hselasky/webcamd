@@ -667,6 +667,7 @@ int	usb_linux_resume(int fd);
 #define	USB_DT_WIRE_ADAPTER             0x21
 #define	USB_DT_RPIPE                    0x22
 #define	USB_DT_CS_RADIO_CONTROL         0x23
+#define	USB_DT_SS_ENDPOINT_COMP         0x30
 
 #define	USB_DT_CS_DEVICE                (USB_TYPE_CLASS | USB_DT_DEVICE)
 #define	USB_DT_CS_CONFIG                (USB_TYPE_CLASS | USB_DT_CONFIG)

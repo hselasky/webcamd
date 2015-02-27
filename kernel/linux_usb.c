@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2014 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2015 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1051,6 +1051,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	uint8_t j;
 	uint8_t k;
 	uint8_t num_config_iface;
+	uint8_t num_iad;
 
 	/*
 	 * We do two passes. One pass for computing necessary memory size
@@ -1060,6 +1061,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	iface_index = 0;
 	niface_total = 0;
 	num_config_iface = pcfg->num_interface;
+	num_iad = 0;
 	if (num_config_iface > USB_LINUX_IFACE_MAX)
 		num_config_iface = USB_LINUX_IFACE_MAX;
 
@@ -1174,6 +1176,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 		p_ui->linux_udev = p_ud;
 
 		for (j = 0; j != p_ui->num_altsetting; j++) {
+			const uint8_t *pdesc;
 
 			libusb20_me_encode(&p_uhi->desc, sizeof(p_uhi->desc),
 			    &id->desc);
@@ -1186,24 +1189,50 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 			p_uhi->extralen = id->extra.len;
 			p_uhi++;
 
-			for (k = 0; k != id->num_endpoints; k++) {
-				const uint8_t *pcomp;
+			/*
+			 * Look for interface association
+			 * descriptors:
+			 */
+			pdesc = NULL;
+			while ((pdesc = libusb20_desc_foreach(
+			    &id->extra, pdesc)) != NULL) {
+				if (pdesc[0] >= (uint8_t)sizeof(p_ud->bsd_config.intf_assoc[0]) &&
+				    pdesc[1] == USB_DT_INTERFACE_ASSOCIATION &&
+				    num_iad != USB_MAXIADS) {
+					p_ud->bsd_config.intf_assoc[num_iad++] = (void *)pdesc;
+				}
+			}
 
+			for (k = 0; k != id->num_endpoints; k++) {
 				ed = id->endpoints + k;
 				libusb20_me_encode(&p_uhe->desc,
 				    sizeof(p_uhe->desc), &ed->desc);
 
 				/*
-				 * Look for SuperSpeed endpoint
-				 * companion descriptor
+				 * Look for the SuperSpeed endpoint
+				 * companion descriptor:
 				 */
-				pcomp = NULL;
-				while ((pcomp = libusb20_desc_foreach(
-				    &ed->extra, pcomp)) != NULL) {
-					if (pcomp[0] >= (uint8_t)sizeof(p_uhe->ss_ep_comp) &&
-					    pcomp[1] == 0x30) {
-						memcpy(&p_uhe->ss_ep_comp, pcomp, sizeof(p_uhe->ss_ep_comp));
+				pdesc = NULL;
+				while ((pdesc = libusb20_desc_foreach(
+				    &ed->extra, pdesc)) != NULL) {
+					if (pdesc[0] >= (uint8_t)sizeof(p_uhe->ss_ep_comp) &&
+					    pdesc[1] == USB_DT_SS_ENDPOINT_COMP) {
+						memcpy(&p_uhe->ss_ep_comp, pdesc, sizeof(p_uhe->ss_ep_comp));
 						break;
+					}
+				}
+
+				/*
+				 * Look for interface association
+				 * descriptors:
+				 */
+				pdesc = NULL;
+				while ((pdesc = libusb20_desc_foreach(
+				    &ed->extra, pdesc)) != NULL) {
+					if (pdesc[0] >= (uint8_t)sizeof(p_ud->bsd_config.intf_assoc[0]) &&
+					    pdesc[1] == USB_DT_INTERFACE_ASSOCIATION &&
+					    num_iad != USB_MAXIADS) {
+						p_ud->bsd_config.intf_assoc[num_iad++] = (void *)pdesc;
 					}
 				}
 
