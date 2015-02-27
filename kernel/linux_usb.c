@@ -1043,6 +1043,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	struct usb_interface *p_ui = NULL;
 	struct usb_host_interface *p_uhi = NULL;
 	struct usb_host_endpoint *p_uhe = NULL;
+	const uint8_t *pdesc;
 	uint32_t size;
 	uint16_t niface_total;
 	uint16_t nedesc;
@@ -1162,6 +1163,20 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 	/* make sure number of interfaces value is correct */
 	p_ud->bsd_config.desc.bNumInterfaces = num_config_iface;
 
+	/*
+	 * Look for interface association
+	 * descriptors:
+	 */
+	pdesc = NULL;
+	while ((pdesc = libusb20_desc_foreach(
+	    &pcfg->extra, pdesc)) != NULL) {
+		if (pdesc[0] >= (uint8_t)sizeof(p_ud->bsd_config.intf_assoc[0]) &&
+		    pdesc[1] == USB_DT_INTERFACE_ASSOCIATION &&
+		    num_iad != USB_MAXIADS) {
+			p_ud->bsd_config.intf_assoc[num_iad++] = (void *)pdesc;
+		}
+	}
+
 	for (i = 0; i != num_config_iface; i++) {
 		id = pcfg->interface + i;
 
@@ -1176,8 +1191,6 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 		p_ui->linux_udev = p_ud;
 
 		for (j = 0; j != p_ui->num_altsetting; j++) {
-			const uint8_t *pdesc;
-
 			libusb20_me_encode(&p_uhi->desc, sizeof(p_uhi->desc),
 			    &id->desc);
 
