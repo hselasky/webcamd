@@ -67,7 +67,6 @@ for F in \
 ../media_tree/drivers/media/i2c/tvp7002.c \
 ../media_tree/drivers/input/tablet/wacom.h \
 ../media_tree/drivers/hid/wacom.h \
-../media_tree/drivers/hid/wacom_wac.c \
 ../media_tree/drivers/media/rc/rc-main.c \
 ../media_tree/drivers/base/regmap/regmap.c
 do
@@ -106,7 +105,6 @@ find_media_file lmedm04.c
 find_media_file mxl111sf-tuner.c
 find_media_file mxl111sf.c
 find_media_file wacom.h
-find_media_file wacom_wac.c
 find_media_file tvp514x.c
 find_media_file adv7343.c
 find_media_file tvp7002.c
@@ -130,7 +128,6 @@ patch $OPT $(find_media_file gspca.c) gspca.diff
 patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
 patch $OPT $(find_media_file ca.h) ca.h.diff
 patch $OPT $(find_media_file wacom.h) wacom.h.diff
-patch $OPT $(find_media_file wacom_wac.c) wacom_wac.c.diff
 patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
 patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
@@ -146,11 +143,4 @@ sed -e "s/[ 	]info[(]/ m88_info(/g" -i .orig $(find_media_file m88rs2000.c)
 sed -e "s/[ 	]info[(]/ med_info(/g" -i .orig $(find_media_file lmedm04.c)
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf-tuner.c)
 sed -e "s/[ 	]err[(]/ mxl_err(/g" -e "s/[ 	]info[(]/ mxl_info(/g" -e "s/define.err./define mxl_err /g" -e "s/define.info./define mxl_info /g" -i .orig $(find_media_file mxl111sf.c)
-
-# DVBSKY support
-[ -f dvbsky-linux-3.18-hps.diff ] && \
-    (cat dvbsky-linux-3.18-revert.diff | patch $OPT -Rd ../media_tree -p1) && \
-    (cat dvbsky-linux-3.18-hps.diff | patch $OPT -d ../media_tree -p1) && \
-	echo "Applied DVBSKY patches ..."
-
 exit 0
