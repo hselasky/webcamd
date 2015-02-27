@@ -31,6 +31,8 @@
 static	DEFINE_IDR(i2c_adapter_idr);
 static TAILQ_HEAD(, i2c_driver) i2c_driver_head = TAILQ_HEAD_INITIALIZER(i2c_driver_head);
 
+struct device_type i2c_adapter_type;
+
 int
 i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 {
@@ -104,6 +106,7 @@ i2c_register_adapter(struct i2c_adapter *adap)
 		adap->timeout = HZ;
 
 	dev_set_name(&adap->dev, "i2c-%d", adap->nr);
+	adap->dev.type = &i2c_adapter_type;
 	res = device_register(&adap->dev);
 
 	return (res);
@@ -205,6 +208,15 @@ i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 		return (NULL);
 	}
 	return (client);
+}
+
+struct i2c_client *
+i2c_new_dummy(struct i2c_adapter *adapter, u16 address)
+{
+	struct i2c_board_info info = {
+		I2C_BOARD_INFO("dummy", address),
+ };
+	return (i2c_new_device(adapter, &info));
 }
 
 struct i2c_client *

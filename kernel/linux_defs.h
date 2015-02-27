@@ -171,6 +171,8 @@
 #define	kmem_cache_free(ref,ptr) free(GP_DECONST(ptr))
 #define	kmem_cache_alloc(ref,g) malloc((long)(ref))
 #define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
+#define	kvmalloc(size) malloc(size)
+#define	kvfree(ptr) free(ptr)
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, (s))
 #define	krealloc(p,s,opt) realloc(p,(s))
@@ -499,6 +501,8 @@
 #define	get_file(x) __nop
 
 #define	ATOMIC_INIT(x) { (x) }
+
+#define	CLOCK_BOOTTIME CLOCK_UPTIME
 
 #define	IRQ_NONE 0
 #define	IRQ_HANDLED 1

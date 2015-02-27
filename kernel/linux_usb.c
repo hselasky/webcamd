@@ -2391,3 +2391,12 @@ usb_queue_reset_device(struct usb_interface *intf)
 {
 
 }
+
+struct usb_host_endpoint *
+usb_pipe_endpoint(struct usb_device *dev, unsigned int pipe)
+{
+	struct usb_host_endpoint **eps;
+
+	eps = usb_pipein(pipe) ? dev->ep_in : dev->ep_out;
+	return (eps[usb_pipeendpoint(pipe)]);
+}

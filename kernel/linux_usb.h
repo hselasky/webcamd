@@ -450,6 +450,7 @@ struct usb_ss_ep_comp_descriptor {
 
 #define	usb_pipein(endpoint) ((endpoint) & USB_DIR_IN)
 #define	usb_pipeout(endpoint) ((~(endpoint)) & USB_DIR_IN)
+#define	usb_pipeendpoint(endpoint) (((endpoint) >> 15) & 0xf)
 
 /* The following four structures makes up a tree, where we have the
  * leaf structure, "usb_host_endpoint", first, and the root structure,
@@ -794,5 +795,7 @@ void	usb_block_urb(struct urb *);
 void	usb_unblock_urb(struct urb *);
 
 void	usb_queue_reset_device(struct usb_interface *);
+
+struct usb_host_endpoint *usb_pipe_endpoint(struct usb_device *, unsigned int);
 
 #endif					/* _LINUX_USB_H_ */

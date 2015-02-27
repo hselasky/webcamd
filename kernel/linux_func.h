@@ -17,8 +17,11 @@ int	zero_nop(void);
 #define	driver_remove_file(...) zero_nop()
 #define	driver_attach(...) zero_nop()
 
-int driver_register(struct device_driver *);
-int driver_unregister(struct device_driver *);
+#define	platform_device_register_data(...) NULL	/* not supported */
+#define	platform_device_unregister(...) __nop
+
+int	driver_register(struct device_driver *);
+int	driver_unregister(struct device_driver *);
 
 int	printk_nop(void);
 
@@ -158,6 +161,10 @@ void	module_get(struct module *module);
 void   *ERR_PTR(long error);
 long	PTR_ERR(const void *ptr);
 long	IS_ERR(const void *ptr);
+
+#define	TK_OFFS_REAL 0
+#define	TK_OFFS_BOOT 1
+
 int	__ffs(int x);
 
 #define	ffz(x) __ffz(x)
@@ -209,13 +216,16 @@ uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
 uint64_t div_round_closest_u64(uint64_t rem, uint64_t div);
 struct timespec ktime_mono_to_real(struct timespec);
+struct timespec ktime_get_boottime(void);
 struct timespec ktime_get_real(void);
 struct timespec ktime_get(void);
-struct timeval ktime_to_timeval(const struct timespec ts);
-void	ktime_get_ts(struct timespec *ts);
-void	ktime_get_real_ts(struct timespec *ts);
+struct timespec ktime_mono_to_any(struct timespec, int);
+struct timeval ktime_to_timeval(const struct timespec);
+void	ktime_get_ts(struct timespec *);
+void	ktime_get_real_ts(struct timespec *);
 int64_t	ktime_to_ns(const struct timespec ts);
 struct timespec ktime_sub(const struct timespec a, const struct timespec b);
+struct timespec ktime_add(const struct timespec a, const struct timespec b);
 struct timespec ktime_get_monotonic_offset(void);
 struct timespec ktime_add_us(const struct timespec, const uint64_t);
 int64_t	ktime_us_delta(const struct timespec, const struct timespec);
@@ -233,16 +243,17 @@ uint16_t swab16(uint16_t temp);
 void	swab32s(uint32_t *ptr);
 uint32_t swab32(uint32_t temp);
 int	scnprintf(char *buf, size_t size, const char *fmt,...);
+char   *devm_kasprintf(struct device *, gfp_t, const char *,...);
 struct timespec current_kernel_time(void);
-int64_t	timespec_to_ns(const struct timespec *ts);
+int64_t	timespec_to_ns(const struct timespec *);
 struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
 uint32_t do_div(uint64_t *rem, uint32_t div);
 uint64_t div64_u64(uint64_t, uint64_t);
-int64_t div64_s64(int64_t, int64_t);
+int64_t	div64_s64(int64_t, int64_t);
 uint64_t div_u64_rem(uint64_t, uint32_t, uint32_t *);
 uint64_t div_u64(uint64_t, uint32_t);
-int64_t div_s64(int64_t, int32_t);
+int64_t	div_s64(int64_t, int32_t);
 
 #define	do_div(r,d) do_div(&(r),(d))
 int	sysfs_create_group(struct kobject *, const struct attribute_group *);
@@ -300,5 +311,7 @@ unsigned long gcd(unsigned long, unsigned long);
 void	get_random_bytes(void *, int);
 
 const char *dev_driver_string(const struct device *);
+
+s32	sign_extend32(u32, int);
 
 #endif					/* _LINUX_FUNC_H_ */

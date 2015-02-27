@@ -46,6 +46,7 @@ struct device_attribute dev_attr_buttons_luminance;
 struct device_attribute dev_attr_coordinate_mode;
 struct device_attribute dev_attr_deactivate_slack;
 struct device_attribute dev_attr_debug;
+struct device_attribute dev_attr_dev_debug;
 struct device_attribute dev_attr_delay;
 struct device_attribute dev_attr_diagnostic;
 struct device_attribute dev_attr_ev;

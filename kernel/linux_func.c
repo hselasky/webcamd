@@ -37,6 +37,9 @@
 
 #include <dvbdev.h>
 
+static struct timespec ktime_mono_to_real_offset;
+static struct timespec ktime_mono_to_uptime_offset;
+
 int
 printk_nop()
 {
@@ -1748,7 +1751,17 @@ div_round_closest_u64(uint64_t rem, uint64_t div)
 struct timespec
 ktime_mono_to_real(struct timespec arg)
 {
-	return (arg);
+	return (ktime_add(arg, ktime_mono_to_real_offset));
+}
+
+struct timespec
+ktime_get_boottime(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_UPTIME_FAST, &ts);
+
+	return (ts);
 }
 
 struct timespec
@@ -1769,6 +1782,20 @@ ktime_get(void)
 	clock_gettime(CLOCK_REALTIME_FAST, &ts);
 
 	return (ts);
+}
+
+struct timespec
+ktime_mono_to_any(struct timespec arg, int off)
+{
+	switch (off) {
+	case TK_OFFS_REAL:
+		return (ktime_add(arg, ktime_mono_to_real_offset));
+	case TK_OFFS_BOOT:
+		return (ktime_add(arg, ktime_mono_to_uptime_offset));
+	default:
+		printf("Unknown clock conversion\n");
+		return (arg);
+	}
 }
 
 struct timeval
@@ -1818,18 +1845,36 @@ ktime_sub(const struct timespec a, const struct timespec b)
 	return (r);
 }
 
-static struct timespec ktime_monotonic_offset;
+struct timespec
+ktime_add(const struct timespec a, const struct timespec b)
+{
+	struct timespec r;
+
+	/* do subtraction */
+	r.tv_sec = a.tv_sec + b.tv_sec;
+	r.tv_nsec = a.tv_nsec + b.tv_nsec;
+
+	/* carry */
+	if (r.tv_nsec >= 1000000000LL) {
+		r.tv_nsec -= 1000000000LL;
+		r.tv_sec++;
+	}
+	return (r);
+}
 
 static int
 ktime_monotonic_offset_init(void)
 {
 	struct timespec ta;
 	struct timespec tb;
+	struct timespec tc;
 
 	clock_gettime(CLOCK_MONOTONIC, &ta);
 	clock_gettime(CLOCK_REALTIME, &tb);
+	clock_gettime(CLOCK_UPTIME, &tc);
 
-	ktime_monotonic_offset = ktime_sub(tb, ta);
+	ktime_mono_to_real_offset = ktime_sub(tb, ta);
+	ktime_mono_to_uptime_offset = ktime_sub(tc, ta);
 
 	return (0);
 }
@@ -1839,7 +1884,7 @@ module_init(ktime_monotonic_offset_init);
 struct timespec
 ktime_get_monotonic_offset(void)
 {
-	return (ktime_monotonic_offset);
+	return (ktime_mono_to_real_offset);
 }
 
 struct timespec
@@ -2826,4 +2871,24 @@ dev_driver_string(const struct device *dev)
 	return (drv ? drv->name :
 	    (dev->bus ? dev->bus->name :
 	    (dev->class ? dev->class->name : "")));
+}
+
+s32
+sign_extend32(u32 value, int index)
+{
+	u8 shift = 31 - index;
+
+	return ((s32) (value << shift) >> shift);
+}
+
+char   *
+devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt,...)
+{
+	va_list ap;
+	char *ptr = NULL;
+
+	va_start(ap, fmt);
+	vasprintf(&ptr, fmt, ap);
+	va_end(ap);
+	return (ptr);
 }

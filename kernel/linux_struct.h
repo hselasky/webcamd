@@ -271,6 +271,10 @@ struct device {
 	char	bus_id[32];
 };
 
+struct platform_device {
+	struct device dev;
+};
+
 typedef unsigned long pgprot_t;
 typedef unsigned long fl_owner_t;
 
@@ -428,6 +432,7 @@ extern struct device_attribute dev_attr_buttons_luminance;
 extern struct device_attribute dev_attr_coordinate_mode;
 extern struct device_attribute dev_attr_deactivate_slack;
 extern struct device_attribute dev_attr_debug;
+extern struct device_attribute dev_attr_dev_debug;
 extern struct device_attribute dev_attr_delay;
 extern struct device_attribute dev_attr_diagnostic;
 extern struct device_attribute dev_attr_ev;
