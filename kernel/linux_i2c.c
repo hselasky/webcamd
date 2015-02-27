@@ -215,7 +215,8 @@ i2c_new_dummy(struct i2c_adapter *adapter, u16 address)
 {
 	struct i2c_board_info info = {
 		I2C_BOARD_INFO("dummy", address),
- };
+	};
+
 	return (i2c_new_device(adapter, &info));
 }
 
