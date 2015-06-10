@@ -2,7 +2,7 @@
 int
 main()
 {
-	printf("%d", 8 * sizeof(long));
+	printf("%d", (int)(8 * sizeof(long)));
 	return (0);
 }
 
