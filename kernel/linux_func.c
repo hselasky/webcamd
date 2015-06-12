@@ -1452,6 +1452,43 @@ bitmap_shift_right(unsigned long *dst, const unsigned long *src, int n, int nbit
 		dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
 }
 
+void
+bitmap_shift_left(unsigned long *dst, const unsigned long *src, int n, int nbits)
+{
+	int x;
+	int y;
+
+	for (x = 0; x != n; x++)
+		dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
+
+	for (; x < nbits; x++) {
+		y = x - n;
+		if (src[y / BITS_PER_LONG] & BIT_MASK(y))
+			dst[x / BITS_PER_LONG] |= BIT_MASK(x);
+		else
+			dst[x / BITS_PER_LONG] &= ~BIT_MASK(x);
+	}
+}
+
+int
+bitmap_equal(const unsigned long *pa,
+    const unsigned long *pb, unsigned bits)
+{
+	unsigned k;
+	unsigned lim = bits / BITS_PER_LONG;
+
+	for (k = 0; k != lim; k++)
+		if (pa[k] != pb[k])
+			return (0);
+
+	bits %= BITS_PER_LONG;
+	for (lim = 0; lim != bits; lim++) {
+		if ((pa[k] ^ pb[k]) & BIT_MASK(lim))
+			return (0);
+	}
+	return (1);
+}
+
 /*
  * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
  *
@@ -2457,10 +2494,12 @@ simple_write_to_buffer(void *to, size_t available,
 	return (count);
 }
 
-int
-power_supply_register(struct device *parent, struct power_supply *psy)
+struct power_supply *
+power_supply_register(struct device *parent,
+    const struct power_supply_desc *desc,
+    const struct power_supply_config *cfg)
 {
-	return (0);
+	return (NULL);
 }
 
 void
@@ -2478,6 +2517,12 @@ power_supply_powers(struct power_supply *psy, struct device *dev)
 void
 power_supply_changed(struct power_supply *psy)
 {
+}
+
+void *
+power_supply_get_drvdata(struct power_supply *psy)
+{
+	return (NULL);
 }
 
 int

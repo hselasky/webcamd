@@ -1,0 +1,41 @@
+diff --git a/drivers/media/usb/em28xx/em28xx-camera.c b/drivers/media/usb/em28xx/em28xx-camera.c
+index a4b22c2..486d8a0 100644
+--- a/drivers/media/usb/em28xx/em28xx-camera.c
++++ b/drivers/media/usb/em28xx/em28xx-camera.c
+@@ -322,18 +322,21 @@ int em28xx_detect_sensor(struct em28xx *dev)
+ 
+ int em28xx_init_camera(struct em28xx *dev)
+ {
++#ifdef CONFIG_V4L2_CLK
+ 	char clk_name[V4L2_SUBDEV_NAME_SIZE];
++#endif
+ 	struct i2c_client *client = &dev->i2c_client[dev->def_i2c_bus];
+ 	struct i2c_adapter *adap = &dev->i2c_adap[dev->def_i2c_bus];
+ 	struct em28xx_v4l2 *v4l2 = dev->v4l2;
+ 	int ret = 0;
+ 
++#ifdef CONFIG_V4L2_CLK
+ 	v4l2_clk_name_i2c(clk_name, sizeof(clk_name),
+ 			  i2c_adapter_id(adap), client->addr);
+ 	v4l2->clk = v4l2_clk_register_fixed(clk_name, -EINVAL);
+ 	if (IS_ERR(v4l2->clk))
+ 		return PTR_ERR(v4l2->clk);
+-
++#endif
+ 	switch (dev->em28xx_sensor) {
+ 	case EM28XX_MT9V011:
+ 	{
+@@ -443,11 +446,12 @@ int em28xx_init_camera(struct em28xx *dev)
+ 		ret = -EINVAL;
+ 	}
+ 
++#ifdef CONFIG_V4L2_CLK
+ 	if (ret < 0) {
+ 		v4l2_clk_unregister_fixed(v4l2->clk);
+ 		v4l2->clk = NULL;
+ 	}
+-
++#endif
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(em28xx_init_camera);

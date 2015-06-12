@@ -69,6 +69,7 @@
 #define	CONFIG_DVB_LG2160 /* y */
 #define	CONFIG_DVB_LGDT3304 /* y */
 #define	CONFIG_DVB_LGDT3305 /* y */
+#define	CONFIG_DVB_LGDT3306A /* y */
 #define	CONFIG_DVB_LGDT330X /* y */
 #define	CONFIG_DVB_LGS8GL5 /* y */
 #define	CONFIG_DVB_LGS8GXX /* y */
@@ -246,6 +247,7 @@
 #define	CONFIG_HID_ROCCAT /* y */
 #define	CONFIG_HID_SAITEK /* y */
 #define	CONFIG_HID_SAMSUNG /* y */
+#undef	CONFIG_HID_SENSOR_CUSTOM_SENSOR /* n */
 #undef	CONFIG_HID_SENSOR_HUB /* n */
 #define	CONFIG_HID_SMARTJOYPLUS /* y */
 #define	CONFIG_HID_SONY /* y */
@@ -481,6 +483,7 @@
 #undef	CONFIG_TOUCHSCREEN_ATMEL_MXT /* n */
 #undef	CONFIG_TOUCHSCREEN_AUO_PIXCIR /* n */
 #undef	CONFIG_TOUCHSCREEN_BU21013 /* n */
+#undef	CONFIG_TOUCHSCREEN_CHIPONE_ICN8318 /* n */
 #define	CONFIG_TOUCHSCREEN_COMPOSITE /* y */
 #undef	CONFIG_TOUCHSCREEN_CY8CTMG110 /* n */
 #undef	CONFIG_TOUCHSCREEN_CYTTSP4_CORE /* n */
@@ -516,6 +519,7 @@
 #undef	CONFIG_TOUCHSCREEN_INEXIO /* n */
 #undef	CONFIG_TOUCHSCREEN_INTEL_MID /* n */
 #undef	CONFIG_TOUCHSCREEN_IPAQ_MICRO /* n */
+#undef	CONFIG_TOUCHSCREEN_IPROC /* n */
 #define	CONFIG_TOUCHSCREEN_IRTOUCH /* y */
 #define	CONFIG_TOUCHSCREEN_ITM /* y */
 #define	CONFIG_TOUCHSCREEN_JASTEC /* y */
@@ -537,6 +541,7 @@
 #undef	CONFIG_TOUCHSCREEN_STMPE /* n */
 #undef	CONFIG_TOUCHSCREEN_SUN4I /* n */
 #define	CONFIG_TOUCHSCREEN_SUR40 /* y */
+#undef	CONFIG_TOUCHSCREEN_SX8654 /* n */
 #undef	CONFIG_TOUCHSCREEN_TI_AM335X_TSC /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHIT213 /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHRIGHT /* n */
@@ -631,6 +636,7 @@
 #undef	CONFIG_USB_STV06XX /* n */
 #define	CONFIG_USB_VIDEO_CLASS /* y */
 #define	CONFIG_USB_ZR364XX /* y */
+#undef	CONFIG_V4L2_CLK /* n */
 #undef	CONFIG_V4L2_MEM2MEM_DEV /* n */
 #define	CONFIG_VIDEOBUF2_CORE /* y */
 #undef	CONFIG_VIDEOBUF2_DMA_CONTIG /* n */
@@ -719,6 +725,7 @@
 #undef	CONFIG_VIDEO_OMAP2_VOUT_VRFB /* n */
 #undef	CONFIG_VIDEO_OMAP3 /* n */
 #undef	CONFIG_VIDEO_OMAP4 /* n */
+#undef	CONFIG_VIDEO_OV2659 /* n */
 #undef	CONFIG_VIDEO_OV7640 /* n */
 #define	CONFIG_VIDEO_OV7670 /* y */
 #undef	CONFIG_VIDEO_OV9650 /* n */
@@ -798,8 +805,9 @@
 #undef	CONFIG_VIDEO_VS6624 /* n */
 #define	CONFIG_VIDEO_WM8739 /* y */
 #define	CONFIG_VIDEO_WM8775 /* y */
+#undef	CONFIG_VIDEO_XILINX /* n */
 #undef	CONFIG_VIDEO_ZORAN /* n */
-#undef	CONFIG_WEBCAMD_HAL /* n */
+#define	CONFIG_WEBCAMD_HAL /* y */
 #define	CONFIG_WEBCAMD_VT /* y */
 #define	CONFIG_WEBCAMD_VT_CLIENT /* y */
 #define	CONFIG_WEBCAMD_VT_SERVER /* y */

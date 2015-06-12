@@ -211,6 +211,8 @@ int	bitmap_subset(const unsigned long *, const unsigned long *, int);
 int	bitmap_full(const unsigned long *, int);
 void	bitmap_clear(unsigned long *, int, int);
 void	bitmap_shift_right(unsigned long *, const unsigned long *, int, int);
+void	bitmap_shift_left(unsigned long *, const unsigned long *, int, int);
+int	bitmap_equal(const unsigned long *, const unsigned long *, unsigned);
 int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);

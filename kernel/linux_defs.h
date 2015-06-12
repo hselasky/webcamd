@@ -39,6 +39,9 @@
   div_round_closest_s32(rem,div) :  \
   div_round_closest_u32(rem,div)))
 
+#define	DIV_ROUND_CLOSEST_ULL(rem, div) \
+  div_round_closest_u64(rem,div)
+
 #define	mult_frac(x, numer, denom)			\
 ({							\
 	typeof(x) quot = (x) / (denom);                 \
@@ -105,7 +108,8 @@
 #define	__devinitdata
 #define	__init
 #define	__exit
-#define	__stringify(x)	#x
+#define	___stringify(...)	#__VA_ARGS__
+#define	__stringify(...)	___stringify(__VA_ARGS__)
 #define	ERESTARTSYS     512
 #define	ENOIOCTLCMD     513
 #define	EMEDIUMTYPE	514
@@ -127,13 +131,38 @@
 #define	IS_MODULE(...) 0
 #define	IS_BUILTIN(x,...) defined(x##__VA_ARGS__)
 #define	IS_ENABLED(x,...) defined(x##__VA_ARGS__)
+#define	IS_REACHABLE(x,...) defined(x##__VA_ARGS__)
 #define	THIS_MODULE (NULL)
+#define	DECLARE_EVENT_CLASS(...)
+#define	DECLARE_EVENT(...)
+#define	DEFINE_EVENT(...)
+#define	TRACE_EVENT(...)
+#define	TRACE_DEFINE_ENUM(...)
+#define	trace_regcache_drop_region(...) __nop
+#define	trace_regcache_sync(...) __nop
+#define	trace_regmap_async_complete_done(...) __nop
+#define	trace_regmap_async_complete_start(...) __nop
+#define	trace_regmap_async_io_complete(...) __nop
+#define	trace_regmap_async_write_start(...) __nop
+#define	trace_regmap_cache_bypass(...) __nop
+#define	trace_regmap_cache_only(...) __nop
+#define	trace_regmap_hw_read_done(...) __nop
+#define	trace_regmap_hw_read_start(...) __nop
+#define	trace_regmap_hw_write_done(...) __nop
+#define	trace_regmap_hw_write_start(...) __nop
+#define	trace_regmap_reg_read(...) __nop
+#define	trace_regmap_reg_read_cache(...) __nop
+#define	trace_regmap_reg_write(...) __nop
+#define	trace_v4l2_dqbuf(...) __nop
+#define	trace_v4l2_qbuf(...) __nop
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
 #define	printk_once(...) printf(__VA_ARGS__)
+#define	pr_warn_once(...) printf(__VA_ARGS__)
 #else
 #define	printk(...) printk_nop()
 #define	printk_once(...) printk_nop()
+#define	pr_warn_once(...) printk_nop()
 #endif
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()

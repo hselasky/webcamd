@@ -1,0 +1,17 @@
+diff --git a/drivers/media/v4l2-core/Makefile b/drivers/media/v4l2-core/Makefile
+index 63d29f2..18b8248 100644
+--- a/drivers/media/v4l2-core/Makefile
++++ b/drivers/media/v4l2-core/Makefile
+@@ -5,8 +5,11 @@
+ tuner-objs	:=	tuner-core.o
+ 
+ videodev-objs	:=	v4l2-dev.o v4l2-ioctl.o v4l2-device.o v4l2-fh.o \
+-			v4l2-event.o v4l2-ctrls.o v4l2-subdev.o v4l2-clk.o \
++			v4l2-event.o v4l2-ctrls.o v4l2-subdev.o \
+ 			v4l2-async.o
++ifeq ($(CONFIG_V4L2_CLK),y)
++  videodev-objs += v4l2-clk.o
++endif
+ ifeq ($(CONFIG_COMPAT),y)
+   videodev-objs += v4l2-compat-ioctl32.o
+ endif

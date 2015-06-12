@@ -68,7 +68,9 @@ for F in \
 ../media_tree/drivers/input/tablet/wacom.h \
 ../media_tree/drivers/hid/wacom.h \
 ../media_tree/drivers/media/rc/rc-main.c \
-../media_tree/drivers/base/regmap/regmap.c
+../media_tree/drivers/base/regmap/regmap.c \
+../media_tree/drivers/media/usb/em28xx/em28xx-camera.c \
+../media_tree/drivers/media/usb/em28xx/em28xx-video.c
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
 done
@@ -110,6 +112,8 @@ find_media_file adv7343.c
 find_media_file tvp7002.c
 find_media_file rc-main.c
 find_media_file regmap.c
+find_media_file em28xx-camera.c
+find_media_file em28xx-video.c
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
@@ -133,6 +137,9 @@ patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
 patch $OPT $(find_media_file rc-main.c) rc-main.c.diff
 patch $OPT $(find_media_file regmap.c) regmap.c.diff
+patch $OPT $(find_media_file em28xx-camera.c) em28xx-camera.c.diff
+patch $OPT $(find_media_file em28xx-video.c) em28xx-video.c.diff
+patch $OPT ../media_tree/drivers/media/v4l2-core/Makefile v4l2-makefile.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)
