@@ -4,10 +4,10 @@ index b350ab9..85a2925 100644
 +++ b/drivers/media/v4l2-core/v4l2-async.c
 @@ -41,7 +41,11 @@ static bool match_devname(struct device *dev, struct v4l2_async_subdev *asd)
  
- static bool match_of(struct device *dev, struct v4l2_async_subdev *asd)
+ static bool match_of(struct v4l2_subdev *sd, struct v4l2_async_subdev *asd)
  {
 +#if IS_ENABLED(CONFIG_OF)
- 	return dev->of_node == asd->match.of.node;
+ 	return sd->of_node == asd->match.of.node;
 +#else
 +	return false;
 +#endif

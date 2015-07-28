@@ -38,6 +38,7 @@
 #define	CONFIG_DVB_CX24110 /* y */
 #define	CONFIG_DVB_CX24116 /* y */
 #define	CONFIG_DVB_CX24117 /* y */
+#define	CONFIG_DVB_CX24120 /* y */
 #define	CONFIG_DVB_CX24123 /* y */
 #define	CONFIG_DVB_CXD2099 /* y */
 #define	CONFIG_DVB_CXD2820R /* y */
@@ -279,6 +280,7 @@
 #define	CONFIG_INPUT_JOYDEV /* y */
 #define	CONFIG_INPUT_JOYSTICK /* y */
 #undef	CONFIG_INPUT_KEYBOARD /* n */
+#undef	CONFIG_INPUT_LEDS /* n */
 #undef	CONFIG_INPUT_MATRIXKMAP /* n */
 #undef	CONFIG_INPUT_MISC /* n */
 #undef	CONFIG_INPUT_MOUSE /* n */
@@ -540,7 +542,7 @@
 #undef	CONFIG_TOUCHSCREEN_ST1232 /* n */
 #undef	CONFIG_TOUCHSCREEN_STMPE /* n */
 #undef	CONFIG_TOUCHSCREEN_SUN4I /* n */
-#define	CONFIG_TOUCHSCREEN_SUR40 /* y */
+#undef	CONFIG_TOUCHSCREEN_SUR40 /* n */
 #undef	CONFIG_TOUCHSCREEN_SX8654 /* n */
 #undef	CONFIG_TOUCHSCREEN_TI_AM335X_TSC /* n */
 #undef	CONFIG_TOUCHSCREEN_TOUCHIT213 /* n */
@@ -555,6 +557,7 @@
 #undef	CONFIG_TOUCHSCREEN_W90X900 /* n */
 #undef	CONFIG_TOUCHSCREEN_WACOM_I2C /* n */
 #undef	CONFIG_TOUCHSCREEN_WACOM_W8001 /* n */
+#undef	CONFIG_TOUCHSCREEN_WDT87XX_I2C /* n */
 #undef	CONFIG_TOUCHSCREEN_WM831X /* n */
 #undef	CONFIG_TOUCHSCREEN_WM9705 /* n */
 #undef	CONFIG_TOUCHSCREEN_WM9712 /* n */
@@ -637,6 +640,7 @@
 #define	CONFIG_USB_VIDEO_CLASS /* y */
 #define	CONFIG_USB_ZR364XX /* y */
 #undef	CONFIG_V4L2_CLK /* n */
+#undef	CONFIG_V4L2_FLASH_LED_CLASS /* n */
 #undef	CONFIG_V4L2_MEM2MEM_DEV /* n */
 #define	CONFIG_VIDEOBUF2_CORE /* y */
 #undef	CONFIG_VIDEOBUF2_DMA_CONTIG /* n */
@@ -673,6 +677,7 @@
 #define	CONFIG_VIDEO_BT866 /* y */
 #define	CONFIG_VIDEO_BTCX /* y */
 #undef	CONFIG_VIDEO_CAFE_CCIC /* n */
+#undef	CONFIG_VIDEO_COBALT /* n */
 #undef	CONFIG_VIDEO_CODA /* n */
 #define	CONFIG_VIDEO_CPIA2 /* y */
 #define	CONFIG_VIDEO_CS5345 /* y */
@@ -765,6 +770,7 @@
 #undef	CONFIG_VIDEO_SOLO6X10 /* n */
 #undef	CONFIG_VIDEO_SONY_BTF_MPX /* n */
 #define	CONFIG_VIDEO_SR030PC30 /* y */
+#undef	CONFIG_VIDEO_STI_BDISP /* n */
 #undef	CONFIG_VIDEO_STK1160 /* n */
 #define	CONFIG_VIDEO_TCM825X /* y */
 #define	CONFIG_VIDEO_TDA7432 /* y */

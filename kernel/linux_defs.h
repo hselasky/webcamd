@@ -58,6 +58,7 @@
 #define	__force
 #define	__nocast
 #define	__iomem
+#define	__read_mostly
 #define	__must_check
 #define	__chk_user_ptr(x) __nop
 #define	__chk_io_ptr(x) __nop
@@ -275,6 +276,9 @@
 #ifndef BITS_PER_LONG
 #define	BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
 #endif
+#define	for_each_set_bit(b, addr, size) \
+    for ((b) = 0; (b) < (size); (b)++) \
+	if ((addr)[(b) / BITS_PER_LONG] & BIT((b) % BITS_PER_LONG))
 #define	for_each_set_bit_from(b, addr, size) \
     for ( ; (b) < (size); (b)++) \
 	if ((addr)[(b) / BITS_PER_LONG] & BIT((b) % BITS_PER_LONG))
@@ -339,6 +343,8 @@
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
 #define	max(a,b) (((a) > (b)) ? (a) : (b))
 #define	prefetch(x) (void)x
+#define	WRITE_ONCE(x, val) \
+do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	KERN_INFO ""
 #define	KERN_WARNING ""
 #define	KERN_ERR ""
@@ -347,6 +353,7 @@
 #define	KBUILD_MODNAME ""
 #define	KERN_NOTICE ""
 #define	BUG(...) __nop
+#define	__WARN() __nop
 #define	WARN(x,...) ({ (x); })
 #define	WARN_ONCE(x,...) ({ (x); })
 #define	BUG_ON(x) ({ (x); })

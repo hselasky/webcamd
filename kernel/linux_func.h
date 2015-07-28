@@ -202,6 +202,7 @@ void	poll_schedule(struct poll_wqueues *pwq, int flag);
 
 #define	poll_requested_events(...) 0xFFFFFFFFU
 
+int	bitmap_weight(const unsigned long *, unsigned int);
 int	bitmap_andnot(unsigned long *, const unsigned long *, const unsigned long *, int);
 int	bitmap_and(unsigned long *, const unsigned long *, const unsigned long *, int);
 void	bitmap_or(unsigned long *, const unsigned long *, const unsigned long *, int);

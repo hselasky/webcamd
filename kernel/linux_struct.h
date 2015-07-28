@@ -214,6 +214,7 @@ struct device_driver {
 	const struct dev_pm_ops *pm;
 	struct bus_type *bus;
 	const char *mod_name;
+	uint8_t suppress_bind_attrs;
 
 	TAILQ_ENTRY(device_driver) entry;
 };
@@ -259,6 +260,7 @@ struct device {
 	struct device_type *type;
 	void   *platform_data;
 	void   *driver_data;
+	void   *of_node;
 	const struct file_operations *fops;
 	const struct attribute_group **groups;
 	struct bus_type *bus;

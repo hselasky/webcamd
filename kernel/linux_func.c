@@ -1306,6 +1306,18 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 }
 
 int
+bitmap_weight(const unsigned long *src, unsigned nbits)
+{
+	unsigned x;
+	unsigned y;
+	for (x = y = 0; x != nbits; x++) {
+		if (src[x / BITS_PER_LONG] & BIT_MASK(x))
+			y++;
+	}
+	return (y);
+}
+
+int
 bitmap_andnot(unsigned long *dst, const unsigned long *b1,
     const unsigned long *b2, int nbits)
 {
