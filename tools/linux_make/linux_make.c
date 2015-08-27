@@ -24,6 +24,7 @@
  * SUCH DAMAGE.
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -66,7 +67,7 @@ struct node {
 	node_head_t children;
 	char   *name;			/* obj-y/obj-m/obj-n/xxx.o */
 	char   *path;			/* relative path to file */
-	uint32_t id_number;		/* unique node ID */
+	char   *objprefix;		/* object prefix */
 };
 
 struct directory {
@@ -218,6 +219,7 @@ static void
 free_node(struct node *node)
 {
 	free(node->name);
+	free(node->objprefix);
 	free(node);
 }
 
@@ -898,28 +900,34 @@ parse_makefile(char *path)
 	recurse--;
 }
 
-static uint32_t id_last;
-
 static void
 build_id(struct node *ptr, const char *name)
 {
-	ptr->id_number = id_last++;
-	if (id_last == 0)
-		errx(EX_SOFTWARE, "Out of ID numbers.");
+	char *pch;
+	ptr->objprefix = strdup(ptr->path);
+	if (ptr->objprefix == NULL)
+		errx(EX_SOFTWARE, "Out of memory.");
+
+	pch = ptr->objprefix;
+	while (*pch) {
+		if (*pch == '.' || *pch == '/' || *pch == '\\' || !isprint(*pch))
+			*pch = '-';
+		pch++;
+	}
 }
 
 static void
 build_source(struct node *ptr, const char *name)
 {
-	printf("obj-%u-of-%u-%s.o: %s%s.c\n", ptr->id_number, id_last, name, ptr->path, name);
-	printf("\t" "${CC} -c -DCURR_FILE_NAME=\\\"%s\\\" ${CFLAGS} -o obj-%u-of-%u-%s.o %s%s.c\n",
-	    name, ptr->id_number, id_last, name, ptr->path, name);
+	printf("obj-%s%s.o: %s%s.c\n", ptr->objprefix, name, ptr->path, name);
+	printf("\t" "${CC} -c -DCURR_FILE_NAME=\\\"%s\\\" ${CFLAGS} -o obj-%s%s.o %s%s.c\n",
+	    name, ptr->objprefix, name, ptr->path, name);
 }
 
 static void
 build_objects(struct node *ptr, const char *name)
 {
-	printf("\t" "obj-%u-of-%u-%s.o \\\n", ptr->id_number, id_last, name);
+	printf("\t" "obj-%s%s.o \\\n", ptr->objprefix, name);
 }
 
 static void
@@ -956,8 +964,6 @@ output_makefile(char *name)
 	}
 
 	n0 = add_node(&rootNode, strcatdup(name, ""));
-
-	id_last = 0;
 
 	TAILQ_FOREACH(n1, &n0->children, entry) {
 		objs_exec(n1, &build_id);
