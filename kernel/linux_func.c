@@ -1269,7 +1269,7 @@ find_next_bit(const unsigned long *addr, unsigned long size,
 			else
 				offset += BITS_PER_LONG;
 		} else {
-			if (*p & (1 << (offset & (BITS_PER_LONG - 1))))
+			if (*p & (1UL << (offset & (BITS_PER_LONG - 1))))
 				break;
 			offset++;
 		}
@@ -1295,7 +1295,7 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 			else
 				offset += BITS_PER_LONG;
 		} else {
-			if (!((*p) & (1 << (offset & (BITS_PER_LONG - 1)))))
+			if (!((*p) & (1UL << (offset & (BITS_PER_LONG - 1)))))
 				break;
 			offset++;
 		}
