@@ -269,7 +269,7 @@
 #define	TASK_NONINTERACTIVE     64
 #define	no_llseek	NULL
 #define	default_llseek	NULL
-#define	GENMASK(lo, hi) (((1ULL << ((hi) - (lo) + 1)) - 1) << (lo))
+#define	GENMASK(lo, hi) (((2UL << ((hi) - (lo))) - 1UL) << (lo))
 #define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
 #define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #define	BITS_PER_BYTE 8
