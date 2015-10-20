@@ -1257,22 +1257,16 @@ unsigned long
 find_next_bit(const unsigned long *addr, unsigned long size,
     unsigned long offset)
 {
-	const unsigned long *p;
+	const unsigned long mm = BITS_PER_LONG - 1;
+	unsigned long mask = BIT_MASK(offset) - 1UL;
 
 	while (offset < size) {
-
-		p = addr + BIT_WORD(offset);
-
-		if (*p == 0) {
-			if (offset & (BITS_PER_LONG - 1))
-				offset += (-offset) & (BITS_PER_LONG - 1);
-			else
-				offset += BITS_PER_LONG;
-		} else {
-			if (*p & (1UL << (offset & (BITS_PER_LONG - 1))))
-				break;
-			offset++;
+		mask = addr[BIT_WORD(offset)] & ~mask;
+		if (mask != 0) {
+			offset = ffsl(mask) | (offset & ~mm);
+			break;
 		}
+		offset += ((~offset) & mm) + 1;
 	}
 	if (offset > size)
 		offset = size;
@@ -1283,22 +1277,16 @@ unsigned long
 find_next_zero_bit(const unsigned long *addr, unsigned long size,
     unsigned long offset)
 {
-	const unsigned long *p;
+	const unsigned long mm = BITS_PER_LONG - 1;
+	unsigned long mask = BIT_MASK(offset) - 1UL;
 
 	while (offset < size) {
-
-		p = addr + BIT_WORD(offset);
-
-		if (*p == (long)-1) {
-			if (offset & (BITS_PER_LONG - 1))
-				offset += (-offset) & (BITS_PER_LONG - 1);
-			else
-				offset += BITS_PER_LONG;
-		} else {
-			if (!((*p) & (1UL << (offset & (BITS_PER_LONG - 1)))))
-				break;
-			offset++;
+		mask = (~addr[BIT_WORD(offset)]) & ~mask;
+		if (mask != 0) {
+			offset = ffsl(mask) | (offset & ~mm);
+			break;
 		}
+		offset += ((~offset) & mm) + 1;
 	}
 	if (offset > size)
 		offset = size;
@@ -1382,7 +1370,8 @@ bitmap_xor(unsigned long *dst, const unsigned long *b1,
 void
 bitmap_zero(unsigned long *dst, int nbits)
 {
-	int len = (nbits + ((-nbits) & (BITS_PER_LONG - 1))) / 8;
+  	const unsigned long mm = BITS_PER_LONG - 1;
+	int len = (nbits + ((-nbits) & mm)) / 8;
 
 	memset(dst, 0, len);
 }
