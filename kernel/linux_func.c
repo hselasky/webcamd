@@ -1263,7 +1263,7 @@ find_next_bit(const unsigned long *addr, unsigned long size,
 	while (offset < size) {
 		mask = addr[BIT_WORD(offset)] & ~mask;
 		if (mask != 0) {
-			offset = ffsl(mask) | (offset & ~mm);
+			offset = (ffsl(mask) - 1) | (offset & ~mm);
 			break;
 		}
 		offset += ((~offset) & mm) + 1;
@@ -1283,7 +1283,7 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 	while (offset < size) {
 		mask = (~addr[BIT_WORD(offset)]) & ~mask;
 		if (mask != 0) {
-			offset = ffsl(mask) | (offset & ~mm);
+			offset = (ffsl(mask) - 1) | (offset & ~mm);
 			break;
 		}
 		offset += ((~offset) & mm) + 1;
