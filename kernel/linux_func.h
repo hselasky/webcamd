@@ -17,7 +17,7 @@ int	zero_nop(void);
 #define	driver_remove_file(...) zero_nop()
 #define	driver_attach(...) zero_nop()
 
-#define	platform_device_register_data(...) NULL	/* not supported */
+#define	platform_device_register_data(...) ERR_PTR(-EOPNOTSUPP)
 #define	platform_device_unregister(...) __nop
 
 int	driver_register(struct device_driver *);
