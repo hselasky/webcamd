@@ -317,4 +317,6 @@ const char *dev_driver_string(const struct device *);
 
 s32	sign_extend32(u32, int);
 
+void	eth_zero_addr(u8 *addr);
+
 #endif					/* _LINUX_FUNC_H_ */

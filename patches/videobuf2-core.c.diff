@@ -1,20 +1,25 @@
 diff --git a/drivers/media/v4l2-core/videobuf2-core.c b/drivers/media/v4l2-core/videobuf2-core.c
-index 349e659..7872424 100644
+index 33bdd81..3035c09 100644
 --- a/drivers/media/v4l2-core/videobuf2-core.c
 +++ b/drivers/media/v4l2-core/videobuf2-core.c
-@@ -1591,6 +1591,7 @@ static int __buf_prepare(struct vb2_buffer *vb, const struct v4l2_buffer *b)
- 	case V4L2_MEMORY_MMAP:
- 		ret = __qbuf_mmap(vb, b);
+@@ -499,7 +499,7 @@ static int __verify_dmabuf_ops(struct vb2_queue *q)
+ int vb2_verify_memory_type(struct vb2_queue *q,
+ 		enum vb2_memory memory, unsigned int type)
+ {
+-	if (memory != VB2_MEMORY_MMAP && memory != VB2_MEMORY_USERPTR &&
++	if (memory != VB2_MEMORY_MMAP && /* memory != VB2_MEMORY_USERPTR && */
+ 	    memory != VB2_MEMORY_DMABUF) {
+ 		dprintk(1, "unsupported memory type\n");
+ 		return -EINVAL;
+@@ -1212,9 +1212,11 @@ static int __buf_prepare(struct vb2_buffer *vb, const void *pb)
+ 	case VB2_MEMORY_MMAP:
+ 		ret = __qbuf_mmap(vb, pb);
  		break;
 +#if 0
- 	case V4L2_MEMORY_USERPTR:
- 		/*
- 		 * In case of user pointer buffers vb2 allocators need to get
-@@ -1613,6 +1614,7 @@ static int __buf_prepare(struct vb2_buffer *vb, const struct v4l2_buffer *b)
- 
- 		up_read(mmap_sem);
+ 	case VB2_MEMORY_USERPTR:
+ 		ret = __qbuf_userptr(vb, pb);
  		break;
 +#endif
- 	case V4L2_MEMORY_DMABUF:
- 		ret = __qbuf_dmabuf(vb, b);
+ 	case VB2_MEMORY_DMABUF:
+ 		ret = __qbuf_dmabuf(vb, pb);
  		break;

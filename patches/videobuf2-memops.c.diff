@@ -1,42 +1,29 @@
 diff --git a/drivers/media/v4l2-core/videobuf2-memops.c b/drivers/media/v4l2-core/videobuf2-memops.c
-index 81c1ad8..24fe5fc 100644
+index dbec592..a9c9747 100644
 --- a/drivers/media/v4l2-core/videobuf2-memops.c
 +++ b/drivers/media/v4l2-core/videobuf2-memops.c
-@@ -44,15 +44,8 @@ struct vm_area_struct *vb2_get_vma(struct vm_area_struct *vma)
- 	if (vma->vm_ops && vma->vm_ops->open)
- 		vma->vm_ops->open(vma);
- 
--	if (vma->vm_file)
--		get_file(vma->vm_file);
--
- 	memcpy(vma_copy, vma, sizeof(*vma));
- 
--	vma_copy->vm_mm = NULL;
--	vma_copy->vm_next = NULL;
--	vma_copy->vm_prev = NULL;
--
- 	return vma_copy;
- }
- EXPORT_SYMBOL_GPL(vb2_get_vma);
-@@ -72,13 +65,11 @@ void vb2_put_vma(struct vm_area_struct *vma)
- 	if (vma->vm_ops && vma->vm_ops->close)
- 		vma->vm_ops->close(vma);
- 
--	if (vma->vm_file)
--		fput(vma->vm_file);
--
- 	kfree(vma);
- }
- EXPORT_SYMBOL_GPL(vb2_put_vma);
+@@ -22,6 +22,7 @@
+ #include <media/videobuf2-v4l2.h>
+ #include <media/videobuf2-memops.h>
  
 +#if 0
  /**
-  * vb2_get_contig_userptr() - lock physically contiguous userspace mapped memory
-  * @vaddr:	starting virtual address of the area to be verified
-@@ -135,6 +126,7 @@ int vb2_get_contig_userptr(unsigned long vaddr, unsigned long size,
- 	return 0;
+  * vb2_create_framevec() - map virtual addresses to pfns
+  * @start:	Virtual user address where we start mapping
+@@ -65,7 +66,9 @@ out_destroy:
+ 	return ERR_PTR(ret);
  }
- EXPORT_SYMBOL_GPL(vb2_get_contig_userptr);
+ EXPORT_SYMBOL(vb2_create_framevec);
++#endif
+ 
++#if 0
+ /**
+  * vb2_destroy_framevec() - release vector of mapped pfns
+  * @vec:	vector of pfns / pages to release
+@@ -79,6 +82,7 @@ void vb2_destroy_framevec(struct frame_vector *vec)
+ 	frame_vector_destroy(vec);
+ }
+ EXPORT_SYMBOL(vb2_destroy_framevec);
 +#endif
  
  /**

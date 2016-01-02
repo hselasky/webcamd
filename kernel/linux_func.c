@@ -2938,3 +2938,10 @@ devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt,...)
 	va_end(ap);
 	return (ptr);
 }
+
+void
+eth_zero_addr(u8 *addr)
+{
+        memset(addr, 0x00, 6);
+}
+

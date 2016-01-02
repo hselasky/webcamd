@@ -156,6 +156,10 @@
 #define	trace_regmap_reg_write(...) __nop
 #define	trace_v4l2_dqbuf(...) __nop
 #define	trace_v4l2_qbuf(...) __nop
+#define	trace_vb2_buf_done(...) __nop
+#define	trace_vb2_qbuf(...) __nop
+#define	trace_vb2_buf_queue(...) __nop
+#define	trace_vb2_dqbuf(...) __nop
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
 #define	printk_once(...) printf(__VA_ARGS__)
@@ -222,7 +226,10 @@
 #define	clear_user_highpage(...) __nop
 #define	sg_set_page(...) __nop
 #define	sg_next(...) NULL
+#define	of_match_ptr(...) NULL
 #define	sysfs_attr_init(x) __nop
+#define	sysfs_create_files(...) (0)
+#define	kobject_create_and_add(...) ((void *)1)
 #define	kobject_get_path(...) strdup("webcamd")
 #define	kobject_put(...) __nop
 #define	kobject_get(...) __nop
@@ -337,6 +344,8 @@
 #define	likely(...) __VA_ARGS__
 #define	unlikely(...) __VA_ARGS__
 #define	__round_mask(x, y) ((typeof(x))((y)-1))
+#define	roundup(x, y) ((((x) % (y)) == 0) ? (x) : (x) - ((x) % (y)) + (y))
+#define	rounddown(x, y) ((x) - ((x) % (y)))
 #define	round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
 #define	round_down(x, y) ((x) & ~__round_mask(x, y))
 #define	DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))

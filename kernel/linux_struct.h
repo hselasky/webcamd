@@ -78,6 +78,12 @@ struct attribute {
 	mode_t	mode;
 };
 
+struct kobj_attribute {
+	struct attribute attr;
+	ssize_t (*show)(struct kobject *, struct kobj_attribute *, char *);
+	ssize_t (*store)(struct kobject *, struct kobj_attribute *, const char *, size_t);
+};
+
 struct bin_attribute {
 	struct attribute attr;
 	size_t	size;
@@ -214,6 +220,7 @@ struct device_driver {
 	const struct dev_pm_ops *pm;
 	struct bus_type *bus;
 	const char *mod_name;
+	void *of_match_table;
 	uint8_t suppress_bind_attrs;
 
 	TAILQ_ENTRY(device_driver) entry;
