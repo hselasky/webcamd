@@ -1,0 +1,22 @@
+diff --git a/drivers/media/i2c/adv7343.c b/drivers/media/i2c/adv7343.c
+index f89d0af..957eecf 100644
+--- a/drivers/media/i2c/adv7343.c
++++ b/drivers/media/i2c/adv7343.c
+@@ -397,6 +397,7 @@ static int adv7343_initialize(struct v4l2_subdev *sd)
+ static struct adv7343_platform_data *
+ adv7343_get_pdata(struct i2c_client *client)
+ {
++#if IS_ENABLED(CONFIG_OF)
+ 	struct adv7343_platform_data *pdata;
+ 	struct device_node *np;
+ 
+@@ -426,6 +427,9 @@ adv7343_get_pdata(struct i2c_client *client)
+ done:
+ 	of_node_put(np);
+ 	return pdata;
++#else
++	return client->dev.platform_data;
++#endif
+ }
+ 
+ static int adv7343_probe(struct i2c_client *client,
