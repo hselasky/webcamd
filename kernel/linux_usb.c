@@ -53,7 +53,6 @@ static struct device usb_dummy_bus;
 static libusb20_tr_callback_t usb_linux_isoc_callback;
 static libusb20_tr_callback_t usb_linux_non_isoc_callback;
 
-static uint16_t usb_max_isoc_frames(struct usb_device *);
 static const struct usb_device_id *usb_linux_lookup_id(struct LIBUSB20_DEVICE_DESC_DECODED *pdd, struct LIBUSB20_INTERFACE_DESC_DECODED *pid, const struct usb_device_id *id);
 static void usb_linux_free_device(struct usb_device *dev);
 
@@ -534,15 +533,21 @@ usb_linux_resume(int fd)
  * frames that we support per URB. It is not part of the Linux USB API.
  *------------------------------------------------------------------------*/
 static uint16_t
-usb_max_isoc_frames(struct usb_device *dev)
+usb_max_isoc_frames(struct usb_device *dev, struct usb_host_endpoint *uhe)
 {
-	;				/* indent fix */
+	uint8_t fps_shift;
+
 	switch (libusb20_dev_get_speed(dev->bsd_udev)) {
 	case LIBUSB20_SPEED_LOW:
 	case LIBUSB20_SPEED_FULL:
 		return (USB_MAX_FULL_SPEED_ISOC_FRAMES);
 	default:
-		return (USB_MAX_HIGH_SPEED_ISOC_FRAMES);
+		fps_shift = uhe->desc.bInterval;
+		if (fps_shift > 0)
+			fps_shift--;
+		if (fps_shift > 3)
+			fps_shift = 3;
+		return (USB_MAX_HIGH_SPEED_ISOC_FRAMES >> fps_shift);
 	}
 }
 
@@ -940,11 +945,11 @@ usb_setup_endpoint(struct usb_device *dev,
 		/* need double buffering */
 
 		if (libusb20_tr_open(uhe->bsd_xfer[0], 0,
-		    usb_max_isoc_frames(dev), addr))
+		    usb_max_isoc_frames(dev, uhe), addr))
 			goto failure;
 
 		if (libusb20_tr_open(uhe->bsd_xfer[1], 0,
-		    usb_max_isoc_frames(dev), addr))
+		    usb_max_isoc_frames(dev, uhe), addr))
 			goto failure;
 
 		libusb20_tr_set_callback(uhe->bsd_xfer[0],
