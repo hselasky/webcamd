@@ -1,17 +1,17 @@
 diff --git a/drivers/media/v4l2-core/videobuf2-vmalloc.c b/drivers/media/v4l2-core/videobuf2-vmalloc.c
-index a47fd4f..64dbcef 100644
+index c2820a6..b65d293 100644
 --- a/drivers/media/v4l2-core/videobuf2-vmalloc.c
 +++ b/drivers/media/v4l2-core/videobuf2-vmalloc.c
-@@ -69,6 +69,7 @@ static void vb2_vmalloc_put(void *buf_priv)
+@@ -70,6 +70,7 @@ static void vb2_vmalloc_put(void *buf_priv)
  	}
  }
  
 +#if 0
- static void *vb2_vmalloc_get_userptr(void *alloc_ctx, unsigned long vaddr,
- 				     unsigned long size, int write)
- {
-@@ -156,6 +157,10 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
- 	}
+ static void *vb2_vmalloc_get_userptr(struct device *dev, unsigned long vaddr,
+ 				     unsigned long size,
+ 				     enum dma_data_direction dma_dir)
+@@ -142,6 +143,10 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
+ 	vb2_destroy_framevec(buf->vec);
  	kfree(buf);
  }
 +#else

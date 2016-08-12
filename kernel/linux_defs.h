@@ -59,6 +59,7 @@
 #define	__nocast
 #define	__iomem
 #define	__read_mostly
+#define	__maybe_unused
 #define	__must_check
 #define	__chk_user_ptr(x) __nop
 #define	__chk_io_ptr(x) __nop
@@ -133,6 +134,7 @@
 #define	IS_BUILTIN(x,...) defined(x##__VA_ARGS__)
 #define	IS_ENABLED(x,...) defined(x##__VA_ARGS__)
 #define	IS_REACHABLE(x,...) defined(x##__VA_ARGS__)
+#define	IS_ALIGNED(x, a) (((x) & ((typeof(x))(a) - 1)) == 0)
 #define	THIS_MODULE (NULL)
 #define	DECLARE_EVENT_CLASS(...)
 #define	DECLARE_EVENT(...)
@@ -164,10 +166,12 @@
 #define	printk(...) printf(__VA_ARGS__)
 #define	printk_once(...) printf(__VA_ARGS__)
 #define	pr_warn_once(...) printf(__VA_ARGS__)
+#define	dev_warn_once(dev, ...) printf(__VA_ARGS__)
 #else
 #define	printk(...) printk_nop()
 #define	printk_once(...) printk_nop()
 #define	pr_warn_once(...) printk_nop()
+#define	dev_warn_once(...) printk_nop()
 #endif
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
@@ -239,6 +243,7 @@
 #define	kstrdup(a,b) strdup(a)
 #define	might_sleep(x) __nop
 #define	might_sleep_if(x) __nop
+#define	ndelay(d) usleep(((d) + 1000ULL - 1ULL)/1000UL)
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
 #define	swap(a, b) \
@@ -276,7 +281,8 @@
 #define	TASK_NONINTERACTIVE     64
 #define	no_llseek	NULL
 #define	default_llseek	NULL
-#define	GENMASK(lo, hi) (((2UL << ((hi) - (lo))) - 1UL) << (lo))
+#define	GENMASK(hi, lo) (((2UL << ((hi) - (lo))) - 1UL) << (lo))
+#define	GENMASK_ULL(hi, lo) (((2ULL << ((hi) - (lo))) - 1ULL) << (lo))
 #define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
 #define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #define	BITS_PER_BYTE 8
@@ -337,6 +343,7 @@
 #define	uninitialized_var(...) __VA_ARGS__
 #define	HZ 1000
 #define	NSEC_PER_SEC 1000000000LL
+#define	USEC_PER_SEC 1000000LL
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)
 #define	usecs_to_jiffies(x) ((x) / 1000)
@@ -409,6 +416,19 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	smp_rmb() mb()
 #define	smp_mb__after_clear_bit() mb()
 #define	smp_mb__after_atomic() mb()
+#define	smp_store_release(p, v) do {		\
+	atomic_lock();				\
+	*(p) = (v);				\
+	atomic_unlock();			\
+} while (0);
+#define	smp_load_acquire(p) ({			\
+	typeof(*(p)) __ret;			\
+	atomic_lock();				\
+	__ret = *(p);				\
+	atomic_unlock();			\
+	__ret;					\
+})
+#define	ACCESS_ONCE(x)		(*(volatile __typeof(x) *)&(x))
 #define	devres_find(...) NULL
 #define	fops_get(x) (x)
 #define	fops_put(x) __nop
@@ -557,6 +577,79 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 
 #define	DPM_ORDER_NONE 0
 
+#define	ilog2(n)				\
+(						\
+	__builtin_constant_p(n) ? (		\
+		(n) < 1 ? -1 :			\
+		(n) & (1ULL << 63) ? 63 :	\
+		(n) & (1ULL << 62) ? 62 :	\
+		(n) & (1ULL << 61) ? 61 :	\
+		(n) & (1ULL << 60) ? 60 :	\
+		(n) & (1ULL << 59) ? 59 :	\
+		(n) & (1ULL << 58) ? 58 :	\
+		(n) & (1ULL << 57) ? 57 :	\
+		(n) & (1ULL << 56) ? 56 :	\
+		(n) & (1ULL << 55) ? 55 :	\
+		(n) & (1ULL << 54) ? 54 :	\
+		(n) & (1ULL << 53) ? 53 :	\
+		(n) & (1ULL << 52) ? 52 :	\
+		(n) & (1ULL << 51) ? 51 :	\
+		(n) & (1ULL << 50) ? 50 :	\
+		(n) & (1ULL << 49) ? 49 :	\
+		(n) & (1ULL << 48) ? 48 :	\
+		(n) & (1ULL << 47) ? 47 :	\
+		(n) & (1ULL << 46) ? 46 :	\
+		(n) & (1ULL << 45) ? 45 :	\
+		(n) & (1ULL << 44) ? 44 :	\
+		(n) & (1ULL << 43) ? 43 :	\
+		(n) & (1ULL << 42) ? 42 :	\
+		(n) & (1ULL << 41) ? 41 :	\
+		(n) & (1ULL << 40) ? 40 :	\
+		(n) & (1ULL << 39) ? 39 :	\
+		(n) & (1ULL << 38) ? 38 :	\
+		(n) & (1ULL << 37) ? 37 :	\
+		(n) & (1ULL << 36) ? 36 :	\
+		(n) & (1ULL << 35) ? 35 :	\
+		(n) & (1ULL << 34) ? 34 :	\
+		(n) & (1ULL << 33) ? 33 :	\
+		(n) & (1ULL << 32) ? 32 :	\
+		(n) & (1ULL << 31) ? 31 :	\
+		(n) & (1ULL << 30) ? 30 :	\
+		(n) & (1ULL << 29) ? 29 :	\
+		(n) & (1ULL << 28) ? 28 :	\
+		(n) & (1ULL << 27) ? 27 :	\
+		(n) & (1ULL << 26) ? 26 :	\
+		(n) & (1ULL << 25) ? 25 :	\
+		(n) & (1ULL << 24) ? 24 :	\
+		(n) & (1ULL << 23) ? 23 :	\
+		(n) & (1ULL << 22) ? 22 :	\
+		(n) & (1ULL << 21) ? 21 :	\
+		(n) & (1ULL << 20) ? 20 :	\
+		(n) & (1ULL << 19) ? 19 :	\
+		(n) & (1ULL << 18) ? 18 :	\
+		(n) & (1ULL << 17) ? 17 :	\
+		(n) & (1ULL << 16) ? 16 :	\
+		(n) & (1ULL << 15) ? 15 :	\
+		(n) & (1ULL << 14) ? 14 :	\
+		(n) & (1ULL << 13) ? 13 :	\
+		(n) & (1ULL << 12) ? 12 :	\
+		(n) & (1ULL << 11) ? 11 :	\
+		(n) & (1ULL << 10) ? 10 :	\
+		(n) & (1ULL <<  9) ?  9 :	\
+		(n) & (1ULL <<  8) ?  8 :	\
+		(n) & (1ULL <<  7) ?  7 :	\
+		(n) & (1ULL <<  6) ?  6 :	\
+		(n) & (1ULL <<  5) ?  5 :	\
+		(n) & (1ULL <<  4) ?  4 :	\
+		(n) & (1ULL <<  3) ?  3 :	\
+		(n) & (1ULL <<  2) ?  2 :	\
+		(n) & (1ULL <<  1) ?  1 :	\
+		(n) & (1ULL <<  0) ?  0 :	\
+		-1) :				\
+	(sizeof(n) <= 4) ?			\
+	fls((u32)(n)) - 1 : flsll((u64)(n)) - 1	\
+)
+  
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #ifndef __LITTLE_ENDIAN

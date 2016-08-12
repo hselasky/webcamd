@@ -152,6 +152,7 @@ int	device_register(struct device *dev);
 void	device_unregister(struct device *dev);
 struct device *device_create_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args);
 struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt,...);
+int	device_enable_async_suspend(struct device *);
 void	device_destroy(struct class *class, dev_t devt);
 void	module_put(struct module *module);
 int	try_module_get(struct module *module);
@@ -214,6 +215,8 @@ void	bitmap_clear(unsigned long *, int, int);
 void	bitmap_shift_right(unsigned long *, const unsigned long *, int, int);
 void	bitmap_shift_left(unsigned long *, const unsigned long *, int, int);
 int	bitmap_equal(const unsigned long *, const unsigned long *, unsigned);
+int	bitmap_empty(const unsigned long *, unsigned);
+int	bitmap_intersects(const unsigned long *, const unsigned long *, unsigned);
 int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
@@ -222,6 +225,7 @@ struct timespec ktime_mono_to_real(struct timespec);
 struct timespec ktime_get_boottime(void);
 struct timespec ktime_get_real(void);
 struct timespec ktime_get(void);
+int64_t ktime_get_ns(void);
 struct timespec ktime_mono_to_any(struct timespec, int);
 struct timeval ktime_to_timeval(const struct timespec);
 void	ktime_get_ts(struct timespec *);
@@ -233,10 +237,16 @@ struct timespec ktime_get_monotonic_offset(void);
 struct timespec ktime_add_us(const struct timespec, const uint64_t);
 int64_t	ktime_us_delta(const struct timespec, const struct timespec);
 int64_t	ktime_to_us(const struct timespec);
+int64_t	ktime_to_ms(const struct timespec);
+struct timespec ktime_set(const s64, const unsigned long);
+int64_t ktime_ms_delta(const ktime_t, const ktime_t);
+u64	timeval_to_ns(const struct timeval *);
+struct timeval	ns_to_timeval(u64);
 void	msleep(uint32_t ms);
 void	ssleep(uint32_t s);
 uint32_t msleep_interruptible(uint32_t ms);
-void	request_module(const char *fmt,...);
+int	request_module(const char *fmt,...);
+int	request_module_nowait(const char *fmt,...);
 int	device_can_wakeup(struct device *dev);
 void	device_init_wakeup(struct device *dev, int flags);
 void	device_initialize(struct device *dev);
@@ -312,11 +322,14 @@ int	devres_destroy(struct device *, dr_release_t, dr_match_t, void *);
 uint32_t ror32(uint32_t, uint8_t);
 unsigned long gcd(unsigned long, unsigned long);
 void	get_random_bytes(void *, int);
+u32	prandom_u32_max(u32);
 
 const char *dev_driver_string(const struct device *);
 
 s32	sign_extend32(u32, int);
 
 void	eth_zero_addr(u8 *addr);
+
+struct device *kobj_to_dev(struct kobject *);
 
 #endif					/* _LINUX_FUNC_H_ */

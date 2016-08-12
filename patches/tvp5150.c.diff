@@ -1,0 +1,52 @@
+diff --git a/drivers/media/i2c/tvp5150.c b/drivers/media/i2c/tvp5150.c
+index 0b6d46c..289e7d5 100644
+--- a/drivers/media/i2c/tvp5150.c
++++ b/drivers/media/i2c/tvp5150.c
+@@ -1339,6 +1339,7 @@ static int tvp5150_init(struct i2c_client *c)
+ 	return 0;
+ }
+ 
++#if IS_ENABLED(CONFIG_OF)
+ static int tvp5150_parse_dt(struct tvp5150 *decoder, struct device_node *np)
+ {
+ 	struct v4l2_of_endpoint bus_cfg;
+@@ -1433,6 +1434,7 @@ err:
+ 	of_node_put(ep);
+ 	return ret;
+ }
++#endif
+ 
+ static const char * const tvp5150_test_patterns[2] = {
+ 	"Disabled",
+@@ -1444,7 +1446,9 @@ static int tvp5150_probe(struct i2c_client *c,
+ {
+ 	struct tvp5150 *core;
+ 	struct v4l2_subdev *sd;
++#if IS_ENABLED(CONFIG_OF)
+ 	struct device_node *np = c->dev.of_node;
++#endif
+ 	int res;
+ 
+ 	/* Check if the adapter supports the needed features */
+@@ -1462,7 +1466,8 @@ static int tvp5150_probe(struct i2c_client *c,
+ 
+ 	sd = &core->sd;
+ 
+-	if (IS_ENABLED(CONFIG_OF) && np) {
++#if IS_ENABLED(CONFIG_OF)
++	if (np) {
+ 		res = tvp5150_parse_dt(core, np);
+ 		if (res) {
+ 			v4l2_err(sd, "DT parsing error: %d\n", res);
+@@ -1472,7 +1477,10 @@ static int tvp5150_probe(struct i2c_client *c,
+ 		/* Default to BT.656 embedded sync */
+ 		core->mbus_type = V4L2_MBUS_BT656;
+ 	}
+-
++#else
++	/* Default to BT.656 embedded sync */
++	core->mbus_type = V4L2_MBUS_BT656;
++#endif
+ 	v4l2_i2c_subdev_init(sd, c, &tvp5150_ops);
+ 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
+ 

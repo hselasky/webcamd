@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2012 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2016 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1131,6 +1131,12 @@ device_create(struct class *class, struct device *parent,
 	return dev;
 }
 
+int
+device_enable_async_suspend(struct device *dev)
+{
+	return (0);
+}
+
 void
 device_destroy(struct class *class, dev_t devt)
 {
@@ -1490,6 +1496,43 @@ bitmap_equal(const unsigned long *pa,
 	return (1);
 }
 
+int
+bitmap_empty(const unsigned long *pa, unsigned bits)
+{
+	unsigned k;
+	unsigned lim = bits / BITS_PER_LONG;
+
+	for (k = 0; k != lim; k++)
+		if (pa[k] != 0)
+			return (0);
+
+	bits %= BITS_PER_LONG;
+	for (lim = 0; lim != bits; lim++) {
+		if (pa[k] & BIT_MASK(lim))
+			return (0);
+	}
+	return (1);
+}
+
+int
+bitmap_intersects(const unsigned long *pa,
+    const unsigned long *pb, unsigned bits)
+{
+	unsigned k;
+	unsigned lim = bits / BITS_PER_LONG;
+
+	for (k = 0; k != lim; k++)
+		if (pa[k] & pb[k])
+			return (1);
+
+	bits %= BITS_PER_LONG;
+	for (lim = 0; lim != bits; lim++) {
+		if ((pa[k] & pb[k]) & BIT_MASK(lim))
+			return (1);
+	}
+	return (0);
+}
+
 /*
  * A fast, small, non-recursive O(nlog n) sort for the Linux kernel
  *
@@ -1822,6 +1865,12 @@ ktime_get(void)
 	return (ts);
 }
 
+int64_t
+ktime_get_ns(void)
+{
+	return (ktime_to_ns(ktime_get()));
+}
+
 struct timespec
 ktime_mono_to_any(struct timespec arg, int off)
 {
@@ -1950,6 +1999,39 @@ ktime_to_us(const struct timespec t)
 	return (((int64_t)tv.tv_sec * 1000000LL) + tv.tv_usec);
 }
 
+int64_t
+ktime_to_ms(const struct timespec t)
+{
+	return (((int64_t)t.tv_sec * 1000LL) + (t.tv_nsec / 1000000LL));
+}
+
+struct timespec
+ktime_set(const s64 secs, const unsigned long nsecs)
+{
+	struct timespec ts = { .tv_sec = secs, .tv_nsec = nsecs };
+	return (ts);
+}
+
+int64_t
+ktime_ms_delta(const ktime_t last, const ktime_t first)
+{
+	return (ktime_to_ms(ktime_sub(last, first)));
+}
+
+u64
+timeval_to_ns(const struct timeval *tv)
+{
+	return ((u64)tv->tv_sec * NSEC_PER_SEC) + ((u64)tv->tv_usec * 1000ULL);
+}
+
+struct timeval
+ns_to_timeval(u64 nsec)
+{
+  	struct timeval tv = { .tv_sec = nsec / NSEC_PER_SEC,
+	    .tv_usec = (nsec % NSEC_PER_SEC) / 1000ULL };
+	return (tv);
+}
+
 struct timespec
 current_kernel_time(void)
 {
@@ -2018,9 +2100,16 @@ msleep_interruptible(uint32_t ms)
 	return (0);
 }
 
-void
+int
 request_module(const char *ptr,...)
 {
+	return (0);
+}
+
+int
+request_module_nowait(const char *ptr,...)
+{
+	return (0);
 }
 
 int
@@ -2908,6 +2997,12 @@ get_random_bytes(void *buf, int nbytes)
 		*((char *)buf + nbytes) = rand();
 }
 
+u32
+prandom_u32_max(u32 max)
+{
+	return (u32)((((u64)(u32)rand()) * max) >> 32);
+}
+
 const char *
 dev_driver_string(const struct device *dev)
 {
@@ -2945,3 +3040,8 @@ eth_zero_addr(u8 *addr)
         memset(addr, 0x00, 6);
 }
 
+struct device *
+kobj_to_dev(struct kobject *kobj)
+{
+	return (container_of(kobj, struct device, kobj));
+}

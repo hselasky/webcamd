@@ -63,6 +63,7 @@ for F in \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf-tuner.c \
 ../media_tree/drivers/media/usb/dvb-usb-v2/mxl111sf.c \
 ../media_tree/drivers/media/i2c/tvp514x.c \
+../media_tree/drivers/media/i2c/tvp5150.c \
 ../media_tree/drivers/media/i2c/adv7343.c \
 ../media_tree/drivers/media/i2c/tvp7002.c \
 ../media_tree/drivers/input/tablet/wacom.h \
@@ -108,6 +109,7 @@ find_media_file mxl111sf-tuner.c
 find_media_file mxl111sf.c
 find_media_file wacom.h
 find_media_file tvp514x.c
+find_media_file tvp5150.c
 find_media_file adv7343.c
 find_media_file tvp7002.c
 find_media_file rc-main.c
@@ -133,6 +135,7 @@ patch $OPT $(find_media_file stk-webcam.h) stk-webcam.h.diff
 patch $OPT $(find_media_file ca.h) ca.h.diff
 patch $OPT $(find_media_file wacom.h) wacom.h.diff
 patch $OPT $(find_media_file tvp514x.c) tvp514x.c.diff
+patch $OPT $(find_media_file tvp5150.c) tvp5150.c.diff
 patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
 patch $OPT $(find_media_file rc-main.c) rc-main.c.diff

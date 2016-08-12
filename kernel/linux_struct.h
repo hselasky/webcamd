@@ -28,6 +28,7 @@ struct usb_driver;
 struct usb_interface;
 struct vm_area_struct;
 struct vm_operations_struct;
+struct vfsmount;
 
 #define	LINUX_VMA_MAX 128
 
@@ -101,6 +102,12 @@ struct attribute_group {
 	struct attribute **attrs;
 	struct bin_attribute **bin_attrs;
 };
+
+#define	__ATTRIBUTE_GROUPS(name)				\
+static const struct attribute_group *name##_groups[] = {	\
+	&name##_group,						\
+	NULL,							\
+}
 
 #define	ATTRIBUTE_GROUPS(name)					\
 static const struct attribute_group name##_group = {		\
@@ -268,6 +275,7 @@ struct device {
 	void   *platform_data;
 	void   *driver_data;
 	void   *of_node;
+	void   *fwnode;
 	const struct file_operations *fops;
 	const struct attribute_group **groups;
 	struct bus_type *bus;

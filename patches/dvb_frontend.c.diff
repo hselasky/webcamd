@@ -1,8 +1,8 @@
 diff --git a/drivers/media/dvb-core/dvb_frontend.c b/drivers/media/dvb-core/dvb_frontend.c
-index b8579ee..f3ced49 100644
+index be99c8d..eef9340 100644
 --- a/drivers/media/dvb-core/dvb_frontend.c
 +++ b/drivers/media/dvb-core/dvb_frontend.c
-@@ -1914,7 +1914,8 @@ static int dvb_frontend_ioctl(struct file *file,
+@@ -1934,7 +1934,8 @@ static int dvb_frontend_ioctl(struct file *file,
  		return -EPERM;
  	}
  
@@ -12,12 +12,12 @@ index b8579ee..f3ced49 100644
  		err = dvb_frontend_ioctl_properties(file, cmd, parg);
  	else {
  		c->state = DTV_UNDEFINED;
-@@ -1971,7 +1972,7 @@ static int dvb_frontend_ioctl_properties(struct file *file,
+@@ -1991,7 +1992,7 @@ static int dvb_frontend_ioctl_properties(struct file *file,
  		if (c->state == DTV_TUNE)
  			dev_dbg(fe->dvb->device, "%s: Property cache is full, tuning\n", __func__);
  
 -	} else if (cmd == FE_GET_PROPERTY) {
 +	} else if (cmd == FE_GET_PROPERTY || cmd == FE_GET_PROPERTY_OLD) {
- 		dev_dbg(fe->dvb->device, "%s: properties.num = %d\n", __func__, tvps->num);
- 		dev_dbg(fe->dvb->device, "%s: properties.props = %p\n", __func__, tvps->props);
+ 		struct dtv_frontend_properties getp = fe->dtv_property_cache;
  
+ 		dev_dbg(fe->dvb->device, "%s: properties.num = %d\n", __func__, tvps->num);
