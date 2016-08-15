@@ -31,13 +31,13 @@ index c514941..6da3ee0 100644
  
  #define EVIOCSFF		_IOW('E', 0x80, struct ff_effect)	/* send a force effect to a force feedback device */
 -#define EVIOCRMFF		_IOW('E', 0x81, int)			/* Erase a force effect */
-+#define EVIOCRMFF		_IOWINT('E', 0x81, int)			/* Erase a force effect */
++#define EVIOCRMFF		_IOWINT('E', 0x81)			/* Erase a force effect */
  #define EVIOCGEFFECTS		_IOR('E', 0x84, int)			/* Report number of effects playable at the same time */
  
 -#define EVIOCGRAB		_IOW('E', 0x90, int)			/* Grab/Release device */
 -#define EVIOCREVOKE		_IOW('E', 0x91, int)			/* Revoke device access */
-+#define EVIOCGRAB		_IOWINT('E', 0x90, int)			/* Grab/Release device */
-+#define EVIOCREVOKE		_IOWINT('E', 0x91, int)			/* Revoke device access */
++#define EVIOCGRAB		_IOWINT('E', 0x90)			/* Grab/Release device */
++#define EVIOCREVOKE		_IOWINT('E', 0x91)			/* Revoke device access */
  
  /**
   * EVIOCGMASK - Retrieve current event mask
