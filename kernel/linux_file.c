@@ -117,10 +117,22 @@ linux_ioctl(struct cdev_handle *handle, int fflags,
     unsigned int cmd, void *arg)
 {
 	int retval = -EINVAL;
+	int iowint;
 
 	if (handle == NULL)
 		goto done;
 
+	/*
+	 * Copy in the _IOWINT parameter and pass it as arg pointer
+	 * similar to what Linux is doing:
+	 */
+	if ((cmd & IOC_DIRMASK) == IOC_VOID && IOCPARM_LEN(cmd) == sizeof(int)) {
+		if (copy_from_user(&iowint, arg, sizeof(iowint)) != 0) {
+			retval = -EFAULT;
+			goto done;
+		}
+		arg = (void *)(intptr_t)iowint;
+	}
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
 	if (handle->fixed_file.f_op->unlocked_ioctl != NULL)
