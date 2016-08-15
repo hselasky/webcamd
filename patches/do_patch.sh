@@ -71,7 +71,8 @@ for F in \
 ../media_tree/drivers/media/rc/rc-main.c \
 ../media_tree/drivers/base/regmap/regmap.c \
 ../media_tree/drivers/media/usb/em28xx/em28xx-camera.c \
-../media_tree/drivers/media/usb/em28xx/em28xx-video.c
+../media_tree/drivers/media/usb/em28xx/em28xx-video.c \
+../media_tree/include/uapi/asm-generic/ioctl.h
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
 done
@@ -116,6 +117,7 @@ find_media_file rc-main.c
 find_media_file regmap.c
 find_media_file em28xx-camera.c
 find_media_file em28xx-video.c
+find_media_file ioctl.h
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
 patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
@@ -126,7 +128,7 @@ patch $OPT $(find_media_file videobuf2-core.c) videobuf2-core.c.diff
 patch $OPT $(find_media_file videobuf2-memops.c) videobuf2-memops.c.diff
 patch $OPT $(find_media_file videobuf2-vmalloc.c) videobuf2-vmalloc.c.diff
 patch $OPT -R $(find_media_file frontend.h) frontend.h.diff
-patch $OPT -R $(find_media_file input.h) input.h.diff
+patch $OPT $(find_media_file input.h) input.h.diff
 patch $OPT $(find_media_file as102_drv.h) as102_drv.h.diff
 patch $OPT $(find_media_file usb-urb.c) usb-urb.c.diff
 patch $OPT $(find_media_file usb_urb.c) usb_urb.c.diff
@@ -142,6 +144,7 @@ patch $OPT $(find_media_file rc-main.c) rc-main.c.diff
 patch $OPT $(find_media_file regmap.c) regmap.c.diff
 patch $OPT $(find_media_file em28xx-camera.c) em28xx-camera.c.diff
 patch $OPT $(find_media_file em28xx-video.c) em28xx-video.c.diff
+patch $OPT $(find_media_file ioctl.h) ioctl.h.diff
 patch $OPT ../media_tree/drivers/media/v4l2-core/Makefile v4l2-makefile.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
