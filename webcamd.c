@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010-2011 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2010-2016 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -376,6 +376,7 @@ v4b_create(int unit)
 	char buf[128];
 	int unit_num[UNIT_MAX][F_V4B_SUBDEV_MAX];
 	const char *dname;
+	struct cuse_dev *pdev;
 
 	/* The DVB V2 API is ASYNC and we need to wait for it: */
 	flush_scheduled_work();
@@ -409,9 +410,19 @@ v4b_create(int unit)
 					    "uniq unit number");
 				}
 			}
-			cuse_dev_create(&v4b_methods, (void *)(long)n,
+again:
+			pdev = cuse_dev_create(&v4b_methods, (void *)(long)n,
 			    0, uid, gid, CHR_MODE, dname + 1,
 			    unit_num[id][p], q);
+
+			/*
+			 * Resolve device naming conflict with new
+			 * kernel evdev module:
+			 */
+			if (pdev == NULL && unit < 0 &&
+			    (n / (F_V4B_SUBDEV_MAX * F_V4B_SUBSUBDEV_MAX)) == F_V4B_EVDEV &&
+			    cuse_alloc_unit_number_by_id(&unit_num[id][p], CUSE_ID_WEBCAMD(id)) == 0)
+				goto again;
 
 			snprintf(buf, sizeof(buf), dname + 1,
 			    unit_num[id][p], q);
