@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2015 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2016 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -51,7 +51,8 @@ static struct device usb_dummy_bus;
 /* prototypes */
 
 static libusb20_tr_callback_t usb_linux_isoc_callback;
-static libusb20_tr_callback_t usb_linux_non_isoc_callback;
+static libusb20_tr_callback_t usb_linux_bulk_intr_callback;
+static libusb20_tr_callback_t usb_linux_ctrl_callback;
 
 static const struct usb_device_id *usb_linux_lookup_id(struct LIBUSB20_DEVICE_DESC_DECODED *pdd, struct LIBUSB20_INTERFACE_DESC_DECODED *pid, const struct usb_device_id *id);
 static void usb_linux_free_device(struct usb_device *dev);
@@ -929,14 +930,30 @@ usb_setup_endpoint(struct usb_device *dev,
 		/* transfer already setup */
 		return (0);
 	}
-	if (type == USB_ENDPOINT_XFER_CONTROL)
-		return (-EINVAL);
-
 	uhe->bsd_xfer[0] = libusb20_tr_get_pointer(dev->bsd_udev, ep_index + 0);
 	uhe->bsd_xfer[1] = libusb20_tr_get_pointer(dev->bsd_udev, ep_index + 1);
 
-	if (type == USB_ENDPOINT_XFER_ISOC) {
+	if (type == USB_ENDPOINT_XFER_CONTROL) {
+		unsigned bufsize = 65536 + 8;
 
+		/* one transfer and one frame */
+		if (libusb20_tr_open(uhe->bsd_xfer[0], bufsize,
+		    2, addr))
+			goto failure;
+
+		if (libusb20_tr_open(uhe->bsd_xfer[1], bufsize,
+		    2, addr))
+			goto failure;
+
+		libusb20_tr_set_callback(uhe->bsd_xfer[0],
+		    &usb_linux_ctrl_callback);
+		libusb20_tr_set_callback(uhe->bsd_xfer[1],
+		    &usb_linux_ctrl_callback);
+
+		libusb20_tr_set_priv_sc0(uhe->bsd_xfer[0], uhe);
+		libusb20_tr_set_priv_sc0(uhe->bsd_xfer[1], uhe);
+
+	} else if (type == USB_ENDPOINT_XFER_ISOC) {
 		/*
 		 * Isochronous transfers are special in that they don't fit
 		 * into the BULK/INTR/CONTROL transfer model.
@@ -991,9 +1008,9 @@ usb_setup_endpoint(struct usb_device *dev,
 			goto failure;
 
 		libusb20_tr_set_callback(uhe->bsd_xfer[0],
-		    &usb_linux_non_isoc_callback);
+		    &usb_linux_bulk_intr_callback);
 		libusb20_tr_set_callback(uhe->bsd_xfer[1],
-		    &usb_linux_non_isoc_callback);
+		    &usb_linux_bulk_intr_callback);
 
 		libusb20_tr_set_priv_sc0(uhe->bsd_xfer[0], uhe);
 		libusb20_tr_set_priv_sc0(uhe->bsd_xfer[1], uhe);
@@ -1794,16 +1811,16 @@ tr_setup:
 }
 
 /*------------------------------------------------------------------------*
- *	usb_linux_non_isoc_callback
+ *	usb_linux_bulk_intr_callback
  *
- * The following is the FreeBSD BULK/INTERRUPT and CONTROL USB
- * callback. It dequeues Linux USB stack compatible URB's, transforms
- * the URB fields into a FreeBSD USB transfer, and defragments the USB
- * transfer as required. When the transfer is complete the "complete"
- * callback is called.
+ * The following is the FreeBSD BULK/INTERRUPT callback. It dequeues
+ * Linux USB stack compatible URB's, transforms the URB fields into a
+ * FreeBSD USB transfer, and defragments the USB transfer as
+ * required. When the transfer is complete the "complete" callback is
+ * called.
  *------------------------------------------------------------------------*/
 static void
-usb_linux_non_isoc_callback(struct libusb20_transfer *xfer)
+usb_linux_bulk_intr_callback(struct libusb20_transfer *xfer)
 {
 	struct urb *urb = libusb20_tr_get_priv_sc1(xfer);
 	struct usb_host_endpoint *uhe = libusb20_tr_get_priv_sc0(xfer);
@@ -1819,7 +1836,7 @@ usb_linux_non_isoc_callback(struct libusb20_transfer *xfer)
 		urb->actual_length = actlen;
 
 		/* check for short transfer */
-		if (actlen < max_bulk) {
+		if (actlen < urb->transfer_buffer_length) {
 			/* short transfer */
 			if (urb->transfer_flags & URB_SHORT_NOT_OK) {
 				urb->status = -EPIPE;
@@ -1850,8 +1867,7 @@ tr_setup:
 		libusb20_tr_set_priv_sc1(xfer, urb);
 
 		/* assert valid transfer size */
-		if (urb->transfer_buffer_length < 0 ||
-		    urb->transfer_buffer_length > max_bulk) {
+		if (urb->transfer_buffer_length > max_bulk) {
 			urb->status = -EFBIG;
 
 			/* call callback */
@@ -1872,6 +1888,120 @@ tr_setup:
 
 		libusb20_tr_setup_bulk(xfer, urb->transfer_buffer,
 		    urb->transfer_buffer_length, urb->timeout);
+		libusb20_tr_submit(xfer);
+
+		/* get other transfer */
+		if (xfer == uhe->bsd_xfer[0])
+			xfer = uhe->bsd_xfer[1];
+		else
+			xfer = uhe->bsd_xfer[0];
+
+		/* start the other transfer, if not already started */
+		if (xfer != NULL)
+			libusb20_tr_start(xfer);
+		break;
+
+	default:
+		if (status == LIBUSB20_TRANSFER_CANCELLED) {
+			urb->status = -ECONNRESET;
+		} else {
+			urb->status = -EPIPE;
+		}
+
+		/* Set zero for "actual_length" */
+		urb->actual_length = 0;
+
+		/* call callback */
+		urb->bsd_no_resubmit = 1;
+		usb_linux_complete(xfer);
+		urb->bsd_no_resubmit = 0;
+
+		if (status == LIBUSB20_TRANSFER_CANCELLED) {
+			/* we need to return in this case */
+			break;
+		}
+		goto tr_setup;
+	}
+}
+
+/*------------------------------------------------------------------------*
+ *	usb_linux_ctrl_callback
+ *
+ * The following is the FreeBSD CONTROL callback. It dequeues Linux
+ * USB stack compatible URB's, transforms the URB fields into a
+ * FreeBSD USB transfer. When the transfer is complete the "complete"
+ * callback is called.
+ *------------------------------------------------------------------------*/
+static void
+usb_linux_ctrl_callback(struct libusb20_transfer *xfer)
+{
+	struct urb *urb = libusb20_tr_get_priv_sc1(xfer);
+	struct usb_host_endpoint *uhe = libusb20_tr_get_priv_sc0(xfer);
+	uint32_t max_ctrl = libusb20_tr_get_max_total_length(xfer);
+	uint32_t actlen;
+	uint8_t status = libusb20_tr_get_status(xfer);
+
+	switch (status) {
+	case LIBUSB20_TRANSFER_COMPLETED:
+
+		actlen = libusb20_tr_get_actual_length(xfer);
+
+		/* subtract size of setup packet */
+		if (actlen >= 8)
+			actlen -= 8;
+		else
+			actlen = 0;
+
+		urb->actual_length = actlen;
+
+		/* check for short transfer */
+		if (actlen < urb->transfer_buffer_length) {
+			/* short transfer */
+			if (urb->transfer_flags & URB_SHORT_NOT_OK) {
+				urb->status = -EPIPE;
+			} else {
+				urb->status = 0;
+			}
+		} else {
+			/* success */
+			urb->status = 0;
+		}
+
+		/* call callback */
+		urb->bsd_no_resubmit = 1;
+		usb_linux_complete(xfer);
+		urb->bsd_no_resubmit = 0;
+
+	case LIBUSB20_TRANSFER_START:
+tr_setup:
+		/* get next transfer */
+		urb = TAILQ_FIRST(&uhe->bsd_urb_list);
+		if (urb == NULL) {
+			/* nothing to do */
+			break;
+		}
+		TAILQ_REMOVE(&uhe->bsd_urb_list, urb, bsd_urb_list);
+		urb->bsd_urb_list.tqe_prev = NULL;
+
+		libusb20_tr_set_priv_sc1(xfer, urb);
+
+		/* assert valid transfer size */
+		if (max_ctrl < 8 ||
+		    urb->transfer_buffer_length > (max_ctrl - 8)) {
+			urb->status = -EFBIG;
+
+			/* call callback */
+			urb->bsd_no_resubmit = 1;
+			usb_linux_complete(xfer);
+			urb->bsd_no_resubmit = 0;
+			goto tr_setup;
+		}
+		libusb20_tr_set_flags(xfer, 0);
+
+		/* setup control transfer */
+		libusb20_tr_setup_control(xfer, urb->setup_packet,
+		    urb->transfer_buffer, urb->timeout);
+
 		libusb20_tr_submit(xfer);
 
 		/* get other transfer */
