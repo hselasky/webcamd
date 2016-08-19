@@ -925,7 +925,9 @@ cdev_del(struct cdev *cdev)
 void
 kref_init(struct kref *kref)
 {
-	kref->refcount.counter = 0;
+	atomic_lock();
+	kref->refcount.counter = 1;
+	atomic_unlock();
 }
 
 void
