@@ -171,7 +171,7 @@ CFLAGS+= -I${LOCALBASE}/include
 
 CFLAGS+= -include webcamd_global.h
 
-.if defined(HAVE_HAL)
+.if defined(HAVE_HAL) || defined(HAVE_ALL_DRV)
 HAL_CFLAGS!= pkg-config --cflags hal
 HAL_LDFLAGS!= pkg-config --libs hal
 CFLAGS+= ${HAL_CFLAGS}
@@ -291,6 +291,14 @@ configure: tools/linux_make/linux_make
 .if defined(HAVE_INPUT_DRV) || defined(HAVE_ALL_DRV)
 	@echo " * Input devices"
 	@(cat config_input.in ; echo "") >> config
+.endif
+.if defined(HAVE_KEYBOARD_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * Keyboard devices"
+	@(cat config_keyboard.in ; echo "") >> config
+.endif
+.if defined(HAVE_MOUSE_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * Mouse devices"
+	@(cat config_mouse.in ; echo "") >> config
 .endif
 .if defined(HAVE_RADIO_DRV) || defined(HAVE_ALL_DRV)
 	@echo " * Radio devices"
