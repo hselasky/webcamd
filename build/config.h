@@ -656,11 +656,11 @@
 #define	CONFIG_USB_HACKRF /* y */
 #define	CONFIG_USB_HID /* y */
 #undef	CONFIG_USB_HIDDEV /* n */
-#undef	CONFIG_USB_KBD /* n */
+#define	CONFIG_USB_KBD /* y */
 #define	CONFIG_USB_KEENE /* y */
 #define	CONFIG_USB_M5602 /* y */
 #define	CONFIG_USB_MA901 /* y */
-#undef	CONFIG_USB_MOUSE /* n */
+#define	CONFIG_USB_MOUSE /* y */
 #define	CONFIG_USB_MR800 /* y */
 #undef	CONFIG_USB_MSI2500 /* n */
 #undef	CONFIG_USB_PULSE8_CEC /* n */
