@@ -3047,3 +3047,16 @@ kobj_to_dev(struct kobject *kobj)
 {
 	return (container_of(kobj, struct device, kobj));
 }
+
+void *
+memscan(void *data, int c, size_t sz)
+{
+	uint8_t *p;
+
+	p = data;
+	while (sz != 0 && *p != c) {
+		p++;
+		sz--;
+	}
+	return (p);
+}

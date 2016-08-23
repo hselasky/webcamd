@@ -332,4 +332,6 @@ void	eth_zero_addr(u8 *addr);
 
 struct device *kobj_to_dev(struct kobject *);
 
+void	*memscan(void *, int, size_t);
+
 #endif					/* _LINUX_FUNC_H_ */
