@@ -1,0 +1,13 @@
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index e9ae3d5..59289aa 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -794,7 +794,7 @@ static int str_to_user(const char *str, unsigned int maxlen, void __user *p)
+ 	int len;
+ 
+ 	if (!str)
+-		return -ENOENT;
++		str = "";
+ 
+ 	len = strlen(str) + 1;
+ 	if (len > maxlen)
