@@ -41,3 +41,12 @@ index c514941..6da3ee0 100644
  
  /**
   * EVIOCGMASK - Retrieve current event mask
+@@ -190,7 +194,7 @@ struct input_mask {
+  * if the receive-buffer points to invalid memory, or EINVAL if the kernel
+  * does not implement the ioctl.
+  */
+-#define EVIOCGMASK		_IOR('E', 0x92, struct input_mask)	/* Get event-masks */
++#define EVIOCGMASK		_IOW('E', 0x92, struct input_mask)	/* Get event-masks */
+ 
+ /**
+  * EVIOCSMASK - Set event mask
