@@ -922,7 +922,7 @@ usb_setup_endpoint(struct usb_device *dev,
 {
 	uint8_t type = uhe->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
 	uint8_t addr = uhe->desc.bEndpointAddress;
-	uint8_t ep_index = ((addr / 0x40) | (addr * 4)) % (16 * 4);
+	uint8_t ep_index = (((addr & 0x80) / 0x40) | (addr * 4)) % (16 * 4);
 	uint8_t speed;
 
 	if (uhe->bsd_xfer[0] ||
