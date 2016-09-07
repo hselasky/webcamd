@@ -52,9 +52,6 @@ typedef void (*usb_complete_t)(struct urb *);
 #define	USB_LINUX_IFACE_MAX 32
 #define	USB_MAXIADS	(USB_LINUX_IFACE_MAX / 2)
 
-#define	USB_MAX_FULL_SPEED_ISOC_FRAMES (60 * 1)
-#define	USB_MAX_HIGH_SPEED_ISOC_FRAMES (60 * 8)
-
 #define	USB_SPEED_UNKNOWN 255		/* XXX */
 #define	USB_SPEED_LOW LIBUSB20_SPEED_LOW
 #define	USB_SPEED_FULL LIBUSB20_SPEED_FULL

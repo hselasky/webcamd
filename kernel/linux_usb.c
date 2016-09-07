@@ -34,6 +34,11 @@ static int min_bufsize;
 module_param(min_bufsize, int, 0644);
 MODULE_PARM_DESC(min_bufsize, "Set minimum USB buffer size");
 
+static int min_frames;
+
+module_param(min_frames, int, 0644);
+MODULE_PARM_DESC(min_frames, "Set minimum ISOC buffering in milliseconds");
+
 struct usb_linux_softc {
 	struct libusb20_config *pcfg;
 	struct libusb20_device *pdev;
@@ -536,19 +541,24 @@ usb_linux_resume(int fd)
 static uint16_t
 usb_max_isoc_frames(struct usb_device *dev, struct usb_host_endpoint *uhe)
 {
+	uint32_t frames;
 	uint8_t fps_shift;
+
+	frames = 8 * min_frames;
+	if (frames == 0)
+		frames = 8 * 30;	/* use 30ms default buffering time */
 
 	switch (libusb20_dev_get_speed(dev->bsd_udev)) {
 	case LIBUSB20_SPEED_LOW:
 	case LIBUSB20_SPEED_FULL:
-		return (USB_MAX_FULL_SPEED_ISOC_FRAMES);
+		return (frames / 8);
 	default:
 		fps_shift = uhe->desc.bInterval;
 		if (fps_shift > 0)
 			fps_shift--;
 		if (fps_shift > 3)
 			fps_shift = 3;
-		return (USB_MAX_HIGH_SPEED_ISOC_FRAMES >> fps_shift);
+		return (frames >> fps_shift);
 	}
 }
 
