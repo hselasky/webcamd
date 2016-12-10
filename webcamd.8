@@ -25,12 +25,12 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd September 4, 2014
+.Dd December 10, 2016
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
 .Nm webcamd
-.Nd daemon to provide access to USB webcam and DVB devices
+.Nd daemon which provide access to USB webcam, USB DVB, USB radio, USB input, USB tablet and more devices
 .Sh SYNOPSIS
 .Nm
 .Op Fl B
@@ -52,19 +52,29 @@
 .Op Fl h
 .Sh DESCRIPTION
 .Nm
-is a daemon that enables the use of hundreds of different USB
-webcam and DVB devices under the FreeBSD operating
-system. The webcam daemon is basically a port
-of Linux USB device drivers into userspace on FreeBSD. 
+is a daemon that enables the use of hundreds of different USB webcam,
+USB DVB, USB radio, USB input, USB tablet and more devices under the
+FreeBSD operating system.
+The
+.Nm
+daemon is basically a port of Linux USB device drivers into userspace
+in FreeBSD.
 .Pp
 .Nm 
 requires the 
 .Xr cuse4bsd 3 
-kernel module. To load the driver as a
-module at boot time, place the following line in
+kernel module from ports in versions of FreeBSD prior to 11.x and the
+.Xr cuse 3
+kernel module in versions of FreeBSD starting at 11.0.
+To load the driver as a module at boot time, place the following line
+in
 .Xr loader.conf 5 :
 .Pp
+       # FreeBSD < 11.x, package from ports
        cuse4bsd_load="YES"
+
+       # FreeBSD >= 11.x, part of default kernel build
+       cuse_load="YES"
 .Pp
 To start 
 .Nm
@@ -75,7 +85,7 @@ automatically at system startup, place the following line in
 .Pp
 Once
 .Nm
-is running, supported USB web cameras and DVB devices will be available for use by other applications.
+is running, supported USB devices will be available for use by other applications.
 .Pp
 The following options are available:
 .Bl -tag -width indent
