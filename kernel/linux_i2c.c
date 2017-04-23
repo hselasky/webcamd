@@ -234,6 +234,41 @@ i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 	return (client);
 }
 
+/*
+ * Dummy I2C driver support
+ */
+
+static const struct i2c_device_id i2c_dummy_id[] = {
+	{ "dummy", 0 },
+	{ },
+};
+
+static int
+i2c_dummy_probe(struct i2c_client *client, const struct i2c_device_id *id)
+{
+	return (0);
+}
+
+static int
+i2c_dummy_remove(struct i2c_client *client)
+{
+	return (0);
+}
+
+static struct i2c_driver i2c_dummy_driver = {
+	.driver.name = "dummy",
+	.probe = i2c_dummy_probe,
+	.remove = i2c_dummy_remove,
+	.id_table = i2c_dummy_id,
+};
+
+static void
+i2c_dummy_init(void)
+{
+	i2c_register_driver(NULL, &i2c_dummy_driver);
+}
+module_init(i2c_dummy_init);
+
 struct i2c_client *
 i2c_new_dummy(struct i2c_adapter *adapter, u16 address)
 {
