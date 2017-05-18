@@ -813,9 +813,9 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 
 error:
 	printf("Trying to register "
-	    "unknown device(0x%08x) "
+	    "unknown device(0x%08jx) "
 	    "or subdevice(%d) too big.\n",
-	    mm, (int)subdev);
+	    (uintmax_t)mm, (int)subdev);
 	return;
 }
 
@@ -891,7 +891,7 @@ register_chrdev(dev_t mm, const char *desc, const struct file_operations *fops)
 
 error:
 	printf("Cannot register character "
-	    "device mm=0x%08x and desc='%s'.\n", mm, desc);
+	    "device mm=0x%08jx and desc='%s'.\n", (uintmax_t)mm, desc);
 	return (-1);
 }
 
@@ -899,7 +899,7 @@ int
 unregister_chrdev(dev_t mm, const char *desc)
 {
 	printf("Cannot unregister character "
-	    "device mm=0x%08x and desc='%s'.\n", mm, desc);
+	    "device mm=0x%08jx and desc='%s'.\n", (uintmax_t)mm, desc);
 	return (-1);
 }
 

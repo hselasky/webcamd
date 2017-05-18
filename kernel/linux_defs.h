@@ -301,7 +301,7 @@
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 38)
 #define	BUS_ID_SIZE 32
 #define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
-#define	MKDEV(maj,min) ((dev_t)((((maj) & 0xFFFFUL) << 16)|((min) & 0xFFFFUL)))
+#define	MKDEV(maj,min) ((dev_t)(uint32_t)((((maj) & 0xFFFFUL) << 16)|((min) & 0xFFFFUL)))
 #define	MAJOR(dev) (((dev) >> 16) & 0xFFFFUL)
 #define	MINOR(dev) ((dev) & 0xFFFFUL)
 #define	dev_set_name(d, ...) \
@@ -703,7 +703,6 @@ typedef long long loff_t;
 
 #endif
 typedef uint32_t gfp_t;
-typedef uint32_t dev_t;
 typedef struct timespec ktime_t;
 
 #endif					/* _LINUX_DEFS_H_ */
