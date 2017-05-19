@@ -7,6 +7,7 @@ struct class;
 struct cpumask;
 struct device;
 struct device_driver;
+struct device_node;
 struct dmi_system_id;
 struct fb_videomode;
 struct file;
@@ -46,6 +47,10 @@ enum dma_data_direction {
 	DMA_DATA_DIRECTION_DUMMY
 };
 
+struct dma_buf {
+	size_t size;
+};
+
 typedef struct pm_message {
 	int	event;
 } pm_message_t;
@@ -56,6 +61,10 @@ typedef struct poll_table_struct {
 typedef struct {
 	volatile unsigned int counter;
 } atomic_t;
+
+typedef struct {
+	volatile uint64_t counter;
+} atomic64_t;
 
 struct module {
 };
@@ -72,6 +81,10 @@ struct kobj_uevent_env {
 struct kref {
 	atomic_t refcount;
 };
+
+typedef struct refcount_struct {
+	atomic_t refs;
+} refcount_t;
 
 struct attribute {
 	const char *name;
@@ -271,7 +284,7 @@ struct device {
 	device_release_t *release;
 	struct device_driver *driver;
 	struct device *parent;
-	struct device_type *type;
+	const struct device_type *type;
 	void   *platform_data;
 	void   *driver_data;
 	void   *of_node;
@@ -290,6 +303,13 @@ struct device {
 
 struct platform_device {
 	struct device dev;
+};
+
+struct platform_driver {
+	int (*probe)(struct platform_device *);
+	int (*remove)(struct platform_device *);
+	struct device_driver driver;
+	const struct platform_device_id *id_table;
 };
 
 typedef unsigned long pgprot_t;
@@ -319,6 +339,12 @@ struct vm_operations_struct {
 
 typedef struct spinlock {
 } spinlock_t;
+
+typedef struct rw_semaphore {
+} rw_semaphore_t;
+
+typedef struct rwlock {
+} rwlock_t;
 
 typedef struct raw_spinlock {
 } raw_spinlock_t;
@@ -436,6 +462,7 @@ extern struct device_attribute dev_attr_actual_profile;
 extern struct device_attribute dev_attr_actual_sensitivity_x;
 extern struct device_attribute dev_attr_actual_sensitivity_y;
 extern struct device_attribute dev_attr_associate_remote;
+extern struct device_attribute dev_attr_builtin_power_supply;
 extern struct device_attribute dev_attr_bustype;
 extern struct device_attribute dev_attr_button0_rawimg;
 extern struct device_attribute dev_attr_button1_rawimg;
@@ -486,6 +513,7 @@ extern struct device_attribute dev_attr_power_mode;
 extern struct device_attribute dev_attr_product;
 extern struct device_attribute dev_attr_product_id;
 extern struct device_attribute dev_attr_properties;
+extern struct device_attribute dev_attr_protocols;
 extern struct device_attribute dev_attr_quirks;
 extern struct device_attribute dev_attr_rel;
 extern struct device_attribute dev_attr_release_version;
@@ -509,6 +537,7 @@ extern struct device_attribute dev_attr_uniq;
 extern struct device_attribute dev_attr_vendor;
 extern struct device_attribute dev_attr_vendor_id;
 extern struct device_attribute dev_attr_version;
+extern struct device_attribute dev_attr_wakeup_protocols;
 extern struct device_attribute dev_attr_weight;
 extern struct device_attribute dev_attr_wheel;
 extern struct device_attribute dev_attr_xtilt;

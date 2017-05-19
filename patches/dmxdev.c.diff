@@ -1,0 +1,13 @@
+diff --git a/drivers/media/dvb-core/dmxdev.c b/drivers/media/dvb-core/dmxdev.c
+index 45e91add73ba..aacc7d86f44b 100644
+--- a/drivers/media/dvb-core/dmxdev.c
++++ b/drivers/media/dvb-core/dmxdev.c
+@@ -560,7 +560,7 @@ static int dvb_dmxdev_start_feed(struct dmxdev *dmxdev,
+ 				 struct dmxdev_filter *filter,
+ 				 struct dmxdev_feed *feed)
+ {
+-	ktime_t timeout = 0;
++	static const ktime_t timeout;
+ 	struct dmx_pes_filter_params *para = &filter->params.pes;
+ 	dmx_output_t otype;
+ 	int ret;

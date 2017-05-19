@@ -1,0 +1,37 @@
+commit 44e4278f0190d54d314225779b18169c6aa079e6
+Author: Hans Petter Selasky <hps@selasky.org>
+Date:   Tue Apr 25 09:30:47 2017 +0200
+
+    Fix for compilation with clang
+    
+    The clang compiler treats the memory address of a structure field as
+    tautologically true when compared to non-NULL. This breaks the macros
+    in llist.h when compiled using clang. Fix this by not comparing the
+    address of a structure field to NULL when determining the end of the
+    llist. Refer to -Wtautological-pointer-compare in clang for more
+    information.
+    
+    Signed-off-by: Hans Petter Selasky <hps@selasky.org>
+
+diff --git a/include/linux/llist.h b/include/linux/llist.h
+index 171baa90f6f6..76a6d618de75 100644
+--- a/include/linux/llist.h
++++ b/include/linux/llist.h
+@@ -126,7 +126,7 @@ static inline void init_llist_head(struct llist_head *list)
+  */
+ #define llist_for_each_entry(pos, node, member)				\
+ 	for ((pos) = llist_entry((node), typeof(*(pos)), member);	\
+-	     &(pos)->member != NULL;					\
++	     (pos) != llist_entry(NULL, typeof(*(pos)), member);	\
+ 	     (pos) = llist_entry((pos)->member.next, typeof(*(pos)), member))
+ 
+ /**
+@@ -148,7 +148,7 @@ static inline void init_llist_head(struct llist_head *list)
+  */
+ #define llist_for_each_entry_safe(pos, n, node, member)			       \
+ 	for (pos = llist_entry((node), typeof(*pos), member);		       \
+-	     &pos->member != NULL &&					       \
++	     (pos) != llist_entry(NULL, typeof(*(pos)), member) &&	       \
+ 	        (n = llist_entry(pos->member.next, typeof(*n), member), true); \
+ 	     pos = n)
+ 

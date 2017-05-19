@@ -5,6 +5,7 @@ obj-y += linux_defs.o
 obj-y += linux_file.o
 obj-y += linux_firmware.o
 obj-y += linux_func.o
+obj-y += linux_idr.o
 obj-y += linux_i2c.o
 obj-y += linux_i2c_mux.o
 obj-y += linux_mod_param.o

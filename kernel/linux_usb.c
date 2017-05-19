@@ -635,6 +635,9 @@ usb_submit_urb(struct urb *urb, uint16_t mem_flags)
 	    uhe->bsd_xfer[1]) {
 		/* we are ready! */
 
+		/* indicate that we are queued */
+		urb->hcpriv = USB_HCPRIV_QUEUED;
+
 		/* check if URB is not already submitted */
 		if (urb->bsd_urb_list.tqe_prev == NULL) {
 			TAILQ_INSERT_TAIL(&uhe->bsd_urb_list, urb, bsd_urb_list);
@@ -734,6 +737,7 @@ usb_unlink_urb_sub(struct urb *urb, uint8_t drain)
 		}
 
 		if (urb->complete) {
+			urb->hcpriv = NULL;
 			(urb->complete) (urb);
 		}
 	} else {
@@ -1667,6 +1671,7 @@ usb_linux_complete(struct libusb20_transfer *xfer)
 	libusb20_tr_set_priv_sc1(xfer, NULL);
 
 	if (urb->complete) {
+		urb->hcpriv = NULL;
 		(urb->complete) (urb);
 	}
 }
@@ -2384,6 +2389,12 @@ usb_reset_device(struct usb_device *dev)
 	return (0);
 }
 
+void
+usb_reset_endpoint(struct usb_device *dev, unsigned int epaddr)
+{
+	usb_clear_halt(dev, epaddr);
+}
+
 uint8_t
 usb_pipetype(unsigned int pipe)
 {
@@ -2459,6 +2470,12 @@ int
 usb_endpoint_maxp(const struct usb_endpoint_descriptor *epd)
 {
 	return (le16_to_cpu(epd->wMaxPacketSize));
+}
+
+int
+usb_endpoint_maxp_mult(const struct usb_endpoint_descriptor *epd)
+{
+	return ((le16_to_cpu(epd->wMaxPacketSize) >> 11) & 3) + 1;
 }
 
 int

@@ -1,0 +1,23 @@
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 37084b645785..9f3faba70a75 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -819,6 +819,7 @@ static int hid_scan_report(struct hid_device *hid)
+ 		hid->group = HID_GROUP_WACOM;
+ 		break;
+ 	case USB_VENDOR_ID_SYNAPTICS:
++#if IS_ENABLED(CONFIG_HID_RMI)
+ 		if (hid->group == HID_GROUP_GENERIC)
+ 			if ((parser->scan_flags & HID_SCAN_FLAG_VENDOR_SPECIFIC)
+ 			    && (parser->scan_flags & HID_SCAN_FLAG_GD_POINTER))
+@@ -826,8 +827,8 @@ static int hid_scan_report(struct hid_device *hid)
+ 				 * hid-rmi should take care of them,
+ 				 * not hid-generic
+ 				 */
+-				if (IS_ENABLED(CONFIG_HID_RMI))
+-					hid->group = HID_GROUP_RMI;
++				hid->group = HID_GROUP_RMI;
++#endif
+ 		break;
+ 	}
+ 

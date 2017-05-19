@@ -20,6 +20,7 @@ for F in \
 ../media_tree/drivers/media/dvb-core/dvb_frontend.c \
 ../media_tree/drivers/media/dvb/dvb-core/dvb_frontend.c \
 ../media_tree/drivers/media/usb/uvc/uvc_video.c \
+../media_tree/drivers/media/usb/uvc/uvc_driver.c \
 ../media_tree/drivers/media/usb/uvc/uvcvideo.h \
 ../media_tree/drivers/media/video/uvc/uvc_video.c \
 ../media_tree/drivers/media/video/uvc/uvcvideo.h \
@@ -71,9 +72,11 @@ for F in \
 ../media_tree/drivers/hid/wacom.h \
 ../media_tree/drivers/media/rc/rc-main.c \
 ../media_tree/drivers/base/regmap/regmap.c \
-../media_tree/drivers/media/usb/em28xx/em28xx-camera.c \
-../media_tree/drivers/media/usb/em28xx/em28xx-video.c \
-../media_tree/include/uapi/asm-generic/ioctl.h
+../media_tree/include/uapi/asm-generic/ioctl.h \
+../media_tree/include/linux/llist.h \
+../media_tree/drivers/hid/hid-core.c \
+../media_tree/drivers/media/dvb-core/dmxdev.c \
+../media_tree/drivers/media/usb/em28xx/em28xx.h
 do
   [ -f $F ] && (echo "$F" >> do_patch.tmp)
 done
@@ -86,6 +89,7 @@ echo "Trying to patch ..."
 
 find_media_file dvb_frontend.c
 find_media_file uvc_video.c
+find_media_file uvc_driver.c
 find_media_file uvcvideo.h
 find_media_file v4l2-dev.c
 find_media_file v4l2-async.c
@@ -117,12 +121,15 @@ find_media_file adv7343.c
 find_media_file tvp7002.c
 find_media_file rc-main.c
 find_media_file regmap.c
-find_media_file em28xx-camera.c
-find_media_file em28xx-video.c
 find_media_file ioctl.h
+find_media_file llist.h
+find_media_file hid-core.c
+find_media_file dmxdev.c
+find_media_file em28xx.h
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
-patch $OPT -R $(find_media_file uvc_video.c) uvc_video.c.diff
+patch $OPT $(find_media_file uvc_video.c) uvc_video.c.diff
+patch $OPT $(find_media_file uvc_driver.c) uvc_driver.c.diff
 patch $OPT $(find_media_file uvcvideo.h) uvcvideo.h.diff
 patch $OPT -R $(find_media_file v4l2-dev.c) v4l2-dev.c.diff
 patch $OPT $(find_media_file v4l2-async.c) v4l2-async.c.diff
@@ -145,15 +152,14 @@ patch $OPT $(find_media_file adv7343.c) adv7343.c.diff
 patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
 patch $OPT $(find_media_file rc-main.c) rc-main.c.diff
 patch $OPT $(find_media_file regmap.c) regmap.c.diff
-patch $OPT $(find_media_file em28xx-camera.c) em28xx-camera.c.diff
-patch $OPT $(find_media_file em28xx-video.c) em28xx-video.c.diff
 patch $OPT $(find_media_file ioctl.h) ioctl.h.diff
-patch $OPT ../media_tree/drivers/media/v4l2-core/Makefile v4l2-makefile.diff
+patch $OPT $(find_media_file llist.h) llist.h.diff
+patch $OPT $(find_media_file hid-core.c) hid-core.c.diff
+patch $OPT $(find_media_file dmxdev.c) dmxdev.c.diff
+patch $OPT $(find_media_file em28xx.h) em28xx.h.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)
 sed -e "s/err[(]/cx_&/g" -e "s/info[(]/cx_&/g" -i .orig $(find_media_file cx24123.c)
-sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig $(find_media_file dib3000mb.c)
-sed -e "s/err[(]/dib_&/g" -e "s/info[(]/dib_&/g" -e "s/warn[(]/dib_&/g" -e "s/deb_dib_/deb_/g" -i .orig $(find_media_file dib3000mb_priv.h)
 sed -e "s/sleep[(,]/do_&/g" -e "s/mdo_sleep/msleep/g" -i .orig $(find_media_file tda18271c2dd.c)
 sed -e "s/[ 	]info[(]/ m88_info(/g" -i .orig $(find_media_file m88rs2000.c)
 sed -e "s/[ 	]info[(]/ med_info(/g" -i .orig $(find_media_file lmedm04.c)

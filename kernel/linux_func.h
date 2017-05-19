@@ -19,6 +19,10 @@ int	zero_nop(void);
 
 #define	platform_device_register_data(...) ERR_PTR(-EOPNOTSUPP)
 #define	platform_device_unregister(...) __nop
+#define	platform_get_device_id(...) NULL
+#define	platform_get_drvdata(...) NULL
+#define	platform_set_drvdata(...) __nop
+#define	module_platform_driver(...)
 
 int	driver_register(struct device_driver *);
 int	driver_unregister(struct device_driver *);
@@ -82,7 +86,11 @@ uint16_t get_unaligned_le16(const void *);
 void   *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp);
 void   *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp);
 void   *devm_kmalloc_array(struct device *, size_t, size_t, gfp_t);
+void   *devm_kmemdup(struct device *, const void *, size_t, gfp_t);
 void	devm_kfree(struct device *dev, void *ptr);
+int	devm_add_action(struct device *, void (*)(void *), void *);
+int	devm_add_action_or_reset(struct device *, void (*action)(void *), void *);
+struct clk *devm_clk_get(struct device *, const char *);
 void   *dev_get_drvdata(const struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);
 const char *dev_name(const struct device *dev);
@@ -101,6 +109,12 @@ void	atomic_set(atomic_t *, int);
 int	atomic_read(const atomic_t *);
 int	atomic_dec_and_test(atomic_t *);
 int	atomic_cmpxchg(atomic_t *, int, int);
+
+uint64_t atomic64_read(atomic64_t *);
+void atomic64_or(uint64_t, atomic64_t *);
+void atomic64_xor(uint64_t, atomic64_t *);
+void atomic64_and(uint64_t, atomic64_t *);
+void atomic64_andnot(uint64_t, atomic64_t *);
 
 /* Bit-operations */
 int	test_bit(int nr, const void *addr);
@@ -125,6 +139,10 @@ void	change_bit(int nr, volatile unsigned long *addr);
 struct cdev *cdev_alloc(void);
 void	cdev_del(struct cdev *);
 int	cdev_add(struct cdev *cdev, dev_t mm, unsigned count);
+void	cdev_set_parent(struct cdev *, struct kobject *);
+int	cdev_device_add(struct cdev *, struct device *);
+void	cdev_device_del(struct cdev *, struct device *);
+
 int	register_chrdev(dev_t mm, const char *desc, const struct file_operations *fops);
 int	unregister_chrdev(dev_t mm, const char *desc);
 
@@ -240,6 +258,7 @@ int64_t	ktime_to_us(const struct timespec);
 int64_t	ktime_to_ms(const struct timespec);
 struct timespec ktime_set(const s64, const unsigned long);
 int64_t ktime_ms_delta(const ktime_t, const ktime_t);
+int	ktime_compare(const ktime_t, const ktime_t);
 u64	timeval_to_ns(const struct timeval *);
 struct timeval	ns_to_timeval(u64);
 void	msleep(uint32_t ms);
@@ -318,6 +337,15 @@ void   *devres_alloc(dr_release_t, size_t, gfp_t);
 void	devres_free(void *);
 void	devres_add(struct device *, void *);
 int	devres_destroy(struct device *, dr_release_t, dr_match_t, void *);
+void   *devres_open_group(struct device *, void *, gfp_t);
+void	devres_close_group(struct device *, void *);
+int	devres_release_group(struct device *, void *);
+
+int	dma_buf_fd(struct dma_buf *, int);
+struct dma_buf *dma_buf_get(int);
+void	dma_buf_put(struct dma_buf *);
+void   *dma_buf_vmap(struct dma_buf *);
+void	dma_buf_vunmap(struct dma_buf *, void *);
 
 uint32_t ror32(uint32_t, uint8_t);
 unsigned long gcd(unsigned long, unsigned long);
@@ -333,5 +361,10 @@ void	eth_zero_addr(u8 *addr);
 struct device *kobj_to_dev(struct kobject *);
 
 void	*memscan(void *, int, size_t);
+
+int	refcount_read(refcount_t *);
+bool	refcount_dec_and_test(refcount_t *);
+void	refcount_set(refcount_t *, int);
+void	refcount_inc(refcount_t *);
 
 #endif					/* _LINUX_FUNC_H_ */

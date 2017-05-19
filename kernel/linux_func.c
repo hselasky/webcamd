@@ -34,6 +34,7 @@
 #include <linux/major.h>
 #include <linux/power_supply.h>
 #include <linux/dma-buf.h>
+#include <linux/rational.h>
 
 #include <dvbdev.h>
 
@@ -376,6 +377,17 @@ devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
 }
 
 void   *
+devm_kmemdup(struct device *dev, const void *data, size_t size, gfp_t gfp)
+{
+	void *ptr;
+
+	ptr = malloc(size);
+	if (ptr != NULL)
+		memcpy(ptr, data, size);
+	return (ptr);
+}
+
+void   *
 devm_kmalloc_array(struct device *dev,
     size_t n, size_t size, gfp_t flags)
 {
@@ -390,6 +402,31 @@ void
 devm_kfree(struct device *dev, void *ptr)
 {
 	free(ptr);
+}
+
+int
+devm_add_action(struct device *dev, void (*action) (void *), void *data)
+{
+	return (0);
+}
+
+int
+devm_add_action_or_reset(struct device *dev,
+    void (*action) (void *), void *data)
+{
+	int ret;
+
+	ret = devm_add_action(dev, action, data);
+	if (ret)
+		action(data);
+
+	return (ret);
+}
+
+struct clk *
+devm_clk_get(struct device *dev, const char *id)
+{
+	return (ERR_PTR(-EOPNOTSUPP));
 }
 
 void   *
@@ -506,6 +543,49 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 		v->counter = new;
 	atomic_unlock();
 	return (prev);
+}
+
+uint64_t
+atomic64_read(atomic64_t *v)
+{
+	uint64_t value;
+
+	atomic_lock();
+	value = v->counter;
+	atomic_unlock();
+	return (value);
+}
+
+void
+atomic64_or(uint64_t data, atomic64_t *v)
+{
+	atomic_lock();
+	v->counter |= data;
+	atomic_unlock();
+}
+
+void
+atomic64_xor(uint64_t data, atomic64_t *v)
+{
+	atomic_lock();
+	v->counter ^= data;
+	atomic_unlock();
+}
+
+void
+atomic64_and(uint64_t data, atomic64_t *v)
+{
+	atomic_lock();
+	v->counter &= data;
+	atomic_unlock();
+}
+
+void
+atomic64_andnot(uint64_t data, atomic64_t *v)
+{
+	atomic_lock();
+	v->counter &= ~data;
+	atomic_unlock();
 }
 
 int
@@ -923,6 +1003,39 @@ cdev_del(struct cdev *cdev)
 }
 
 void
+cdev_set_parent(struct cdev *p, struct kobject *kobj)
+{
+	p->kobj.parent = kobj;
+}
+
+int
+cdev_device_add(struct cdev *cdev, struct device *dev)
+{
+	int rc = 0;
+
+	if (dev->devt) {
+		cdev_set_parent(cdev, &dev->kobj);
+
+		rc = cdev_add(cdev, dev->devt, 1);
+		if (rc)
+			return (rc);
+	}
+	rc = device_add(dev);
+	if (rc)
+		cdev_del(cdev);
+
+	return (rc);
+}
+
+void
+cdev_device_del(struct cdev *cdev, struct device *dev)
+{
+	device_del(dev);
+	if (dev->devt)
+		cdev_del(cdev);
+}
+
+void
 kref_init(struct kref *kref)
 {
 	atomic_lock();
@@ -1306,6 +1419,7 @@ bitmap_weight(const unsigned long *src, unsigned nbits)
 {
 	unsigned x;
 	unsigned y;
+
 	for (x = y = 0; x != nbits; x++) {
 		if (src[x / BITS_PER_LONG] & BIT_MASK(x))
 			y++;
@@ -1378,7 +1492,7 @@ bitmap_xor(unsigned long *dst, const unsigned long *b1,
 void
 bitmap_zero(unsigned long *dst, int nbits)
 {
-  	const unsigned long mm = BITS_PER_LONG - 1;
+	const unsigned long mm = BITS_PER_LONG - 1;
 	int len = (nbits + ((-nbits) & mm)) / 8;
 
 	memset(dst, 0, len);
@@ -2010,7 +2124,8 @@ ktime_to_ms(const struct timespec t)
 struct timespec
 ktime_set(const s64 secs, const unsigned long nsecs)
 {
-	struct timespec ts = { .tv_sec = secs, .tv_nsec = nsecs };
+	struct timespec ts = {.tv_sec = secs,.tv_nsec = nsecs};
+
 	return (ts);
 }
 
@@ -2020,17 +2135,36 @@ ktime_ms_delta(const ktime_t last, const ktime_t first)
 	return (ktime_to_ms(ktime_sub(last, first)));
 }
 
+int
+ktime_compare(const ktime_t a, const ktime_t b)
+{
+	if (a.tv_sec == b.tv_sec) {
+		if (a.tv_nsec > b.tv_nsec)
+			return (1);
+		else if (a.tv_nsec < b.tv_nsec)
+			return (-1);
+		else
+			return (0);
+	} else if (a.tv_sec > b.tv_sec)
+		return (1);
+	else if (a.tv_sec < b.tv_sec)
+		return (-1);
+	else
+		return (0);
+}
+
 u64
 timeval_to_ns(const struct timeval *tv)
 {
-	return ((u64)tv->tv_sec * NSEC_PER_SEC) + ((u64)tv->tv_usec * 1000ULL);
+	return ((u64) tv->tv_sec * NSEC_PER_SEC) + ((u64) tv->tv_usec * 1000ULL);
 }
 
 struct timeval
 ns_to_timeval(u64 nsec)
 {
-  	struct timeval tv = { .tv_sec = nsec / NSEC_PER_SEC,
-	    .tv_usec = (nsec % NSEC_PER_SEC) / 1000ULL };
+	struct timeval tv = {.tv_sec = nsec / NSEC_PER_SEC,
+	.tv_usec = (nsec % NSEC_PER_SEC) / 1000ULL};
+
 	return (tv);
 }
 
@@ -2594,6 +2728,14 @@ power_supply_register(struct device *parent,
 	return (NULL);
 }
 
+struct power_supply *
+devm_power_supply_register(struct device *parent,
+    const struct power_supply_desc *desc,
+    const struct power_supply_config *cfg)
+{
+	return (NULL);
+}
+
 void
 power_supply_unregister(struct power_supply *psy)
 {
@@ -2611,16 +2753,53 @@ power_supply_changed(struct power_supply *psy)
 {
 }
 
-void *
+void   *
 power_supply_get_drvdata(struct power_supply *psy)
 {
 	return (NULL);
 }
 
 int
-led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
+devm_of_led_classdev_register(struct device *parent, struct device_node *node, struct led_classdev *led_cdev)
 {
 	return (0);
+}
+
+int
+of_led_classdev_register(struct device *parent, struct device_node *node, struct led_classdev *led_cdev)
+{
+	return (0);
+}
+
+int
+led_trigger_register(struct led_trigger *trigger)
+{
+	return (0);
+}
+
+int
+devm_led_trigger_register(struct device *dev, struct led_trigger *trigger)
+{
+	return (0);
+}
+
+void
+led_trigger_event(struct led_trigger *trigger, enum led_brightness event)
+{
+
+}
+
+void
+led_trigger_register_simple(const char *name,
+    struct led_trigger **trigger)
+{
+
+}
+
+void
+led_trigger_unregister_simple(struct led_trigger *trigger)
+{
+
 }
 
 void
@@ -2937,6 +3116,26 @@ devres_destroy(struct device *dev, dr_release_t release,
 	return (0);
 }
 
+void   *
+devres_open_group(struct device *dev, void *id, gfp_t gfp)
+{
+	if (id != NULL)
+		return (id);
+	else
+		return (dev);
+}
+
+void
+devres_close_group(struct device *dev, void *id)
+{
+}
+
+int
+devres_release_group(struct device *dev, void *id)
+{
+	return (0);
+}
+
 int
 dma_buf_fd(struct dma_buf *dmabuf, int flags)
 {
@@ -3002,7 +3201,7 @@ get_random_bytes(void *buf, int nbytes)
 u32
 prandom_u32_max(u32 max)
 {
-	return (u32)((((u64)(u32)rand()) * max) >> 32);
+	return (u32) ((((u64) (u32) rand()) * max) >> 32);
 }
 
 const char *
@@ -3037,9 +3236,9 @@ devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt,...)
 }
 
 void
-eth_zero_addr(u8 *addr)
+eth_zero_addr(u8 * addr)
 {
-        memset(addr, 0x00, 6);
+	memset(addr, 0x00, 6);
 }
 
 struct device *
@@ -3048,7 +3247,7 @@ kobj_to_dev(struct kobject *kobj)
 	return (container_of(kobj, struct device, kobj));
 }
 
-void *
+void   *
 memscan(void *data, int c, size_t sz)
 {
 	uint8_t *p;
@@ -3059,4 +3258,65 @@ memscan(void *data, int c, size_t sz)
 		sz--;
 	}
 	return (p);
+}
+
+int
+refcount_read(refcount_t *r)
+{
+	return (atomic_read(&r->refs));
+}
+
+bool
+refcount_dec_and_test(refcount_t *r)
+{
+	return (atomic_dec_and_test(&r->refs));
+}
+
+void
+refcount_set(refcount_t *r, int i)
+{
+	atomic_set(&r->refs, i);
+}
+
+void
+refcount_inc(refcount_t *r)
+{
+	atomic_inc(&r->refs);
+}
+
+void
+rational_best_approximation(
+    unsigned long given_numerator, unsigned long given_denominator,
+    unsigned long max_numerator, unsigned long max_denominator,
+    unsigned long *best_numerator, unsigned long *best_denominator)
+{
+	unsigned long n, d, n0, d0, n1, d1;
+
+	n = given_numerator;
+	d = given_denominator;
+	n0 = d1 = 0;
+	n1 = d0 = 1;
+	for (;;) {
+		unsigned long t, a;
+
+		if ((n1 > max_numerator) || (d1 > max_denominator)) {
+			n1 = n0;
+			d1 = d0;
+			break;
+		}
+		if (d == 0)
+			break;
+		t = d;
+		a = n / d;
+		d = n % d;
+		n = t;
+		t = n0 + a * n1;
+		n0 = n1;
+		n1 = t;
+		t = d0 + a * d1;
+		d0 = d1;
+		d1 = t;
+	}
+	*best_numerator = n1;
+	*best_denominator = d1;
 }

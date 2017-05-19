@@ -578,6 +578,8 @@ struct urb {
 	uint8_t *setup_packet;		/* (in) setup packet (control only) */
 	void   *transfer_buffer;	/* (in) associated data buffer */
 	void   *context;		/* (in) context for completion */
+	void   *hcpriv;			/* non-zero when URB is queued */
+#define	USB_HCPRIV_QUEUED	((void *)1)
 	usb_complete_t complete;	/* (in) completion routine */
 
 	uint32_t transfer_buffer_length;/* (in) data buffer length */
@@ -750,6 +752,7 @@ int	usb_reset_configuration(struct usb_device *dev);
 int	usb_lock_device_for_reset(struct usb_device *udev, const struct usb_interface *iface);
 void	usb_unlock_device(struct usb_device *udev);
 int	usb_reset_device(struct usb_device *dev);
+void	usb_reset_endpoint(struct usb_device *, unsigned int);
 uint8_t	usb_pipetype(unsigned int);
 uint16_t usb_maxpacket(struct usb_device *dev, int endpoint, int is_out);
 void	usb_enable_autosuspend(struct usb_device *udev);
@@ -772,6 +775,7 @@ int	usb_translate_errors(int);
 	for ((b) = 0, (c) = NULL; 0;)
 
 int	usb_endpoint_maxp(const struct usb_endpoint_descriptor *);
+int	usb_endpoint_maxp_mult(const struct usb_endpoint_descriptor *);
 
 #define	usb_alloc_coherent(...) usb_buffer_alloc(__VA_ARGS__)
 #define	usb_free_coherent(...) usb_buffer_free(__VA_ARGS__)

@@ -1,10 +1,10 @@
 diff --git a/drivers/media/rc/rc-main.c b/drivers/media/rc/rc-main.c
-index a7991c7..59aef9c 100644
+index 6ec73357fa47..59967c11253d 100644
 --- a/drivers/media/rc/rc-main.c
 +++ b/drivers/media/rc/rc-main.c
-@@ -1308,6 +1308,12 @@ void rc_free_device(struct rc_dev *dev)
+@@ -1747,6 +1747,12 @@ static void rc_free_rx_device(struct rc_dev *dev)
+ 	dev->input_dev = NULL;
  }
- EXPORT_SYMBOL_GPL(rc_free_device);
  
 +static char *rc_core_default_protocol;
 +module_param_named(default_protocol, rc_core_default_protocol, charp, 0644);
@@ -14,14 +14,14 @@ index a7991c7..59aef9c 100644
 +
  int rc_register_device(struct rc_dev *dev)
  {
- 	static bool raw_init = false; /* raw decoders loaded? */
-@@ -1435,6 +1441,15 @@ int rc_register_device(struct rc_dev *dev)
- 		   rc_map->name ? rc_map->name : "unknown",
- 		   dev->driver_type == RC_DRIVER_IR_RAW ? "raw" : "cooked");
+ 	static bool raw_init; /* 'false' default value, raw decoders loaded? */
+@@ -1809,6 +1815,15 @@ int rc_register_device(struct rc_dev *dev)
+ 		   dev->minor,
+ 		   dev->driver_name ? dev->driver_name : "unknown");
  
 +	if (rc_core_default_protocol != NULL) {
 +		/* set initial default protocol */
-+		if (store_protocols(&dev->dev, &dev_attr_protocols.attr,
++		if (store_protocols(&dev->dev, &dev_attr_protocols,
 +		    rc_core_default_protocol,
 +		    strlen(rc_core_default_protocol)) < 0) {
 +			printk(KERN_ERR "Could not store protocol '%s'\n",

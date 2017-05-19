@@ -30,6 +30,8 @@
  * Linux kernel defines from various header files
  */
 
+#define	CONFIG_BASE_SMALL	1
+
 #define	DIV_ROUND_CLOSEST(rem, div) \
 ((sizeof(typeof(div)) > 4) ?	    \
  ((((typeof(div))-1) <= 0) ?	    \
@@ -61,6 +63,7 @@
 #define	__read_mostly
 #define	__maybe_unused
 #define	__must_check
+#define	__must_hold(...)
 #define	__chk_user_ptr(x) __nop
 #define	__chk_io_ptr(x) __nop
 #define	__builtin_warning(x, ...) (1)
@@ -116,6 +119,7 @@
 #define	ENOIOCTLCMD     513
 #define	EMEDIUMTYPE	514
 #define	ENODATA		515
+#define	EPROBE_DEFER	516
 #define	symbol_request(x) (&(x))
 #define	symbol_put(x) __nop
 #define	EXPORT_SYMBOL(...)
@@ -138,6 +142,7 @@
 #define	THIS_MODULE (NULL)
 #define	DECLARE_EVENT_CLASS(...)
 #define	DECLARE_EVENT(...)
+#define	DECLARE_PER_CPU(...)
 #define	DEFINE_EVENT(...)
 #define	TRACE_EVENT(...)
 #define	TRACE_DEFINE_ENUM(...)
@@ -162,6 +167,7 @@
 #define	trace_vb2_qbuf(...) __nop
 #define	trace_vb2_buf_queue(...) __nop
 #define	trace_vb2_dqbuf(...) __nop
+#define	print_hex_dump_debug(...) __nop
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
 #define	printk_once(...) printf(__VA_ARGS__)
@@ -199,6 +205,7 @@
 #define	dev_warn_ratelimited(dev, fmt, ...) printk("WARN: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
 #define	dev_notice(dev, fmt, ...) printk("NOTICE: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
 #define	dev_notice_ratelimited(dev, fmt, ...) printk("NOTICE: %s: " fmt "\n", dev_name(dev),## __VA_ARGS__)
+#define	dev_printk(info, dev, fmt, ...) printk("DBG: %s: " fmt, dev_name(dev),## __VA_ARGS__)
 #define	info(fmt, ...) printk("INFO: " fmt "\n",## __VA_ARGS__)
 #define	warn(fmt, ...) printk("WARN: " fmt "\n",## __VA_ARGS__)
 #define	dbg(fmt, ...) printk("DBG: " fmt "\n",## __VA_ARGS__)
@@ -233,6 +240,7 @@
 #define	of_match_ptr(...) NULL
 #define	sysfs_attr_init(x) __nop
 #define	sysfs_create_files(...) (0)
+#define	sysfs_streq(a,b) (strcmp(a,b) == 0)
 #define	kobject_create_and_add(...) ((void *)1)
 #define	kobject_get_path(...) strdup("webcamd")
 #define	kobject_put(...) __nop
@@ -264,6 +272,7 @@
 #define	__GFP_NOMEMALLOC 0
 #define	__GFP_HARDWALL 0
 #define	__GFP_DMA32 0
+#define	__GFP_BITS_SHIFT 1
 #define	GFP_NOWAIT 0
 #define	GFP_ATOMIC 0
 #define	GFP_NOIO 0
@@ -283,12 +292,15 @@
 #define	default_llseek	NULL
 #define	GENMASK(hi, lo) (((2UL << ((hi) - (lo))) - 1UL) << (lo))
 #define	GENMASK_ULL(hi, lo) (((2ULL << ((hi) - (lo))) - 1ULL) << (lo))
+#define	BITS_PER_LONG_LONG 64
+#ifdef __LP64__
+#define	BITS_PER_LONG 64
+#else
+#define	BITS_PER_LONG 32
+#endif
 #define	BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
 #define	BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #define	BITS_PER_BYTE 8
-#ifndef BITS_PER_LONG
-#define	BITS_PER_LONG (sizeof(long) * BITS_PER_BYTE)
-#endif
 #define	for_each_set_bit(b, addr, size) \
     for ((b) = 0; (b) < (size); (b)++) \
 	if ((addr)[(b) / BITS_PER_LONG] & BIT((b) % BITS_PER_LONG))
@@ -297,6 +309,7 @@
 	if ((addr)[(b) / BITS_PER_LONG] & BIT((b) % BITS_PER_LONG))
 #define	BITS_TO_LONGS(n) (((n) + BITS_PER_LONG - 1) / BITS_PER_LONG)
 #define	BIT(n) (1UL << (n))
+#define	BIT_ULL(n) (1ULL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 38)
 #define	BUS_ID_SIZE 32
@@ -358,9 +371,22 @@
 #define	DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 #define	min(a,b) (((a) < (b)) ? (a) : (b))
 #define	max(a,b) (((a) > (b)) ? (a) : (b))
+#define	max3(a,b,c) (((a) >= (b) && (a) >= (c)) ? (a) :	\
+		     ((b) >= (a) && (b) >= (c)) ? (b) : (c))
+#define	min3(a,b,c) (((a) <= (b) && (a) <= (c)) ? (a) : \
+		     ((b) <= (a) && (b) <= (c)) ? (b) : (c))
 #define	prefetch(x) (void)x
+#define	barrier()	__asm__ __volatile__("": : :"memory")
 #define	WRITE_ONCE(x, val) \
 do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
+#define READ_ONCE(x) ({			\
+	typeof(x) __var = ({		\
+		barrier();		\
+		ACCESS_ONCE(x);		\
+	});				\
+	barrier();			\
+	__var;				\
+})
 #define	KERN_INFO ""
 #define	KERN_WARNING ""
 #define	KERN_ERR ""
@@ -390,8 +416,8 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	raw_spin_lock_init(lock) __nop
 #define	raw_spin_lock(...)  atomic_lock()
 #define	raw_spin_unlock(...) atomic_unlock()
-#define	atomic_inc_return atomic_inc
-#define	atomic_dec_return atomic_dec
+#define	atomic_inc_return(...) atomic_inc(__VA_ARGS__)
+#define	atomic_dec_return(...) atomic_dec(__VA_ARGS__)
 #define	assert_spin_locked(...) __nop
 #define	IS_ERR_VALUE(x) ((unsigned long)(x) >= (unsigned long)-(1<<14))
 #define	IS_ERR_OR_NULL(x) ((unsigned long)(x) == 0 || IS_ERR_VALUE(x))
@@ -443,6 +469,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	dma_sync_single_for_cpu(...) __nop
 #define	pgprot_noncached(x) (x)
 #define	set_current_state(...) __nop
+#define	__set_current_state(...) __nop
 #define	task_pid_nr(...) (1)
 #define	time_after(a,b) (((long)(b) - (long)(a)) < 0)
 #define	time_after_eq(a,b) (((long)(b) - (long)(a)) <= 0)
@@ -489,6 +516,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	EREMOTEIO EIO
 #define	EBADRQC EBADMSG
 #define	MAX_SCHEDULE_TIMEOUT LONG_MAX
+#define	U16_MAX 65535U
 #define	I2C_NAME_SIZE 20
 #define	__SPIN_LOCK_UNLOCKED(...) {}
 #define	in_interrupt() 0
@@ -566,6 +594,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	get_file(x) __nop
 
 #define	ATOMIC_INIT(x) { (x) }
+#define	ATOMIC64_INIT(x) { (x) }
 
 #define	CLOCK_BOOTTIME CLOCK_UPTIME
 

@@ -1,7 +1,7 @@
 #
 # $FreeBSD: $
 #
-# Copyright (c) 2010-2015 Hans Petter Selasky. All rights reserved.
+# Copyright (c) 2010-2016 Hans Petter Selasky. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 #
 # Basic software version information
 #
-VERSION=	4.8.0.5
+VERSION=	4.11.0.1
 PROG=		webcamd
 
 #
@@ -115,7 +115,6 @@ LINUXDIR=	media_tree
 MKLINT=		no
 NOGCCERROR=
 MLINKS=
-BITS_PER_LONG!=${CC} -o long_size_test ${.CURDIR}/tests/long_size_test.c && ./long_size_test
 PTHREAD_LIBS?=	-lpthread
 
 .if exists(${.CURDIR}/build/obj-y/Makefile)
@@ -128,7 +127,6 @@ PTHREAD_LIBS?=	-lpthread
 # List of compiler flags
 #
 CFLAGS+= -D_GNU_SOURCE
-CFLAGS+= -DBITS_PER_LONG=${BITS_PER_LONG}
 CFLAGS+= -DLINUX
 CFLAGS+= -Wall -Wno-pointer-sign -Wno-unused-variable
 
@@ -199,7 +197,6 @@ LDFLAGS+= -lcuse4bsd
 # List of source files which need to be built separately:
 #
 SRCS+= kfifo.c
-SRCS+= idr.c
 SRCS+= rbtree.c
 SRCS+= webcamd.c
 
@@ -229,7 +226,7 @@ package:
 	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" \
 		--exclude=".svn" --exclude="*.orig" --exclude="*.rej" \
 		--exclude="temp" \
-		Makefile man4/*.4 dummy headers tests/*.[ch] \
+		Makefile man4/*.4 dummy headers \
 		webcamd*.[ch] webcamd.8 \
 		sources.txt \
 		config \
@@ -242,7 +239,6 @@ package:
 		media_tree/README \
 		media_tree/include \
 		media_tree/lib/rbtree.c \
-		media_tree/lib/idr.c \
 		media_tree/lib/kfifo.c \
 		patches/do_patch.sh \
 		patches/*.diff \
@@ -317,6 +313,8 @@ configure: tools/linux_make/linux_make
 	@(cat config_vtuner_server.in ; echo "") >> config
 .endif
 	tools/linux_make/linux_make -c config \
+		-x v4l2-clk.o \
+		-x uvc_debugfs.o \
 		-i kernel \
 		-i vtuner \
 		-i media_tree/drivers/hid \
