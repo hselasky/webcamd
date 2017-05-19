@@ -54,6 +54,10 @@ struct makefile;
 typedef TAILQ_HEAD(, makefile) makefile_head_t;
 typedef TAILQ_ENTRY(makefile) makefile_entry_t;
 
+struct exclude;
+typedef TAILQ_HEAD(, exclude) exclude_head_t;
+typedef TAILQ_ENTRY(exclude) exclude_entry_t;
+
 #if 0
 void
 style_fix(void)
@@ -80,6 +84,11 @@ struct makefile {
 	char   *name;
 };
 
+struct exclude {
+	exclude_entry_t entry;
+	char   *name;
+};
+
 struct config {
 	config_entry_t entry;
 	char   *name;
@@ -91,6 +100,7 @@ static node_head_t rootNode = TAILQ_HEAD_INITIALIZER(rootNode);
 static config_head_t rootConfig = TAILQ_HEAD_INITIALIZER(rootConfig);
 static directory_head_t rootDirectory = TAILQ_HEAD_INITIALIZER(rootDirectory);
 static makefile_head_t rootMakefile = TAILQ_HEAD_INITIALIZER(rootMakefile);
+static exclude_head_t rootExclude = TAILQ_HEAD_INITIALIZER(rootExclude);
 static int opt_verbose;
 
 static char *opt_config = "config";
@@ -149,6 +159,31 @@ new_makefile(char *name)
 	memset(temp, 0, sizeof(*temp));
 	temp->name = name;
 	TAILQ_INSERT_TAIL(&rootMakefile, temp, entry);
+}
+
+static void
+new_exclude(char *name)
+{
+	struct exclude *temp;
+
+	temp = malloc(sizeof(*temp));
+	if (temp == NULL)
+		errx(EX_SOFTWARE, "Out of memory.");
+	memset(temp, 0, sizeof(*temp));
+	temp->name = name;
+	TAILQ_INSERT_TAIL(&rootExclude, temp, entry);
+}
+
+static uint8_t
+match_exclude(const char *name)
+{
+	struct exclude *temp;
+
+	TAILQ_FOREACH(temp, &rootExclude, entry) {
+		if (strcmp(temp->name, name) == 0)
+			return (1);
+	}
+	return (0);
 }
 
 static int
@@ -887,7 +922,7 @@ parse_makefile(char *path)
 				    strcmp(node->name, "obj-m") == 0)
 					parse_makefile(strcatdup(path, child));
 
-			} else {
+			} else if (match_exclude(child) == 0) {
 				add_child(node, strcatdup(path, ""), child);
 			}
 		}
@@ -1041,6 +1076,7 @@ usage(void)
 	    "	-c <config-file>\n"
 	    "	-i <input-directory>\n"
 	    "	-o <output-directory>\n"
+	    "	-x <exclude-object>\n"
 	    "	-h show help message\n"
 	    "	-v increase verbosity\n"
 	);
@@ -1058,7 +1094,7 @@ static const char *targets[] = {
 int
 main(int argc, char **argv)
 {
-	const char *params = "c:i:o:hv";
+	const char *params = "c:i:o:hvx:";
 	struct node *n0;
 	struct node *n1;
 	struct makefile *m0;
@@ -1078,6 +1114,9 @@ main(int argc, char **argv)
 			break;
 		case 'v':
 			opt_verbose++;
+			break;
+		case 'x':
+			new_exclude(optarg);
 			break;
 		default:
 			usage();
