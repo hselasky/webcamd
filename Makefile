@@ -164,6 +164,11 @@ CFLAGS+= -I${LINUXDIR}/drivers/media/usb/dvb-usb-v2
 CFLAGS+= -I${LINUXDIR}/include
 CFLAGS+= -I${LINUXDIR}/include/uapi
 
+#
+# 3.17 paths
+#
+CFLAGS+= -I${LINUXDIR}/include/media
+
 CFLAGS+= -I${LOCALBASE}
 CFLAGS+= -I${LOCALBASE}/include
 
