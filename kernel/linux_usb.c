@@ -2499,7 +2499,7 @@ __usb_get_extra_descriptor(char *buffer, unsigned size,
 int
 usb_endpoint_maxp(const struct usb_endpoint_descriptor *epd)
 {
-	return (le16_to_cpu(epd->wMaxPacketSize));
+	return (le16_to_cpu(epd->wMaxPacketSize) & 0x7ff);
 }
 
 int
