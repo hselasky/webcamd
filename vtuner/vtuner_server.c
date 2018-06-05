@@ -131,17 +131,6 @@ vtuners_process_msg(struct vtuners_ctx *ctx, struct vtuner_message *msg)
 		ret = linux_ioctl(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
 		    DMX_GET_PES_PIDS, msg->body.dmx_pes_pid.pids);
 		break;
-	case MSG_DMX_GET_CAPS:
-		ret = linux_ioctl(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
-		    DMX_GET_CAPS, &ctx->dvb.dmx_caps);
-
-		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_caps.caps);
-		VTUNER_MEMCPY(&msg->body, &ctx->dvb, dmx_caps.num_decoders);
-		break;
-	case MSG_DMX_SET_SOURCE:
-		ret = linux_ioctl(ctx->proxy_fd, CUSE_FFLAG_NONBLOCK,
-		    DMX_SET_SOURCE, &msg->body.value32);
-		break;
 	case MSG_DMX_GET_STC:
 		VTUNER_MEMSET(&ctx->dvb.dmx_stc, 0);
 		VTUNER_MEMCPY(&ctx->dvb,

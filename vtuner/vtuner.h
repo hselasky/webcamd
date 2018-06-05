@@ -128,11 +128,6 @@ struct vtuner_dmx_pes_pid {
 	uint16_t pids[5];
 };
 
-struct vtuner_dmx_caps {
-	v32	caps;
-	v32	num_decoders;
-};
-
 struct vtuner_dmx_stc {
 	v32	num;
 	v32	base;
@@ -242,7 +237,6 @@ struct vtuner_message {
 		struct vtuner_dmx_sct_filter_params dmx_sct_filter_params;
 		struct vtuner_dmx_pes_filter_params dmx_pes_filter_params;
 		struct vtuner_dmx_pes_pid dmx_pes_pid;
-		struct vtuner_dmx_caps dmx_caps;
 		struct vtuner_dmx_stc dmx_stc;
 		struct vtuner_dvb_frontend_info dvb_frontend_info;
 		struct vtuner_dvb_diseqc_master_cmd dvb_diseqc_master_cmd;
@@ -261,7 +255,6 @@ union vtuner_dvb_message {
 	}	dmx_pes_pid;
 	struct dmx_sct_filter_params dmx_sct_filter_params;
 	struct dmx_pes_filter_params dmx_pes_filter_params;
-	struct dmx_caps dmx_caps;
 	struct dmx_stc dmx_stc;
 	struct dvb_frontend_info dvb_frontend_info;
 	struct dvb_diseqc_master_cmd dvb_diseqc_master_cmd;

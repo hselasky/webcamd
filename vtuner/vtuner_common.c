@@ -85,10 +85,6 @@ vtuner_body_byteswap(struct vtuner_message *msg, u32 type)
 		for (i = 0; i != 5; i++)
 			VTUNER_BSWAP16(msg->body.dmx_pes_pid.pids[i]);
 		break;
-	case DMX_GET_CAPS:
-		VTUNER_BSWAP32(msg->body.dmx_caps.caps);
-		VTUNER_BSWAP32(msg->body.dmx_caps.num_decoders);
-		break;
 	case DMX_GET_STC:
 		VTUNER_BSWAP32(msg->body.dmx_stc.num);
 		VTUNER_BSWAP32(msg->body.dmx_stc.base);
@@ -159,7 +155,6 @@ vtuner_body_byteswap(struct vtuner_message *msg, u32 type)
 				VTUNER_BSWAP32(msg->body.dtv_properties.props[i].u.data);
 		}
 		break;
-	case DMX_SET_SOURCE:
 	case DMX_SET_BUFFER_SIZE:
 	case FE_DISEQC_SEND_BURST:
 	case FE_SET_TONE:

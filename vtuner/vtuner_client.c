@@ -380,21 +380,6 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 
 		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_pes_pid.pids, &ret);
 		break;
-	case DMX_GET_CAPS:
-		vtunerc_do_message(ctx, &ctx->msgbuf,
-		    MSG_DMX_GET_CAPS,
-		    0, sizeof(ctx->msgbuf.body.dmx_caps), &ret);
-
-		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_caps.caps, &ret);
-		VTUNER_PEER_MEMCPY(&(*dvb), &ctx->msgbuf.body, dmx_caps.num_decoders, &ret);
-		break;
-	case DMX_SET_SOURCE:
-		ctx->msgbuf.body.value32 = dvb->value32;
-
-		vtunerc_do_message(ctx, &ctx->msgbuf,
-		    MSG_DMX_SET_SOURCE,
-		    sizeof(u32), 0, &ret);
-		break;
 	case DMX_GET_STC:
 		VTUNER_LOCAL_MEMSET(&ctx->msgbuf.body.dmx_stc, 0,
 		    &ret);
