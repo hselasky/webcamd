@@ -75,6 +75,8 @@
 #define	__pgprot(x)     ((pgprot_t)(x))
 #define	__rcu
 #define	__percpu
+#define	local_irq_save(x) __nop
+#define	local_irq_restore(x) __nop
 #define	preempt_enable() __nop
 #define	preempt_disable() __nop
 #define	__this_cpu_write(a,b) do { (a) = (b); } while (0)
@@ -121,6 +123,7 @@
 #define	ENODATA		515
 #define	EPROBE_DEFER	516
 #define	symbol_request(x) (&(x))
+#define	symbol_get(x) __nop
 #define	symbol_put(x) __nop
 #define	EXPORT_SYMBOL(...)
 #define	EXPORT_SYMBOL_GPL(...)
@@ -168,6 +171,8 @@
 #define	trace_vb2_buf_queue(...) __nop
 #define	trace_vb2_dqbuf(...) __nop
 #define	print_hex_dump_debug(...) __nop
+#define	__compiletime_warning(...)
+#define	__compiletime_error(...)
 #ifdef HAVE_DEBUG
 #define	printk(...) printf(__VA_ARGS__)
 #define	printk_once(...) printf(__VA_ARGS__)
@@ -216,7 +221,9 @@
 #define	kmem_cache_free(ref,ptr) free(GP_DECONST(ptr))
 #define	kmem_cache_alloc(ref,g) malloc((long)(ref))
 #define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
-#define	kvmalloc(size) malloc(size)
+#define	kvmalloc(size,flags) malloc(size)
+#define	kvmalloc_array(n,s,flags) malloc((n) * (s))
+#define	kvzalloc(s,flags) calloc(1, s)
 #define	kvfree(ptr) free(ptr)
 #define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, (s))
@@ -248,7 +255,9 @@
 #define	kobject_uevent(...) __nop
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(GP_DECONST(ptr))
+#define	kfree_const(ptr) free(GP_DECONST(ptr))
 #define	kstrdup(a,b) strdup(a)
+#define	kstrdup_const(a,b) strdup(a)
 #define	might_sleep(x) __nop
 #define	might_sleep_if(x) __nop
 #define	ndelay(d) usleep(((d) + 1000ULL - 1ULL)/1000UL)
@@ -327,6 +336,13 @@
 #define	print_hex_dump(...) __nop
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	POLL_ERR POLLERR
+#define	EPOLLRDNORM POLLRDNORM
+#define	EPOLLWRNORM POLLWRNORM
+#define	EPOLLIN	POLLIN
+#define	EPOLLOUT POLLOUT
+#define	EPOLLERR POLLERR
+#define	EPOLLPRI POLLPRI
+#define	EPOLLHUP POLLHUP
 #define	IOCSIZE_MASK (_IOC_SIZEMASK << _IOC_SIZESHIFT)
 #define	_IOC_TYPE(cmd) IOCGROUP(cmd)
 #define	_IOC_SIZE(cmd) IOCPARM_LEN(cmd)
@@ -350,6 +366,7 @@
 #define	VM_DONTDUMP 0x0080
 #define	DMA_FROM_DEVICE 0x01
 #define	DMA_TO_DEVICE 0x02
+#define	DMA_BIDIRECTIONAL 0x03
 #define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
 #define	__KERNEL__
 #define	capable(...) 1
@@ -360,7 +377,10 @@
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)
 #define	usecs_to_jiffies(x) ((x) / 1000)
+#define	nsecs_to_jiffies(x) ((x) / 1000000)
 #define	jiffies_to_msecs(x) (x)
+#define	jiffies_to_usecs(x) ((x) * 1000LL)
+#define	jiffies_to_nsecs(x) ((x) * 1000000LL)
 #define	likely(...) __VA_ARGS__
 #define	unlikely(...) __VA_ARGS__
 #define	__round_mask(x, y) ((typeof(x))((y)-1))
@@ -483,6 +503,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #undef __always_inline
 #define	__always_inline inline
 #define	noinline
+#define	noinline_for_stack
 #define	__cpu_to_be64(x) cpu_to_be64(x)
 #define	__cpu_to_be32(x) cpu_to_be32(x)
 #define	__cpu_to_be16(x) cpu_to_be16(x)
@@ -516,7 +537,14 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	EREMOTEIO EIO
 #define	EBADRQC EBADMSG
 #define	MAX_SCHEDULE_TIMEOUT LONG_MAX
+#define	U8_MAX 255U
+#define	U8_MIN (-(1 << 7))
 #define	U16_MAX 65535U
+#define	S16_MAX (65535U / 2U)
+#define	S16_MIN (-(1 << 15))
+#define	U32_MAX -1U
+#define	S32_MAX ((-1U) / 2U)
+#define	S32_MIN (-(1 << 31))
 #define	I2C_NAME_SIZE 20
 #define	__SPIN_LOCK_UNLOCKED(...) {}
 #define	in_interrupt() 0
@@ -726,6 +754,11 @@ typedef int irqreturn_t;
 typedef off_t __kernel_off_t;
 typedef int __kernel_pid_t;
 typedef unsigned long phys_addr_t;
+typedef unsigned int __poll_t;
+
+#define	fwnode_handle_put(...) __nop
+#define	dev_fwnode(...) NULL
+#define	dmi_match(...) 0
 
 #ifndef __GLIBC__
 typedef long long loff_t;
@@ -733,5 +766,6 @@ typedef long long loff_t;
 #endif
 typedef uint32_t gfp_t;
 typedef struct timespec ktime_t;
+#define	timespec64 timespec
 
 #endif					/* _LINUX_DEFS_H_ */

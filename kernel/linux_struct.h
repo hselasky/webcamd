@@ -178,6 +178,12 @@ struct device_type {
 	.show = _n##_show,				\
 }
 
+#define	__ATTR_WO(_n) {					\
+	.attr = { .name = __stringify(_n),		\
+	    .mode = 0222, .owner = THIS_MODULE },	\
+	.store = _n##_store,				\
+}
+
 #define	__ATTR_RW(_n)				\
 	__ATTR(_n, 0666, _n##_show, _n##_store)
 
@@ -212,6 +218,10 @@ struct driver_attribute				\
 #define	DRIVER_ATTR_RO(_name)				\
 struct driver_attribute					\
 	driver_attr_##_name = __ATTR_RO(_name)
+
+#define	DRIVER_ATTR_WO(_name)				\
+struct driver_attribute					\
+	driver_attr_##_name = __ATTR_WO(_name)
 
 #define	DRIVER_ATTR_RW(_name)				\
 struct driver_attribute					\

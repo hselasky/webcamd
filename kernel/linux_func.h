@@ -239,6 +239,7 @@ int32_t	div_round_closest_s32(int32_t rem, int32_t div);
 uint32_t div_round_closest_u32(uint32_t rem, uint32_t div);
 int64_t	div_round_closest_s64(int64_t rem, int64_t div);
 uint64_t div_round_closest_u64(uint64_t rem, uint64_t div);
+#define	ktime_to_timespec64(ktime) ktime
 struct timespec ktime_mono_to_real(struct timespec);
 struct timespec ktime_get_boottime(void);
 struct timespec ktime_get_real(void);

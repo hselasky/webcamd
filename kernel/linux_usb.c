@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2016 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2018 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1060,6 +1060,28 @@ usb_string_dup(struct usb_device *udev, uint8_t string_id)
 	return (strdup(""));
 }
 
+static struct usb_interface_assoc_descriptor *
+usb_find_iad(struct usb_device *p_ud, int max, u8 inum)
+{
+	struct usb_interface_assoc_descriptor *intf_assoc;
+	int first_intf;
+	int last_intf;
+	int i;
+
+	for (i = 0; i != max; i++) {
+		intf_assoc = p_ud->bsd_config.intf_assoc[i];
+		if (intf_assoc->bInterfaceCount == 0)
+			continue;
+
+		first_intf = intf_assoc->bFirstInterface;
+		last_intf = first_intf + intf_assoc->bInterfaceCount - 1;
+
+		if (inum >= first_intf && inum <= last_intf)
+			return (intf_assoc);
+	}
+	return (NULL);
+}
+
 /*------------------------------------------------------------------------*
  *	usb_linux_create_usb_device
  *
@@ -1301,6 +1323,14 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 		usb_linux_fill_ep_info(p_ud, p_ui->cur_altsetting);
 
 		p_ui++;
+	}
+
+	/* resolve all IADs */
+	for (i = 0; i != num_config_iface; i++) {
+		id = pcfg->interface + i;
+		p_ui = p_ud->bsd_config.interface[i];
+		p_ui->intf_assoc = usb_find_iad(p_ud, num_iad,
+		    id->altsetting[0].desc.bInterfaceNumber);
 	}
 
 	p_ud->parent = sc;
@@ -2561,4 +2591,24 @@ usb_pipe_endpoint(struct usb_device *dev, unsigned int pipe)
 
 	eps = usb_pipein(pipe) ? dev->ep_in : dev->ep_out;
 	return (eps[usb_pipeendpoint(pipe)]);
+}
+
+static const int usb_pipetypes[4] = {
+	PIPE_CONTROL, PIPE_ISOCHRONOUS, PIPE_BULK, PIPE_INTERRUPT
+};
+
+int
+usb_urb_ep_type_check(const struct urb *urb)
+{
+	const struct usb_host_endpoint *ep;
+
+	ep = usb_pipe_endpoint(urb->dev, urb->pipe);
+	if (ep == NULL)
+		return (-EINVAL);
+
+	if (usb_pipetype(urb->pipe) !=
+	    usb_pipetypes[usb_endpoint_type(&ep->desc)])
+		return (-EINVAL);
+
+	return (0);
 }

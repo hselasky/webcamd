@@ -27,7 +27,7 @@
 
 TAILQ_HEAD(timer_head, timer_list);
 
-static struct timer_head timer_head;
+static struct timer_head timer_head = TAILQ_HEAD_INITIALIZER(timer_head);
 static pthread_t timer_thread;
 static volatile int timer_thread_started;
 static int timer_needed;
@@ -142,7 +142,7 @@ restart:
 				TAILQ_REMOVE(&timer_head, t, entry);
 				t->entry.tqe_prev = NULL;
 				atomic_unlock();
-				t->function(t->data);
+				t->function(t);
 				atomic_lock();
 				goto restart;
 			}
@@ -206,8 +206,6 @@ init_timer(struct timer_list *timer)
 static int
 timer_init(void)
 {
-	TAILQ_INIT(&timer_head);
-
 	get_jiffies_64();
 
 	if (pthread_create(&timer_thread, NULL, timer_exec, NULL)) {

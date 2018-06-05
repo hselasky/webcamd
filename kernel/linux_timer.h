@@ -28,14 +28,21 @@
 
 typedef struct timer_list {
 	TAILQ_ENTRY(timer_list) entry;
-	void    (*function) (unsigned long data);
+	void    (*function) (struct timer_list *);
 	uint64_t expires;
-	unsigned long data;
 } timer_list_t;
 
-#define	setup_timer(t,fn,arg) do {	\
-    (t)->function = (fn);		\
-    (t)->data = (arg);			\
+#define	from_timer(var, cb, field) \
+	container_of(cb, typeof(*(var)), field)
+
+#define	timer_setup_on_stack(...) \
+	timer_setup(__VA_ARGS__)
+
+#define	destroy_timer_on_stack(...) do { \
+} while (0)
+	
+#define	timer_setup(t,fn,flags) do {	\
+	(t)->function = (fn);		\
 } while (0)
 
 void	add_timer(struct timer_list *timer);

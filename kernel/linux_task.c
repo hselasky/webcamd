@@ -51,12 +51,11 @@ schedule_work(struct work_struct *work)
 }
 
 static void
-delayed_work_timer_fn(unsigned long __data)
+delayed_work_timer_fn(struct timer_list *t)
 {
-	struct work_struct *work =
-	(struct work_struct *)__data;
+	struct delayed_work *dwork = from_timer(dwork, t, timer);
 
-	schedule_work(work);
+	schedule_work(&dwork->work);
 }
 
 int
@@ -81,7 +80,6 @@ schedule_delayed_work(struct delayed_work *work, unsigned long delay)
 	}
 
 	if (retval) {
-		work->timer.data = (long)&work->work;
 		work->timer.expires = jiffies + delay;
 		work->timer.function = delayed_work_timer_fn;
 		add_timer(&work->timer);

@@ -496,6 +496,7 @@ struct usb_interface {
 	/* array of alternate settings for this interface */
 	struct usb_host_interface *altsetting;
 	struct usb_host_interface *cur_altsetting;
+	struct usb_interface_assoc_descriptor *intf_assoc;
 	struct usb_device *linux_udev;
 	void   *bsd_priv_sc;		/* device specific information */
 
@@ -800,5 +801,6 @@ void	usb_unblock_urb(struct urb *);
 void	usb_queue_reset_device(struct usb_interface *);
 
 struct usb_host_endpoint *usb_pipe_endpoint(struct usb_device *, unsigned int);
+int usb_urb_ep_type_check(const struct urb *);
 
 #endif					/* _LINUX_USB_H_ */
