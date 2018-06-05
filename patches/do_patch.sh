@@ -33,6 +33,9 @@ for F in \
 ../media_tree/drivers/media/video/videobuf2-core.c \
 ../media_tree/drivers/media/video/videobuf2-memops.c \
 ../media_tree/drivers/media/video/videobuf2-vmalloc.c \
+../media_tree/drivers/media/common/videobuf2/videobuf2-core.c \
+../media_tree/drivers/media/common/videobuf2/videobuf2-memops.c \
+../media_tree/drivers/media/common/videobuf2/videobuf2-vmalloc.c \
 ../media_tree/include/uapi/linux/dvb/frontend.h \
 ../media_tree/include/linux/dvb/frontend.h \
 ../media_tree/include/uapi/linux/input.h \
@@ -73,8 +76,8 @@ for F in \
 ../media_tree/drivers/media/rc/rc-main.c \
 ../media_tree/drivers/base/regmap/regmap.c \
 ../media_tree/include/uapi/asm-generic/ioctl.h \
-../media_tree/include/linux/llist.h \
 ../media_tree/drivers/hid/hid-core.c \
+../media_tree/drivers/hid/hid-multitouch.c \
 ../media_tree/drivers/media/dvb-core/dmxdev.c \
 ../media_tree/drivers/media/usb/em28xx/em28xx.h
 do
@@ -122,9 +125,9 @@ find_media_file tvp7002.c
 find_media_file rc-main.c
 find_media_file regmap.c
 find_media_file ioctl.h
-find_media_file llist.h
-find_media_file hid-core.c
 find_media_file dmxdev.c
+find_media_file hid-core.c
+find_media_file hid-multitouch.c
 find_media_file em28xx.h
 
 patch $OPT $(find_media_file dvb_frontend.c) dvb_frontend.c.diff
@@ -153,9 +156,9 @@ patch $OPT $(find_media_file tvp7002.c) tvp7002.c.diff
 patch $OPT $(find_media_file rc-main.c) rc-main.c.diff
 patch $OPT $(find_media_file regmap.c) regmap.c.diff
 patch $OPT $(find_media_file ioctl.h) ioctl.h.diff
-patch $OPT $(find_media_file llist.h) llist.h.diff
-patch $OPT $(find_media_file hid-core.c) hid-core.c.diff
 patch $OPT $(find_media_file dmxdev.c) dmxdev.c.diff
+patch $OPT $(find_media_file hid-core.c) hid-core.c.diff
+patch $OPT $(find_media_file hid-multitouch.c) hid-multitouch.c.diff
 patch $OPT $(find_media_file em28xx.h) em28xx.h.diff
 
 [ -f ../media_tree/drivers/media/common/tuners/tda18212.c ] && sed -e "s/dbg[(]/dib_&/g" -i .orig $(find_media_file tda18212.c)

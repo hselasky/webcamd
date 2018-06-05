@@ -1,33 +1,20 @@
 diff --git a/drivers/media/v4l2-core/v4l2-async.c b/drivers/media/v4l2-core/v4l2-async.c
-index 96cc733f35ef..3934c59b9fc3 100644
+index 2b08d03b251d..dafd701b8121 100644
 --- a/drivers/media/v4l2-core/v4l2-async.c
 +++ b/drivers/media/v4l2-core/v4l2-async.c
-@@ -42,8 +42,12 @@ static bool match_devname(struct v4l2_subdev *sd,
- 
- static bool match_of(struct v4l2_subdev *sd, struct v4l2_async_subdev *asd)
- {
-+#if IS_ENABLED(CONFIG_OF)
- 	return !of_node_cmp(of_node_full_name(sd->of_node),
- 			    of_node_full_name(asd->match.of.node));
-+#else
-+	return false;
-+#endif
+@@ -488,6 +488,7 @@ static void __v4l2_async_notifier_unregister(
+ 	list_del(&notifier->list);
  }
- 
- static bool match_custom(struct v4l2_subdev *sd, struct v4l2_async_subdev *asd)
-@@ -193,6 +197,7 @@ int v4l2_async_notifier_register(struct v4l2_device *v4l2_dev,
- }
- EXPORT_SYMBOL(v4l2_async_notifier_register);
  
 +#if 0
  void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
  {
- 	struct v4l2_subdev *sd, *tmp;
-@@ -270,6 +275,7 @@ void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
- 	 */
+ 	mutex_lock(&list_lock);
+@@ -497,6 +498,7 @@ void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
+ 	mutex_unlock(&list_lock);
  }
  EXPORT_SYMBOL(v4l2_async_notifier_unregister);
 +#endif
  
- int v4l2_async_register_subdev(struct v4l2_subdev *sd)
+ void v4l2_async_notifier_cleanup(struct v4l2_async_notifier *notifier)
  {

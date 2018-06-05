@@ -1,5 +1,5 @@
 diff --git a/drivers/media/i2c/tvp7002.c b/drivers/media/i2c/tvp7002.c
-index 4c1190127c85..6b9bf512514c 100644
+index 4599b7e28a8d..7256adcb89a7 100644
 --- a/drivers/media/i2c/tvp7002.c
 +++ b/drivers/media/i2c/tvp7002.c
 @@ -889,12 +889,13 @@ static const struct v4l2_subdev_ops tvp7002_ops = {
@@ -7,7 +7,7 @@ index 4c1190127c85..6b9bf512514c 100644
  tvp7002_get_pdata(struct i2c_client *client)
  {
 +#if IS_ENABLED(CONFIG_OF)
- 	struct v4l2_of_endpoint bus_cfg;
+ 	struct v4l2_fwnode_endpoint bus_cfg;
  	struct tvp7002_config *pdata = NULL;
  	struct device_node *endpoint;
  	unsigned int flags;

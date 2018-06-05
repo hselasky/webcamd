@@ -1,14 +1,14 @@
 diff --git a/drivers/media/i2c/tvp514x.c b/drivers/media/i2c/tvp514x.c
-index 07853d2252aa..1c6759213eda 100644
+index 6a9890531d01..9a66170a4469 100644
 --- a/drivers/media/i2c/tvp514x.c
 +++ b/drivers/media/i2c/tvp514x.c
-@@ -997,12 +997,13 @@ static const struct tvp514x_decoder tvp514x_dev = {
+@@ -988,12 +988,13 @@ static const struct tvp514x_decoder tvp514x_dev = {
  static struct tvp514x_platform_data *
  tvp514x_get_pdata(struct i2c_client *client)
  {
 +#if IS_ENABLED(CONFIG_OF)
  	struct tvp514x_platform_data *pdata = NULL;
- 	struct v4l2_of_endpoint bus_cfg;
+ 	struct v4l2_fwnode_endpoint bus_cfg;
  	struct device_node *endpoint;
  	unsigned int flags;
  
@@ -17,7 +17,7 @@ index 07853d2252aa..1c6759213eda 100644
  		return client->dev.platform_data;
  
  	endpoint = of_graph_get_next_endpoint(client->dev.of_node, NULL);
-@@ -1030,6 +1031,9 @@ tvp514x_get_pdata(struct i2c_client *client)
+@@ -1021,6 +1022,9 @@ tvp514x_get_pdata(struct i2c_client *client)
  done:
  	of_node_put(endpoint);
  	return pdata;
@@ -27,7 +27,7 @@ index 07853d2252aa..1c6759213eda 100644
  }
  
  /**
-@@ -1228,7 +1232,9 @@ MODULE_DEVICE_TABLE(of, tvp514x_of_match);
+@@ -1215,7 +1219,9 @@ MODULE_DEVICE_TABLE(of, tvp514x_of_match);
  
  static struct i2c_driver tvp514x_driver = {
  	.driver = {

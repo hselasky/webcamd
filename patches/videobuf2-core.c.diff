@@ -1,8 +1,8 @@
-diff --git a/drivers/media/v4l2-core/videobuf2-core.c b/drivers/media/v4l2-core/videobuf2-core.c
-index 33bdd81..3035c09 100644
---- a/drivers/media/v4l2-core/videobuf2-core.c
-+++ b/drivers/media/v4l2-core/videobuf2-core.c
-@@ -499,7 +499,7 @@ static int __verify_dmabuf_ops(struct vb2_queue *q)
+diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
+index d3f7bb33a54d..b958e6423c1d 100644
+--- a/drivers/media/common/videobuf2/videobuf2-core.c
++++ b/drivers/media/common/videobuf2/videobuf2-core.c
+@@ -613,7 +613,7 @@ static int __verify_dmabuf_ops(struct vb2_queue *q)
  int vb2_verify_memory_type(struct vb2_queue *q,
  		enum vb2_memory memory, unsigned int type)
  {
@@ -11,15 +11,15 @@ index 33bdd81..3035c09 100644
  	    memory != VB2_MEMORY_DMABUF) {
  		dprintk(1, "unsupported memory type\n");
  		return -EINVAL;
-@@ -1212,9 +1212,11 @@ static int __buf_prepare(struct vb2_buffer *vb, const void *pb)
+@@ -1255,9 +1255,11 @@ static int __buf_prepare(struct vb2_buffer *vb, const void *pb)
  	case VB2_MEMORY_MMAP:
- 		ret = __qbuf_mmap(vb, pb);
+ 		ret = __prepare_mmap(vb, pb);
  		break;
 +#if 0
  	case VB2_MEMORY_USERPTR:
- 		ret = __qbuf_userptr(vb, pb);
+ 		ret = __prepare_userptr(vb, pb);
  		break;
 +#endif
  	case VB2_MEMORY_DMABUF:
- 		ret = __qbuf_dmabuf(vb, pb);
+ 		ret = __prepare_dmabuf(vb, pb);
  		break;

@@ -1,23 +1,43 @@
 diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 37084b645785..9f3faba70a75 100644
+index 5d7cc6bbbac6..c9c1e80f4f0d 100644
 --- a/drivers/hid/hid-core.c
 +++ b/drivers/hid/hid-core.c
-@@ -819,6 +819,7 @@ static int hid_scan_report(struct hid_device *hid)
- 		hid->group = HID_GROUP_WACOM;
- 		break;
- 	case USB_VENDOR_ID_SYNAPTICS:
-+#if IS_ENABLED(CONFIG_HID_RMI)
- 		if (hid->group == HID_GROUP_GENERIC)
- 			if ((parser->scan_flags & HID_SCAN_FLAG_VENDOR_SPECIFIC)
- 			    && (parser->scan_flags & HID_SCAN_FLAG_GD_POINTER))
-@@ -826,8 +827,8 @@ static int hid_scan_report(struct hid_device *hid)
- 				 * hid-rmi should take care of them,
- 				 * not hid-generic
- 				 */
--				if (IS_ENABLED(CONFIG_HID_RMI))
--					hid->group = HID_GROUP_RMI;
-+				hid->group = HID_GROUP_RMI;
+@@ -2198,7 +2198,7 @@ void hid_destroy_device(struct hid_device *hdev)
+ }
+ EXPORT_SYMBOL_GPL(hid_destroy_device);
+ 
+-
++#if 0
+ static int __hid_bus_reprobe_drivers(struct device *dev, void *data)
+ {
+ 	struct hid_driver *hdrv = data;
+@@ -2227,6 +2227,7 @@ static int __bus_removed_driver(struct device_driver *drv, void *data)
+ {
+ 	return bus_rescan_devices(&hid_bus_type);
+ }
 +#endif
- 		break;
- 	}
+ 
+ int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
+ 		const char *mod_name)
+@@ -2243,9 +2244,11 @@ int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
+ 
+ 	ret = driver_register(&hdrv->driver);
+ 
++#if 0
+ 	if (ret == 0)
+ 		bus_for_each_drv(&hid_bus_type, NULL, NULL,
+ 				 __hid_bus_driver_added);
++#endif
+ 
+ 	return ret;
+ }
+@@ -2256,7 +2259,9 @@ void hid_unregister_driver(struct hid_driver *hdrv)
+ 	driver_unregister(&hdrv->driver);
+ 	hid_free_dynids(hdrv);
+ 
++#if 0
+ 	bus_for_each_drv(&hid_bus_type, NULL, hdrv, __bus_removed_driver);
++#endif
+ }
+ EXPORT_SYMBOL_GPL(hid_unregister_driver);
  
