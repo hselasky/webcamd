@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2016 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2018 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -832,6 +832,15 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 		break;
 
 	case MKDEV(DVB_MAJOR, 0):
+#define DVB_DEVICE_VIDEO_MINOR 0
+#define DVB_DEVICE_AUDIO_MINOR 1
+#define DVB_DEVICE_SEC_MINOR 2
+#define DVB_DEVICE_FRONTEND_MINOR 3
+#define DVB_DEVICE_DEMUX_MINOR 4
+#define DVB_DEVICE_DVR_MINOR 5
+#define DVB_DEVICE_CA_MINOR 6
+#define DVB_DEVICE_NET_MINOR 7
+#define DVB_DEVICE_OSD_MINOR 8
 		subdev = (mm >> 6) & 0x3FF;
 		if (subdev >= F_V4B_SUBDEV_MAX)
 			return;
@@ -839,7 +848,7 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 		id = (mm >> 4) & 0x03;
 
 		switch (mm & 0xFFFF000FU) {
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND_MINOR):
 			id = (id ^ dvb_swap_fe) & 0x03;
 			break;
 		default:
@@ -849,35 +858,35 @@ cdev_set_device(dev_t mm, struct cdev *cdev)
 		subdev += F_V4B_SUBDEV_MAX * id;
 
 		switch (mm & 0xFFFF000FU) {
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_AUDIO_MINOR):
 			cdev_registry[F_V4B_DVB_AUDIO][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_AUDIO][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_CA):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_CA_MINOR):
 			cdev_registry[F_V4B_DVB_CA][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_CA][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_DEMUX_MINOR):
 			cdev_registry[F_V4B_DVB_DEMUX][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_DEMUX][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_DVR):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_DVR_MINOR):
 			cdev_registry[F_V4B_DVB_DVR][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_DVR][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_FRONTEND_MINOR):
 			cdev_registry[F_V4B_DVB_FRONTEND][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_FRONTEND][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_OSD):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_OSD_MINOR):
 			cdev_registry[F_V4B_DVB_OSD][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_OSD][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_SEC):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_SEC_MINOR):
 			cdev_registry[F_V4B_DVB_SEC][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_SEC][subdev] = mm;
 			break;
-		case MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO):
+		case MKDEV(DVB_MAJOR, DVB_DEVICE_VIDEO_MINOR):
 			cdev_registry[F_V4B_DVB_VIDEO][subdev] = cdev;
 			cdev_mm[F_V4B_DVB_VIDEO][subdev] = mm;
 			break;
