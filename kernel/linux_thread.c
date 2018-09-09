@@ -335,9 +335,9 @@ down_trylock(struct semaphore *sem)
 	atomic_lock();
 	if (sem->value > 0) {
 		down(sem);
-		ret = 1;		/* success */
+		ret = 0;		/* success */
 	} else {
-		ret = 0;		/* congested */
+		ret = 1;		/* congested */
 	}
 	atomic_unlock();
 	return (ret);
