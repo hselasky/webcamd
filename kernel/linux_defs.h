@@ -374,6 +374,7 @@
 #define	HZ 1000
 #define	NSEC_PER_SEC 1000000000LL
 #define	USEC_PER_SEC 1000000LL
+#define	MSEC_PER_SEC 1000LL
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)
 #define	usecs_to_jiffies(x) ((x) / 1000)
