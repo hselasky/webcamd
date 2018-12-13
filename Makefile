@@ -246,7 +246,7 @@ package:
 		media_tree/lib/rbtree.c \
 		media_tree/lib/kfifo.c \
 		patches/do_patch.sh \
-		patches/*.diff \
+		patches/*.patch \
 		tools/linux_make/*.[ch] \
 		tools/linux_make/Makefile
 
