@@ -6,6 +6,7 @@
 #define	_ROOT_CONFIG_H_
 
 #define	CONFIG_AS102_USB /* y */
+#undef	CONFIG_BPF_LIRC_MODE2 /* n */
 #undef	CONFIG_CEC_CORE /* n */
 #undef	CONFIG_CEC_GPIO /* n */
 #undef	CONFIG_COMPAT /* n */
@@ -83,6 +84,7 @@
 #define	CONFIG_DVB_LGS8GL5 /* y */
 #define	CONFIG_DVB_LGS8GXX /* y */
 #undef	CONFIG_DVB_LNBH25 /* n */
+#undef	CONFIG_DVB_LNBH29 /* n */
 #define	CONFIG_DVB_LNBP21 /* y */
 #define	CONFIG_DVB_LNBP22 /* y */
 #define	CONFIG_DVB_M88DC2800 /* y */
@@ -93,6 +95,7 @@
 #define	CONFIG_DVB_MB86A16 /* y */
 #define	CONFIG_DVB_MB86A20S /* y */
 #undef	CONFIG_DVB_MMAP /* n */
+#undef	CONFIG_DVB_MN88443X /* n */
 #define	CONFIG_DVB_MN88472 /* y */
 #define	CONFIG_DVB_MN88473 /* y */
 #define	CONFIG_DVB_MT312 /* y */
@@ -220,10 +223,12 @@
 #define	CONFIG_HID_AUREAL /* y */
 #define	CONFIG_HID_BELKIN /* y */
 #define	CONFIG_HID_BETOP_FF /* y */
+#undef	CONFIG_HID_BIGBEN_FF /* n */
 #define	CONFIG_HID_CHERRY /* y */
 #define	CONFIG_HID_CHICONY /* y */
 #define	CONFIG_HID_CMEDIA /* y */
 #undef	CONFIG_HID_CORSAIR /* n */
+#undef	CONFIG_HID_COUGAR /* n */
 #undef	CONFIG_HID_CP2112 /* n */
 #define	CONFIG_HID_CYPRESS /* y */
 #define	CONFIG_HID_DRAGONRISE /* y */
@@ -275,6 +280,7 @@
 #define	CONFIG_HID_PLANTRONICS /* y */
 #define	CONFIG_HID_PRIMAX /* y */
 #undef	CONFIG_HID_PRODIKEYS /* n */
+#undef	CONFIG_HID_REDRAGON /* n */
 #undef	CONFIG_HID_RETRODE /* n */
 #undef	CONFIG_HID_RMI /* n */
 #define	CONFIG_HID_ROCCAT /* y */
@@ -285,6 +291,7 @@
 #define	CONFIG_HID_SMARTJOYPLUS /* y */
 #define	CONFIG_HID_SONY /* y */
 #define	CONFIG_HID_SPEEDLINK /* y */
+#undef	CONFIG_HID_STEAM /* n */
 #define	CONFIG_HID_STEELSERIES /* y */
 #define	CONFIG_HID_SUNPLUS /* y */
 #define	CONFIG_HID_THINGM /* y */
@@ -322,7 +329,6 @@
 #undef	CONFIG_INPUT_SPARSEKMAP /* n */
 #define	CONFIG_INPUT_TABLET /* y */
 #define	CONFIG_INPUT_TOUCHSCREEN /* y */
-#undef	CONFIG_INTEL_ATOMISP /* n */
 #undef	CONFIG_INTEL_ISH_HID /* n */
 #define	CONFIG_IR_CORE /* y */
 #undef	CONFIG_IR_ENE /* n */
@@ -425,6 +431,7 @@
 #define	CONFIG_MEDIA_TUNER_MXL301RF /* y */
 #define	CONFIG_MEDIA_TUNER_MXL5005S /* y */
 #define	CONFIG_MEDIA_TUNER_MXL5007T /* y */
+#undef	CONFIG_MEDIA_TUNER_QM1D1B0004 /* n */
 #define	CONFIG_MEDIA_TUNER_QM1D1C0042 /* y */
 #define	CONFIG_MEDIA_TUNER_QT1010 /* y */
 #define	CONFIG_MEDIA_TUNER_R820T /* y */
@@ -432,7 +439,7 @@
 #define	CONFIG_MEDIA_TUNER_SIMPLE /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18212 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18218 /* y */
-#undef	CONFIG_MEDIA_TUNER_TDA18250 /* n */
+#define	CONFIG_MEDIA_TUNER_TDA18250 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA18271 /* y */
 #define	CONFIG_MEDIA_TUNER_TDA827X /* y */
 #define	CONFIG_MEDIA_TUNER_TDA8290 /* y */
@@ -481,6 +488,7 @@
 #define	CONFIG_REGMAP_I2C /* y */
 #undef	CONFIG_REGMAP_IRQ /* n */
 #undef	CONFIG_REGMAP_MMIO /* n */
+#undef	CONFIG_REGMAP_SCCB /* n */
 #undef	CONFIG_REGMAP_SLIMBUS /* n */
 #undef	CONFIG_REGMAP_SOUNDWIRE /* n */
 #undef	CONFIG_REGMAP_SPI /* n */
@@ -525,12 +533,15 @@
 #undef	CONFIG_TOUCHSCREEN_AD7879 /* n */
 #undef	CONFIG_TOUCHSCREEN_AD7879_I2C /* n */
 #undef	CONFIG_TOUCHSCREEN_AD7879_SPI /* n */
+#undef	CONFIG_TOUCHSCREEN_ADC /* n */
 #undef	CONFIG_TOUCHSCREEN_ADS7846 /* n */
 #undef	CONFIG_TOUCHSCREEN_AR1021_I2C /* n */
 #undef	CONFIG_TOUCHSCREEN_ATMEL_MXT /* n */
 #undef	CONFIG_TOUCHSCREEN_AUO_PIXCIR /* n */
 #undef	CONFIG_TOUCHSCREEN_BU21013 /* n */
+#undef	CONFIG_TOUCHSCREEN_BU21029 /* n */
 #undef	CONFIG_TOUCHSCREEN_CHIPONE_ICN8318 /* n */
+#undef	CONFIG_TOUCHSCREEN_CHIPONE_ICN8505 /* n */
 #undef	CONFIG_TOUCHSCREEN_COLIBRI_VF50 /* n */
 #define	CONFIG_TOUCHSCREEN_COMPOSITE /* y */
 #undef	CONFIG_TOUCHSCREEN_CY8CTMG110 /* n */
@@ -736,6 +747,7 @@
 #undef	CONFIG_VIDEO_ADV7511 /* n */
 #undef	CONFIG_VIDEO_ADV7604 /* n */
 #undef	CONFIG_VIDEO_ADV7842 /* n */
+#undef	CONFIG_VIDEO_AK7375 /* n */
 #define	CONFIG_VIDEO_AK881X /* y */
 #undef	CONFIG_VIDEO_AM437X_VPFE /* n */
 #undef	CONFIG_VIDEO_APTINA_PLL /* n */
@@ -749,10 +761,12 @@
 #define	CONFIG_VIDEO_BT856 /* y */
 #define	CONFIG_VIDEO_BT866 /* y */
 #define	CONFIG_VIDEO_BTCX /* y */
+#undef	CONFIG_VIDEO_CADENCE /* n */
 #undef	CONFIG_VIDEO_CAFE_CCIC /* n */
 #undef	CONFIG_VIDEO_COBALT /* n */
 #undef	CONFIG_VIDEO_CODA /* n */
 #define	CONFIG_VIDEO_CPIA2 /* y */
+#undef	CONFIG_VIDEO_CROS_EC_CEC /* n */
 #undef	CONFIG_VIDEO_CS3308 /* n */
 #define	CONFIG_VIDEO_CS5345 /* y */
 #define	CONFIG_VIDEO_CS53L32A /* y */
@@ -776,6 +790,7 @@
 #undef	CONFIG_VIDEO_DM6446_CCDC /* n */
 #undef	CONFIG_VIDEO_DT3155 /* n */
 #undef	CONFIG_VIDEO_DW9714 /* n */
+#undef	CONFIG_VIDEO_DW9807_VCM /* n */
 #define	CONFIG_VIDEO_EM28XX /* y */
 #undef	CONFIG_VIDEO_EM28XX_ALSA /* n */
 #define	CONFIG_VIDEO_EM28XX_DVB /* y */
@@ -787,8 +802,13 @@
 #define	CONFIG_VIDEO_HDPVR /* y */
 #undef	CONFIG_VIDEO_HEXIUM_GEMINI /* n */
 #undef	CONFIG_VIDEO_HEXIUM_ORION /* n */
+#undef	CONFIG_VIDEO_I2C /* n */
+#undef	CONFIG_VIDEO_IMX258 /* n */
 #undef	CONFIG_VIDEO_IMX274 /* n */
+#undef	CONFIG_VIDEO_IMX319 /* n */
+#undef	CONFIG_VIDEO_IMX355 /* n */
 #undef	CONFIG_VIDEO_IMX_MEDIA /* n */
+#undef	CONFIG_VIDEO_IMX_PXP /* n */
 #undef	CONFIG_VIDEO_IPU3_CIO2 /* n */
 #define	CONFIG_VIDEO_IR /* y */
 #define	CONFIG_VIDEO_IR_I2C /* y */
@@ -815,6 +835,7 @@
 #undef	CONFIG_VIDEO_MT9T112 /* n */
 #define	CONFIG_VIDEO_MT9V011 /* y */
 #undef	CONFIG_VIDEO_MT9V032 /* n */
+#undef	CONFIG_VIDEO_MT9V111 /* n */
 #undef	CONFIG_VIDEO_MUX /* n */
 #undef	CONFIG_VIDEO_MX2_EMMAPRP /* n */
 #undef	CONFIG_VIDEO_MXB /* n */
@@ -826,6 +847,7 @@
 #undef	CONFIG_VIDEO_OV13858 /* n */
 #undef	CONFIG_VIDEO_OV2640 /* n */
 #undef	CONFIG_VIDEO_OV2659 /* n */
+#undef	CONFIG_VIDEO_OV2680 /* n */
 #undef	CONFIG_VIDEO_OV2685 /* n */
 #undef	CONFIG_VIDEO_OV5640 /* n */
 #undef	CONFIG_VIDEO_OV5645 /* n */
@@ -833,6 +855,7 @@
 #undef	CONFIG_VIDEO_OV5670 /* n */
 #undef	CONFIG_VIDEO_OV5695 /* n */
 #undef	CONFIG_VIDEO_OV6650 /* n */
+#undef	CONFIG_VIDEO_OV7251 /* n */
 #undef	CONFIG_VIDEO_OV7640 /* n */
 #undef	CONFIG_VIDEO_OV7670 /* n */
 #undef	CONFIG_VIDEO_OV772X /* n */
@@ -852,6 +875,7 @@
 #undef	CONFIG_VIDEO_RENESAS_FDP1 /* n */
 #undef	CONFIG_VIDEO_RENESAS_JPU /* n */
 #undef	CONFIG_VIDEO_RENESAS_VSP1 /* n */
+#undef	CONFIG_VIDEO_RJ54N1 /* n */
 #undef	CONFIG_VIDEO_ROCKCHIP_RGA /* n */
 #undef	CONFIG_VIDEO_S3C_CAMIF /* n */
 #undef	CONFIG_VIDEO_S5C73M3 /* n */
@@ -891,6 +915,7 @@
 #undef	CONFIG_VIDEO_STK1160 /* n */
 #undef	CONFIG_VIDEO_STM32_DCMI /* n */
 #undef	CONFIG_VIDEO_STM32_HDMI_CEC /* n */
+#undef	CONFIG_VIDEO_SUNXI /* n */
 #undef	CONFIG_VIDEO_TC358743 /* n */
 #define	CONFIG_VIDEO_TCM825X /* y */
 #undef	CONFIG_VIDEO_TDA1997X /* n */
@@ -929,6 +954,7 @@
 #define	CONFIG_VIDEO_V4L2_INT_DEVICE /* y */
 #define	CONFIG_VIDEO_V4L2_TPG /* y */
 #undef	CONFIG_VIDEO_VIA_CAMERA /* n */
+#undef	CONFIG_VIDEO_VICODEC /* n */
 #undef	CONFIG_VIDEO_VIM2M /* n */
 #undef	CONFIG_VIDEO_VIMC /* n */
 #undef	CONFIG_VIDEO_VIU /* n */

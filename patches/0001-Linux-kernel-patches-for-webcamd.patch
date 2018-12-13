@@ -1,0 +1,1324 @@
+From 80a6c4117cd1cfd9b5885218454bf0ad3fbd677f Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <hps@selasky.org>
+Date: Thu, 13 Dec 2018 14:29:00 +0100
+Subject: [PATCH] Linux kernel patches for webcamd.
+
+Signed-off-by: Hans Petter Selasky <hps@selasky.org>
+---
+ drivers/base/regmap/regmap.c                  |  3 +-
+ drivers/hid/hid-asus.c                        |  7 ++--
+ drivers/hid/hid-core.c                        |  7 +++-
+ drivers/hid/hid-multitouch.c                  |  6 +--
+ drivers/hid/wacom.h                           |  1 +
+ drivers/input/evdev.c                         |  2 +-
+ .../media/common/videobuf2/videobuf2-core.c   |  6 ++-
+ .../media/common/videobuf2/videobuf2-memops.c |  4 ++
+ .../common/videobuf2/videobuf2-vmalloc.c      |  5 +++
+ drivers/media/dvb-core/dvb_frontend.c         |  2 +
+ drivers/media/dvb-frontends/cx24123.c         | 34 ++++++++--------
+ drivers/media/dvb-frontends/m88rs2000.c       |  2 +-
+ drivers/media/dvb-frontends/tda18271c2dd.c    |  4 +-
+ drivers/media/i2c/adv7343.c                   |  4 ++
+ drivers/media/i2c/tvp514x.c                   |  6 +++
+ drivers/media/i2c/tvp5150.c                   | 16 +++++++-
+ drivers/media/i2c/tvp7002.c                   |  6 +++
+ drivers/media/rc/lirc_dev.c                   |  2 +
+ drivers/media/rc/rc-main.c                    | 15 +++++++
+ drivers/media/usb/as102/as102_drv.h           |  4 +-
+ drivers/media/usb/dvb-usb-v2/lmedm04.c        | 40 +++++++++----------
+ drivers/media/usb/dvb-usb-v2/usb_urb.c        | 21 +++++++++-
+ drivers/media/usb/dvb-usb/usb-urb.c           | 16 ++++++++
+ drivers/media/usb/em28xx/em28xx.h             |  1 +
+ drivers/media/usb/gspca/gspca.c               |  2 +-
+ drivers/media/usb/stkwebcam/stk-webcam.h      |  4 +-
+ drivers/media/usb/uvc/uvc_driver.c            |  8 ----
+ drivers/media/usb/uvc/uvc_video.c             | 35 ++++++++++++++--
+ drivers/media/usb/uvc/uvcvideo.h              |  4 +-
+ drivers/media/v4l2-core/v4l2-async.c          |  2 +
+ drivers/media/v4l2-core/v4l2-dev.c            | 32 +++++++++++++++
+ drivers/media/v4l2-core/v4l2-ioctl.c          |  2 +
+ include/media/v4l2-device.h                   |  2 +
+ include/uapi/asm-generic/ioctl.h              |  1 +
+ include/uapi/linux/dvb/ca.h                   |  8 ++++
+ include/uapi/linux/dvb/frontend.h             |  3 +-
+ include/uapi/linux/input.h                    | 18 +++++----
+ 37 files changed, 255 insertions(+), 80 deletions(-)
+
+diff --git a/drivers/base/regmap/regmap.c b/drivers/base/regmap/regmap.c
+index 4f822e087def..4fcfe3643ec2 100644
+--- a/drivers/base/regmap/regmap.c
++++ b/drivers/base/regmap/regmap.c
+@@ -653,6 +653,7 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
+ 	if (endian != REGMAP_ENDIAN_DEFAULT)
+ 		return endian;
+ 
++#if IS_ENABLED(CONFIG_OF)
+ 	/* If the dev and dev->of_node exist try to get endianness from DT */
+ 	if (dev && dev->of_node) {
+ 		np = dev->of_node;
+@@ -669,7 +670,7 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
+ 		if (endian != REGMAP_ENDIAN_DEFAULT)
+ 			return endian;
+ 	}
+-
++#endif
+ 	/* Retrieve the endianness specification from the bus config */
+ 	if (bus && bus->val_format_endian_default)
+ 		endian = bus->val_format_endian_default;
+diff --git a/drivers/hid/hid-asus.c b/drivers/hid/hid-asus.c
+index a1fa2fc8c9b5..477bfbfc92ec 100644
+--- a/drivers/hid/hid-asus.c
++++ b/drivers/hid/hid-asus.c
+@@ -356,12 +356,10 @@ static void asus_kbd_backlight_work(struct work_struct *work)
+  */
+ static bool asus_kbd_wmi_led_control_present(struct hid_device *hdev)
+ {
++#if IS_ENABLED(CONFIG_ASUS_WMI)
+ 	u32 value;
+ 	int ret;
+ 
+-	if (!IS_ENABLED(CONFIG_ASUS_WMI))
+-		return false;
+-
+ 	ret = asus_wmi_evaluate_method(ASUS_WMI_METHODID_DSTS2,
+ 				       ASUS_WMI_DEVID_KBD_BACKLIGHT, 0, &value);
+ 	hid_dbg(hdev, "WMI backlight check: rc %d value %x", ret, value);
+@@ -369,6 +367,9 @@ static bool asus_kbd_wmi_led_control_present(struct hid_device *hdev)
+ 		return false;
+ 
+ 	return !!(value & ASUS_WMI_DSTS_PRESENCE_BIT);
++#else
++	return false;
++#endif
+ }
+ 
+ static int asus_kbd_register_leds(struct hid_device *hdev)
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 5bec9244c45b..3e73f6f37dcf 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -2247,7 +2247,7 @@ void hid_destroy_device(struct hid_device *hdev)
+ }
+ EXPORT_SYMBOL_GPL(hid_destroy_device);
+ 
+-
++#if 0
+ static int __hid_bus_reprobe_drivers(struct device *dev, void *data)
+ {
+ 	struct hid_driver *hdrv = data;
+@@ -2277,6 +2277,7 @@ static int __bus_removed_driver(struct device_driver *drv, void *data)
+ {
+ 	return bus_rescan_devices(&hid_bus_type);
+ }
++#endif
+ 
+ int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
+ 		const char *mod_name)
+@@ -2293,9 +2294,11 @@ int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
+ 
+ 	ret = driver_register(&hdrv->driver);
+ 
++#if 0
+ 	if (ret == 0)
+ 		bus_for_each_drv(&hid_bus_type, NULL, NULL,
+ 				 __hid_bus_driver_added);
++#endif
+ 
+ 	return ret;
+ }
+@@ -2306,7 +2309,9 @@ void hid_unregister_driver(struct hid_driver *hdrv)
+ 	driver_unregister(&hdrv->driver);
+ 	hid_free_dynids(hdrv);
+ 
++#if 0
+ 	bus_for_each_drv(&hid_bus_type, NULL, hdrv, __bus_removed_driver);
++#endif
+ }
+ EXPORT_SYMBOL_GPL(hid_unregister_driver);
+ 
+diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
+index dca0a3a90fb8..68674da068ff 100644
+--- a/drivers/hid/hid-multitouch.c
++++ b/drivers/hid/hid-multitouch.c
+@@ -130,7 +130,7 @@ struct mt_application {
+ 				 */
+ 
+ 	__s32 dev_time;		/* the scan time provided by the device */
+-	unsigned long jiffies;	/* the frame's jiffies */
++	unsigned long jfs;	/* the frame's jiffies */
+ 	int timestamp;		/* the timestamp to be sent */
+ 	int prev_scantime;		/* scantime reported previously */
+ 
+@@ -917,9 +917,9 @@ static void mt_sync_frame(struct mt_device *td, struct mt_application *app,
+ static int mt_compute_timestamp(struct mt_application *app, __s32 value)
+ {
+ 	long delta = value - app->prev_scantime;
+-	unsigned long jdelta = jiffies_to_usecs(jiffies - app->jiffies);
++	unsigned long jdelta = jiffies_to_usecs(jiffies - app->jfs);
+ 
+-	app->jiffies = jiffies;
++	app->jfs = jiffies;
+ 
+ 	if (delta < 0)
+ 		delta += app->scantime_logical_max;
+diff --git a/drivers/hid/wacom.h b/drivers/hid/wacom.h
+index 3c37c3cbf6f1..d3d7c136354c 100644
+--- a/drivers/hid/wacom.h
++++ b/drivers/hid/wacom.h
+@@ -94,6 +94,7 @@
+ #include <linux/leds.h>
+ #include <linux/usb/input.h>
+ #include <linux/power_supply.h>
++#include <linux/string.h>
+ #include <asm/unaligned.h>
+ 
+ /*
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index f48369d6f3a0..bb48b266cc10 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -801,7 +801,7 @@ static int str_to_user(const char *str, unsigned int maxlen, void __user *p)
+ 	int len;
+ 
+ 	if (!str)
+-		return -ENOENT;
++		str = "";
+ 
+ 	len = strlen(str) + 1;
+ 	if (len > maxlen)
+diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
+index 8ff8722cb6b1..9fea2afc9452 100644
+--- a/drivers/media/common/videobuf2/videobuf2-core.c
++++ b/drivers/media/common/videobuf2/videobuf2-core.c
+@@ -616,7 +616,7 @@ static int __verify_dmabuf_ops(struct vb2_queue *q)
+ int vb2_verify_memory_type(struct vb2_queue *q,
+ 		enum vb2_memory memory, unsigned int type)
+ {
+-	if (memory != VB2_MEMORY_MMAP && memory != VB2_MEMORY_USERPTR &&
++	if (memory != VB2_MEMORY_MMAP && /* memory != VB2_MEMORY_USERPTR && */
+ 	    memory != VB2_MEMORY_DMABUF) {
+ 		dprintk(1, "unsupported memory type\n");
+ 		return -EINVAL;
+@@ -636,10 +636,12 @@ int vb2_verify_memory_type(struct vb2_queue *q,
+ 		return -EINVAL;
+ 	}
+ 
++#if 0
+ 	if (memory == VB2_MEMORY_USERPTR && __verify_userptr_ops(q)) {
+ 		dprintk(1, "USERPTR for current setup unsupported\n");
+ 		return -EINVAL;
+ 	}
++#endif
+ 
+ 	if (memory == VB2_MEMORY_DMABUF && __verify_dmabuf_ops(q)) {
+ 		dprintk(1, "DMABUF for current setup unsupported\n");
+@@ -1279,9 +1281,11 @@ static int __buf_prepare(struct vb2_buffer *vb)
+ 	case VB2_MEMORY_MMAP:
+ 		ret = __prepare_mmap(vb);
+ 		break;
++#if 0
+ 	case VB2_MEMORY_USERPTR:
+ 		ret = __prepare_userptr(vb);
+ 		break;
++#endif
+ 	case VB2_MEMORY_DMABUF:
+ 		ret = __prepare_dmabuf(vb);
+ 		break;
+diff --git a/drivers/media/common/videobuf2/videobuf2-memops.c b/drivers/media/common/videobuf2/videobuf2-memops.c
+index 89e51989332b..a581cd0eaf74 100644
+--- a/drivers/media/common/videobuf2/videobuf2-memops.c
++++ b/drivers/media/common/videobuf2/videobuf2-memops.c
+@@ -22,6 +22,7 @@
+ #include <media/videobuf2-v4l2.h>
+ #include <media/videobuf2-memops.h>
+ 
++#if 0
+ /**
+  * vb2_create_framevec() - map virtual addresses to pfns
+  * @start:	Virtual user address where we start mapping
+@@ -69,7 +70,9 @@ struct frame_vector *vb2_create_framevec(unsigned long start,
+ 	return ERR_PTR(ret);
+ }
+ EXPORT_SYMBOL(vb2_create_framevec);
++#endif
+ 
++#if 0
+ /**
+  * vb2_destroy_framevec() - release vector of mapped pfns
+  * @vec:	vector of pfns / pages to release
+@@ -83,6 +86,7 @@ void vb2_destroy_framevec(struct frame_vector *vec)
+ 	frame_vector_destroy(vec);
+ }
+ EXPORT_SYMBOL(vb2_destroy_framevec);
++#endif
+ 
+ /**
+  * vb2_common_vm_open() - increase refcount of the vma
+diff --git a/drivers/media/common/videobuf2/videobuf2-vmalloc.c b/drivers/media/common/videobuf2/videobuf2-vmalloc.c
+index 6dfbd5b05907..6b56cf5d414f 100644
+--- a/drivers/media/common/videobuf2/videobuf2-vmalloc.c
++++ b/drivers/media/common/videobuf2/videobuf2-vmalloc.c
+@@ -71,6 +71,7 @@ static void vb2_vmalloc_put(void *buf_priv)
+ 	}
+ }
+ 
++#if 0
+ static void *vb2_vmalloc_get_userptr(struct device *dev, unsigned long vaddr,
+ 				     unsigned long size,
+ 				     enum dma_data_direction dma_dir)
+@@ -148,6 +149,10 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
+ 	vb2_destroy_framevec(buf->vec);
+ 	kfree(buf);
+ }
++#else
++#define	vb2_vmalloc_get_userptr NULL
++#define	vb2_vmalloc_put_userptr NULL
++#endif
+ 
+ static void *vb2_vmalloc_vaddr(void *buf_priv)
+ {
+diff --git a/drivers/media/dvb-core/dvb_frontend.c b/drivers/media/dvb-core/dvb_frontend.c
+index 961207cf09eb..cf9a19602006 100644
+--- a/drivers/media/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb-core/dvb_frontend.c
+@@ -2021,6 +2021,7 @@ static int dvb_frontend_do_ioctl(struct file *file, unsigned int cmd,
+ 	 * reading from them would interfere with a DVB tune application
+ 	 */
+ 	if ((file->f_flags & O_ACCMODE) == O_RDONLY
++	    && (cmd != FE_GET_PROPERTY)
+ 	    && (_IOC_DIR(cmd) != _IOC_READ
+ 		|| cmd == FE_GET_EVENT
+ 		|| cmd == FE_DISEQC_RECV_SLAVE_REPLY)) {
+@@ -2365,6 +2366,7 @@ static int dvb_frontend_handle_ioctl(struct file *file,
+ 		err = 0;
+ 		break;
+ 	}
++	case FE_GET_PROPERTY_OLD:
+ 	case FE_GET_PROPERTY: {
+ 		struct dtv_properties *tvps = parg;
+ 		struct dtv_property *tvp = NULL;
+diff --git a/drivers/media/dvb-frontends/cx24123.c b/drivers/media/dvb-frontends/cx24123.c
+index 83dfae78579d..b187f53d15bb 100644
+--- a/drivers/media/dvb-frontends/cx24123.c
++++ b/drivers/media/dvb-frontends/cx24123.c
+@@ -38,8 +38,8 @@ static int debug;
+ module_param(debug, int, 0644);
+ MODULE_PARM_DESC(debug, "Activates frontend debugging (default:0)");
+ 
+-#define info(args...) do { printk(KERN_INFO "CX24123: " args); } while (0)
+-#define err(args...)  do { printk(KERN_ERR  "CX24123: " args); } while (0)
++#define cx_info(args...) do { printk(KERN_INFO "CX24123: " args); } while (0)
++#define cx_err(args...)  do { printk(KERN_ERR  "CX24123: " args); } while (0)
+ 
+ #define dprintk(args...) \
+ 	do { \
+@@ -271,7 +271,7 @@ static int cx24123_i2c_readreg(struct cx24123_state *state, u8 i2c_addr, u8 reg)
+ 	ret = i2c_transfer(state->i2c, msg, 2);
+ 
+ 	if (ret != 2) {
+-		err("%s: reg=0x%x (error=%d)\n", __func__, reg, ret);
++		cx_err("%s: reg=0x%x (error=%d)\n", __func__, reg, ret);
+ 		return ret;
+ 	}
+ 
+@@ -601,7 +601,7 @@ static int cx24123_pll_writereg(struct dvb_frontend *fe, u32 data)
+ 	cx24123_writereg(state, 0x22, (data >> 16) & 0xff);
+ 	while ((cx24123_readreg(state, 0x20) & 0x40) == 0) {
+ 		if (time_after(jiffies, timeout)) {
+-			err("%s:  demodulator is not responding, "\
++			cx_err("%s:  demodulator is not responding, "\
+ 				"possibly hung, aborting.\n", __func__);
+ 			return -EREMOTEIO;
+ 		}
+@@ -613,7 +613,7 @@ static int cx24123_pll_writereg(struct dvb_frontend *fe, u32 data)
+ 	cx24123_writereg(state, 0x22, (data >> 8) & 0xff);
+ 	while ((cx24123_readreg(state, 0x20) & 0x40) == 0) {
+ 		if (time_after(jiffies, timeout)) {
+-			err("%s:  demodulator is not responding, "\
++			cx_err("%s:  demodulator is not responding, "\
+ 				"possibly hung, aborting.\n", __func__);
+ 			return -EREMOTEIO;
+ 		}
+@@ -626,7 +626,7 @@ static int cx24123_pll_writereg(struct dvb_frontend *fe, u32 data)
+ 	cx24123_writereg(state, 0x22, (data) & 0xff);
+ 	while ((cx24123_readreg(state, 0x20) & 0x80)) {
+ 		if (time_after(jiffies, timeout)) {
+-			err("%s:  demodulator is not responding," \
++			cx_err("%s:  demodulator is not responding," \
+ 				"possibly hung, aborting.\n", __func__);
+ 			return -EREMOTEIO;
+ 		}
+@@ -649,7 +649,7 @@ static int cx24123_pll_tune(struct dvb_frontend *fe)
+ 	dprintk("frequency=%i\n", p->frequency);
+ 
+ 	if (cx24123_pll_calculate(fe) != 0) {
+-		err("%s: cx24123_pll_calculate failed\n", __func__);
++		cx_err("%s: cx24123_pll_calculate failed\n", __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -746,7 +746,7 @@ static void cx24123_wait_for_diseqc(struct cx24123_state *state)
+ 	unsigned long timeout = jiffies + msecs_to_jiffies(200);
+ 	while (!(cx24123_readreg(state, 0x29) & 0x40)) {
+ 		if (time_after(jiffies, timeout)) {
+-			err("%s: diseqc queue not ready, " \
++			cx_err("%s: diseqc queue not ready, " \
+ 				"command may be lost.\n", __func__);
+ 			break;
+ 		}
+@@ -928,7 +928,7 @@ static int cx24123_set_frontend(struct dvb_frontend *fe)
+ 	else if (fe->ops.tuner_ops.set_params)
+ 		fe->ops.tuner_ops.set_params(fe);
+ 	else
+-		err("it seems I don't have a tuner...");
++		cx_err("it seems I don't have a tuner...");
+ 
+ 	/* Enable automatic acquisition and reset cycle */
+ 	cx24123_writereg(state, 0x03, (cx24123_readreg(state, 0x03) | 0x07));
+@@ -949,11 +949,11 @@ static int cx24123_get_frontend(struct dvb_frontend *fe,
+ 	dprintk("\n");
+ 
+ 	if (cx24123_get_inversion(state, &p->inversion) != 0) {
+-		err("%s: Failed to get inversion status\n", __func__);
++		cx_err("%s: Failed to get inversion status\n", __func__);
+ 		return -EREMOTEIO;
+ 	}
+ 	if (cx24123_get_fec(state, &p->fec_inner) != 0) {
+-		err("%s: Failed to get fec status\n", __func__);
++		cx_err("%s: Failed to get fec status\n", __func__);
+ 		return -EREMOTEIO;
+ 	}
+ 	p->frequency = state->currentfreq;
+@@ -980,7 +980,7 @@ static int cx24123_set_tone(struct dvb_frontend *fe, enum fe_sec_tone_mode tone)
+ 		dprintk("setting tone off\n");
+ 		return cx24123_writereg(state, 0x29, val & 0xef);
+ 	default:
+-		err("CASE reached default with tone=%d\n", tone);
++		cx_err("CASE reached default with tone=%d\n", tone);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1056,7 +1056,7 @@ struct dvb_frontend *cx24123_attach(const struct cx24123_config *config,
+ 
+ 	dprintk("\n");
+ 	if (state == NULL) {
+-		err("Unable to kzalloc\n");
++		cx_err("Unable to kzalloc\n");
+ 		goto error;
+ 	}
+ 
+@@ -1068,13 +1068,13 @@ struct dvb_frontend *cx24123_attach(const struct cx24123_config *config,
+ 	state->demod_rev = cx24123_readreg(state, 0x00);
+ 	switch (state->demod_rev) {
+ 	case 0xe1:
+-		info("detected CX24123C\n");
++		cx_info("detected CX24123C\n");
+ 		break;
+ 	case 0xd1:
+-		info("detected CX24123\n");
++		cx_info("detected CX24123\n");
+ 		break;
+ 	default:
+-		err("wrong demod revision: %x\n", state->demod_rev);
++		cx_err("wrong demod revision: %x\n", state->demod_rev);
+ 		goto error;
+ 	}
+ 
+@@ -1094,7 +1094,7 @@ struct dvb_frontend *cx24123_attach(const struct cx24123_config *config,
+ 	state->tuner_i2c_adapter.dev.parent = i2c->dev.parent;
+ 	i2c_set_adapdata(&state->tuner_i2c_adapter, state);
+ 	if (i2c_add_adapter(&state->tuner_i2c_adapter) < 0) {
+-		err("tuner i2c bus could not be initialized\n");
++		cx_err("tuner i2c bus could not be initialized\n");
+ 		goto error;
+ 	}
+ 
+diff --git a/drivers/media/dvb-frontends/m88rs2000.c b/drivers/media/dvb-frontends/m88rs2000.c
+index d5bc85501f9e..7622e06e86be 100644
+--- a/drivers/media/dvb-frontends/m88rs2000.c
++++ b/drivers/media/dvb-frontends/m88rs2000.c
+@@ -57,7 +57,7 @@ MODULE_PARM_DESC(debug, "set debugging level (1=info (or-able)).");
+ } while (0)
+ 
+ #define deb_info(args...)  dprintk(0x01, args)
+-#define info(format, arg...) \
++#define m88_info(format, arg...) \
+ 	printk(KERN_INFO "m88rs2000-fe: " format "\n" , ## arg)
+ 
+ static int m88rs2000_writereg(struct m88rs2000_state *state,
+diff --git a/drivers/media/dvb-frontends/tda18271c2dd.c b/drivers/media/dvb-frontends/tda18271c2dd.c
+index 5ce58612315d..cf3669b1aedc 100644
+--- a/drivers/media/dvb-frontends/tda18271c2dd.c
++++ b/drivers/media/dvb-frontends/tda18271c2dd.c
+@@ -1108,7 +1108,7 @@ static int ChannelConfiguration(struct tda_state *state,
+ 	return status;
+ }
+ 
+-static int sleep(struct dvb_frontend *fe)
++static int do_sleep(struct dvb_frontend *fe)
+ {
+ 	struct tda_state *state = fe->tuner_priv;
+ 
+@@ -1220,7 +1220,7 @@ static const struct dvb_tuner_ops tuner_ops = {
+ 		.frequency_step_hz =  62500
+ 	},
+ 	.init              = init,
+-	.sleep             = sleep,
++	.sleep             = do_sleep,
+ 	.set_params        = set_params,
+ 	.release           = release,
+ 	.get_if_frequency  = get_if_frequency,
+diff --git a/drivers/media/i2c/adv7343.c b/drivers/media/i2c/adv7343.c
+index 4a441ee99dd8..51225015e16b 100644
+--- a/drivers/media/i2c/adv7343.c
++++ b/drivers/media/i2c/adv7343.c
+@@ -397,6 +397,7 @@ static int adv7343_initialize(struct v4l2_subdev *sd)
+ static struct adv7343_platform_data *
+ adv7343_get_pdata(struct i2c_client *client)
+ {
++#if IS_ENABLED(CONFIG_OF)
+ 	struct adv7343_platform_data *pdata;
+ 	struct device_node *np;
+ 
+@@ -426,6 +427,9 @@ adv7343_get_pdata(struct i2c_client *client)
+ done:
+ 	of_node_put(np);
+ 	return pdata;
++#else
++	return client->dev.platform_data;
++#endif
+ }
+ 
+ static int adv7343_probe(struct i2c_client *client,
+diff --git a/drivers/media/i2c/tvp514x.c b/drivers/media/i2c/tvp514x.c
+index 1cc83cb934e2..879d80b72741 100644
+--- a/drivers/media/i2c/tvp514x.c
++++ b/drivers/media/i2c/tvp514x.c
+@@ -988,6 +988,7 @@ static const struct tvp514x_decoder tvp514x_dev = {
+ static struct tvp514x_platform_data *
+ tvp514x_get_pdata(struct i2c_client *client)
+ {
++#if IS_ENABLED(CONFIG_OF)
+ 	struct tvp514x_platform_data *pdata = NULL;
+ 	struct v4l2_fwnode_endpoint bus_cfg = { .bus_type = 0 };
+ 	struct device_node *endpoint;
+@@ -1021,6 +1022,9 @@ tvp514x_get_pdata(struct i2c_client *client)
+ done:
+ 	of_node_put(endpoint);
+ 	return pdata;
++#else
++	return client->dev.platform_data;
++#endif
+ }
+ 
+ /**
+@@ -1215,7 +1219,9 @@ MODULE_DEVICE_TABLE(of, tvp514x_of_match);
+ 
+ static struct i2c_driver tvp514x_driver = {
+ 	.driver = {
++#if IS_ENABLED(CONFIG_OF)
+ 		.of_match_table = of_match_ptr(tvp514x_of_match),
++#endif
+ 		.name = TVP514X_MODULE_NAME,
+ 	},
+ 	.probe = tvp514x_probe,
+diff --git a/drivers/media/i2c/tvp5150.c b/drivers/media/i2c/tvp5150.c
+index 0e91b9949c3a..9998d50b373c 100644
+--- a/drivers/media/i2c/tvp5150.c
++++ b/drivers/media/i2c/tvp5150.c
+@@ -1591,6 +1591,7 @@ static int tvp5150_init(struct i2c_client *c)
+ 	return 0;
+ }
+ 
++#if IS_ENABLED(CONFIG_OF)
+ static int tvp5150_parse_dt(struct tvp5150 *decoder, struct device_node *np)
+ {
+ 	struct v4l2_fwnode_endpoint bus_cfg = { .bus_type = 0 };
+@@ -1685,6 +1686,7 @@ static int tvp5150_parse_dt(struct tvp5150 *decoder, struct device_node *np)
+ 	of_node_put(ep);
+ 	return ret;
+ }
++#endif
+ 
+ static const char * const tvp5150_test_patterns[2] = {
+ 	"Disabled",
+@@ -1696,7 +1698,9 @@ static int tvp5150_probe(struct i2c_client *c,
+ {
+ 	struct tvp5150 *core;
+ 	struct v4l2_subdev *sd;
++#if IS_ENABLED(CONFIG_OF)
+ 	struct device_node *np = c->dev.of_node;
++#endif
+ 	struct regmap *map;
+ 	int res;
+ 
+@@ -1720,7 +1724,8 @@ static int tvp5150_probe(struct i2c_client *c,
+ 	core->regmap = map;
+ 	sd = &core->sd;
+ 
+-	if (IS_ENABLED(CONFIG_OF) && np) {
++#if IS_ENABLED(CONFIG_OF)
++	if (np) {
+ 		res = tvp5150_parse_dt(core, np);
+ 		if (res) {
+ 			dev_err(sd->dev, "DT parsing error: %d\n", res);
+@@ -1730,7 +1735,10 @@ static int tvp5150_probe(struct i2c_client *c,
+ 		/* Default to BT.656 embedded sync */
+ 		core->mbus_type = V4L2_MBUS_BT656;
+ 	}
+-
++#else
++	/* Default to BT.656 embedded sync */
++	core->mbus_type = V4L2_MBUS_BT656;
++#endif
+ 	v4l2_i2c_subdev_init(sd, c, &tvp5150_ops);
+ 	sd->internal_ops = &tvp5150_internal_ops;
+ 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
+@@ -1786,11 +1794,15 @@ static int tvp5150_probe(struct i2c_client *c,
+ 	core->irq = c->irq;
+ 	tvp5150_reset(sd, 0);	/* Calls v4l2_ctrl_handler_setup() */
+ 	if (c->irq) {
++#if 0
+ 		res = devm_request_threaded_irq(&c->dev, c->irq, NULL,
+ 						tvp5150_isr, IRQF_TRIGGER_HIGH |
+ 						IRQF_ONESHOT, "tvp5150", core);
+ 		if (res)
+ 			return res;
++#else
++		return (-EINVAL);
++#endif
+ 	}
+ 
+ 	res = v4l2_async_register_subdev(sd);
+diff --git a/drivers/media/i2c/tvp7002.c b/drivers/media/i2c/tvp7002.c
+index cab2f2bd0aa9..5a3e3ef27750 100644
+--- a/drivers/media/i2c/tvp7002.c
++++ b/drivers/media/i2c/tvp7002.c
+@@ -889,6 +889,7 @@ static const struct v4l2_subdev_ops tvp7002_ops = {
+ static struct tvp7002_config *
+ tvp7002_get_pdata(struct i2c_client *client)
+ {
++#if IS_ENABLED(CONFIG_OF)
+ 	struct v4l2_fwnode_endpoint bus_cfg = { .bus_type = 0 };
+ 	struct tvp7002_config *pdata = NULL;
+ 	struct device_node *endpoint;
+@@ -928,6 +929,9 @@ tvp7002_get_pdata(struct i2c_client *client)
+ done:
+ 	of_node_put(endpoint);
+ 	return pdata;
++#else
++	return client->dev.platform_data;
++#endif
+ }
+ 
+ /*
+@@ -1081,7 +1085,9 @@ MODULE_DEVICE_TABLE(of, tvp7002_of_match);
+ /* I2C driver data */
+ static struct i2c_driver tvp7002_driver = {
+ 	.driver = {
++#if IS_ENABLED(CONFIG_OF)
+ 		.of_match_table = of_match_ptr(tvp7002_of_match),
++#endif
+ 		.name = TVP7002_MODULE_NAME,
+ 	},
+ 	.probe = tvp7002_probe,
+diff --git a/drivers/media/rc/lirc_dev.c b/drivers/media/rc/lirc_dev.c
+index f862f1b7f996..8a16af8fa271 100644
+--- a/drivers/media/rc/lirc_dev.c
++++ b/drivers/media/rc/lirc_dev.c
+@@ -848,6 +848,7 @@ void __exit lirc_dev_exit(void)
+ 	unregister_chrdev_region(lirc_base_dev, RC_DEV_MAX);
+ }
+ 
++#if 0
+ struct rc_dev *rc_dev_get_from_fd(int fd)
+ {
+ 	struct fd f = fdget(fd);
+@@ -870,5 +871,6 @@ struct rc_dev *rc_dev_get_from_fd(int fd)
+ 
+ 	return dev;
+ }
++#endif
+ 
+ MODULE_ALIAS("lirc_dev");
+diff --git a/drivers/media/rc/rc-main.c b/drivers/media/rc/rc-main.c
+index 552bbe82a160..95d00a1ceb71 100644
+--- a/drivers/media/rc/rc-main.c
++++ b/drivers/media/rc/rc-main.c
+@@ -1816,6 +1816,12 @@ static void rc_free_rx_device(struct rc_dev *dev)
+ 	ir_free_table(&dev->rc_map);
+ }
+ 
++static char *rc_core_default_protocol;
++module_param_named(default_protocol, rc_core_default_protocol, charp, 0644);
++MODULE_PARM_DESC(default_protocol, "Select default protocol: "
++    "jvc, lirc, mce_kbd, nec, none, other, rc-5, rc-5-sz, "
++    "rc-6, sanyo, sharp, sony, unknown or xmp");
++
+ int rc_register_device(struct rc_dev *dev)
+ {
+ 	const char *path;
+@@ -1890,6 +1896,15 @@ int rc_register_device(struct rc_dev *dev)
+ 	dev_dbg(&dev->dev, "Registered rc%u (driver: %s)\n", dev->minor,
+ 		dev->driver_name ? dev->driver_name : "unknown");
+ 
++	if (rc_core_default_protocol != NULL) {
++		/* set initial default protocol */
++		if (store_protocols(&dev->dev, &dev_attr_protocols,
++		    rc_core_default_protocol,
++		    strlen(rc_core_default_protocol)) < 0) {
++			printk(KERN_ERR "Could not store protocol '%s'\n",
++			    rc_core_default_protocol);
++		}
++	}
+ 	return 0;
+ 
+ out_lirc:
+diff --git a/drivers/media/usb/as102/as102_drv.h b/drivers/media/usb/as102/as102_drv.h
+index c92a1e4f6a20..d82b1de10ac3 100644
+--- a/drivers/media/usb/as102/as102_drv.h
++++ b/drivers/media/usb/as102/as102_drv.h
+@@ -32,8 +32,8 @@ extern int elna_enable;
+ 
+ #define AS102_DEVICE_MAJOR	192
+ 
+-#define AS102_USB_BUF_SIZE	512
+-#define MAX_STREAM_URB		32
++#define AS102_USB_BUF_SIZE	(1 << 14)
++#define MAX_STREAM_URB		2
+ 
+ struct as10x_bus_adapter_t {
+ 	struct usb_device *usb_dev;
+diff --git a/drivers/media/usb/dvb-usb-v2/lmedm04.c b/drivers/media/usb/dvb-usb-v2/lmedm04.c
+index f109c04f05ae..c44783fb0945 100644
+--- a/drivers/media/usb/dvb-usb-v2/lmedm04.c
++++ b/drivers/media/usb/dvb-usb-v2/lmedm04.c
+@@ -96,7 +96,7 @@ static int dvb_usb_lme2510_debug;
+ #define deb_info(level, args...) lme_debug(dvb_usb_lme2510_debug, level, args)
+ #define debug_data_snipet(level, name, p) \
+ 	 deb_info(level, name" (%8phN)", p);
+-#define info(args...) pr_info(DVB_USB_LOG_PREFIX": "args)
++#define med_info(args...) pr_info(DVB_USB_LOG_PREFIX": "args)
+ 
+ module_param_named(debug, dvb_usb_lme2510_debug, int, 0644);
+ MODULE_PARM_DESC(debug, "set debugging level (1=info (or-able)).");
+@@ -175,7 +175,7 @@ static int lme2510_usb_talk(struct dvb_usb_device *d,
+ 	if (st->usb_buffer == NULL) {
+ 		st->usb_buffer = kmalloc(64, GFP_KERNEL);
+ 		if (st->usb_buffer == NULL) {
+-			info("MEM Error no memory");
++		 med_info("MEM Error no memory");
+ 			return -ENOMEM;
+ 		}
+ 	}
+@@ -321,7 +321,7 @@ static void lme2510_int_response(struct urb *lme_urb)
+ 	case -ESHUTDOWN:
+ 		return;
+ 	default:
+-		info("Error %x", lme_urb->status);
++	 med_info("Error %x", lme_urb->status);
+ 		break;
+ 	}
+ 
+@@ -441,7 +441,7 @@ static int lme2510_int_read(struct dvb_usb_adapter *adap)
+ 	lme_int->lme_urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+ 
+ 	usb_submit_urb(lme_int->lme_urb, GFP_ATOMIC);
+-	info("INT Interrupt Service Started");
++ med_info("INT Interrupt Service Started");
+ 
+ 	return 0;
+ }
+@@ -509,7 +509,7 @@ static int lme2510_return_status(struct dvb_usb_device *d)
+ 	else
+ 		ret = data[2];
+ 
+-	info("Firmware Status: %6ph", data);
++ med_info("Firmware Status: %6ph", data);
+ 
+ 	kfree(data);
+ 	return ret;
+@@ -652,12 +652,12 @@ static int lme2510_download_firmware(struct dvb_usb_device *d,
+ 
+ 	data = kzalloc(128, GFP_KERNEL);
+ 	if (!data) {
+-		info("FRM Could not start Firmware Download"\
++	 med_info("FRM Could not start Firmware Download"\
+ 			"(Buffer allocation failed)");
+ 		return -ENOMEM;
+ 	}
+ 
+-	info("FRM Starting Firmware Download");
++ med_info("FRM Starting Firmware Download");
+ 
+ 	for (i = 1; i < 3; i++) {
+ 		start = (i == 1) ? 0 : 512;
+@@ -689,9 +689,9 @@ static int lme2510_download_firmware(struct dvb_usb_device *d,
+ 	msleep(400);
+ 
+ 	if (ret < 0)
+-		info("FRM Firmware Download Failed (%04x)" , ret);
++	 med_info("FRM Firmware Download Failed (%04x)" , ret);
+ 	else
+-		info("FRM Firmware Download Completed - Resetting Device");
++	 med_info("FRM Firmware Download Completed - Resetting Device");
+ 
+ 	kfree(data);
+ 	return RECONNECTS_USB;
+@@ -701,7 +701,7 @@ static void lme_coldreset(struct dvb_usb_device *d)
+ {
+ 	u8 data[1] = {0};
+ 	data[0] = 0x0a;
+-	info("FRM Firmware Cold Reset");
++ med_info("FRM Firmware Cold Reset");
+ 
+ 	lme2510_usb_talk(d, data, sizeof(data), data, sizeof(data));
+ 
+@@ -793,7 +793,7 @@ static const char *lme_firmware_switch(struct dvb_usb_device *d, int cold)
+ 
+ 	if (cold) {
+ 		dvb_usb_lme2510_firmware = st->dvb_usb_lme2510_firmware;
+-		info("FRM Changing to %s firmware", fw_lme);
++	 med_info("FRM Changing to %s firmware", fw_lme);
+ 		lme_coldreset(d);
+ 		return NULL;
+ 	}
+@@ -1024,7 +1024,7 @@ static int dm04_lme2510_frontend_attach(struct dvb_usb_adapter *adap)
+ 		adap->fe[0] = dvb_attach(tda10086_attach,
+ 			&tda10086_config, &d->i2c_adap);
+ 		if (adap->fe[0]) {
+-			info("TUN Found Frontend TDA10086");
++		 med_info("TUN Found Frontend TDA10086");
+ 			st->i2c_tuner_gate_w = 4;
+ 			st->i2c_tuner_gate_r = 4;
+ 			st->i2c_tuner_addr = 0x60;
+@@ -1040,7 +1040,7 @@ static int dm04_lme2510_frontend_attach(struct dvb_usb_adapter *adap)
+ 		adap->fe[0] = dvb_attach(stv0299_attach,
+ 				&sharp_z0194_config, &d->i2c_adap);
+ 		if (adap->fe[0]) {
+-			info("FE Found Stv0299");
++		 med_info("FE Found Stv0299");
+ 			st->i2c_tuner_gate_w = 4;
+ 			st->i2c_tuner_gate_r = 5;
+ 			st->i2c_tuner_addr = 0x60;
+@@ -1057,7 +1057,7 @@ static int dm04_lme2510_frontend_attach(struct dvb_usb_adapter *adap)
+ 			&d->i2c_adap);
+ 
+ 		if (adap->fe[0]) {
+-			info("FE Found Stv0288");
++		 med_info("FE Found Stv0288");
+ 			st->i2c_tuner_gate_w = 4;
+ 			st->i2c_tuner_gate_r = 5;
+ 			st->i2c_tuner_addr = 0x60;
+@@ -1075,7 +1075,7 @@ static int dm04_lme2510_frontend_attach(struct dvb_usb_adapter *adap)
+ 			&m88rs2000_config, &d->i2c_adap);
+ 
+ 		if (adap->fe[0]) {
+-			info("FE Found M88RS2000");
++		 med_info("FE Found M88RS2000");
+ 			st->i2c_tuner_gate_w = 5;
+ 			st->i2c_tuner_gate_r = 5;
+ 			st->i2c_tuner_addr = 0x60;
+@@ -1087,7 +1087,7 @@ static int dm04_lme2510_frontend_attach(struct dvb_usb_adapter *adap)
+ 	}
+ 
+ 	if (adap->fe[0] == NULL) {
+-		info("DM04/QQBOX Not Powered up or not Supported");
++	 med_info("DM04/QQBOX Not Powered up or not Supported");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -1150,16 +1150,16 @@ static int dm04_lme2510_tuner(struct dvb_usb_adapter *adap)
+ 	}
+ 
+ 	if (ret) {
+-		info("TUN Found %s tuner", tun_msg[ret]);
++	 med_info("TUN Found %s tuner", tun_msg[ret]);
+ 	} else {
+-		info("TUN No tuner found");
++	 med_info("TUN No tuner found");
+ 		return -ENODEV;
+ 	}
+ 
+ 	/* Start the Interrupt*/
+ 	ret = lme2510_int_read(adap);
+ 	if (ret < 0) {
+-		info("INT Unable to start Interrupt Service");
++	 med_info("INT Unable to start Interrupt Service");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -1266,7 +1266,7 @@ static void *lme2510_exit_int(struct dvb_usb_device *d)
+ 		usb_kill_urb(st->lme_urb);
+ 		usb_free_coherent(d->udev, 128, st->buffer,
+ 				  st->lme_urb->transfer_dma);
+-		info("Interrupt Service Stopped");
++	 med_info("Interrupt Service Stopped");
+ 	}
+ 
+ 	return buffer;
+diff --git a/drivers/media/usb/dvb-usb-v2/usb_urb.c b/drivers/media/usb/dvb-usb-v2/usb_urb.c
+index 024c751eb165..db88cc4b6a9f 100644
+--- a/drivers/media/usb/dvb-usb-v2/usb_urb.c
++++ b/drivers/media/usb/dvb-usb-v2/usb_urb.c
+@@ -251,6 +251,7 @@ static int usb_alloc_stream_buffers(struct usb_data_stream *stream, int num,
+ int usb_urb_reconfig(struct usb_data_stream *stream,
+ 		struct usb_data_stream_properties *props)
+ {
++#if 0
+ 	int buf_size;
+ 
+ 	if (!props)
+@@ -300,7 +301,7 @@ int usb_urb_reconfig(struct usb_data_stream *stream,
+ 		return usb_urb_alloc_bulk_urbs(stream);
+ 	else if (props->type == USB_ISOC)
+ 		return usb_urb_alloc_isoc_urbs(stream);
+-
++#endif
+ 	return 0;
+ }
+ 
+@@ -323,6 +324,11 @@ int usb_urb_initv2(struct usb_data_stream *stream,
+ 
+ 	switch (stream->props.type) {
+ 	case USB_BULK:
++
++		/* XXX override driver parameters */
++		stream->props.count = 2;
++		if (stream->props.u.bulk.buffersize < 131072)
++			stream->props.u.bulk.buffersize = 131072;
+ 		ret = usb_alloc_stream_buffers(stream, stream->props.count,
+ 				stream->props.u.bulk.buffersize);
+ 		if (ret < 0)
+@@ -330,6 +336,19 @@ int usb_urb_initv2(struct usb_data_stream *stream,
+ 
+ 		return usb_urb_alloc_bulk_urbs(stream);
+ 	case USB_ISOC:
++
++		/* XXX override driver parameters */
++		switch (stream->udev->speed) {
++		case USB_SPEED_FULL:
++		case USB_SPEED_LOW:
++			stream->props.count = 2;
++			stream->props.u.isoc.framesperurb = 24;
++			break;
++		default:
++			stream->props.count = 2;
++			stream->props.u.isoc.framesperurb = 24 * 8;
++			break;
++		}
+ 		ret = usb_alloc_stream_buffers(stream, stream->props.count,
+ 				stream->props.u.isoc.framesize *
+ 				stream->props.u.isoc.framesperurb);
+diff --git a/drivers/media/usb/dvb-usb/usb-urb.c b/drivers/media/usb/dvb-usb/usb-urb.c
+index 9771f0954c69..1fe83a6bcf12 100644
+--- a/drivers/media/usb/dvb-usb/usb-urb.c
++++ b/drivers/media/usb/dvb-usb/usb-urb.c
+@@ -226,8 +226,24 @@ int usb_urb_init(struct usb_data_stream *stream, struct usb_data_stream_properti
+ 
+ 	switch (stream->props.type) {
+ 		case USB_BULK:
++			/* XXX override driver parameters */
++			stream->props.count = 2;
++			if (stream->props.u.bulk.buffersize < 131072)
++				stream->props.u.bulk.buffersize = 131072;
+ 			return usb_bulk_urb_init(stream);
+ 		case USB_ISOC:
++			/* XXX override driver parameters */
++			switch (stream->udev->speed) {
++			case USB_SPEED_FULL:
++			case USB_SPEED_LOW:
++				stream->props.count = 2;
++				stream->props.u.isoc.framesperurb = 24;
++				break;
++			default:
++				stream->props.count = 2;
++				stream->props.u.isoc.framesperurb = 24 * 8;
++				break;
++			}
+ 			return usb_isoc_urb_init(stream);
+ 		default:
+ 			err("unknown URB-type for data transfer.");
+diff --git a/drivers/media/usb/em28xx/em28xx.h b/drivers/media/usb/em28xx/em28xx.h
+index a551072e62ed..ff66576eb66d 100644
+--- a/drivers/media/usb/em28xx/em28xx.h
++++ b/drivers/media/usb/em28xx/em28xx.h
+@@ -453,6 +453,7 @@ enum em28xx_led_role {
+ 	EM28XX_LED_DIGITAL_CAPTURING_TS2,
+ 	EM28XX_LED_ILLUMINATION,
+ 	EM28XX_NUM_LED_ROLES, /* must be the last */
++	EM28XX_LED_DUMMY = -1,	/* force enum signed */
+ };
+ 
+ struct em28xx_led {
+diff --git a/drivers/media/usb/gspca/gspca.c b/drivers/media/usb/gspca/gspca.c
+index 3137f5d89d80..10ab3e0a2968 100644
+--- a/drivers/media/usb/gspca/gspca.c
++++ b/drivers/media/usb/gspca/gspca.c
+@@ -46,7 +46,7 @@
+ #endif
+ 
+ /* global values */
+-#define DEF_NURBS 3		/* default number of URBs */
++#define DEF_NURBS 2		/* default number of URBs */
+ #if DEF_NURBS > MAX_NURBS
+ #error "DEF_NURBS too big"
+ #endif
+diff --git a/drivers/media/usb/stkwebcam/stk-webcam.h b/drivers/media/usb/stkwebcam/stk-webcam.h
+index 5cecbdc97573..12985bfd6c92 100644
+--- a/drivers/media/usb/stkwebcam/stk-webcam.h
++++ b/drivers/media/usb/stkwebcam/stk-webcam.h
+@@ -26,8 +26,8 @@
+ #define DRIVER_VERSION		"v0.0.1"
+ #define DRIVER_VERSION_NUM	0x000001
+ 
+-#define MAX_ISO_BUFS		3
+-#define ISO_FRAMES_PER_DESC	16
++#define MAX_ISO_BUFS		2
++#define ISO_FRAMES_PER_DESC	56
+ #define ISO_MAX_FRAME_SIZE	3 * 1024
+ #define ISO_BUFFER_SIZE		(ISO_FRAMES_PER_DESC * ISO_MAX_FRAME_SIZE)
+ 
+diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
+index bc369a0934a3..6afe8cbd7b6b 100644
+--- a/drivers/media/usb/uvc/uvc_driver.c
++++ b/drivers/media/usb/uvc/uvc_driver.c
+@@ -1882,8 +1882,6 @@ static void uvc_unregister_video(struct uvc_device *dev)
+ 
+ 		video_unregister_device(&stream->vdev);
+ 		video_unregister_device(&stream->meta.vdev);
+-
+-		uvc_debugfs_cleanup_stream(stream);
+ 	}
+ }
+ 
+@@ -1970,8 +1968,6 @@ static int uvc_register_video(struct uvc_device *dev,
+ 	else
+ 		stream->chain->caps |= V4L2_CAP_VIDEO_OUTPUT;
+ 
+-	uvc_debugfs_init_stream(stream);
+-
+ 	/* Register the device with V4L. */
+ 	return uvc_register_video_device(dev, stream, &stream->vdev,
+ 					 &stream->queue, stream->type,
+@@ -2848,11 +2844,8 @@ static int __init uvc_init(void)
+ {
+ 	int ret;
+ 
+-	uvc_debugfs_init();
+-
+ 	ret = usb_register(&uvc_driver.driver);
+ 	if (ret < 0) {
+-		uvc_debugfs_cleanup();
+ 		return ret;
+ 	}
+ 
+@@ -2863,7 +2856,6 @@ static int __init uvc_init(void)
+ static void __exit uvc_cleanup(void)
+ {
+ 	usb_deregister(&uvc_driver.driver);
+-	uvc_debugfs_cleanup();
+ }
+ 
+ module_init(uvc_init);
+diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
+index 86a99f461fd8..31d1cd48cb7d 100644
+--- a/drivers/media/usb/uvc/uvc_video.c
++++ b/drivers/media/usb/uvc/uvc_video.c
+@@ -1544,9 +1544,7 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
+ 	/* Compute the number of packets. Bulk endpoints might transfer UVC
+ 	 * payloads across multiple URBs.
+ 	 */
+-	npackets = DIV_ROUND_UP(size, psize);
+-	if (npackets > UVC_MAX_PACKETS)
+-		npackets = UVC_MAX_PACKETS;
++	npackets = size / psize;
+ 
+ 	/* Retry allocations until one succeed. */
+ 	for (; npackets > 1; npackets /= 2) {
+@@ -1642,7 +1640,23 @@ static int uvc_init_video_isoc(struct uvc_streaming *stream,
+ 	u32 size;
+ 
+ 	psize = uvc_endpoint_max_bpi(stream->dev->udev, ep);
+-	size = stream->ctrl.dwMaxVideoFrameSize;
++
++	if (stream->dev->udev->speed == USB_SPEED_FULL) {
++		/* (8000 >> 3) = 1000 FPS */
++		size = (UVC_MAX_PACKETS >> 3) * psize;
++	} else {
++		/* 1000 - 8000 FPS, figure out */
++		size = ep->desc.bInterval;
++		if (size > 0)
++			size --;
++		if (size > 3)
++			size = 3;
++		size = (UVC_MAX_PACKETS >> size) * psize;
++	}
++
++	/* avoid division by zero */
++	if (psize == 0)
++		return -EINVAL;
+ 
+ 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
+ 	if (npackets == 0)
+@@ -1700,6 +1714,19 @@ static int uvc_init_video_bulk(struct uvc_streaming *stream,
+ 	size = stream->ctrl.dwMaxPayloadTransferSize;
+ 	stream->bulk.max_payload_size = size;
+ 
++	/* avoid division by zero */
++	if (psize == 0)
++		return -EINVAL;
++
++	/* roughly compute size for buffers */
++	if (stream->dev->udev->speed == USB_SPEED_FULL) {
++		size = 4096;
++	} else {
++		size = 131072;
++	}
++	/* align to packet boundary */
++	size += (psize - (size % psize)) % psize;
++
+ 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
+ 	if (npackets == 0)
+ 		return -ENOMEM;
+diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
+index c0cbd833d0a4..ff654749572d 100644
+--- a/drivers/media/usb/uvc/uvcvideo.h
++++ b/drivers/media/usb/uvc/uvcvideo.h
+@@ -170,9 +170,9 @@
+ #define DRIVER_VERSION		"1.1.1"
+ 
+ /* Number of isochronous URBs. */
+-#define UVC_URBS		5
++#define UVC_URBS		2U
+ /* Maximum number of packets per URB. */
+-#define UVC_MAX_PACKETS		32
++#define UVC_MAX_PACKETS		128U	/* at 8000 FPS */
+ /* Maximum status buffer size in bytes of interrupt URB. */
+ #define UVC_MAX_STATUS_SIZE	16
+ 
+diff --git a/drivers/media/v4l2-core/v4l2-async.c b/drivers/media/v4l2-core/v4l2-async.c
+index a6d91370838d..39ae039bd848 100644
+--- a/drivers/media/v4l2-core/v4l2-async.c
++++ b/drivers/media/v4l2-core/v4l2-async.c
+@@ -527,6 +527,7 @@ __v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
+ 	list_del(&notifier->list);
+ }
+ 
++#if 0
+ void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
+ {
+ 	mutex_lock(&list_lock);
+@@ -536,6 +537,7 @@ void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
+ 	mutex_unlock(&list_lock);
+ }
+ EXPORT_SYMBOL(v4l2_async_notifier_unregister);
++#endif
+ 
+ static void __v4l2_async_notifier_cleanup(struct v4l2_async_notifier *notifier)
+ {
+diff --git a/drivers/media/v4l2-core/v4l2-dev.c b/drivers/media/v4l2-core/v4l2-dev.c
+index feb749aaaa42..d9ee08e04eb4 100644
+--- a/drivers/media/v4l2-core/v4l2-dev.c
++++ b/drivers/media/v4l2-core/v4l2-dev.c
+@@ -42,6 +42,16 @@
+ } while (0)
+ 
+ 
++static int v4l_vflip;
++module_param(v4l_vflip, int, 0644);
++MODULE_PARM_DESC(v4l_vflip,
++	"Force all V4L devices to flip the picture vertically.");
++
++static int v4l_hflip;
++module_param(v4l_hflip, int, 0644);
++MODULE_PARM_DESC(v4l_hflip,
++	"Force all V4L devices to flip the picture horizontally.");
++
+ /*
+  *	sysfs stuff
+  */
+@@ -365,6 +375,24 @@ static long v4l2_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ 	} else
+ 		ret = -ENOTTY;
+ 
++	if (ret == 0 && cmd == VIDIOC_ENUMINPUT) {
++
++		__u32 status;
++
++		if (copy_from_user(&status, (char *)arg +
++		    offsetof(struct v4l2_input, status), sizeof(status)))
++			ret = -EFAULT;
++
++		if (v4l_vflip)
++			status ^= V4L2_IN_ST_VFLIP;
++		if (v4l_hflip)
++			status ^= V4L2_IN_ST_HFLIP;
++
++		if (copy_to_user((char *)arg + offsetof(struct v4l2_input,
++		    status), &status, sizeof(status)))
++			ret = -EFAULT;
++	}
++
+ 	return ret;
+ }
+ 
+@@ -451,13 +479,17 @@ static int v4l2_release(struct inode *inode, struct file *filp)
+ 	 * request at the same time.
+ 	 */
+ 	if (vdev->fops->release) {
++#if IS_ENABLED(MEDIA_CONTROLLER)
+ 		if (v4l2_device_supports_requests(vdev->v4l2_dev)) {
+ 			mutex_lock(&vdev->v4l2_dev->mdev->req_queue_mutex);
+ 			ret = vdev->fops->release(filp);
+ 			mutex_unlock(&vdev->v4l2_dev->mdev->req_queue_mutex);
+ 		} else {
++#endif
+ 			ret = vdev->fops->release(filp);
++#if IS_ENABLED(MEDIA_CONTROLLER)
+ 		}
++#endif
+ 	}
+ 
+ 	if (vdev->dev_debug & V4L2_DEV_DEBUG_FOP)
+diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
+index c63746968fa3..ec1d0a7fcf64 100644
+--- a/drivers/media/v4l2-core/v4l2-ioctl.c
++++ b/drivers/media/v4l2-core/v4l2-ioctl.c
+@@ -2808,6 +2808,7 @@ static long __video_do_ioctl(struct file *file,
+ 	 * operation, and that should not be mixed with queueing a new
+ 	 * request at the same time.
+ 	 */
++#if IS_ENABLED(MEDIA_CONTROLLER)
+ 	if (v4l2_device_supports_requests(vfd->v4l2_dev) &&
+ 	    (cmd == VIDIOC_STREAMON || cmd == VIDIOC_STREAMOFF)) {
+ 		req_queue_lock = &vfd->v4l2_dev->mdev->req_queue_mutex;
+@@ -2815,6 +2816,7 @@ static long __video_do_ioctl(struct file *file,
+ 		if (mutex_lock_interruptible(req_queue_lock))
+ 			return -ERESTARTSYS;
+ 	}
++#endif
+ 
+ 	lock = v4l2_ioctl_get_lock(vfd, vfh, cmd, arg);
+ 
+diff --git a/include/media/v4l2-device.h b/include/media/v4l2-device.h
+index ac7677a183ff..03ae254fb2bb 100644
+--- a/include/media/v4l2-device.h
++++ b/include/media/v4l2-device.h
+@@ -216,11 +216,13 @@ static inline void v4l2_subdev_notify(struct v4l2_subdev *sd,
+  *
+  * @v4l2_dev: pointer to struct v4l2_device
+  */
++#if IS_ENABLED(MEDIA_CONTROLLER)
+ static inline bool v4l2_device_supports_requests(struct v4l2_device *v4l2_dev)
+ {
+ 	return v4l2_dev->mdev && v4l2_dev->mdev->ops &&
+ 	       v4l2_dev->mdev->ops->req_queue;
+ }
++#endif
+ 
+ /* Helper macros to iterate over all subdevs. */
+ 
+diff --git a/include/uapi/asm-generic/ioctl.h b/include/uapi/asm-generic/ioctl.h
+index a84f4db8a250..6695939fb2d4 100644
+--- a/include/uapi/asm-generic/ioctl.h
++++ b/include/uapi/asm-generic/ioctl.h
+@@ -83,6 +83,7 @@
+  * means userland is reading and kernel is writing.
+  */
+ #define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
++#define _IOWINT(type,nr)	_IOC(_IOC_NONE,(type),(nr),sizeof(int))
+ #define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
+ #define _IOW(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+ #define _IOWR(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+diff --git a/include/uapi/linux/dvb/ca.h b/include/uapi/linux/dvb/ca.h
+index dffa59e95ebb..c4533a16d93e 100644
+--- a/include/uapi/linux/dvb/ca.h
++++ b/include/uapi/linux/dvb/ca.h
+@@ -134,9 +134,17 @@ struct ca_descr {
+ 
+ #define CA_RESET          _IO('o', 128)
+ #define CA_GET_CAP        _IOR('o', 129, struct ca_caps)
++/*
++ * At least CA_GET_SLOT_INFO and CA_GET_MSG need to be _IOWR not _IOR.
++ * This is wrong on Linux too but there the driver doesn't care.
++ *
+ #define CA_GET_SLOT_INFO  _IOR('o', 130, struct ca_slot_info)
+ #define CA_GET_DESCR_INFO _IOR('o', 131, struct ca_descr_info)
+ #define CA_GET_MSG        _IOR('o', 132, struct ca_msg)
++*/
++#define CA_GET_SLOT_INFO  _IOWR('o', 130, struct ca_slot_info)
++#define CA_GET_DESCR_INFO _IOR('o', 131, struct ca_descr_info)
++#define CA_GET_MSG        _IOWR('o', 132, struct ca_msg)
+ #define CA_SEND_MSG       _IOW('o', 133, struct ca_msg)
+ #define CA_SET_DESCR      _IOW('o', 134, struct ca_descr)
+ 
+diff --git a/include/uapi/linux/dvb/frontend.h b/include/uapi/linux/dvb/frontend.h
+index 4f9b4551c534..a5e950404072 100644
+--- a/include/uapi/linux/dvb/frontend.h
++++ b/include/uapi/linux/dvb/frontend.h
+@@ -908,7 +908,8 @@ struct dtv_properties {
+ #define FE_DISHNETWORK_SEND_LEGACY_CMD _IO('o', 80) /* unsigned int */
+ 
+ #define FE_SET_PROPERTY		   _IOW('o', 82, struct dtv_properties)
+-#define FE_GET_PROPERTY		   _IOR('o', 83, struct dtv_properties)
++#define FE_GET_PROPERTY		   _IOW('o', 83, struct dtv_properties)
++#define FE_GET_PROPERTY_OLD	   _IOR('o', 83, struct dtv_properties)
+ 
+ #if defined(__DVB_CORE__) || !defined(__KERNEL__)
+ 
+diff --git a/include/uapi/linux/input.h b/include/uapi/linux/input.h
+index fb78f6f500f3..96c63324c4f9 100644
+--- a/include/uapi/linux/input.h
++++ b/include/uapi/linux/input.h
+@@ -126,8 +126,12 @@ struct input_mask {
+ #define EVIOCGREP		_IOR('E', 0x03, unsigned int[2])	/* get repeat settings */
+ #define EVIOCSREP		_IOW('E', 0x03, unsigned int[2])	/* set repeat settings */
+ 
+-#define EVIOCGKEYCODE		_IOR('E', 0x04, unsigned int[2])        /* get keycode */
+-#define EVIOCGKEYCODE_V2	_IOR('E', 0x04, struct input_keymap_entry)
++/*
++ * These two need to be _IOWR not _IOR (they're wrong on Linux too but
++ * there the driver doesn't care.)
++ */
++#define EVIOCGKEYCODE		_IOWR('E', 0x04, unsigned int[2])       /* get keycode */
++#define EVIOCGKEYCODE_V2	_IOWR('E', 0x04, struct input_keymap_entry)
+ #define EVIOCSKEYCODE		_IOW('E', 0x04, unsigned int[2])        /* set keycode */
+ #define EVIOCSKEYCODE_V2	_IOW('E', 0x04, struct input_keymap_entry)
+ 
+@@ -160,7 +164,7 @@ struct input_mask {
+  *
+  * If the request code is not an ABS_MT value, -EINVAL is returned.
+  */
+-#define EVIOCGMTSLOTS(len)	_IOC(_IOC_READ, 'E', 0x0a, len)
++#define EVIOCGMTSLOTS(len)	_IOC(_IOC_READ|_IOC_WRITE, 'E', 0x0a, len)
+ 
+ #define EVIOCGKEY(len)		_IOC(_IOC_READ, 'E', 0x18, len)		/* get global key state */
+ #define EVIOCGLED(len)		_IOC(_IOC_READ, 'E', 0x19, len)		/* get all LEDs */
+@@ -172,11 +176,11 @@ struct input_mask {
+ #define EVIOCSABS(abs)		_IOW('E', 0xc0 + (abs), struct input_absinfo)	/* set abs value/limits */
+ 
+ #define EVIOCSFF		_IOW('E', 0x80, struct ff_effect)	/* send a force effect to a force feedback device */
+-#define EVIOCRMFF		_IOW('E', 0x81, int)			/* Erase a force effect */
++#define EVIOCRMFF		_IOWINT('E', 0x81)			/* Erase a force effect */
+ #define EVIOCGEFFECTS		_IOR('E', 0x84, int)			/* Report number of effects playable at the same time */
+ 
+-#define EVIOCGRAB		_IOW('E', 0x90, int)			/* Grab/Release device */
+-#define EVIOCREVOKE		_IOW('E', 0x91, int)			/* Revoke device access */
++#define EVIOCGRAB		_IOWINT('E', 0x90)			/* Grab/Release device */
++#define EVIOCREVOKE		_IOWINT('E', 0x91)			/* Revoke device access */
+ 
+ /**
+  * EVIOCGMASK - Retrieve current event mask
+@@ -207,7 +211,7 @@ struct input_mask {
+  * if the receive-buffer points to invalid memory, or EINVAL if the kernel
+  * does not implement the ioctl.
+  */
+-#define EVIOCGMASK		_IOR('E', 0x92, struct input_mask)	/* Get event-masks */
++#define EVIOCGMASK		_IOW('E', 0x92, struct input_mask)	/* Get event-masks */
+ 
+ /**
+  * EVIOCSMASK - Set event mask
+-- 
+2.19.0
+

@@ -356,6 +356,12 @@ get_unaligned_le16(const void *_ptr)
 }
 
 void   *
+devm_kcalloc(struct device *dev, size_t n, size_t size, gfp_t gfp)
+{
+	return (calloc(n, size));
+}
+
+void   *
 devm_kzalloc(struct device *dev, size_t size, gfp_t gfp)
 {
 	void *ptr;
@@ -1423,6 +1429,32 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 	return (offset);
 }
 
+unsigned long *
+bitmap_alloc(unsigned int nbits, gfp_t flags)
+{
+	return (malloc(BITS_TO_LONGS(nbits) * sizeof(long)));
+}
+
+unsigned long *
+bitmap_zalloc(unsigned int nbits, gfp_t flags)
+{
+	return (calloc(BITS_TO_LONGS(nbits), sizeof(long)));
+}
+
+void
+bitmap_free(unsigned long *ptr)
+{
+	free(ptr);
+}
+
+void
+bitmap_copy(unsigned long *dst, const unsigned long *src, unsigned int nbits)
+{
+	const size_t len = BITS_TO_LONGS(nbits) * sizeof(long);
+
+	memcpy(dst, src, len);
+}
+
 int
 bitmap_weight(const unsigned long *src, unsigned nbits)
 {
@@ -1499,10 +1531,17 @@ bitmap_xor(unsigned long *dst, const unsigned long *b1,
 }
 
 void
-bitmap_zero(unsigned long *dst, int nbits)
+bitmap_fill(unsigned long *dst, unsigned int nbits)
 {
-	const unsigned long mm = BITS_PER_LONG - 1;
-	int len = (nbits + ((-nbits) & mm)) / 8;
+  	const size_t len = BITS_TO_LONGS(nbits) * sizeof(long);
+
+	memset(dst, 255, len);
+}
+
+void
+bitmap_zero(unsigned long *dst, unsigned int nbits)
+{
+  	const size_t len = BITS_TO_LONGS(nbits) * sizeof(long);
 
 	memset(dst, 0, len);
 }
@@ -3328,4 +3367,86 @@ rational_best_approximation(
 	}
 	*best_numerator = n1;
 	*best_denominator = d1;
+}
+
+size_t
+array_size(size_t a, size_t b)
+{
+	volatile size_t temp;
+
+	if (a == 0 || b == 0)
+		return (0);
+
+	temp = a * b;
+
+	if ((temp / b) != a)
+		return (SIZE_MAX);
+
+	if (temp > SSIZE_MAX)
+		return (SIZE_MAX);
+	else
+		return (temp);
+}
+
+size_t
+array3_size(size_t a, size_t b, size_t c)
+{
+	volatile size_t temp;
+
+	if (a == 0 || b == 0 || c == 0)
+		return (0);
+
+	temp = a * b;
+
+	if ((temp / b) != a)
+		return (SIZE_MAX);
+
+	a = temp;
+	temp = a * c;
+
+	if ((temp / c) != a)
+		return (SIZE_MAX);
+
+	if (temp > SSIZE_MAX)
+		return (SIZE_MAX);
+	else
+		return (temp);
+}
+
+size_t
+struct_size_sub(size_t n, size_t m_size, size_t b_size)
+{
+
+	if (n > SSIZE_MAX || m_size > SSIZE_MAX || b_size > SSIZE_MAX)
+		return (SIZE_MAX);
+
+	if (n != 0) {
+		volatile size_t temp;
+
+		temp = (n * m_size);
+
+		if ((temp / n) != m_size)
+			return (SIZE_MAX);
+		if (temp > SSIZE_MAX)
+			return (SIZE_MAX);
+
+		temp += b_size;
+		if (temp > SSIZE_MAX)
+			return (SIZE_MAX);
+
+		return (temp);
+	} else {
+		return (b_size);
+	}
+}
+
+ssize_t
+strscpy(char *dst, const char *src, size_t size)
+{
+	size_t retval = strlcpy(dst, src, size);
+
+	if (retval >= size)
+		return (-E2BIG);
+	else
+		return (retval);
 }

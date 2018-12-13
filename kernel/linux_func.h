@@ -83,6 +83,7 @@ uint32_t get_unaligned_be32(const void *);
 uint16_t get_unaligned_be16(const void *);
 uint16_t get_unaligned_le16(const void *);
 
+void   *devm_kcalloc(struct device *dev, size_t n, size_t size, gfp_t gfp);
 void   *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp);
 void   *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp);
 void   *devm_kmalloc_array(struct device *, size_t, size_t, gfp_t);
@@ -221,12 +222,17 @@ void	poll_schedule(struct poll_wqueues *pwq, int flag);
 
 #define	poll_requested_events(...) 0xFFFFFFFFU
 
+unsigned long *bitmap_alloc(unsigned int, gfp_t);
+unsigned long *bitmap_zalloc(unsigned int, gfp_t);
+void	bitmap_free(unsigned long *);
+void	bitmap_copy(unsigned long *, const unsigned long *, unsigned int);
 int	bitmap_weight(const unsigned long *, unsigned int);
 int	bitmap_andnot(unsigned long *, const unsigned long *, const unsigned long *, int);
 int	bitmap_and(unsigned long *, const unsigned long *, const unsigned long *, int);
 void	bitmap_or(unsigned long *, const unsigned long *, const unsigned long *, int);
 void	bitmap_xor(unsigned long *, const unsigned long *, const unsigned long *, int);
-void	bitmap_zero(unsigned long *dst, int nbits);
+void	bitmap_zero(unsigned long *, unsigned int);
+void	bitmap_fill(unsigned long *, unsigned int);
 int	bitmap_subset(const unsigned long *, const unsigned long *, int);
 int	bitmap_full(const unsigned long *, int);
 void	bitmap_clear(unsigned long *, int, int);
@@ -367,5 +373,13 @@ int	refcount_read(refcount_t *);
 bool	refcount_dec_and_test(refcount_t *);
 void	refcount_set(refcount_t *, int);
 void	refcount_inc(refcount_t *);
+
+size_t	array_size(size_t, size_t);
+size_t	array3_size(size_t, size_t, size_t);
+size_t	struct_size_sub(size_t, size_t, size_t);
+ssize_t	strscpy(char *, const char *, size_t);
+
+#define	struct_size(p, member, n)				\
+	struct_size_sub(n, sizeof(*(p)->member), sizeof(*(p)))
 
 #endif					/* _LINUX_FUNC_H_ */

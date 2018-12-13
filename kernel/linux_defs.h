@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2018 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -142,6 +142,7 @@
 #define	IS_ENABLED(x,...) defined(x##__VA_ARGS__)
 #define	IS_REACHABLE(x,...) defined(x##__VA_ARGS__)
 #define	IS_ALIGNED(x, a) (((x) & ((typeof(x))(a) - 1)) == 0)
+#define	__aligned_u64 uint64_t __aligned(8)
 #define	THIS_MODULE (NULL)
 #define	DECLARE_EVENT_CLASS(...)
 #define	DECLARE_EVENT(...)
@@ -297,6 +298,7 @@
 #define	EXIT_ZOMBIE             16
 #define	EXIT_DEAD               32
 #define	TASK_NONINTERACTIVE     64
+#define	TASK_COMM_LEN		16
 #define	no_llseek	NULL
 #define	default_llseek	NULL
 #define	GENMASK(hi, lo) (((2UL << ((hi) - (lo))) - 1UL) << (lo))
@@ -368,6 +370,7 @@
 #define	DMA_TO_DEVICE 0x02
 #define	DMA_BIDIRECTIONAL 0x03
 #define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
+#define	array_index_nospec(index, size) (((index) >= (size)) ? 0 : (index))
 #define	__KERNEL__
 #define	capable(...) 1
 #define	uninitialized_var(...) __VA_ARGS__
@@ -446,6 +449,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	find_first_bit(addr, size) find_next_bit((addr), (size), 0)
 #define	find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
 #define	synchronize_sched() do { atomic_lock(); atomic_unlock(); } while (0)
+#define	cond_resched() do { } while (0)
 #define	signal_pending(...) check_signal()
 #define	down_write(...) __nop
 #define	down_read(...) __nop
@@ -768,5 +772,14 @@ typedef long long loff_t;
 typedef uint32_t gfp_t;
 typedef struct timespec ktime_t;
 #define	timespec64 timespec
+
+static inline int
+linux_abs(int a)
+{
+	return (a < 0 ? -a : a);
+}
+
+#undef abs
+#define	abs(a) linux_abs(a)
 
 #endif					/* _LINUX_DEFS_H_ */
