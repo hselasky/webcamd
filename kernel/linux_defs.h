@@ -403,7 +403,7 @@
 #define	barrier()	__asm__ __volatile__("": : :"memory")
 #define	WRITE_ONCE(x, val) \
 do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
-#define READ_ONCE(x) ({			\
+#define	READ_ONCE(x) ({			\
 	typeof(x) __var = ({		\
 		barrier();		\
 		ACCESS_ONCE(x);		\
@@ -587,6 +587,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 		temp_err = -EFAULT;					\
 	temp_err;							\
 })
+#define	__put_user(temp_var, ptr) put_user(temp_var, ptr)
 #define	get_user(temp_var, ptr) ({					\
 	int temp_err;							\
 	if (copy_from_user(&(temp_var), (ptr), sizeof(temp_var)) == 0)	\
@@ -595,6 +596,20 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 		temp_err = -EFAULT;					\
 	temp_err;							\
 })
+#define	__get_user(temp_var, ptr) get_user(temp_var, ptr)
+#define	copy_in_user(kptr, uptr, n) ({					\
+	int temp_err;							\
+	if (copy_from_user(kptr, uptr, n) == 0)				\
+		temp_err = 0;						\
+	else								\
+		temp_err = n;						\
+	temp_err;							\
+})
+#define	__copy_from_user(kptr, uptr, n) copy_from_user(kptr, uptr, n)
+#define	__copy_to_user(uptr, kptr, n) copy_to_user(uptr, kptr, n)
+extern unsigned long clear_user(void *uptr, unsigned long n);
+
+#define	__clear_user(ptr, n) clear_user(ptr, n)
 #undef errno
 #define	errno errno_v4l
 
@@ -711,7 +726,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 	(sizeof(n) <= 4) ?			\
 	fls((u32)(n)) - 1 : flsll((u64)(n)) - 1	\
 )
-  
+
 #if (defined(BYTE_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN))
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #ifndef __LITTLE_ENDIAN
@@ -771,6 +786,7 @@ typedef long long loff_t;
 #endif
 typedef uint32_t gfp_t;
 typedef struct timespec ktime_t;
+
 #define	timespec64 timespec
 
 static inline int

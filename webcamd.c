@@ -272,11 +272,16 @@ unsigned short webcamd_vendor;
 unsigned short webcamd_product;
 unsigned int webcamd_speed;
 
+#ifndef CUSE_FFLAG_COMPAT32
+#define	CUSE_FFLAG_COMPAT32 0
+#endif
+
 static int
 v4b_ioctl(struct cuse_dev *cdev, int fflags,
     unsigned long cmd, void *peer_data)
 {
 	struct v4l2_buffer buf;
+	struct v4l2_buffer_compat32 buf32;
 	struct cdev_handle *handle;
 	void *ptr;
 	int error;
@@ -288,11 +293,10 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 		return (0);
 
 	/* execute ioctl */
-	error = linux_ioctl(handle, fflags & CUSE_FFLAG_NONBLOCK,
+	error = linux_ioctl(handle, fflags & (CUSE_FFLAG_NONBLOCK | CUSE_FFLAG_COMPAT32),
 	    cmd, peer_data);
 
 	if ((cmd == VIDIOC_QUERYBUF) && (error >= 0)) {
-
 		if (copy_from_user(&buf, peer_data, sizeof(buf)) != 0) {
 			error = -EFAULT;
 			goto done;
@@ -308,6 +312,25 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 		}
 
 		if (copy_to_user(peer_data, &buf, sizeof(buf)) != 0) {
+			error = -EFAULT;
+			goto done;
+		}
+	} else if ((cmd == VIDIOC_QUERYBUF32) && (error >= 0)) {
+		if (copy_from_user(&buf32, peer_data, sizeof(buf32)) != 0) {
+			error = -EFAULT;
+			goto done;
+		}
+		ptr = linux_mmap(handle, fflags,
+		    (void *)(long)PAGE_SIZE,
+		    buf32.length, buf32.m.offset);
+
+		if (ptr != MAP_FAILED) {
+			buf32.m.offset = cuse_vmoffset(ptr);
+		} else {
+			buf32.m.offset = 0x80000000UL;
+		}
+
+		if (copy_to_user(peer_data, &buf32, sizeof(buf32)) != 0) {
 			error = -EFAULT;
 			goto done;
 		}

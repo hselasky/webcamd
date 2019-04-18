@@ -112,6 +112,17 @@ linux_fix_f_flags(struct file *fp, int fflags)
 	}
 }
 
+#ifndef CUSE_FFLAG_COMPAT32
+#define	CUSE_FFLAG_COMPAT32 0
+#endif
+
+static __thread bool in_compat32_call = 0;
+
+bool in_compat_syscall(void)
+{
+	return in_compat32_call;
+}
+
 int
 linux_ioctl(struct cdev_handle *handle, int fflags,
     unsigned int cmd, void *arg)
@@ -135,12 +146,20 @@ linux_ioctl(struct cdev_handle *handle, int fflags,
 	}
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
-	if (handle->fixed_file.f_op->unlocked_ioctl != NULL)
+	if ((fflags & CUSE_FFLAG_COMPAT32) &&
+	    (handle->fixed_file.f_op->compat_ioctl != NULL)) {
+		in_compat32_call = 1;
+		retval = handle->fixed_file.f_op->compat_ioctl(
+		    &handle->fixed_file, cmd, arg);
+		in_compat32_call = 0;
+		compat_free_all_tls_space();
+	} else if (handle->fixed_file.f_op->unlocked_ioctl != NULL) {
 		retval = handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
 		    cmd, (long)arg);
-	else if (handle->fixed_file.f_op->ioctl != NULL)
+	} else if (handle->fixed_file.f_op->ioctl != NULL) {
 		retval = handle->fixed_file.f_op->ioctl(&handle->fixed_inode,
 		    &handle->fixed_file, cmd, (long)arg);
+	}
 done:
 	return (retval);
 }

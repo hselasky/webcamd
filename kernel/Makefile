@@ -1,6 +1,7 @@
 #
 # Makefile for Webcamd
 #
+obj-y += linux_compat32.o
 obj-y += linux_defs.o
 obj-y += linux_file.o
 obj-y += linux_firmware.o

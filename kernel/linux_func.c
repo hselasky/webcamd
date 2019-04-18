@@ -2321,7 +2321,7 @@ dmi_check_system(const struct dmi_system_id *list)
 unsigned long
 clear_user(void *to, unsigned long size)
 {
-	static uint8_t buf[256];
+	static const uint8_t buf[256];
 
 	uint8_t *ptr = to;
 

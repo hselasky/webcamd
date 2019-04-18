@@ -69,6 +69,7 @@
 #include <kernel/linux_usb.h>
 #include <kernel/linux_firmware.h>
 #include <kernel/linux_mod_param.h>
+#include <kernel/linux_compat32.h>
 
 #include <media_tree/include/linux/mod_devicetable.h>
 #include <media_tree/include/linux/videodev2.h>
@@ -95,5 +96,25 @@ extern unsigned int webcamd_speed;
 #define	WEBCAMD_IOCTL_GET_USB_VENDOR_ID _IOR('q', 250, unsigned short)
 #define	WEBCAMD_IOCTL_GET_USB_PRODUCT_ID _IOR('q', 251, unsigned short)
 #define	WEBCAMD_IOCTL_GET_USB_SPEED _IOR('q', 252, unsigned int)
+
+struct v4l2_buffer_compat32 {
+	uint32_t index;
+	uint32_t type;
+	uint32_t bytesused;
+	uint32_t flags;
+	uint32_t field;
+	struct compat_timeval timestamp;
+	struct v4l2_timecode timecode;
+	uint32_t sequence;
+	uint32_t memory;
+	union {
+		uint32_t offset;
+	} m;
+	uint32_t length;
+	uint32_t input;
+	uint32_t reserved;
+};
+
+#define VIDIOC_QUERYBUF32 _IOWR('V',  9, struct v4l2_buffer_compat32)
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */
