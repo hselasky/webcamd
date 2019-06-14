@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010-2016 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2010-2019 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1007,7 +1007,11 @@ copy_to_user(void *to, const void *from, unsigned long n)
 		memcpy(to, from, n);
 		return (0);
 	}
-	error = cuse_copy_out(from, to, (int)n);
+#ifdef CONFIG_COMPAT
+	error = compat_copy_to_user(to, from, n);
+	if (error != 0)
+#endif
+		error = cuse_copy_out(from, to, (int)n);
 
 	return ((error != 0) ? n : 0);
 }
@@ -1021,7 +1025,11 @@ copy_from_user(void *to, const void *from, unsigned long n)
 		memcpy(to, from, n);
 		return (0);
 	}
-	error = cuse_copy_in(from, to, (int)n);
+#ifdef CONFIG_COMPAT
+	error = compat_copy_from_user(to, from, n);
+	if (error != 0)
+#endif
+		error = cuse_copy_in(from, to, (int)n);
 
 	return ((error != 0) ? n : 0);
 }

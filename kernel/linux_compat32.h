@@ -84,12 +84,15 @@ extern bool in_compat_syscall(void);
 
 /*
  * Allocate zeroed memory which is automatically freed when the compat
- * ioctl handler returns:
+ * IOCTL(2) handler returns:
  */
-extern void *compat_zalloc_tls_space(unsigned long len);
+extern void *compat_alloc_user_space(unsigned long len);
 
 /* Frees everything allocated by one or more calls to the above */
-extern void compat_free_all_tls_space(void);
+extern void compat_free_all_user_space(void);
+
+extern int compat_copy_to_user(void *, const void *, unsigned long);
+extern int compat_copy_from_user(void *, const void *, unsigned long);
 
 typedef int mm_segment_t;
 

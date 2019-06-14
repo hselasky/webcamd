@@ -9,7 +9,7 @@
 #undef	CONFIG_BPF_LIRC_MODE2 /* n */
 #undef	CONFIG_CEC_CORE /* n */
 #undef	CONFIG_CEC_GPIO /* n */
-#undef	CONFIG_COMPAT /* n */
+#define	CONFIG_COMPAT /* y */
 #undef	CONFIG_CXD2880_SPI_DRV /* n */
 #define	CONFIG_CYPRESS_FIRMWARE /* y */
 #undef	CONFIG_DEBUG_FS /* n */

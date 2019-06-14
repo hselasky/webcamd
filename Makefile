@@ -281,7 +281,7 @@ configure: tools/linux_make/linux_make
 
 	@(cat config.in ; echo "") >> config
 
-.if defined(HAVE_COMPAT32) && "${ARCH}" == "amd64"
+.if defined(HAVE_COMPAT32)
 	@echo " * i386 compatibility"
 	@echo "CONFIG_COMPAT=y" >> config
 .endif

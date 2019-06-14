@@ -26,48 +26,94 @@
 
 #ifdef HAVE_CUSE
 #include <cuse.h>
+#include <fs/cuse/cuse_ioctl.h>
 #else
+#define	HAVE_CUSE_IOCTL
 #include <cuse4bsd.h>
 #endif
 
+#define	WEBCAMD_USER_ALLOC_MAX 4096UL
+#define	WEBCAMD_USER_ALLOC_ADDR (CUSE_BUF_MAX_PTR - WEBCAMD_USER_ALLOC_MAX)
+
+#if ((CUSE_BUF_MAX_PTR - CUSE_BUF_MIN_PTR) / 2) < WEBCAMD_USER_ALLOC_MAX
+#error "The CUSE IOCTL allocation window is too small!"
+#endif
+
 struct tls_memory {
-	void   *memory;
-	SLIST_ENTRY(tls_memory) entry;
+	void *ptr;
+	unsigned long offset;
 };
 
-SLIST_HEAD(tls_memory_head, tls_memory);
-
-static __thread struct tls_memory_head tls_memory_list =
-    SLIST_HEAD_INITIALIZER(tls_memory_head);
+static __thread struct tls_memory linux_tls_memory = {};
 
 void *
-compat_zalloc_tls_space(unsigned long len)
+compat_alloc_user_space(unsigned long len)
 {
-	struct tls_memory *tls_mem;
+	unsigned long rem;
+	void *ptr;
 
-	tls_mem = malloc(sizeof(struct tls_memory));
-	if (tls_mem != NULL) {
-		tls_mem->memory = malloc(len);
-		if (tls_mem->memory != NULL) {
-			memset(tls_mem->memory, 0, len);
-			SLIST_INSERT_HEAD(&tls_memory_list, tls_mem, entry);
-			return (tls_mem->memory);
-		} else
-			free(tls_mem);
+	if (in_compat_syscall() == 0 ||
+	    len > WEBCAMD_USER_ALLOC_MAX)
+		return (NULL);
+
+	if (linux_tls_memory.ptr == NULL) {
+		linux_tls_memory.ptr = malloc(WEBCAMD_USER_ALLOC_MAX);
+		linux_tls_memory.offset = 0;
+		if (linux_tls_memory.ptr == NULL)
+			return (NULL);
 	}
-	return (NULL);
+
+	rem = WEBCAMD_USER_ALLOC_MAX - linux_tls_memory.offset;
+	if (len > rem)
+		return (NULL);
+
+	memset((uint8_t *)linux_tls_memory.ptr + linux_tls_memory.offset, 0, len);
+	ptr = (void *)(linux_tls_memory.offset + WEBCAMD_USER_ALLOC_ADDR);
+
+	/* allocate the memory */
+	linux_tls_memory.offset += len;
+
+	return (ptr);
 }
 
 void
-compat_free_all_tls_space(void)
+compat_free_all_user_space(void)
 {
-	struct tls_memory *tls_mem;
 
-	while ((tls_mem = SLIST_FIRST(&tls_memory_list)) != NULL) {
-		SLIST_REMOVE_HEAD(&tls_memory_list, entry);
-		free(tls_mem->memory);
-		free(tls_mem);
-	}
+	free(linux_tls_memory.ptr);
+	linux_tls_memory.ptr = NULL;
+}
+
+int
+compat_copy_to_user(void *to, const void *from, unsigned long len)
+{
+
+	if (len > WEBCAMD_USER_ALLOC_MAX ||
+	    (uintptr_t)to < WEBCAMD_USER_ALLOC_ADDR ||
+	    ((uintptr_t)to + len) > (WEBCAMD_USER_ALLOC_ADDR + WEBCAMD_USER_ALLOC_MAX) ||
+	    linux_tls_memory.ptr == NULL)
+		return (-ERANGE);
+
+	memcpy((void *)((uintptr_t)linux_tls_memory.ptr +
+			(uintptr_t)to - WEBCAMD_USER_ALLOC_ADDR), from, len);
+	return (0);
+
+}
+
+int
+compat_copy_from_user(void *to, const void *from, unsigned long len)
+{
+
+	if (len > WEBCAMD_USER_ALLOC_MAX ||
+	    (uintptr_t)from < WEBCAMD_USER_ALLOC_ADDR ||
+	    ((uintptr_t)from + len) > (WEBCAMD_USER_ALLOC_ADDR + WEBCAMD_USER_ALLOC_MAX) ||
+	    linux_tls_memory.ptr == NULL)
+		return (-ERANGE);
+
+	memcpy(to,
+	       (const void *)((uintptr_t)linux_tls_memory.ptr +
+			      (uintptr_t)from - WEBCAMD_USER_ALLOC_ADDR), len);
+	return (0);
 }
 
 int
