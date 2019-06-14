@@ -33,7 +33,10 @@
 
 #define	COMPAT_USE_64BIT_TIME 0
 
+typedef u32 compat_uint_t;
+
 typedef s32 compat_long_t;
+typedef u32 compat_ulong_t;
 
 typedef u32 compat_caddr_t;
 typedef s32 compat_time_t;
@@ -69,6 +72,12 @@ static inline void *
 compat_ptr(compat_uptr_t ptr)
 {
 	return (void *)(u64) ptr;
+}
+
+static inline compat_uptr_t
+ptr_to_compat(void *uptr)
+{
+	return (u32)(u64)uptr;
 }
 
 extern bool in_compat_syscall(void);
