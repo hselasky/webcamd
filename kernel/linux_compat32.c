@@ -67,7 +67,10 @@ compat_alloc_user_space(unsigned long len)
 	if (len > rem)
 		return (NULL);
 
+	/* zero memory */
 	memset((uint8_t *)linux_tls_memory.ptr + linux_tls_memory.offset, 0, len);
+
+	/* compute fake user-space pointer */
 	ptr = (void *)(linux_tls_memory.offset + WEBCAMD_USER_ALLOC_ADDR);
 
 	/* allocate the memory */
