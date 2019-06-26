@@ -1234,19 +1234,25 @@ main(int argc, char **argv)
 	    "#define\t_ROOT_CONFIG_H_\n\n");
 
 	TAILQ_FOREACH(c0, &rootConfig, entry) {
-
-		if (c0->value == 'm') {
-			printf("#define\t%s_MODULE /* %c */\n",
-			    c0->name, c0->value);
-		} else if (c0->value == 'y') {
-			printf("#define\t%s /* %c */\n",
-			    c0->name, c0->value);
-		} else if (c0->value == 'd') {
-			printf("#define\t%s %s\n",
-			    c0->name, c0->orig);
-		} else {
-			printf("#undef\t%s /* %c */\n",
-			    c0->name, c0->value);
+		switch (c0->value) {
+		case 'm':
+			printf("#define\t%s /* m */\n", c0->name);
+			printf("#define\t%s_IS_ENABLED 1\n", c0->name);
+			printf("#define\t%s_IS_MODULE 1\n", c0->name);
+			break;
+		case 'y':
+			printf("#define\t%s /* y */\n", c0->name);
+			printf("#define\t%s_IS_MODULE 0\n", c0->name);
+			printf("#define\t%s_IS_ENABLED 1\n", c0->name);
+			break;
+		case 'd':
+			printf("#define\t%s %s /* d */\n", c0->name, c0->orig);
+			break;
+		default:
+			printf("#undef\t%s /* %c */\n", c0->name, c0->value);
+			printf("#define\t%s_IS_MODULE 0\n", c0->name);
+			printf("#define\t%s_IS_ENABLED 0\n", c0->name);
+			break;
 		}
 	}
 

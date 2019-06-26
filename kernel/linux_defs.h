@@ -137,9 +137,9 @@
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	MODULE_SUPPORTED_DEVICE(...)
 #define	MODULE_FIRMWARE(...)
-#define	IS_MODULE(...) 0
-#define	IS_BUILTIN(x,...) defined(x##__VA_ARGS__)
-#define	IS_ENABLED(x,...) defined(x##__VA_ARGS__)
+#define	IS_MODULE(x) x##_IS_MODULE
+#define	IS_BUILTIN(x) IS_ENABLED(x)
+#define	IS_ENABLED(x) x##_IS_ENABLED
 #define	IS_REACHABLE(x,...) defined(x##__VA_ARGS__)
 #define	IS_ALIGNED(x, a) (((x) & ((typeof(x))(a) - 1)) == 0)
 #define	__aligned_u64 uint64_t __aligned(8)
