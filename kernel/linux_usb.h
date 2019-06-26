@@ -539,6 +539,8 @@ struct usb_device {
 	char   *manufacturer;		/* iManufacturer string, if present */
 	char   *serial;			/* iSerialNumber string, if present */
 
+	uint32_t quirks;		/* quirks, not implemented */  
+
 	uint16_t devnum;
 	uint16_t bsd_last_ms;		/* completion time of last ISOC
 					 * transfer */
@@ -588,6 +590,10 @@ struct urb {
 	uint32_t timeout;		/* (in) FreeBSD specific */
 	uint32_t reject;		/* (internal) reject URB */
 
+	struct kref kref;		/* refcount of the URB */
+	struct list_head anchor_list;	/* the URB may be anchored */
+	struct usb_anchor *anchor;
+
 	uint16_t transfer_flags;	/* (in) */
 #define	URB_SHORT_NOT_OK	0x0001	/* report short transfers like errors */
 #define	URB_ISO_ASAP		0x0002	/* ignore "start_frame" field */
@@ -632,6 +638,8 @@ void   *usb_get_intfdata(struct usb_interface *intf);
 
 void	usb_buffer_free(struct usb_device *dev, uint32_t size, void *addr, dma_addr_t dma_addr);
 void	usb_free_urb(struct urb *urb);
+#define	usb_put_urb(urb) usb_free_urb(urb)
+struct urb *usb_get_urb(struct urb *);
 void	usb_init_urb(struct urb *urb);
 void	usb_kill_urb(struct urb *urb);
 void	usb_set_intfdata(struct usb_interface *intf, void *data);
@@ -802,5 +810,18 @@ void	usb_queue_reset_device(struct usb_interface *);
 
 struct usb_host_endpoint *usb_pipe_endpoint(struct usb_device *, unsigned int);
 int usb_urb_ep_type_check(const struct urb *);
+
+struct usb_anchor {
+	struct list_head urb_list;
+	wait_queue_head_t wait;
+	spinlock_t lock;
+	atomic_t suspend_wakeups;
+};
+
+void	usb_anchor_urb(struct urb *, struct usb_anchor *);
+void	usb_unanchor_urb(struct urb *);
+void	init_usb_anchor(struct usb_anchor *);
+int	usb_wait_anchor_empty_timeout(struct usb_anchor *, unsigned int timeout);
+void	usb_kill_anchored_urbs(struct usb_anchor *);
 
 #endif					/* _LINUX_USB_H_ */

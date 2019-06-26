@@ -29,6 +29,8 @@
 
 #include <linux/input.h>
 
+#define to_urb(d) container_of(d, struct urb, kref)
+
 static int min_bufsize;
 
 module_param(min_bufsize, int, 0644);
@@ -1368,7 +1370,7 @@ usb_alloc_urb(uint16_t iso_packets, uint16_t mem_flags)
 
 	urb = malloc(size);
 	if (urb) {
-		memset(urb, 0, size);
+		usb_init_urb(urb);
 		urb->number_of_packets = iso_packets;
 	}
 	return (urb);
@@ -1586,14 +1588,14 @@ usb_buffer_free(struct usb_device *dev, uint32_t size,
 	free(addr);
 }
 
+
 /*------------------------------------------------------------------------*
- *	usb_free_urb
+ *	urb_destroy
  *------------------------------------------------------------------------*/
-void
-usb_free_urb(struct urb *urb)
+static void
+urb_destroy(struct kref *kref)
 {
-	if (urb == NULL)
-		return;
+	struct urb *urb = to_urb(kref);
 
 	/* make sure that the current URB is not active */
 	usb_kill_urb(urb);
@@ -1604,6 +1606,17 @@ usb_free_urb(struct urb *urb)
 
 	/* just free it */
 	free(urb);
+}
+
+/*------------------------------------------------------------------------*
+ *	usb_free_urb
+ *------------------------------------------------------------------------*/
+void
+usb_free_urb(struct urb *urb)
+{
+	if (urb == NULL)
+		return;
+	kref_put(&urb->kref, urb_destroy);
 }
 
 /*------------------------------------------------------------------------*
@@ -1620,6 +1633,8 @@ usb_init_urb(struct urb *urb)
 		return;
 
 	memset(urb, 0, sizeof(*urb));
+	kref_init(&urb->kref);
+	INIT_LIST_HEAD(&urb->anchor_list);
 }
 
 /*------------------------------------------------------------------------*
@@ -2611,4 +2626,97 @@ usb_urb_ep_type_check(const struct urb *urb)
 		return (-EINVAL);
 
 	return (0);
+}
+
+struct urb *
+usb_get_urb(struct urb *urb)
+{
+	if (urb)
+    		kref_get(&urb->kref);
+	return (urb);
+}
+
+static int
+usb_anchor_check_wakeup(struct usb_anchor *anchor)
+{
+	return (atomic_read(&anchor->suspend_wakeups) == 0 &&
+		list_empty(&anchor->urb_list));
+}
+
+void
+init_usb_anchor(struct usb_anchor *anchor)
+{
+	memset(anchor, 0, sizeof(*anchor));
+	INIT_LIST_HEAD(&anchor->urb_list);
+	init_waitqueue_head(&anchor->wait);
+	spin_lock_init(&anchor->lock);
+}
+
+int
+usb_wait_anchor_empty_timeout(struct usb_anchor *anchor,
+				  unsigned int timeout)
+{
+	return (wait_event_timeout(anchor->wait,
+				   usb_anchor_check_wakeup(anchor),
+				   msecs_to_jiffies(timeout)));
+}
+
+static void
+usb_unanchor_urb_locked(struct urb *urb, struct usb_anchor *anchor)
+{
+	urb->anchor = NULL;
+	list_del(&urb->anchor_list);
+	usb_put_urb(urb);
+	if (usb_anchor_check_wakeup(anchor))
+		wake_up(&anchor->wait);
+}
+
+void
+usb_unanchor_urb(struct urb *urb)
+{
+	struct usb_anchor *anchor;
+	unsigned long flags;
+
+	if (!urb)
+		return;
+
+	anchor = urb->anchor;
+	if (!anchor)
+		return;
+
+	spin_lock_irqsave(&anchor->lock, flags);
+	if (likely(anchor == urb->anchor))
+		usb_unanchor_urb_locked(urb, anchor);
+	spin_unlock_irqrestore(&anchor->lock, flags);
+}
+
+void
+usb_kill_anchored_urbs(struct usb_anchor *anchor)
+{
+	struct urb *urb;
+
+	spin_lock_irq(&anchor->lock);
+	while (!list_empty(&anchor->urb_list)) {
+		urb = list_entry(anchor->urb_list.prev, struct urb, anchor_list);
+		usb_get_urb(urb);
+		spin_unlock_irq(&anchor->lock);
+
+		usb_kill_urb(urb);
+		usb_put_urb(urb);
+
+		spin_lock_irq(&anchor->lock);
+	}
+	spin_unlock_irq(&anchor->lock);
+}
+
+void
+usb_anchor_urb(struct urb *urb, struct usb_anchor *anchor)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&anchor->lock, flags);
+	usb_get_urb(urb);
+	list_add_tail(&urb->anchor_list, &anchor->urb_list);
+	urb->anchor = anchor;
+	spin_unlock_irqrestore(&anchor->lock, flags);
 }
