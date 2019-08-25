@@ -1034,6 +1034,29 @@ copy_from_user(void *to, const void *from, unsigned long n)
 	return ((error != 0) ? n : 0);
 }
 
+unsigned long
+copy_in_user(void *to, const void *from, unsigned long len)
+{
+	uint8_t buffer[PAGE_SIZE] __aligned(sizeof(void *));
+	unsigned long oldlen = len;
+
+	while (len > 0) {
+		unsigned long delta = len;
+		if (delta > sizeof(buffer))
+			delta = sizeof(buffer);
+
+		if (copy_from_user(buffer, from, delta) != 0)
+			return (oldlen);
+		if (copy_to_user(to, buffer, delta) != 0)
+			return (oldlen);
+
+		to = (char *)to + delta;
+		from = (const char *)from + delta;
+		len -= delta;
+	}
+	return (0);	/* success */
+}
+
 static uint32_t zero_alloc[1];
 
 int

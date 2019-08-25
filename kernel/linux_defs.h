@@ -597,14 +597,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 	temp_err;							\
 })
 #define	__get_user(temp_var, ptr) get_user(temp_var, ptr)
-#define	copy_in_user(kptr, uptr, n) ({					\
-	int temp_err;							\
-	if (copy_from_user(kptr, uptr, n) == 0)				\
-		temp_err = 0;						\
-	else								\
-		temp_err = n;						\
-	temp_err;							\
-})
+extern unsigned long copy_in_user(void *to, const void *from, unsigned long len);
 #define	__copy_from_user(kptr, uptr, n) copy_from_user(kptr, uptr, n)
 #define	__copy_to_user(uptr, kptr, n) copy_to_user(uptr, kptr, n)
 extern unsigned long clear_user(void *uptr, unsigned long n);
