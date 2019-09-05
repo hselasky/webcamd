@@ -105,7 +105,7 @@ extern void set_fs(int);
  * but never used anywhere except in 32 bit compatibility code.
  */
 
-#define	access_ok(type,addr,size) 1
+#define	access_ok(...) 1
 #define	VERIFY_READ 0
 #define	VERIFY_WRITE 1
 

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2018 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2019 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -2591,6 +2591,18 @@ usb_unblock_urb(struct urb *urb)
 	atomic_lock();
 	urb->reject--;
 	atomic_unlock();
+}
+
+void
+usb_poison_urb(struct urb *urb)
+{
+	usb_block_urb(urb);
+}
+
+void
+usb_unpoison_urb(struct urb *urb)
+{
+	usb_unblock_urb(urb);
 }
 
 void

@@ -150,7 +150,7 @@ linux_ioctl(struct cdev_handle *handle, int fflags,
 	    (handle->fixed_file.f_op->compat_ioctl != NULL)) {
 		in_compat32_call = 1;
 		retval = handle->fixed_file.f_op->compat_ioctl(
-		    &handle->fixed_file, cmd, arg);
+		    &handle->fixed_file, cmd, (long)arg);
 		in_compat32_call = 0;
 		compat_free_all_user_space();
 	} else if (handle->fixed_file.f_op->unlocked_ioctl != NULL) {

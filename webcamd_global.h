@@ -115,6 +115,6 @@ struct v4l2_buffer_compat32 {
 	uint32_t reserved;
 };
 
-#define VIDIOC_QUERYBUF32 _IOWR('V',  9, struct v4l2_buffer_compat32)
+#define	_VIDIOC_QUERYBUF32 _IOWR('V',  9, struct v4l2_buffer_compat32)
 
 #endif					/* _WEBCAMD_GLOBAL_H_ */

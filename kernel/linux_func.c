@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2018 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2019 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1945,6 +1945,12 @@ round_jiffies_relative(uint64_t j)
 	return (j);
 }
 
+uint64_t
+sched_clock(void)
+{
+	return (jiffies * (NSEC_PER_SEC / HZ));
+}
+
 int
 do_gettimeofday(struct timeval *tp)
 {
@@ -2228,7 +2234,29 @@ current_kernel_time(void)
 int64_t
 timespec_to_ns(const struct timespec *ts)
 {
-	return ((ts->tv_sec * 1000000000L) + ts->tv_nsec);
+	return ((ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec);
+}
+
+struct timespec
+ns_to_timespec(const int64_t nsec)
+{
+	struct timespec ts;
+	int32_t rem;
+
+	if (nsec == 0) {
+		ts.tv_sec = 0;
+		ts.tv_nsec = 0;
+		return (ts);
+	}
+
+	ts.tv_sec = nsec / NSEC_PER_SEC;
+	rem = nsec % NSEC_PER_SEC;
+	if (rem < 0) {
+		ts.tv_sec--;
+		rem += NSEC_PER_SEC;
+	}
+	ts.tv_nsec = rem;
+	return (ts);
 }
 
 struct timespec
@@ -2569,6 +2597,12 @@ div_u64_rem(uint64_t rem, uint32_t div, uint32_t *prem)
 
 int
 nonseekable_open(struct inode *inode, struct file *file)
+{
+	return (0);
+}
+
+int
+stream_open(struct inode *inode, struct file *file)
 {
 	return (0);
 }

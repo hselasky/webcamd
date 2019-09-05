@@ -215,6 +215,7 @@ void	unregister_chrdev_region(dev_t from, unsigned count);
 int	remap_vmalloc_range(struct vm_area_struct *vma, void *addr, unsigned long pgoff);
 void	jiffies_to_timeval(uint64_t j, struct timeval *tv);
 uint64_t round_jiffies_relative(uint64_t j);
+uint64_t sched_clock(void);
 int	do_gettimeofday(struct timeval *tp);
 void	poll_initwait(struct poll_wqueues *pwq);
 void	poll_freewait(struct poll_wqueues *pwq);
@@ -285,6 +286,7 @@ int	scnprintf(char *buf, size_t size, const char *fmt,...);
 char   *devm_kasprintf(struct device *, gfp_t, const char *,...);
 struct timespec current_kernel_time(void);
 int64_t	timespec_to_ns(const struct timespec *);
+struct timespec ns_to_timespec(const int64_t);
 struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
 uint32_t do_div(uint64_t *rem, uint32_t div);
@@ -326,6 +328,7 @@ const char *skip_spaces(const char *str);
 int	kobject_set_name(struct kobject *kobj, const char *fmt,...);
 
 int	nonseekable_open(struct inode *inode, struct file *filp);
+int	stream_open(struct inode *inode, struct file *filp);
 
 int	kstrtos16(const char *, unsigned int, int16_t *);
 int	kstrtou16(const char *, unsigned int, uint16_t *);

@@ -122,6 +122,7 @@
 #define	EMEDIUMTYPE	514
 #define	ENODATA		515
 #define	EPROBE_DEFER	516
+#define	EBADR		517
 #define	symbol_request(x) (&(x))
 #define	symbol_get(x) __nop
 #define	symbol_put(x) __nop
@@ -171,6 +172,8 @@
 #define	trace_vb2_qbuf(...) __nop
 #define	trace_vb2_buf_queue(...) __nop
 #define	trace_vb2_dqbuf(...) __nop
+#define	trace_pwc_handler_enter(...) __nop
+#define	trace_pwc_handler_exit(...) __nop
 #define	print_hex_dump_debug(...) __nop
 #define	__compiletime_warning(...)
 #define	__compiletime_error(...)
@@ -231,6 +234,10 @@
 #define	krealloc(p,s,opt) realloc(p,(s))
 #define	dma_alloc_coherent(d,s,h,g) calloc(1,(s))
 #define	dma_free_coherent(d,s,v,h) free(GP_DECONST(v))
+#define	dma_map_single(...) 0
+#define	dma_unmap_single(...) __nop
+#define	dma_mapping_error(...) 0
+#define	dma_sync_single_for_device(...) __nop
 #define	vmalloc_32_user(s) malloc_vm(s)
 #define	vmalloc_user(s) malloc_vm(s)
 #define	vmalloc_32(s) malloc_vm(s)
@@ -428,6 +435,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	BUILD_BUG_ON(x) extern int dummy_array[(x) ? -1 : 1]
 #define	lockdep_set_class_and_name(...) __nop
 #define	lockdep_assert_held(...) __nop
+#define	lockdep_assert_irqs_enabled(...) __nop
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
 #define	spin_lock_init(lock) __nop
@@ -766,6 +774,7 @@ typedef uint32_t uint;
 typedef int irqreturn_t;
 typedef off_t __kernel_off_t;
 typedef int __kernel_pid_t;
+typedef unsigned long __kernel_ulong_t;
 typedef unsigned long phys_addr_t;
 typedef unsigned int __poll_t;
 

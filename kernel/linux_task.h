@@ -74,6 +74,8 @@ void	destroy_workqueue(struct workqueue_struct *wq);
 int	queue_work(struct workqueue_struct *wq, struct work_struct *work);
 struct workqueue_struct *create_workqueue(const char *name);
 struct workqueue_struct *create_singlethread_workqueue(const char *name);
+#define	alloc_workqueue(...) \
+	create_workqueue(NULL)
 bool	flush_work(struct work_struct *work);
 void	flush_workqueue(struct workqueue_struct *wq);
 void	flush_scheduled_work(void);

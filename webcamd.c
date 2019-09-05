@@ -315,7 +315,7 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 			error = -EFAULT;
 			goto done;
 		}
-	} else if ((cmd == VIDIOC_QUERYBUF32) && (error >= 0)) {
+	} else if ((cmd == _VIDIOC_QUERYBUF32) && (error >= 0)) {
 		if (copy_from_user(&buf32, peer_data, sizeof(buf32)) != 0) {
 			error = -EFAULT;
 			goto done;

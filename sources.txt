@@ -1,10 +1,10 @@
-Media tree sources used:
-========================
+#
+# Linux Kernel sources used:
+# ==========================
+#
 
 git clone git://github.com/torvalds/linux.git media_tree
 cd media_tree
-git checkout -b media-webcamd origin/master
+git checkout -b media-webcamd 3b47fd5ca9ead91156bcdf6435279ad0b14a650c
 
-top commit 67f2a93099cca369c056e591c82f1d1bc726c945
-
---HPS
+# --HPS
