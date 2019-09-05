@@ -497,7 +497,7 @@ struct usb_interface {
 	struct usb_host_interface *altsetting;
 	struct usb_host_interface *cur_altsetting;
 	struct usb_interface_assoc_descriptor *intf_assoc;
-	struct usb_device *linux_udev;
+	struct usb_device *usb_dev;
 	void   *bsd_priv_sc;		/* device specific information */
 
 	uint8_t	num_altsetting;		/* number of alternate settings */
@@ -652,8 +652,8 @@ int	usb_linux_detach(int fd);
 int	usb_linux_suspend(int fd);
 int	usb_linux_resume(int fd);
 
-#define	interface_to_usbdev(intf) (intf)->linux_udev
-#define	interface_to_bsddev(intf) (intf)->linux_udev->bsd_udev
+#define	interface_to_usbdev(intf) (intf)->usb_dev
+#define	interface_to_bsddev(intf) (intf)->usb_dev->bsd_udev
 
 /* chapter 9 stuff, taken from "include/linux/usb/ch9.h" */
 

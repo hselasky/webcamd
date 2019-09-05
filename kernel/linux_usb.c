@@ -1248,7 +1248,7 @@ usb_linux_create_usb_device(struct usb_linux_softc *sc,
 		p_ui->cur_altsetting = p_uhi;
 		p_ui->num_altsetting = id->num_altsetting + 1;
 		p_ui->bsd_iface_index = i;
-		p_ui->linux_udev = p_ud;
+		p_ui->usb_dev = p_ud;
 
 		for (j = 0; j != p_ui->num_altsetting; j++) {
 			libusb20_me_encode(&p_uhi->desc, sizeof(p_uhi->desc),
