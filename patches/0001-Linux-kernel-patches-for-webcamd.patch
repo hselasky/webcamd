@@ -1,6 +1,6 @@
-From a7dd40b3d619c81a51e54858e11f6aae580e26c8 Mon Sep 17 00:00:00 2001
+From c83b2a8bfdbac17d3ac4647e050818ca5c2ed45c Mon Sep 17 00:00:00 2001
 From: Hans Petter Selasky <hps@selasky.org>
-Date: Thu, 5 Sep 2019 09:27:36 +0200
+Date: Thu, 19 Sep 2019 23:13:39 +0200
 Subject: [PATCH] Linux kernel patches for webcamd.
 
 Signed-off-by: Hans Petter Selasky <hps@selasky.org>
@@ -21,30 +21,30 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  drivers/media/dvb-frontends/tda18271c2dd.c    |  4 +--
  drivers/media/i2c/adv7343.c                   |  4 +++
  drivers/media/i2c/tvp514x.c                   |  6 ++++
- drivers/media/i2c/tvp5150.c                   | 17 +++++++--
+ drivers/media/i2c/tvp5150.c                   | 17 ++++++++--
  drivers/media/i2c/tvp7002.c                   |  6 ++++
  drivers/media/rc/lirc_dev.c                   |  2 ++
- drivers/media/rc/rc-main.c                    | 15 ++++++++
+ drivers/media/rc/rc-main.c                    | 15 +++++++++
  drivers/media/usb/as102/as102_drv.h           |  4 +--
  drivers/media/usb/cx231xx/cx231xx-i2c.c       |  1 +
  drivers/media/usb/dvb-usb-v2/lmedm04.c        |  1 +
- drivers/media/usb/dvb-usb-v2/usb_urb.c        | 21 ++++++++++-
- drivers/media/usb/dvb-usb/usb-urb.c           | 16 +++++++++
+ drivers/media/usb/dvb-usb-v2/usb_urb.c        | 21 +++++++++++-
+ drivers/media/usb/dvb-usb/usb-urb.c           | 16 ++++++++++
  drivers/media/usb/em28xx/em28xx.h             |  1 +
  drivers/media/usb/gspca/gspca.c               |  2 +-
  drivers/media/usb/stkwebcam/stk-webcam.h      |  4 +--
  drivers/media/usb/uvc/uvc_driver.c            |  8 -----
- drivers/media/usb/uvc/uvc_video.c             | 35 ++++++++++++++++---
+ drivers/media/usb/uvc/uvc_video.c             | 22 ++++++++++---
  drivers/media/usb/uvc/uvcvideo.h              |  4 +--
  drivers/media/v4l2-core/v4l2-async.c          |  2 ++
- drivers/media/v4l2-core/v4l2-dev.c            | 32 +++++++++++++++++
+ drivers/media/v4l2-core/v4l2-dev.c            | 32 +++++++++++++++++++
  drivers/media/v4l2-core/v4l2-ioctl.c          |  2 ++
  include/media/v4l2-device.h                   |  2 ++
  include/uapi/asm-generic/ioctl.h              |  1 +
  include/uapi/linux/dvb/ca.h                   |  8 +++++
  include/uapi/linux/dvb/frontend.h             |  3 +-
- include/uapi/linux/input.h                    | 18 ++++++----
- 39 files changed, 226 insertions(+), 42 deletions(-)
+ include/uapi/linux/input.h                    | 18 +++++++----
+ 39 files changed, 213 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/base/regmap/regmap.c b/drivers/base/regmap/regmap.c
 index 19f57ccfbe1d..097256099415 100644
@@ -771,7 +771,7 @@ index 66ee168ddc7e..d9e4595ad24e 100644
  
  module_init(uvc_init);
 diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
-index 8fa77a81dd7f..b2d2a7b06554 100644
+index 8fa77a81dd7f..7b31e570b95d 100644
 --- a/drivers/media/usb/uvc/uvc_video.c
 +++ b/drivers/media/usb/uvc/uvc_video.c
 @@ -1601,9 +1601,7 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
@@ -810,26 +810,6 @@ index 8fa77a81dd7f..b2d2a7b06554 100644
  
  	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
  	if (npackets == 0)
-@@ -1768,6 +1782,19 @@ static int uvc_init_video_bulk(struct uvc_streaming *stream,
- 	size = stream->ctrl.dwMaxPayloadTransferSize;
- 	stream->bulk.max_payload_size = size;
- 
-+	/* avoid division by zero */
-+	if (psize == 0)
-+		return -EINVAL;
-+
-+	/* roughly compute size for buffers */
-+	if (stream->dev->udev->speed == USB_SPEED_FULL) {
-+		size = 4096;
-+	} else {
-+		size = 131072;
-+	}
-+	/* align to packet boundary */
-+	size += (psize - (size % psize)) % psize;
-+
- 	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
- 	if (npackets == 0)
- 		return -ENOMEM;
 diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
 index c7c1baa90dea..5ebbf2992387 100644
 --- a/drivers/media/usb/uvc/uvcvideo.h
