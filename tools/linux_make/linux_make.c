@@ -72,6 +72,7 @@ struct node {
 	char   *name;			/* obj-y/obj-m/obj-n/xxx.o */
 	char   *path;			/* relative path to file */
 	char   *objprefix;		/* object prefix */
+	uint8_t	has_children;		/* set if object has children */
 };
 
 struct directory {
@@ -214,7 +215,7 @@ sort_config(void)
 	TAILQ_FOREACH(c0, &rootConfig, entry)
 	    ppc[count++] = c0;
 
-	qsort(ppc, count, sizeof(void *), sort_config_compare);
+	mergesort(ppc, count, sizeof(void *), sort_config_compare);
 
 	TAILQ_INIT(&rootConfig);
 
@@ -441,11 +442,10 @@ remove_duplicate(node_head_t *head)
 
 	TAILQ_FOREACH(n0, head, entry) {
 
-		TAILQ_FOREACH_SAFE(n1, head, entry, n2) {
-
-			if (n0 == n1)
-				continue;
-
+		n1 = TAILQ_NEXT(n0, entry);
+		if (n1 == NULL)
+			continue;
+		TAILQ_FOREACH_FROM_SAFE(n1, head, entry, n2) {
 			if (strcmp(n0->name, n1->name) == 0) {
 				TAILQ_REMOVE(head, n1, entry);
 				free_node(n1);
@@ -501,6 +501,27 @@ resolve_nodes(void)
 	    remove_duplicate(&n0->children);
 }
 
+static uint8_t
+obj_has_children(const node_head_t *parent, const char *name, int len)
+{
+	struct node *n0;
+
+	TAILQ_FOREACH(n0, parent, entry) {
+		if (TAILQ_FIRST(&n0->children) == NULL)
+			continue;
+		if (strstr(n0->name, name) == n0->name &&
+		    (strcmp(n0->name + len, "-n") == 0 ||
+		     strcmp(n0->name + len, "-y") == 0 ||
+		     strcmp(n0->name + len, "-objs") == 0 ||
+		     strcmp(n0->name + len, "-m") == 0)) {
+			return (1);
+		} else {
+			obj_has_children(&n0->children, name, len);
+		}
+	}
+	return (0);
+}
+
 static void
 objs_exec(struct node *parent, void (*fn) (struct node *, const char *))
 {
@@ -531,22 +552,18 @@ objs_exec(struct node *parent, void (*fn) (struct node *, const char *))
 				fprintf(stderr, "matching %s "
 				    "= %s\n", temp, n0->name);
 			}
-			/* Expecting: <match>-<y/n/m/objs><null> */
+			/* Expecting: <match>-<y/m/objs><null> */
 			if (strcmp(n0->name + len, "-y") == 0 ||
-			    strcmp(n0->name + len, "-n") == 0 ||
-			    strcmp(n0->name + len, "-m") == 0 ||
 			    strcmp(n0->name + len, "-objs") == 0) {
 
 				TAILQ_FOREACH(n1, &n0->children, entry)
 				    objs_exec(n1, fn);
-				goto done;
 			}
 		}
 	}
 
 	fn(parent, temp);
 
-done:
 	free(temp);
 
 	recurse--;
@@ -917,7 +934,6 @@ parse_makefile(char *path)
 
 			len = strlen(child);
 			if (child[len - 1] == '/') {
-
 				if (strcmp(node->name, "obj-y") == 0 ||
 				    strcmp(node->name, "obj-m") == 0)
 					parse_makefile(strcatdup(path, child));
@@ -949,11 +965,23 @@ build_id(struct node *ptr, const char *name)
 			*pch = '-';
 		pch++;
 	}
+
+	if (obj_has_children(&rootNode, name, strlen(name))) {
+		if (opt_verbose > 1) {
+			fprintf(stderr, "object %s has children\n", name);
+		}
+		ptr->has_children = 1;
+	} else {
+		ptr->has_children = 0;
+	}
 }
 
 static void
 build_source(struct node *ptr, const char *name)
 {
+	if (ptr->has_children)
+		return;
+
 	printf("obj-%s%s.o: %s%s.c\n", ptr->objprefix, name, ptr->path, name);
 	printf("\t" "${CC} -c -DCURR_FILE_NAME=\\\"%s\\\" ${CFLAGS} -o obj-%s%s.o %s%s.c\n",
 	    name, ptr->objprefix, name, ptr->path, name);
@@ -962,6 +990,9 @@ build_source(struct node *ptr, const char *name)
 static void
 build_objects(struct node *ptr, const char *name)
 {
+	if (ptr->has_children)
+		return;
+
 	printf("\t" "obj-%s%s.o \\\n", ptr->objprefix, name);
 }
 
