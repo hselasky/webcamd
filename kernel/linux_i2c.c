@@ -180,6 +180,15 @@ i2c_del_adapter(struct i2c_adapter *adapter)
 }
 
 struct i2c_client *
+i2c_new_dummy_device(struct i2c_adapter *adapter, u16 address)
+{
+	struct i2c_board_info info = {
+		I2C_BOARD_INFO("dummy", address),
+	};
+	return (i2c_new_device(adapter, &info));
+}
+
+struct i2c_client *
 i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 {
 	struct i2c_client *client;
@@ -217,11 +226,14 @@ i2c_new_device(struct i2c_adapter *adapt, struct i2c_board_info const *info)
 				continue;
 			client->dev.driver = &drv->driver;
 
-			if (drv->probe == NULL) {
+			if (drv->probe == NULL && drv->probe_new == NULL) {
 				status = 0;
 				break;
 			}
-			status = drv->probe(client, drv->id_table + i);
+			if (drv->probe_new != NULL)
+				status = drv->probe_new(client);
+			else
+				status = drv->probe(client, drv->id_table + i);
 			if (status == 0)
 				break;
 			client->dev.driver = NULL;

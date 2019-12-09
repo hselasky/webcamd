@@ -293,6 +293,7 @@ uint32_t do_div(uint64_t *rem, uint32_t div);
 uint64_t div64_u64(uint64_t, uint64_t);
 int64_t	div64_s64(int64_t, int64_t);
 uint64_t div_u64_rem(uint64_t, uint32_t, uint32_t *);
+int64_t	div_s64_rem(int64_t, int32_t, int32_t *);
 uint64_t div_u64(uint64_t, uint32_t);
 int64_t	div_s64(int64_t, int32_t);
 

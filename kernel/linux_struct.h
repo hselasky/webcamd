@@ -24,6 +24,9 @@ struct poll_table_page;
 struct pt_regs;
 struct seq_file;
 struct snd_pcm_runtime;
+struct spi_board_info;
+struct spi_device;
+struct spi_master;
 struct tasklet_struct;
 struct usb_driver;
 struct usb_interface;
@@ -114,6 +117,7 @@ struct attribute_group {
 	const char *name;
 	struct attribute **attrs;
 	struct bin_attribute **bin_attrs;
+	umode_t (*is_visible)(struct kobject *, struct attribute *, int);
 };
 
 #define	__ATTRIBUTE_GROUPS(name)				\

@@ -162,6 +162,7 @@ struct i2c_driver {
 
 	/* Standard driver model interfaces */
 	int (*probe)(struct i2c_client *, const struct i2c_device_id *);
+	int (*probe_new)(struct i2c_client *);
 	int (*remove)(struct i2c_client *);
 
 	/* driver model interfaces that don't relate to enumeration  */
@@ -309,11 +310,11 @@ i2c_new_probed_device(struct i2c_adapter *adap,
 /* Common custom probe functions */
 extern int i2c_probe_func_quick_read(struct i2c_adapter *, unsigned short addr);
 
-/* For devices that use several addresses, use i2c_new_dummy() to make
+/* For devices that use several addresses, use i2c_new_dummy_device() to make
  * client handles for the extra addresses.
  */
-extern struct i2c_client *
-i2c_new_dummy(struct i2c_adapter *adap, u16 address);
+struct i2c_client *
+i2c_new_dummy_device(struct i2c_adapter *adapter, u16 address);
 
 extern struct i2c_client *
 i2c_new_secondary_device(struct i2c_client *client,

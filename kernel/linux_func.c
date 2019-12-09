@@ -1999,6 +1999,13 @@ div_round_closest_u64(uint64_t rem, uint64_t div)
 	return ((rem + (div / 2)) / div);
 }
 
+int64_t
+div_s64_rem(int64_t dividend, int32_t divisor, int32_t *remainder)
+{
+	*remainder = dividend % divisor;
+	return (dividend / divisor);
+}
+
 struct timespec
 ktime_mono_to_real(struct timespec arg)
 {
