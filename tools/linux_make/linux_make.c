@@ -552,7 +552,7 @@ objs_exec(struct node *parent, void (*fn) (struct node *, const char *))
 				fprintf(stderr, "matching %s "
 				    "= %s\n", temp, n0->name);
 			}
-			/* Expecting: <match>-<y/m/objs><null> */
+			/* Expecting: <match>-<y/objs><null> */
 			if (strcmp(n0->name + len, "-y") == 0 ||
 			    strcmp(n0->name + len, "-objs") == 0) {
 
