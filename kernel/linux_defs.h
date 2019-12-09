@@ -253,6 +253,7 @@
 #define	sg_set_page(...) __nop
 #define	sg_next(...) NULL
 #define	of_match_ptr(...) NULL
+#define	is_of_node(...) 0
 #define	sysfs_attr_init(x) __nop
 #define	sysfs_create_files(...) (0)
 #define	sysfs_streq(a,b) (strcmp(a,b) == 0)
@@ -261,6 +262,7 @@
 #define	kobject_put(...) __nop
 #define	kobject_get(...) __nop
 #define	kobject_uevent(...) __nop
+#define	kobject_uevent_env(...) (int)0
 #define	vfree(ptr) free_vm(ptr)
 #define	kfree(ptr) free(GP_DECONST(ptr))
 #define	kfree_const(ptr) free(GP_DECONST(ptr))
@@ -438,6 +440,11 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	lockdep_assert_irqs_enabled(...) __nop
 #define	lock_kernel(...) __nop
 #define	unlock_kernel(...) __nop
+#define	rwlock_init(l) __nop
+#define	write_lock_irqsave(l, f) do { (f) = 1; atomic_lock(); } while (0)
+#define	write_unlock_irqrestore(l, f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
+#define	read_lock(l) atomic_lock()
+#define	read_unlock(l) atomic_unlock()
 #define	spin_lock_init(lock) __nop
 #define	spin_lock_irqsave(l,f)  do { (f) = 1; atomic_lock(); } while (0)
 #define	spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
@@ -465,7 +472,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	up_read(...) __nop
 #define	dump_stack(...) __nop
 #define	get_user_pages(a,b,...) linux_get_user_pages(__VA_ARGS__)
-#define	DECLARE_RWSEM(x) struct semaphore x
+#define	DECLARE_RWSEM(x) struct rw_semaphore x
 #define	crc32(s, d, l) crc32_le(s, (unsigned char const *)d, l)
 #define	CRCPOLY_LE 0xedb88320
 #define	CRCPOLY_BE 0x04c11db7
@@ -778,9 +785,14 @@ typedef unsigned long __kernel_ulong_t;
 typedef unsigned long phys_addr_t;
 typedef unsigned int __poll_t;
 
+#define	fwnode_graph_get_remote_port_parent(...) NULL
+#define	fwnode_handle_get(x) x
 #define	fwnode_handle_put(...) __nop
 #define	dev_fwnode(...) NULL
 #define	dmi_match(...) 0
+
+#define	device_remove_groups(...) __nop
+#define	device_add_groups(...) (int)0
 
 #ifndef __GLIBC__
 typedef long long loff_t;

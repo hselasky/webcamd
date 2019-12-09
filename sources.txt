@@ -5,6 +5,6 @@
 
 git clone git://github.com/torvalds/linux.git media_tree
 cd media_tree
-git checkout -b media-webcamd 3b47fd5ca9ead91156bcdf6435279ad0b14a650c
+git checkout -b media-webcamd 31f4f5b495a62c9a8b15b1c3581acd5efeb9af8c
 
 # --HPS

@@ -2849,6 +2849,22 @@ power_supply_get_drvdata(struct power_supply *psy)
 }
 
 int
+led_classdev_register_ext(struct device *parent,
+			  struct led_classdev *led_cdev,
+			  struct led_init_data *init_data)
+{
+	return (0);
+}
+
+int
+devm_led_classdev_register_ext(struct device *parent,
+			       struct led_classdev *led_cdev,
+			       struct led_init_data *init_data)
+{
+	return (0);
+}
+
+int
 devm_of_led_classdev_register(struct device *parent, struct device_node *node, struct led_classdev *led_cdev)
 {
 	return (0);
@@ -2858,37 +2874,6 @@ int
 of_led_classdev_register(struct device *parent, struct device_node *node, struct led_classdev *led_cdev)
 {
 	return (0);
-}
-
-int
-led_trigger_register(struct led_trigger *trigger)
-{
-	return (0);
-}
-
-int
-devm_led_trigger_register(struct device *dev, struct led_trigger *trigger)
-{
-	return (0);
-}
-
-void
-led_trigger_event(struct led_trigger *trigger, enum led_brightness event)
-{
-
-}
-
-void
-led_trigger_register_simple(const char *name,
-    struct led_trigger **trigger)
-{
-
-}
-
-void
-led_trigger_unregister_simple(struct led_trigger *trigger)
-{
-
 }
 
 void

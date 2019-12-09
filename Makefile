@@ -328,6 +328,7 @@ configure: tools/linux_make/linux_make
 		-i vtuner \
 		-i media_tree/drivers/hid \
 		-i media_tree/drivers/input \
+		-i media_tree/drivers/leds \
 		-i media_tree/drivers/media \
 		-i media_tree/drivers/base/regmap \
 		-i media_tree/drivers/staging/media \
