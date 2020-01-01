@@ -122,7 +122,7 @@ char	global_fw_prefix[128] = {"/boot/modules"};
 int	webcamd_hal_register;
 
 #define	v4b_errx(code, fmt, ...) do {			\
-    fprintf(stderr, "webcamd: " fmt "\n",##		\
+    syslog(LOG_ERR, "webcamd: " fmt "\n",##		\
 	__VA_ARGS__); 					\
     exit(code);						\
 } while (0)
@@ -450,7 +450,7 @@ again:
 			snprintf(buf, sizeof(buf), dname + 1,
 			    unit_num[id][p], q);
 
-			printf("Creating /dev/%s\n", buf);
+			syslog(LOG_INFO, "Creating /dev/%s\n", buf);
 
 			for (p = 0; p != 4; p++) {
 				if (pthread_create(&dummy, NULL, v4b_work, NULL)) {
@@ -686,6 +686,7 @@ v4b_exit(void)
 		pidfile_remove(local_pid);
 		local_pid = NULL;
 	}
+	closelog();
 }
 
 int
@@ -706,7 +707,7 @@ pidfile_create(int bus, int addr, int index)
 		pidfile_write(local_pid);
 	}
 
-	printf("Attached to ugen%d.%d[%d]\n", bus, addr, index);
+	syslog(LOG_INFO, "Attached to ugen%d.%d[%d]\n", bus, addr, index);
 
 	return (0);
 }
@@ -753,6 +754,7 @@ main(int argc, char **argv)
 	int opt;
 	int opt_valid = 0;
 
+	openlog("webcamd", LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_DAEMON);
 	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
 		case 'd':
@@ -847,7 +849,7 @@ main(int argc, char **argv)
 	if (do_fork) {
 		/* need to daemonise before creating any threads */
 		if (pidfile_create(u_unit, u_addr, u_index)) {
-			fprintf(stderr, "Webcamd is already running for "
+			syslog(LOG_ERR, "Webcamd is already running for "
 			    "ugen%d.%d.%d\n", u_unit, u_addr, u_index);
 			exit(EX_USAGE);
 		}
@@ -869,7 +871,7 @@ main(int argc, char **argv)
 		rtp.prio = 8;
 
 		if (rtprio(RTP_SET, getpid(), &rtp) != 0)
-			printf("Cannot set realtime priority\n");
+			syslog(LOG_WARNING, "Cannot set realtime priority\n");
 	}
 	/* get all module parameters registered */
 
@@ -895,7 +897,7 @@ main(int argc, char **argv)
 			}
 			*ptr = 0;
 			if (mod_set_param(optarg, ptr + 1) < 0) {
-				fprintf(stderr, "WARNING: cannot set module "
+				syslog(LOG_WARNING, "cannot set module "
 				    "parameter '%s'='%s'\n", optarg, ptr + 1);
 			}
 			break;

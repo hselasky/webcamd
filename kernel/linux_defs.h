@@ -178,10 +178,12 @@
 #define	__compiletime_warning(...)
 #define	__compiletime_error(...)
 #ifdef HAVE_DEBUG
-#define	printk(...) printf(__VA_ARGS__)
-#define	printk_once(...) printf(__VA_ARGS__)
-#define	pr_warn_once(...) printf(__VA_ARGS__)
-#define	dev_warn_once(dev, ...) printf(__VA_ARGS__)
+#define	printk(...) do {		\
+	syslog(LOG_DEBUG, __VA_ARGS__);	\
+} while (0)
+#define	printk_once(...) printk(__VA_ARGS__)
+#define	pr_warn_once(...) printk(__VA_ARGS__)
+#define	dev_warn_once(dev, ...) printk(__VA_ARGS__)
 #else
 #define	printk(...) printk_nop()
 #define	printk_once(...) printk_nop()
