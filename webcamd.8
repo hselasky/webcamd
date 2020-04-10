@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd December 10, 2016
+.Dd April 9, 2020
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -62,18 +62,12 @@ in FreeBSD.
 .Pp
 .Nm 
 requires the 
-.Xr cuse4bsd 3 
-kernel module from ports in versions of FreeBSD prior to 11.x and the
 .Xr cuse 3
-kernel module in versions of FreeBSD starting at 11.0.
+kernel module.
 To load the driver as a module at boot time, place the following line
 in
 .Xr loader.conf 5 :
 .Pp
-       # FreeBSD < 11.x, package from ports
-       cuse4bsd_load="YES"
-
-       # FreeBSD >= 11.x, part of default kernel build
        cuse_load="YES"
 .Pp
 To start 
