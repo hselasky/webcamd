@@ -44,6 +44,7 @@ struct device_attribute dev_attr_button5_rawimg;
 struct device_attribute dev_attr_button6_rawimg;
 struct device_attribute dev_attr_button7_rawimg;
 struct device_attribute dev_attr_buttons_luminance;
+struct device_attribute dev_attr_color;
 struct device_attribute dev_attr_coordinate_mode;
 struct device_attribute dev_attr_deactivate_slack;
 struct device_attribute dev_attr_debug;

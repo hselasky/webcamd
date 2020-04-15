@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2020 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,5 +36,7 @@ int	linux_poll(struct cdev_handle *);
 int	linux_get_user_pages(unsigned long start, int npages, int write, int force, struct page **ppages, struct vm_area_struct **pvm);
 
 struct cdev_handle *get_current_cdev_handle(void);
+
+long compat_ptr_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
 #endif					/* _LINUX_FILE_H_ */

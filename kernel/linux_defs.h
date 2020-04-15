@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2018 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2020 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -347,6 +347,7 @@
 	temp_ptr;				\
 })
 #define	print_hex_dump(...) __nop
+#define	__printf(a,b)
 #define	DEFAULT_POLLMASK POLLNVAL
 #define	POLL_ERR POLLERR
 #define	EPOLLRDNORM POLLRDNORM
@@ -380,6 +381,7 @@
 #define	DMA_FROM_DEVICE 0x01
 #define	DMA_TO_DEVICE 0x02
 #define	DMA_BIDIRECTIONAL 0x03
+#define	sizeof_field(t, m) sizeof((((t *)0)->m))
 #define	ARRAY_SIZE(ptr) (sizeof(ptr) / sizeof((ptr)[0]))
 #define	array_index_nospec(index, size) (((index) >= (size)) ? 0 : (index))
 #define	__KERNEL__
@@ -664,6 +666,10 @@ extern unsigned long clear_user(void *uptr, unsigned long n);
 
 #define	DPM_ORDER_NONE 0
 
+#define	RPM_ACTIVE 0
+#define	RPM_SUSPENDED 0
+#define	SET_RUNTIME_PM_OPS(...)
+
 #define	ilog2(n)				\
 (						\
 	__builtin_constant_p(n) ? (		\
@@ -786,6 +792,7 @@ typedef int __kernel_pid_t;
 typedef unsigned long __kernel_ulong_t;
 typedef unsigned long phys_addr_t;
 typedef unsigned int __poll_t;
+#define	__kernel_timespec timespec
 
 #define	fwnode_graph_get_remote_port_parent(...) NULL
 #define	fwnode_handle_get(x) x
@@ -813,5 +820,7 @@ linux_abs(int a)
 
 #undef abs
 #define	abs(a) linux_abs(a)
+
+typedef int (*cmp_func_t)(const void *a, const void *b);
 
 #endif					/* _LINUX_DEFS_H_ */

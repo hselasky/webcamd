@@ -466,6 +466,16 @@ struct va_format {
 	va_list *va;
 };
 
+struct old_timespec32 {
+	int32_t tv_sec;
+	int32_t tv_nsec;
+};
+
+struct old_timeval32 {
+	int32_t tv_sec;
+	int32_t tv_usec;
+};
+
 extern struct device_attribute dev_attr_abs;
 extern struct device_attribute dev_attr_activate_slack;
 extern struct device_attribute dev_attr_activation_height;
@@ -487,6 +497,7 @@ extern struct device_attribute dev_attr_button5_rawimg;
 extern struct device_attribute dev_attr_button6_rawimg;
 extern struct device_attribute dev_attr_button7_rawimg;
 extern struct device_attribute dev_attr_buttons_luminance;
+extern struct device_attribute dev_attr_color;
 extern struct device_attribute dev_attr_coordinate_mode;
 extern struct device_attribute dev_attr_deactivate_slack;
 extern struct device_attribute dev_attr_debug;

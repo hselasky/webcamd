@@ -295,6 +295,9 @@ struct i2c_board_info {
 extern struct i2c_client *
 i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info);
 
+#define	i2c_new_client_device(...) \
+	i2c_new_device(__VA_ARGS__)
+
 /* If you don't know the exact address of an I2C device, use this variant
  * instead, which can probe for device presence in a list of possible
  * addresses. The "probe" callback function is optional. If it is provided,
@@ -306,6 +309,9 @@ i2c_new_probed_device(struct i2c_adapter *adap,
 		      struct i2c_board_info *info,
 		      unsigned short const *addr_list,
 		      int (*probe)(struct i2c_adapter *, unsigned short addr));
+
+#define	i2c_new_scanned_device(...) \
+	i2c_new_probed_device(__VA_ARGS__)
 
 /* Common custom probe functions */
 extern int i2c_probe_func_quick_read(struct i2c_adapter *, unsigned short addr);
@@ -499,6 +505,11 @@ extern void i2c_del_driver(struct i2c_driver *);
 /* use a define to avoid include chaining to get THIS_MODULE */
 #define i2c_add_driver(driver) \
 	i2c_register_driver(THIS_MODULE, driver)
+
+static inline bool i2c_client_has_driver(struct i2c_client *client)
+{
+	return !IS_ERR_OR_NULL(client) && client->dev.driver;
+}
 
 extern struct i2c_client *i2c_use_client(struct i2c_client *client);
 extern void i2c_release_client(struct i2c_client *client);

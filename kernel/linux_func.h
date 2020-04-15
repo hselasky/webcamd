@@ -283,10 +283,13 @@ uint16_t swab16(uint16_t temp);
 void	swab32s(uint32_t *ptr);
 uint32_t swab32(uint32_t temp);
 int	scnprintf(char *buf, size_t size, const char *fmt,...);
+#define	vscnprintf(...) \
+	scnprintf(__VA_ARGS__)
 char   *devm_kasprintf(struct device *, gfp_t, const char *,...);
 struct timespec current_kernel_time(void);
 int64_t	timespec_to_ns(const struct timespec *);
 struct timespec ns_to_timespec(const int64_t);
+#define	ns_to_timespec64(x) ns_to_timespec(x)
 struct timespec timespec_add(struct timespec, struct timespec);
 struct timespec timespec_sub(struct timespec, struct timespec);
 uint32_t do_div(uint64_t *rem, uint32_t div);
@@ -385,5 +388,7 @@ ssize_t	strscpy(char *, const char *, size_t);
 
 #define	struct_size(p, member, n)				\
 	struct_size_sub(n, sizeof(*(p)->member), sizeof(*(p)))
+
+ssize_t	memory_read_from_buffer(void *, size_t, loff_t *, const void *, size_t);
 
 #endif					/* _LINUX_FUNC_H_ */

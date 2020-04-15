@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2011 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2020 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -333,3 +333,13 @@ linux_get_user_pages(unsigned long start, int npages, int write, int force,
 	}
 	return (-1);			/* failure */
 }
+
+long
+compat_ptr_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	if (!file->f_op->unlocked_ioctl)
+		return -ENOTTY;
+
+	return file->f_op->unlocked_ioctl(file, cmd, (unsigned long)(uint32_t)(arg));
+}
+
