@@ -1,6 +1,6 @@
-From feaf725d340b1a71855efa92f0b2ad82288ade6c Mon Sep 17 00:00:00 2001
+From d5bf390198da52fec12e089d3464f31ca222dea4 Mon Sep 17 00:00:00 2001
 From: Hans Petter Selasky <hps@selasky.org>
-Date: Wed, 15 Apr 2020 08:06:08 +0200
+Date: Wed, 15 Apr 2020 08:25:45 +0200
 Subject: [PATCH] Linux kernel patches for webcamd.
 
 Signed-off-by: Hans Petter Selasky <hps@selasky.org>
@@ -22,7 +22,7 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  drivers/media/dvb-frontends/tda18271c2dd.c    |  4 +--
  drivers/media/i2c/adv7343.c                   |  4 +++
  drivers/media/i2c/tvp514x.c                   |  6 ++++
- drivers/media/i2c/tvp5150.c                   | 18 ++++++++++-
+ drivers/media/i2c/tvp5150.c                   | 20 +++++++++++-
  drivers/media/i2c/tvp7002.c                   |  6 ++++
  drivers/media/rc/lirc_dev.c                   |  2 ++
  drivers/media/rc/rc-main.c                    | 15 +++++++++
@@ -45,7 +45,7 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  include/uapi/linux/dvb/ca.h                   |  8 +++++
  include/uapi/linux/dvb/frontend.h             |  3 +-
  include/uapi/linux/input.h                    | 18 +++++++----
- 40 files changed, 227 insertions(+), 41 deletions(-)
+ 40 files changed, 229 insertions(+), 41 deletions(-)
 
 diff --git a/drivers/base/regmap/regmap.c b/drivers/base/regmap/regmap.c
 index 59f911e57719..c6c8291c3cdf 100644
@@ -482,7 +482,7 @@ index a7fbe5b400c2..1893aeedc336 100644
  	},
  	.probe = tvp514x_probe,
 diff --git a/drivers/media/i2c/tvp5150.c b/drivers/media/i2c/tvp5150.c
-index eb39cf5ea089..166a32a3b2e7 100644
+index eb39cf5ea089..ed39966bda81 100644
 --- a/drivers/media/i2c/tvp5150.c
 +++ b/drivers/media/i2c/tvp5150.c
 @@ -1993,6 +1993,7 @@ static int tvp5150_validate_connectors(struct tvp5150 *decoder)
@@ -549,10 +549,14 @@ index eb39cf5ea089..166a32a3b2e7 100644
  	}
  
  	res = v4l2_async_register_subdev(sd);
-@@ -2248,8 +2262,10 @@ static int tvp5150_remove(struct i2c_client *c)
+@@ -2246,10 +2260,14 @@ static int tvp5150_remove(struct i2c_client *c)
+ 		"tvp5150.c: removing tvp5150 adapter on address 0x%x\n",
+ 		c->addr << 1);
  
++#if IS_ENABLED(CONFIG_OF)
  	for (i = 0; i < decoder->connectors_num; i++)
  		v4l2_fwnode_connector_free(&decoder->connectors[i].base);
++#endif
 +#if defined(CONFIG_MEDIA_CONTROLLER)
  	for (i = 0; i < decoder->connectors_num; i++)
  		media_device_unregister_entity(&decoder->connectors[i].ent);
