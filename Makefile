@@ -284,6 +284,8 @@ configure: tools/linux_make/linux_make
 .if defined(HAVE_COMPAT32)
 	@echo " * i386 compatibility"
 	@echo "CONFIG_COMPAT=y" >> config
+	@echo "CONFIG_COMPAT_32BIT_TIME=y" >> config
+	@echo "CONFIG_X86_64=y" >> config
 .endif
 .if defined(HAVE_DVB_DRV) || defined(HAVE_ALL_DRV)
 	@echo " * DVB devices"

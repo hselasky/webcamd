@@ -1,6 +1,6 @@
-From d5bf390198da52fec12e089d3464f31ca222dea4 Mon Sep 17 00:00:00 2001
-From: Hans Petter Selasky <hps@selasky.org>
-Date: Wed, 15 Apr 2020 08:25:45 +0200
+From 7cd3c7555d0a2575db8d39c8dc6be5c6cb32ee12 Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <root@hps2020.home.selasky.org>
+Date: Thu, 16 Apr 2020 08:46:25 +0200
 Subject: [PATCH] Linux kernel patches for webcamd.
 
 Signed-off-by: Hans Petter Selasky <hps@selasky.org>
@@ -40,12 +40,13 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  drivers/media/v4l2-core/v4l2-async.c          |  2 ++
  drivers/media/v4l2-core/v4l2-dev.c            | 32 +++++++++++++++++++
  drivers/media/v4l2-core/v4l2-ioctl.c          |  2 ++
+ drivers/media/v4l2-core/v4l2-subdev.c         |  3 +-
  include/media/v4l2-device.h                   |  2 ++
  include/uapi/asm-generic/ioctl.h              |  1 +
  include/uapi/linux/dvb/ca.h                   |  8 +++++
  include/uapi/linux/dvb/frontend.h             |  3 +-
  include/uapi/linux/input.h                    | 18 +++++++----
- 40 files changed, 229 insertions(+), 41 deletions(-)
+ 41 files changed, 231 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/base/regmap/regmap.c b/drivers/base/regmap/regmap.c
 index 59f911e57719..c6c8291c3cdf 100644
@@ -1011,6 +1012,27 @@ index b2ef8e60ea7d..0c091fc73185 100644
  
  	lock = v4l2_ioctl_get_lock(vfd, vfh, cmd, arg);
  
+diff --git a/drivers/media/v4l2-core/v4l2-subdev.c b/drivers/media/v4l2-core/v4l2-subdev.c
+index a376b351135f..76a7ebbb1967 100644
+--- a/drivers/media/v4l2-core/v4l2-subdev.c
++++ b/drivers/media/v4l2-core/v4l2-subdev.c
+@@ -392,6 +392,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
+ 
+ 		return v4l2_event_dequeue(vfh, arg, file->f_flags & O_NONBLOCK);
+ 
++#ifdef CONFIG_COMPAT_32BIT_TIME
+ 	case VIDIOC_DQEVENT_TIME32: {
+ 		struct v4l2_event_time32 *ev32 = arg;
+ 		struct v4l2_event ev = { };
+@@ -415,7 +416,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
+ 
+ 		return rval;
+ 	}
+-
++#endif
+ 	case VIDIOC_SUBSCRIBE_EVENT:
+ 		return v4l2_subdev_call(sd, core, subscribe_event, vfh, arg);
+ 
 diff --git a/include/media/v4l2-device.h b/include/media/v4l2-device.h
 index 7c912b7d2870..0bc0c4930e42 100644
 --- a/include/media/v4l2-device.h
@@ -1130,5 +1152,5 @@ index 9a61c28ed3ae..94cc0a7cb0a5 100644
  /**
   * EVIOCSMASK - Set event mask
 -- 
-2.25.0
+2.26.0
 
