@@ -237,6 +237,10 @@ v4b_close(struct cuse_dev *cdev, int fflags)
 	return (v4b_convert_error(error));
 }
 
+#ifndef CUSE_FFLAG_COMPAT32
+#define	CUSE_FFLAG_COMPAT32 0
+#endif
+
 static int
 v4b_read(struct cuse_dev *cdev, int fflags,
     void *peer_ptr, int len)
@@ -247,7 +251,8 @@ v4b_read(struct cuse_dev *cdev, int fflags,
 	handle = cuse_dev_get_per_file_handle(cdev);
 
 	/* read from device */
-	error = linux_read(handle, fflags & CUSE_FFLAG_NONBLOCK, peer_ptr, len);
+	error = linux_read(handle,
+	    fflags & (CUSE_FFLAG_NONBLOCK | CUSE_FFLAG_COMPAT32), peer_ptr, len);
 
 	return (v4b_convert_error(error));
 }
@@ -262,7 +267,8 @@ v4b_write(struct cuse_dev *cdev, int fflags,
 	handle = cuse_dev_get_per_file_handle(cdev);
 
 	/* write to device */
-	error = linux_write(handle, fflags & CUSE_FFLAG_NONBLOCK,
+	error = linux_write(handle,
+	    fflags & (CUSE_FFLAG_NONBLOCK | CUSE_FFLAG_COMPAT32),
 	    (uint8_t *)((const uint8_t *)peer_ptr - (const uint8_t *)0), len);
 
 	return (v4b_convert_error(error));
@@ -271,10 +277,6 @@ v4b_write(struct cuse_dev *cdev, int fflags,
 unsigned short webcamd_vendor;
 unsigned short webcamd_product;
 unsigned int webcamd_speed;
-
-#ifndef CUSE_FFLAG_COMPAT32
-#define	CUSE_FFLAG_COMPAT32 0
-#endif
 
 static int
 v4b_ioctl(struct cuse_dev *cdev, int fflags,
@@ -293,7 +295,8 @@ v4b_ioctl(struct cuse_dev *cdev, int fflags,
 		return (0);
 
 	/* execute ioctl */
-	error = linux_ioctl(handle, fflags & (CUSE_FFLAG_NONBLOCK | CUSE_FFLAG_COMPAT32),
+	error = linux_ioctl(handle,
+	    fflags & (CUSE_FFLAG_NONBLOCK | CUSE_FFLAG_COMPAT32),
 	    cmd, peer_data);
 
 	if ((cmd == VIDIOC_QUERYBUF) && (error >= 0)) {

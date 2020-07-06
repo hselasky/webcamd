@@ -194,7 +194,14 @@ linux_read(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
-	error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
+	if (fflags & CUSE_FFLAG_COMPAT32) {
+		in_compat32_call = 1;
+		error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
+		in_compat32_call = 0;
+		compat_free_all_user_space();
+	} else {
+		error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
+	}
 
 	return (error);
 }
@@ -213,7 +220,14 @@ linux_write(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
-	error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
+	if (fflags & CUSE_FFLAG_COMPAT32) {
+		in_compat32_call = 1;
+		error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
+		in_compat32_call = 0;
+		compat_free_all_user_space();
+        } else {
+		error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
+	}
 
 	return (error);
 }
