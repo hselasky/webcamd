@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2019 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2020 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -443,19 +443,34 @@ found:
 	usb_linux_create_event_thread(p_dev);
 
 	while (udrv->probe(ui, id) != 0) {
-
-		/* try other interfaces */
 		i++;
+try_interface:
+		/* try next interface, if any */
 		if (i != pcfg->num_interface) {
 			pifc = pcfg->interface + i;
 			ui = p_dev->bsd_iface_start + i;
 			sc->ui = ui;
 
+			if (pifc->desc.bInterfaceClass == USB_CLASS_HUB) {
+				i++;
+				goto try_interface;
+			}
 			id = usb_linux_lookup_id(
 			    libusb20_dev_get_device_desc(pdev),
 			    &pifc->desc, udrv->id_table);
-			if (id != NULL)
-				continue;
+			if (id == NULL) {
+				i++;
+				goto try_interface;
+			}
+			continue;
+		}
+
+		/* try next driver, if any */
+		if ((udrv = LIST_NEXT(udrv, linux_driver_list)) != NULL) {
+			*pp_desc = udrv->name;
+			sc->udrv = udrv;
+			i = 0;
+			goto try_interface;
 		}
 		usb_linux_detach_sub(sc);
 		libusb20_be_free(pbe);
