@@ -26,7 +26,7 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-PROG=		webcamd
+PROG=	webcamd
 
 #
 # List of all manual pages
@@ -184,14 +184,8 @@ CFLAGS+= -g
 #
 # List of linker flags
 #
-LDFLAGS+= -L${LIBDIR} -lusb ${PTHREAD_LIBS} -lutil
+LDFLAGS+= -L${LIBDIR} -lusb ${PTHREAD_LIBS} -lutil -lcuse
 
-.if defined(HAVE_CUSE)
-CFLAGS+= -DHAVE_CUSE
-LDFLAGS+= -lcuse
-.else
-LDFLAGS+= -lcuse4bsd
-.endif
 #
 # List of source files which need to be built separately:
 #

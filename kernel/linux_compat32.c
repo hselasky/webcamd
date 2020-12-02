@@ -1,6 +1,6 @@
 /*-
  * Copyright (c) 2019 Damjan Jovanovic. All rights reserved.
- * Copyright (c) 2019 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2019-2020 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,13 +24,8 @@
  * SUCH DAMAGE.
  */
 
-#ifdef HAVE_CUSE
 #include <cuse.h>
 #include <fs/cuse/cuse_ioctl.h>
-#else
-#define	HAVE_CUSE_IOCTL
-#include <cuse4bsd.h>
-#endif
 
 #define	WEBCAMD_USER_ALLOC_MAX 4096UL
 #define	WEBCAMD_USER_ALLOC_ADDR (CUSE_BUF_MAX_PTR - WEBCAMD_USER_ALLOC_MAX)
