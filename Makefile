@@ -1,7 +1,5 @@
 #
-# $FreeBSD: $
-#
-# Copyright (c) 2010-2016 Hans Petter Selasky. All rights reserved.
+# Copyright (c) 2010-2020 Hans Petter Selasky. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,10 +26,6 @@
 # Makefile for Linux USB Device Driver Daemon
 #
 
-#
-# Basic software version information
-#
-VERSION=	5.7.1.2
 PROG=		webcamd
 
 #
@@ -210,61 +204,11 @@ SRCS+= webcamd.c
 patch:
 	cd patches ; ./do_patch.sh
 
-fetch_clean:
-
-fetch:
-
-	@echo "Try make fetch_clean if you get problems below!"
-
-#
-# Fetch latest Video4Linux:
-#
-
-	[ -L media_tree ] || [ -d media_tree ] || (git clone git://linuxtv.org/media_tree.git media_tree)
-
-	cd media_tree ; git pull
-
-package:
-
-	@make clean cleandepend HAVE_MAN=YES
-
-	tar -cvf temp.tar --exclude="*~" --exclude="*#" --exclude=".git" \
-		--exclude=".svn" --exclude="*.orig" --exclude="*.rej" \
-		--exclude="temp" \
-		Makefile man4/*.4 dummy headers \
-		webcamd*.[ch] webcamd.8 \
-		sources.txt \
-		config \
-		config*.in \
-		COPYING \
-		${PKGPATHS} \
-		build \
-		media_tree/COPYING \
-		media_tree/CREDITS \
-		media_tree/README \
-		media_tree/include \
-		media_tree/lib/rbtree.c \
-		media_tree/lib/kfifo.c \
-		patches/do_patch.sh \
-		patches/*.patch \
-		tools/linux_make/*.[ch] \
-		tools/linux_make/Makefile
-
-	rm -rf webcamd-${VERSION}
-
-	mkdir webcamd-${VERSION}
-
-	tar -xvf temp.tar -C webcamd-${VERSION}
-
-	rm -rf temp.tar
-
-	tar -jcvf webcamd-${VERSION}.tar.bz2 webcamd-${VERSION}
-
 help:
 	@echo "#"
 	@echo "# Webcamd usage example:"
 	@echo "#"
-	@echo "# kldload cuse4bsd"
+	@echo "# kldload cuse"
 	@echo "# webcamd -B"
 	@echo "# pwcview"
 	@echo "#"
