@@ -75,6 +75,7 @@
 #define	__pgprot(x)     ((pgprot_t)(x))
 #define	__rcu
 #define	__percpu
+#define	fallthrough __nop
 #define	local_irq_save(x) __nop
 #define	local_irq_restore(x) __nop
 #define	preempt_enable() __nop
@@ -196,7 +197,9 @@
 #ifdef HAVE_DEBUG
 #define	pr_fmt(...) __VA_ARGS__
 #endif
+#define	printk_ratelimited(...) printk_nop()
 #define	pr_err_ratelimited(...) __nop
+#define	pr_warn_ratelimited(...) __nop
 #define	pr_cont(...) __nop
 #define	pr_err(...) __nop
 #define	pr_info(...) __nop
@@ -272,6 +275,7 @@
 #define	kstrdup_const(a,b) strdup(a)
 #define	might_sleep(x) __nop
 #define	might_sleep_if(x) __nop
+#define	fsleep(d) usleep(d)
 #define	ndelay(d) usleep(((d) + 1000ULL - 1ULL)/1000UL)
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
@@ -390,6 +394,7 @@
 #define	HZ 1000
 #define	NSEC_PER_SEC 1000000000LL
 #define	USEC_PER_SEC 1000000LL
+#define	USEC_PER_MSEC 1000LL
 #define	MSEC_PER_SEC 1000LL
 #define	jiffies get_jiffies_64()
 #define	msecs_to_jiffies(x) (x)

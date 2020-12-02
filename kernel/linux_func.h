@@ -391,4 +391,7 @@ ssize_t	strscpy(char *, const char *, size_t);
 
 ssize_t	memory_read_from_buffer(void *, size_t, loff_t *, const void *, size_t);
 
+#define	mmap_read_lock(...) __nop
+#define	mmap_read_unlock(...) __nop
+
 #endif					/* _LINUX_FUNC_H_ */

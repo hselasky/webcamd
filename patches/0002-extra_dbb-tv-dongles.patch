@@ -1,6 +1,34 @@
+From 075d8a7816c0a11acb1f0778833a22c5c554fc48 Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <hps@selasky.org>
+Date: Wed, 2 Dec 2020 18:07:46 +0100
+Subject: [PATCH 2/2] Add support for more TV dongles.
+
+Signed-off-by: Hans Petter Selasky <hps@selasky.org>
+---
+ drivers/media/tuners/Kconfig              |    7 +
+ drivers/media/tuners/Makefile             |    1 +
+ drivers/media/tuners/tda18273.c           | 2184 +++++++++++++++++++++
+ drivers/media/tuners/tda18273.h           |   38 +
+ drivers/media/tuners/tda18273_priv.h      | 1427 ++++++++++++++
+ drivers/media/usb/dvb-usb/dw2102.c        |  109 +-
+ drivers/media/usb/stk1160/stk1160-i2c.c   |    1 +
+ drivers/media/usb/stk1160/stk1160-video.c |    1 +
+ drivers/media/usb/tm6000/tm6000-video.c   |   12 +-
+ drivers/media/usb/usbtv/Kconfig           |    3 +-
+ drivers/media/usb/usbtv/Makefile          |    3 +-
+ drivers/media/usb/usbtv/usbtv-audio.c     |    2 +
+ drivers/media/usb/usbtv/usbtv-core.c      |    7 +-
+ drivers/media/usb/usbtv/usbtv-video.c     |    5 +-
+ 14 files changed, 3786 insertions(+), 14 deletions(-)
+ create mode 100644 drivers/media/tuners/tda18273.c
+ create mode 100644 drivers/media/tuners/tda18273.h
+ create mode 100644 drivers/media/tuners/tda18273_priv.h
+
+diff --git a/drivers/media/tuners/Kconfig b/drivers/media/tuners/Kconfig
+index 4605bb377574..ea4443d84e47 100644
 --- a/drivers/media/tuners/Kconfig
 +++ b/drivers/media/tuners/Kconfig
-@@ -49,6 +49,13 @@ config MEDIA_TUNER_TDA18271
+@@ -61,6 +61,13 @@ config MEDIA_TUNER_TDA18271
  	help
  	  A silicon tuner module. Say Y when you want to support this tuner.
  
@@ -14,9 +42,11 @@
  config MEDIA_TUNER_TDA9887
  	tristate "TDA 9885/6/7 analog IF demodulator"
  	depends on MEDIA_SUPPORT && I2C
+diff --git a/drivers/media/tuners/Makefile b/drivers/media/tuners/Makefile
+index 7b4f8423501e..d20480b8cd2b 100644
 --- a/drivers/media/tuners/Makefile
 +++ b/drivers/media/tuners/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_MEDIA_TUNER_TEA5761) += tea5761.o
+@@ -16,6 +16,7 @@ obj-$(CONFIG_MEDIA_TUNER_TEA5761) += tea5761.o
  obj-$(CONFIG_MEDIA_TUNER_TDA9887) += tda9887.o
  obj-$(CONFIG_MEDIA_TUNER_TDA827X) += tda827x.o
  obj-$(CONFIG_MEDIA_TUNER_TDA18271) += tda18271.o
@@ -24,7 +54,10 @@
  obj-$(CONFIG_MEDIA_TUNER_XC5000) += xc5000.o
  obj-$(CONFIG_MEDIA_TUNER_XC4000) += xc4000.o
  obj-$(CONFIG_MEDIA_TUNER_MSI001) += msi001.o
---- a/drivers/media/tuners/tda18273.c
+diff --git a/drivers/media/tuners/tda18273.c b/drivers/media/tuners/tda18273.c
+new file mode 100644
+index 000000000000..df625208f3c6
+--- /dev/null
 +++ b/drivers/media/tuners/tda18273.c
 @@ -0,0 +1,2184 @@
 +/*
@@ -1472,10 +1505,10 @@
 +
 +static int tda18273_calculate_postdivandprescaler(unsigned int LO, int growingOrder, unsigned char* PostDiv, unsigned char* Prescaler)
 +{
-+	int ret = 0;
-+	
-+	unsigned char index;
-+    unsigned char sizeTable = sizeof(PostDivPrescalerTable) / sizeof(TDA18273_PostDivPrescalerTableDef);
++    int ret = 0;
++
++    int index;
++    int sizeTable = sizeof(PostDivPrescalerTable) / sizeof(TDA18273_PostDivPrescalerTableDef);
 +
 +    if(growingOrder == 1) {
 +        /* Start from LO = 28.681 kHz */
@@ -2211,7 +2244,10 @@
 +MODULE_AUTHOR("Manu Abraham");
 +MODULE_DESCRIPTION("TDA18273 Silicon tuner");
 +MODULE_LICENSE("GPL");
---- a/drivers/media/tuners/tda18273.h
+diff --git a/drivers/media/tuners/tda18273.h b/drivers/media/tuners/tda18273.h
+new file mode 100644
+index 000000000000..534b85fa5d07
+--- /dev/null
 +++ b/drivers/media/tuners/tda18273.h
 @@ -0,0 +1,38 @@
 +/*
@@ -2252,7 +2288,10 @@
 +#endif
 +
 +#endif /* __TDA18273_H */
---- a/drivers/media/tuners/tda18273_priv.h
+diff --git a/drivers/media/tuners/tda18273_priv.h b/drivers/media/tuners/tda18273_priv.h
+new file mode 100644
+index 000000000000..a282b14a07e2
+--- /dev/null
 +++ b/drivers/media/tuners/tda18273_priv.h
 @@ -0,0 +1,1427 @@
 +/*
@@ -3682,9 +3721,11 @@
 +    }
 +
 +#endif	/* __TDA18273_PRIV */
+diff --git a/drivers/media/usb/dvb-usb/dw2102.c b/drivers/media/usb/dvb-usb/dw2102.c
+index a27a68440325..a1cae39fa88e 100644
 --- a/drivers/media/usb/dvb-usb/dw2102.c
 +++ b/drivers/media/usb/dvb-usb/dw2102.c
-@@ -2,7 +2,7 @@
+@@ -3,7 +3,7 @@
   *	DVBWorld DVB-S 2101, 2102, DVB-S2 2104, DVB-C 3101,
   *	TeVii S421, S480, S482, S600, S630, S632, S650, S660, S662,
   *	Prof 1100, 7500,
@@ -3693,7 +3734,7 @@
   *	TechnoTrend S2-4600,
   *	Terratec Cinergy S2 cards
   * Copyright (C) 2008-2012 Igor M. Liplianin (liplianin@me.by)
-@@ -33,8 +33,10 @@
+@@ -30,8 +30,10 @@
  #include "stb6100_proc.h"
  #include "m88rs2000.h"
  #include "tda18271.h"
@@ -3704,7 +3745,7 @@
  
  /* Max transfer size done by I2C transfer functions */
  #define MAX_XFER_SIZE  64
-@@ -1497,6 +1499,56 @@
+@@ -1492,6 +1494,56 @@ static int t220_frontend_attach(struct dvb_usb_adapter *adap)
  	return -EIO;
  }
  
@@ -3761,23 +3802,23 @@
  static int m88rs2000_frontend_attach(struct dvb_usb_adapter *adap)
  {
  	struct dvb_usb_device *d = adap->dev;
-@@ -1744,6 +1796,7 @@
- 	TERRATEC_CINERGY_S2_R4,
+@@ -1783,6 +1835,7 @@ enum dw2102_table_entry {
+ 	TERRATEC_CINERGY_S2_2,
  	GOTVIEW_SAT_HD,
  	GENIATECH_T220,
 +	GENIATECH_T220A,
  	TECHNOTREND_S2_4600,
  	TEVII_S482_1,
  	TEVII_S482_2,
-@@ -1774,6 +1827,7 @@
- 	[TERRATEC_CINERGY_S2_R4] = {USB_DEVICE(USB_VID_TERRATEC, USB_PID_TERRATEC_CINERGY_S2_R4)},
+@@ -1820,6 +1873,7 @@ static struct usb_device_id dw2102_table[] = {
+ 				   USB_PID_TERRATEC_CINERGY_S2_2)},
  	[GOTVIEW_SAT_HD] = {USB_DEVICE(0x1FE1, USB_PID_GOTVIEW_SAT_HD)},
  	[GENIATECH_T220] = {USB_DEVICE(0x1f4d, 0xD220)},
 +	[GENIATECH_T220A] = {USB_DEVICE(0x0572, 0xC686)},
  	[TECHNOTREND_S2_4600] = {USB_DEVICE(USB_VID_TECHNOTREND,
  		USB_PID_TECHNOTREND_CONNECT_S2_4600)},
  	[TEVII_S482_1] = {USB_DEVICE(0x9022, 0xd483)},
-@@ -2264,6 +2314,55 @@
+@@ -2316,6 +2370,55 @@ static struct dvb_usb_device_properties t220_properties = {
  	}
  };
  
@@ -3833,16 +3874,16 @@
  static struct dvb_usb_device_properties tt_s2_4600_properties = {
  	.caps = DVB_USB_IS_AN_I2C_ADAPTER,
  	.usb_ctrl = DEVICE_SPECIFIC,
-@@ -2404,6 +2503,8 @@
+@@ -2457,6 +2560,8 @@ static int dw2102_probe(struct usb_interface *intf,
  			 THIS_MODULE, NULL, adapter_nr) ||
  	    0 == dvb_usb_device_init(intf, &t220_properties,
  			 THIS_MODULE, NULL, adapter_nr) ||
 +	    0 == dvb_usb_device_init(intf, &t220a_properties,
 +			 THIS_MODULE, NULL, adapter_nr) ||
  	    0 == dvb_usb_device_init(intf, &tt_s2_4600_properties,
- 			 THIS_MODULE, NULL, adapter_nr))
- 		return 0;
-@@ -2444,7 +2545,7 @@
+ 			 THIS_MODULE, NULL, adapter_nr)) {
+ 
+@@ -2514,7 +2619,7 @@ static struct usb_driver dw2102_driver = {
  module_usb_driver(dw2102_driver);
  
  MODULE_AUTHOR("Igor M. Liplianin (c) liplianin@me.by");
@@ -3851,9 +3892,11 @@
  MODULE_VERSION("0.1");
  MODULE_LICENSE("GPL");
  MODULE_FIRMWARE(DW2101_FIRMWARE);
+diff --git a/drivers/media/usb/stk1160/stk1160-i2c.c b/drivers/media/usb/stk1160/stk1160-i2c.c
+index 9848b783ad08..39f76fce5106 100644
 --- a/drivers/media/usb/stk1160/stk1160-i2c.c
 +++ b/drivers/media/usb/stk1160/stk1160-i2c.c
-@@ -23,6 +23,7 @@
+@@ -13,6 +13,7 @@
  #include <linux/module.h>
  #include <linux/usb.h>
  #include <linux/i2c.h>
@@ -3861,9 +3904,11 @@
  
  #include "stk1160.h"
  #include "stk1160-reg.h"
+diff --git a/drivers/media/usb/stk1160/stk1160-video.c b/drivers/media/usb/stk1160/stk1160-video.c
+index 202b084f65a2..2b9f34e0777f 100644
 --- a/drivers/media/usb/stk1160/stk1160-video.c
 +++ b/drivers/media/usb/stk1160/stk1160-video.c
-@@ -24,6 +24,7 @@
+@@ -14,6 +14,7 @@
  #include <linux/usb.h>
  #include <linux/slab.h>
  #include <linux/ratelimit.h>
@@ -3871,9 +3916,11 @@
  
  #include "stk1160.h"
  
+diff --git a/drivers/media/usb/tm6000/tm6000-video.c b/drivers/media/usb/tm6000/tm6000-video.c
+index bfba06ea60e9..d69ccf53fe14 100644
 --- a/drivers/media/usb/tm6000/tm6000-video.c
 +++ b/drivers/media/usb/tm6000/tm6000-video.c
-@@ -674,12 +674,12 @@
+@@ -652,12 +652,12 @@ static int tm6000_start_thread(struct tm6000_core *dev)
  	/* submit urbs and enables IRQ */
  	for (i = 0; i < dev->isoc_ctl.num_bufs; i++) {
  		int rc = usb_submit_urb(dev->isoc_ctl.urb[i], GFP_ATOMIC);
@@ -3892,9 +3939,12 @@
  	}
  
  	return 0;
+diff --git a/drivers/media/usb/usbtv/Kconfig b/drivers/media/usb/usbtv/Kconfig
+index 84799c7203d3..ddee4509a6c3 100644
 --- a/drivers/media/usb/usbtv/Kconfig
 +++ b/drivers/media/usb/usbtv/Kconfig
-@@ -1,7 +1,6 @@
+@@ -1,8 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
  config VIDEO_USBTV
  	tristate "USBTV007 video capture support"
 -	depends on VIDEO_V4L2 && SND
@@ -3902,23 +3952,44 @@
 +	depends on VIDEO_V4L2
  	select VIDEOBUF2_VMALLOC
  
- 	---help---
+ 	help
+diff --git a/drivers/media/usb/usbtv/Makefile b/drivers/media/usb/usbtv/Makefile
+index 78705bcd064e..23327230b2c3 100644
 --- a/drivers/media/usb/usbtv/Makefile
 +++ b/drivers/media/usb/usbtv/Makefile
-@@ -1,5 +1,4 @@
+@@ -1,6 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0-only
  usbtv-y := usbtv-core.o \
 -	usbtv-video.o \
 -	usbtv-audio.o
 +	usbtv-video.o
  
  obj-$(CONFIG_VIDEO_USBTV) += usbtv.o
+diff --git a/drivers/media/usb/usbtv/usbtv-audio.c b/drivers/media/usb/usbtv/usbtv-audio.c
+index b57e94fb1977..23d83df6dc39 100644
+--- a/drivers/media/usb/usbtv/usbtv-audio.c
++++ b/drivers/media/usb/usbtv/usbtv-audio.c
+@@ -43,6 +43,7 @@
+ 
+ #include "usbtv.h"
+ 
++#ifdef CONFIG_SND_PCM
+ static const struct snd_pcm_hardware snd_usbtv_digital_hw = {
+ 	.info = SNDRV_PCM_INFO_BATCH |
+ 		SNDRV_PCM_INFO_MMAP |
+@@ -375,3 +376,4 @@ void usbtv_audio_free(struct usbtv *usbtv)
+ 		usbtv->snd = NULL;
+ 	}
+ }
++#endif
+diff --git a/drivers/media/usb/usbtv/usbtv-core.c b/drivers/media/usb/usbtv/usbtv-core.c
+index 2308c0b4f5e7..6637544f3645 100644
 --- a/drivers/media/usb/usbtv/usbtv-core.c
 +++ b/drivers/media/usb/usbtv/usbtv-core.c
-@@ -100,21 +100,23 @@
- 	ret = usbtv_video_init(usbtv);
+@@ -101,21 +101,24 @@ static int usbtv_probe(struct usb_interface *intf,
  	if (ret < 0)
  		goto usbtv_video_fail;
--
+ 
 +#ifdef CONFIG_SND_PCM
  	ret = usbtv_audio_init(usbtv);
  	if (ret < 0)
@@ -3934,13 +4005,14 @@
 +#ifdef CONFIG_SND_PCM
  usbtv_audio_fail:
  	/* we must not free at this point */
- 	usb_get_dev(usbtv->udev);
+ 	v4l2_device_get(&usbtv->v4l2_dev);
+ 	/* this will undo the v4l2_device_get() */
  	usbtv_video_free(usbtv);
 +#endif
  
  usbtv_video_fail:
  	usb_set_intfdata(intf, NULL);
-@@ -133,7 +135,9 @@
+@@ -134,7 +137,9 @@ static void usbtv_disconnect(struct usb_interface *intf)
  	if (!usbtv)
  		return;
  
@@ -3950,9 +4022,11 @@
  	usbtv_video_free(usbtv);
  
  	usb_put_dev(usbtv->udev);
+diff --git a/drivers/media/usb/usbtv/usbtv-video.c b/drivers/media/usb/usbtv/usbtv-video.c
+index 3b4a2e769230..3795f5726d2d 100644
 --- a/drivers/media/usb/usbtv/usbtv-video.c
 +++ b/drivers/media/usb/usbtv/usbtv-video.c
-@@ -470,8 +470,9 @@
+@@ -557,8 +557,9 @@ static int usbtv_start(struct usbtv *usbtv)
  	int i;
  	int ret;
  
@@ -3963,7 +4037,7 @@
  	ret = usb_set_interface(usbtv->udev, 0, 0);
  	if (ret < 0)
  		return ret;
-@@ -484,7 +485,9 @@
+@@ -571,7 +572,9 @@ static int usbtv_start(struct usbtv *usbtv)
  	if (ret < 0)
  		return ret;
  
@@ -3973,3 +4047,6 @@
  
  	for (i = 0; i < USBTV_ISOC_TRANSFERS; i++) {
  		struct urb *ip;
+-- 
+2.29.2
+

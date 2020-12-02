@@ -277,6 +277,15 @@ tasklet_init(struct tasklet_struct *t, tasklet_func_t *func,
 }
 
 void
+tasklet_setup(struct tasklet_struct *t, tasklet_callback_t *func)
+{
+	INIT_WORK(&t->work, tasklet_wrapper_callback);
+
+	t->func = (tasklet_func_t *)func;
+	t->data = (long)t;
+}
+
+void
 tasklet_kill(struct tasklet_struct *t)
 {
 	atomic_lock();

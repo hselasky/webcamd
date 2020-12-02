@@ -71,7 +71,6 @@ void	interruptible_sleep_on(wait_queue_head_t *q);
 uint64_t interruptible_sleep_on_timeout(wait_queue_head_t *q, uint64_t timeout);
 int	waitqueue_active(wait_queue_head_t *q);
 
-#define	wake_up_poll(wqh, flags) wake_up(wqh)
 void	wake_up(wait_queue_head_t *q);
 void	wake_up_all(wait_queue_head_t *q);
 void	wake_up_nr(wait_queue_head_t *q, uint32_t nr);
@@ -85,7 +84,9 @@ int	schedule_timeout(long);
 int	schedule_timeout_interruptible(long);
 void	schedule(void);
 
+#define	wake_up_poll(q,f)               wake_up(q)
 #define	wake_up_interruptible(q)        wake_up(q)
+#define	wake_up_interruptible_poll(q,f) wake_up(q)
 #define	wake_up_interruptible_nr(q, nr) wake_up_nr(q,nr)
 #define	wake_up_interruptible_all(q)    wake_up_all(q)
 #define	wake_up_interruptible_sync(q)   wake_up(q)

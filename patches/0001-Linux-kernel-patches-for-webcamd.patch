@@ -1,18 +1,19 @@
-From 7cd3c7555d0a2575db8d39c8dc6be5c6cb32ee12 Mon Sep 17 00:00:00 2001
-From: Hans Petter Selasky <root@hps2020.home.selasky.org>
-Date: Thu, 16 Apr 2020 08:46:25 +0200
-Subject: [PATCH] Linux kernel patches for webcamd.
+From 14bfb12565174b1401e743aabd4b62000cbd8c7c Mon Sep 17 00:00:00 2001
+From: Hans Petter Selasky <hps@selasky.org>
+Date: Wed, 2 Dec 2020 17:58:37 +0100
+Subject: [PATCH 1/2] Linux kernel patches for webcamd.
 
 Signed-off-by: Hans Petter Selasky <hps@selasky.org>
 ---
- drivers/base/regmap/regmap.c                  |  3 +-
+ drivers/base/regmap/regmap.c                  |  5 ++-
  drivers/hid/hid-asus.c                        |  7 ++--
  drivers/hid/hid-core.c                        |  7 +++-
  drivers/hid/hid-multitouch.c                  |  6 ++--
  drivers/hid/wacom.h                           |  1 +
  drivers/input/evdev.c                         |  2 +-
+ drivers/input/tablet/aiptek.c                 |  2 +-
  drivers/leds/led-core.c                       | 12 +++++++
- .../media/common/videobuf2/videobuf2-core.c   |  6 +++-
+ .../media/common/videobuf2/videobuf2-core.c   |  8 +++--
  .../media/common/videobuf2/videobuf2-memops.c |  4 +++
  .../common/videobuf2/videobuf2-vmalloc.c      |  5 +++
  drivers/media/dvb-core/dvb_frontend.c         |  3 ++
@@ -22,7 +23,7 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  drivers/media/dvb-frontends/tda18271c2dd.c    |  4 +--
  drivers/media/i2c/adv7343.c                   |  4 +++
  drivers/media/i2c/tvp514x.c                   |  6 ++++
- drivers/media/i2c/tvp5150.c                   | 20 +++++++++++-
+ drivers/media/i2c/tvp5150.c                   | 23 +++++++++++--
  drivers/media/i2c/tvp7002.c                   |  6 ++++
  drivers/media/rc/lirc_dev.c                   |  2 ++
  drivers/media/rc/rc-main.c                    | 15 +++++++++
@@ -37,7 +38,7 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  drivers/media/usb/uvc/uvc_driver.c            |  8 -----
  drivers/media/usb/uvc/uvc_video.c             | 22 ++++++++++---
  drivers/media/usb/uvc/uvcvideo.h              |  4 +--
- drivers/media/v4l2-core/v4l2-async.c          |  2 ++
+ drivers/media/v4l2-core/v4l2-async.c          |  6 ++++
  drivers/media/v4l2-core/v4l2-dev.c            | 32 +++++++++++++++++++
  drivers/media/v4l2-core/v4l2-ioctl.c          |  2 ++
  drivers/media/v4l2-core/v4l2-subdev.c         |  3 +-
@@ -46,34 +47,44 @@ Signed-off-by: Hans Petter Selasky <hps@selasky.org>
  include/uapi/linux/dvb/ca.h                   |  8 +++++
  include/uapi/linux/dvb/frontend.h             |  3 +-
  include/uapi/linux/input.h                    | 18 +++++++----
- 41 files changed, 231 insertions(+), 42 deletions(-)
+ 42 files changed, 240 insertions(+), 46 deletions(-)
 
 diff --git a/drivers/base/regmap/regmap.c b/drivers/base/regmap/regmap.c
-index 59f911e57719..c6c8291c3cdf 100644
+index 5db536ccfcd6..af225d688547 100644
 --- a/drivers/base/regmap/regmap.c
 +++ b/drivers/base/regmap/regmap.c
-@@ -649,6 +649,7 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
+@@ -663,7 +663,9 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
+ 					 const struct regmap_bus *bus,
+ 					 const struct regmap_config *config)
+ {
++#if IS_ENABLED(CONFIG_OF)
+ 	struct fwnode_handle *fwnode = dev ? dev_fwnode(dev) : NULL;
++#endif
+ 	enum regmap_endian endian;
+ 
+ 	/* Retrieve the endianness specification from the regmap config */
+@@ -673,6 +675,7 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
  	if (endian != REGMAP_ENDIAN_DEFAULT)
  		return endian;
  
 +#if IS_ENABLED(CONFIG_OF)
- 	/* If the dev and dev->of_node exist try to get endianness from DT */
- 	if (dev && dev->of_node) {
- 		np = dev->of_node;
-@@ -665,7 +666,7 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
- 		if (endian != REGMAP_ENDIAN_DEFAULT)
- 			return endian;
- 	}
+ 	/* If the firmware node exist try to get endianness from it */
+ 	if (fwnode_property_read_bool(fwnode, "big-endian"))
+ 		endian = REGMAP_ENDIAN_BIG;
+@@ -680,7 +683,7 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
+ 		endian = REGMAP_ENDIAN_LITTLE;
+ 	else if (fwnode_property_read_bool(fwnode, "native-endian"))
+ 		endian = REGMAP_ENDIAN_NATIVE;
 -
 +#endif
- 	/* Retrieve the endianness specification from the bus config */
- 	if (bus && bus->val_format_endian_default)
- 		endian = bus->val_format_endian_default;
+ 	/* If the endianness was specified in fwnode, use that */
+ 	if (endian != REGMAP_ENDIAN_DEFAULT)
+ 		return endian;
 diff --git a/drivers/hid/hid-asus.c b/drivers/hid/hid-asus.c
-index e6e4c841fb06..2d1cdebb5c1e 100644
+index c183caf89d49..9e72c7d6515f 100644
 --- a/drivers/hid/hid-asus.c
 +++ b/drivers/hid/hid-asus.c
-@@ -388,12 +388,10 @@ static void asus_kbd_backlight_work(struct work_struct *work)
+@@ -439,12 +439,10 @@ static void asus_kbd_backlight_work(struct work_struct *work)
   */
  static bool asus_kbd_wmi_led_control_present(struct hid_device *hdev)
  {
@@ -87,7 +98,7 @@ index e6e4c841fb06..2d1cdebb5c1e 100644
  	ret = asus_wmi_evaluate_method(ASUS_WMI_METHODID_DSTS,
  				       ASUS_WMI_DEVID_KBD_BACKLIGHT, 0, &value);
  	hid_dbg(hdev, "WMI backlight check: rc %d value %x", ret, value);
-@@ -401,6 +399,9 @@ static bool asus_kbd_wmi_led_control_present(struct hid_device *hdev)
+@@ -452,6 +450,9 @@ static bool asus_kbd_wmi_led_control_present(struct hid_device *hdev)
  		return false;
  
  	return !!(value & ASUS_WMI_DSTS_PRESENCE_BIT);
@@ -98,10 +109,10 @@ index e6e4c841fb06..2d1cdebb5c1e 100644
  
  static int asus_kbd_register_leds(struct hid_device *hdev)
 diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 359616e3efbb..b76431fff595 100644
+index 56172fe6995c..ef919739f4aa 100644
 --- a/drivers/hid/hid-core.c
 +++ b/drivers/hid/hid-core.c
-@@ -2488,7 +2488,7 @@ void hid_destroy_device(struct hid_device *hdev)
+@@ -2506,7 +2506,7 @@ void hid_destroy_device(struct hid_device *hdev)
  }
  EXPORT_SYMBOL_GPL(hid_destroy_device);
  
@@ -110,7 +121,7 @@ index 359616e3efbb..b76431fff595 100644
  static int __hid_bus_reprobe_drivers(struct device *dev, void *data)
  {
  	struct hid_driver *hdrv = data;
-@@ -2518,6 +2518,7 @@ static int __bus_removed_driver(struct device_driver *drv, void *data)
+@@ -2536,6 +2536,7 @@ static int __bus_removed_driver(struct device_driver *drv, void *data)
  {
  	return bus_rescan_devices(&hid_bus_type);
  }
@@ -118,7 +129,7 @@ index 359616e3efbb..b76431fff595 100644
  
  int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
  		const char *mod_name)
-@@ -2534,9 +2535,11 @@ int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
+@@ -2552,9 +2553,11 @@ int __hid_register_driver(struct hid_driver *hdrv, struct module *owner,
  
  	ret = driver_register(&hdrv->driver);
  
@@ -130,7 +141,7 @@ index 359616e3efbb..b76431fff595 100644
  
  	return ret;
  }
-@@ -2547,7 +2550,9 @@ void hid_unregister_driver(struct hid_driver *hdrv)
+@@ -2565,7 +2568,9 @@ void hid_unregister_driver(struct hid_driver *hdrv)
  	driver_unregister(&hdrv->driver);
  	hid_free_dynids(hdrv);
  
@@ -141,10 +152,10 @@ index 359616e3efbb..b76431fff595 100644
  EXPORT_SYMBOL_GPL(hid_unregister_driver);
  
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index 362805ddf377..e18e378db360 100644
+index d670bcd57bde..f8423ca8f402 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
-@@ -128,7 +128,7 @@ struct mt_application {
+@@ -129,7 +129,7 @@ struct mt_application {
  				 */
  
  	__s32 dev_time;		/* the scan time provided by the device */
@@ -153,7 +164,7 @@ index 362805ddf377..e18e378db360 100644
  	int timestamp;		/* the timestamp to be sent */
  	int prev_scantime;		/* scantime reported previously */
  
-@@ -936,9 +936,9 @@ static void mt_sync_frame(struct mt_device *td, struct mt_application *app,
+@@ -941,9 +941,9 @@ static void mt_sync_frame(struct mt_device *td, struct mt_application *app,
  static int mt_compute_timestamp(struct mt_application *app, __s32 value)
  {
  	long delta = value - app->prev_scantime;
@@ -178,10 +189,10 @@ index 203d27d198b8..463efcad9c5b 100644
  
  /*
 diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
-index cb6e3a5f509c..96ddf8a4e2ff 100644
+index 95f90699d2b1..c0fde2b92bd5 100644
 --- a/drivers/input/evdev.c
 +++ b/drivers/input/evdev.c
-@@ -775,7 +775,7 @@ static int str_to_user(const char *str, unsigned int maxlen, void __user *p)
+@@ -766,7 +766,7 @@ static int str_to_user(const char *str, unsigned int maxlen, void __user *p)
  	int len;
  
  	if (!str)
@@ -190,11 +201,24 @@ index cb6e3a5f509c..96ddf8a4e2ff 100644
  
  	len = strlen(str) + 1;
  	if (len > maxlen)
+diff --git a/drivers/input/tablet/aiptek.c b/drivers/input/tablet/aiptek.c
+index e08b0ef078e8..0913ba09712a 100644
+--- a/drivers/input/tablet/aiptek.c
++++ b/drivers/input/tablet/aiptek.c
+@@ -1355,7 +1355,7 @@ static ssize_t show_tabletDiagnosticMessage(struct device *dev, struct device_at
+ 	default:
+ 		return 0;
+ 	}
+-	return snprintf(buf, PAGE_SIZE, retMsg);
++	return snprintf(buf, PAGE_SIZE, "%s", retMsg);
+ }
+ 
+ static DEVICE_ATTR(diagnostic, S_IRUGO, show_tabletDiagnosticMessage, NULL);
 diff --git a/drivers/leds/led-core.c b/drivers/leds/led-core.c
-index f1f718dbe0f8..baf3bb7c79a4 100644
+index c4e780bdb385..e639be242817 100644
 --- a/drivers/leds/led-core.c
 +++ b/drivers/leds/led-core.c
-@@ -324,6 +324,7 @@ EXPORT_SYMBOL_GPL(led_update_brightness);
+@@ -326,6 +326,7 @@ EXPORT_SYMBOL_GPL(led_update_brightness);
  
  u32 *led_get_default_pattern(struct led_classdev *led_cdev, unsigned int *size)
  {
@@ -202,7 +226,7 @@ index f1f718dbe0f8..baf3bb7c79a4 100644
  	struct fwnode_handle *fwnode = led_cdev->dev->fwnode;
  	u32 *pattern;
  	int count;
-@@ -344,6 +345,9 @@ u32 *led_get_default_pattern(struct led_classdev *led_cdev, unsigned int *size)
+@@ -346,6 +347,9 @@ u32 *led_get_default_pattern(struct led_classdev *led_cdev, unsigned int *size)
  	*size = count;
  
  	return pattern;
@@ -212,7 +236,7 @@ index f1f718dbe0f8..baf3bb7c79a4 100644
  }
  EXPORT_SYMBOL_GPL(led_get_default_pattern);
  
-@@ -365,6 +369,7 @@ void led_sysfs_enable(struct led_classdev *led_cdev)
+@@ -367,6 +371,7 @@ void led_sysfs_enable(struct led_classdev *led_cdev)
  }
  EXPORT_SYMBOL_GPL(led_sysfs_enable);
  
@@ -220,7 +244,7 @@ index f1f718dbe0f8..baf3bb7c79a4 100644
  static void led_parse_fwnode_props(struct device *dev,
  				   struct fwnode_handle *fwnode,
  				   struct led_properties *props)
-@@ -415,18 +420,23 @@ static void led_parse_fwnode_props(struct device *dev,
+@@ -417,12 +422,15 @@ static void led_parse_fwnode_props(struct device *dev,
  		props->func_enum_present = true;
  	}
  }
@@ -235,6 +259,8 @@ index f1f718dbe0f8..baf3bb7c79a4 100644
 +#endif
  	const char *devicename = init_data->devicename;
  
+ 	/* We want to label LEDs that can produce full range of colors
+@@ -432,7 +440,9 @@ int led_compose_name(struct device *dev, struct led_init_data *init_data,
  	if (!led_classdev_name)
  		return -EINVAL;
  
@@ -244,7 +270,7 @@ index f1f718dbe0f8..baf3bb7c79a4 100644
  
  	if (props.label) {
  		/*
-@@ -468,9 +478,11 @@ int led_compose_name(struct device *dev, struct led_init_data *init_data,
+@@ -474,9 +484,11 @@ int led_compose_name(struct device *dev, struct led_init_data *init_data,
  		}
  		snprintf(led_classdev_name, LED_MAX_NAME_SIZE, "%s:%s",
  			 devicename, init_data->default_label);
@@ -257,32 +283,34 @@ index f1f718dbe0f8..baf3bb7c79a4 100644
  		return -EINVAL;
  
 diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
-index 44d65f5be845..e5788c09aec2 100644
+index 4eab6d81cce1..007a91b9476a 100644
 --- a/drivers/media/common/videobuf2/videobuf2-core.c
 +++ b/drivers/media/common/videobuf2/videobuf2-core.c
-@@ -621,7 +621,7 @@ static int __verify_dmabuf_ops(struct vb2_queue *q)
+@@ -678,7 +678,7 @@ static int __verify_dmabuf_ops(struct vb2_queue *q)
  int vb2_verify_memory_type(struct vb2_queue *q,
  		enum vb2_memory memory, unsigned int type)
  {
 -	if (memory != VB2_MEMORY_MMAP && memory != VB2_MEMORY_USERPTR &&
 +	if (memory != VB2_MEMORY_MMAP && /* memory != VB2_MEMORY_USERPTR && */
  	    memory != VB2_MEMORY_DMABUF) {
- 		dprintk(1, "unsupported memory type\n");
+ 		dprintk(q, 1, "unsupported memory type\n");
  		return -EINVAL;
-@@ -641,10 +641,12 @@ int vb2_verify_memory_type(struct vb2_queue *q,
+@@ -697,12 +697,12 @@ int vb2_verify_memory_type(struct vb2_queue *q,
+ 		dprintk(q, 1, "MMAP for current setup unsupported\n");
  		return -EINVAL;
  	}
- 
+-
 +#if 0
  	if (memory == VB2_MEMORY_USERPTR && __verify_userptr_ops(q)) {
- 		dprintk(1, "USERPTR for current setup unsupported\n");
+ 		dprintk(q, 1, "USERPTR for current setup unsupported\n");
  		return -EINVAL;
  	}
+-
 +#endif
- 
  	if (memory == VB2_MEMORY_DMABUF && __verify_dmabuf_ops(q)) {
- 		dprintk(1, "DMABUF for current setup unsupported\n");
-@@ -1298,9 +1300,11 @@ static int __buf_prepare(struct vb2_buffer *vb)
+ 		dprintk(q, 1, "DMABUF for current setup unsupported\n");
+ 		return -EINVAL;
+@@ -1352,9 +1352,11 @@ static int __buf_prepare(struct vb2_buffer *vb)
  	case VB2_MEMORY_MMAP:
  		ret = __prepare_mmap(vb);
  		break;
@@ -325,7 +353,7 @@ index 6e9e05153f4e..847f90bab5ab 100644
  /**
   * vb2_common_vm_open() - increase refcount of the vma
 diff --git a/drivers/media/common/videobuf2/videobuf2-vmalloc.c b/drivers/media/common/videobuf2/videobuf2-vmalloc.c
-index 1a4f0ca87c7c..95fa4bbc1ff1 100644
+index bf5ac63a5742..8cd1af055d57 100644
 --- a/drivers/media/common/videobuf2/videobuf2-vmalloc.c
 +++ b/drivers/media/common/videobuf2/videobuf2-vmalloc.c
 @@ -71,6 +71,7 @@ static void vb2_vmalloc_put(void *buf_priv)
@@ -336,7 +364,7 @@ index 1a4f0ca87c7c..95fa4bbc1ff1 100644
  static void *vb2_vmalloc_get_userptr(struct device *dev, unsigned long vaddr,
  				     unsigned long size,
  				     enum dma_data_direction dma_dir)
-@@ -147,6 +148,10 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
+@@ -146,6 +147,10 @@ static void vb2_vmalloc_put_userptr(void *buf_priv)
  	vb2_destroy_framevec(buf->vec);
  	kfree(buf);
  }
@@ -407,10 +435,10 @@ index 39cbb3ea1c9d..cd171c46c710 100644
  	printk(KERN_INFO "m88rs2000-fe: " format "\n" , ## arg)
  
 diff --git a/drivers/media/dvb-frontends/tda18271c2dd.c b/drivers/media/dvb-frontends/tda18271c2dd.c
-index 43312bba1aec..ac9aad3d7dea 100644
+index a34834487943..2a7d7e80ca49 100644
 --- a/drivers/media/dvb-frontends/tda18271c2dd.c
 +++ b/drivers/media/dvb-frontends/tda18271c2dd.c
-@@ -1094,7 +1094,7 @@ static int ChannelConfiguration(struct tda_state *state,
+@@ -1091,7 +1091,7 @@ static int ChannelConfiguration(struct tda_state *state,
  	return status;
  }
  
@@ -419,7 +447,7 @@ index 43312bba1aec..ac9aad3d7dea 100644
  {
  	struct tda_state *state = fe->tuner_priv;
  
-@@ -1206,7 +1206,7 @@ static const struct dvb_tuner_ops tuner_ops = {
+@@ -1203,7 +1203,7 @@ static const struct dvb_tuner_ops tuner_ops = {
  		.frequency_step_hz =  62500
  	},
  	.init              = init,
@@ -483,10 +511,10 @@ index a7fbe5b400c2..1893aeedc336 100644
  	},
  	.probe = tvp514x_probe,
 diff --git a/drivers/media/i2c/tvp5150.c b/drivers/media/i2c/tvp5150.c
-index eb39cf5ea089..ed39966bda81 100644
+index 7d9401219a3a..1a6c8c5fe4d1 100644
 --- a/drivers/media/i2c/tvp5150.c
 +++ b/drivers/media/i2c/tvp5150.c
-@@ -1993,6 +1993,7 @@ static int tvp5150_validate_connectors(struct tvp5150 *decoder)
+@@ -1996,6 +1996,7 @@ static int tvp5150_validate_connectors(struct tvp5150 *decoder)
  	return 0;
  }
  
@@ -494,15 +522,22 @@ index eb39cf5ea089..ed39966bda81 100644
  static int tvp5150_parse_dt(struct tvp5150 *decoder, struct device_node *np)
  {
  	struct device *dev = decoder->sd.dev;
-@@ -2108,6 +2109,7 @@ static int tvp5150_parse_dt(struct tvp5150 *decoder, struct device_node *np)
- 
+@@ -2106,11 +2107,13 @@ static int tvp5150_parse_dt(struct tvp5150 *decoder, struct device_node *np)
+ err_put:
+ 	of_node_put(ep_np);
+ err_free:
++#if IS_ENABLED(CONFIG_OF)
+ 	for (i = 0; i < TVP5150_MAX_CONNECTORS; i++)
+ 		v4l2_fwnode_connector_free(&decoder->connectors[i].base);
+-
++#endif
  	return ret;
  }
 +#endif
  
  static const char * const tvp5150_test_patterns[2] = {
  	"Disabled",
-@@ -2118,7 +2120,9 @@ static int tvp5150_probe(struct i2c_client *c)
+@@ -2121,7 +2124,9 @@ static int tvp5150_probe(struct i2c_client *c)
  {
  	struct tvp5150 *core;
  	struct v4l2_subdev *sd;
@@ -512,7 +547,7 @@ index eb39cf5ea089..ed39966bda81 100644
  	struct regmap *map;
  	unsigned int i;
  	int res;
-@@ -2146,7 +2150,8 @@ static int tvp5150_probe(struct i2c_client *c)
+@@ -2149,7 +2154,8 @@ static int tvp5150_probe(struct i2c_client *c)
  	sd->internal_ops = &tvp5150_internal_ops;
  	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE | V4L2_SUBDEV_FL_HAS_EVENTS;
  
@@ -522,7 +557,7 @@ index eb39cf5ea089..ed39966bda81 100644
  		res = tvp5150_parse_dt(core, np);
  		if (res) {
  			dev_err(sd->dev, "DT parsing error: %d\n", res);
-@@ -2156,6 +2161,10 @@ static int tvp5150_probe(struct i2c_client *c)
+@@ -2159,6 +2165,10 @@ static int tvp5150_probe(struct i2c_client *c)
  		/* Default to BT.656 embedded sync */
  		core->mbus_type = V4L2_MBUS_BT656;
  	}
@@ -533,7 +568,7 @@ index eb39cf5ea089..ed39966bda81 100644
  
  	res = tvp5150_mc_init(core);
  	if (res)
-@@ -2211,11 +2220,16 @@ static int tvp5150_probe(struct i2c_client *c)
+@@ -2214,11 +2224,16 @@ static int tvp5150_probe(struct i2c_client *c)
  	core->irq = c->irq;
  	tvp5150_reset(sd, 0);	/* Calls v4l2_ctrl_handler_setup() */
  	if (c->irq) {
@@ -550,7 +585,7 @@ index eb39cf5ea089..ed39966bda81 100644
  	}
  
  	res = v4l2_async_register_subdev(sd);
-@@ -2246,10 +2260,14 @@ static int tvp5150_remove(struct i2c_client *c)
+@@ -2249,12 +2264,16 @@ static int tvp5150_remove(struct i2c_client *c)
  		"tvp5150.c: removing tvp5150 adapter on address 0x%x\n",
  		c->addr << 1);
  
@@ -559,17 +594,19 @@ index eb39cf5ea089..ed39966bda81 100644
  		v4l2_fwnode_connector_free(&decoder->connectors[i].base);
 +#endif
 +#if defined(CONFIG_MEDIA_CONTROLLER)
- 	for (i = 0; i < decoder->connectors_num; i++)
+ 	for (i = 0; i < decoder->connectors_num; i++) {
  		media_device_unregister_entity(&decoder->connectors[i].ent);
+ 		media_entity_cleanup(&decoder->connectors[i].ent);
+ 	}
 +#endif
  	v4l2_async_unregister_subdev(sd);
  	v4l2_ctrl_handler_free(&decoder->hdl);
  	pm_runtime_disable(&c->dev);
 diff --git a/drivers/media/i2c/tvp7002.c b/drivers/media/i2c/tvp7002.c
-index de313b1306da..79962e5182a6 100644
+index ada4ec5ef782..a46d93d8bf39 100644
 --- a/drivers/media/i2c/tvp7002.c
 +++ b/drivers/media/i2c/tvp7002.c
-@@ -880,6 +880,7 @@ static const struct v4l2_subdev_ops tvp7002_ops = {
+@@ -882,6 +882,7 @@ static const struct v4l2_subdev_ops tvp7002_ops = {
  static struct tvp7002_config *
  tvp7002_get_pdata(struct i2c_client *client)
  {
@@ -577,7 +614,7 @@ index de313b1306da..79962e5182a6 100644
  	struct v4l2_fwnode_endpoint bus_cfg = { .bus_type = 0 };
  	struct tvp7002_config *pdata = NULL;
  	struct device_node *endpoint;
-@@ -919,6 +920,9 @@ tvp7002_get_pdata(struct i2c_client *client)
+@@ -921,6 +922,9 @@ tvp7002_get_pdata(struct i2c_client *client)
  done:
  	of_node_put(endpoint);
  	return pdata;
@@ -587,7 +624,7 @@ index de313b1306da..79962e5182a6 100644
  }
  
  /*
-@@ -1072,7 +1076,9 @@ MODULE_DEVICE_TABLE(of, tvp7002_of_match);
+@@ -1074,7 +1078,9 @@ MODULE_DEVICE_TABLE(of, tvp7002_of_match);
  /* I2C driver data */
  static struct i2c_driver tvp7002_driver = {
  	.driver = {
@@ -598,10 +635,10 @@ index de313b1306da..79962e5182a6 100644
  	},
  	.probe_new = tvp7002_probe,
 diff --git a/drivers/media/rc/lirc_dev.c b/drivers/media/rc/lirc_dev.c
-index 583e4f32a0da..9520abb19aed 100644
+index 220363b9a868..54c2b5ebab74 100644
 --- a/drivers/media/rc/lirc_dev.c
 +++ b/drivers/media/rc/lirc_dev.c
-@@ -831,6 +831,7 @@ void __exit lirc_dev_exit(void)
+@@ -822,6 +822,7 @@ void __exit lirc_dev_exit(void)
  	unregister_chrdev_region(lirc_base_dev, RC_DEV_MAX);
  }
  
@@ -609,7 +646,7 @@ index 583e4f32a0da..9520abb19aed 100644
  struct rc_dev *rc_dev_get_from_fd(int fd)
  {
  	struct fd f = fdget(fd);
-@@ -853,5 +854,6 @@ struct rc_dev *rc_dev_get_from_fd(int fd)
+@@ -844,5 +845,6 @@ struct rc_dev *rc_dev_get_from_fd(int fd)
  
  	return dev;
  }
@@ -617,10 +654,10 @@ index 583e4f32a0da..9520abb19aed 100644
  
  MODULE_ALIAS("lirc_dev");
 diff --git a/drivers/media/rc/rc-main.c b/drivers/media/rc/rc-main.c
-index d7064d664d52..0cd0af2ba59a 100644
+index 1d811e5ffb55..aa5f9dbb082e 100644
 --- a/drivers/media/rc/rc-main.c
 +++ b/drivers/media/rc/rc-main.c
-@@ -1875,6 +1875,12 @@ static void rc_free_rx_device(struct rc_dev *dev)
+@@ -1887,6 +1887,12 @@ static void rc_free_rx_device(struct rc_dev *dev)
  	ir_free_table(&dev->rc_map);
  }
  
@@ -633,7 +670,7 @@ index d7064d664d52..0cd0af2ba59a 100644
  int rc_register_device(struct rc_dev *dev)
  {
  	const char *path;
-@@ -1954,6 +1960,15 @@ int rc_register_device(struct rc_dev *dev)
+@@ -1966,6 +1972,15 @@ int rc_register_device(struct rc_dev *dev)
  	dev_dbg(&dev->dev, "Registered rc%u (driver: %s)\n", dev->minor,
  		dev->driver_name ? dev->driver_name : "unknown");
  
@@ -677,7 +714,7 @@ index c6659253c6fb..0ed246b01cca 100644
  }
  EXPORT_SYMBOL_GPL(cx231xx_get_i2c_adap);
 diff --git a/drivers/media/usb/dvb-usb-v2/lmedm04.c b/drivers/media/usb/dvb-usb-v2/lmedm04.c
-index fd8b42bb9a84..cf5a2f5bb541 100644
+index 5a7a9522d46d..c9107d7018e9 100644
 --- a/drivers/media/usb/dvb-usb-v2/lmedm04.c
 +++ b/drivers/media/usb/dvb-usb-v2/lmedm04.c
 @@ -86,6 +86,7 @@ static int dvb_usb_lme2510_debug;
@@ -771,10 +808,10 @@ index 9771f0954c69..1fe83a6bcf12 100644
  		default:
  			err("unknown URB-type for data transfer.");
 diff --git a/drivers/media/usb/em28xx/em28xx.h b/drivers/media/usb/em28xx/em28xx.h
-index acbb62397314..40e783c3fa92 100644
+index 55a46faaf7b7..f99895c0ef5e 100644
 --- a/drivers/media/usb/em28xx/em28xx.h
 +++ b/drivers/media/usb/em28xx/em28xx.h
-@@ -453,6 +453,7 @@ enum em28xx_led_role {
+@@ -454,6 +454,7 @@ enum em28xx_led_role {
  	EM28XX_LED_DIGITAL_CAPTURING_TS2,
  	EM28XX_LED_ILLUMINATION,
  	EM28XX_NUM_LED_ROLES, /* must be the last */
@@ -783,7 +820,7 @@ index acbb62397314..40e783c3fa92 100644
  
  struct em28xx_led {
 diff --git a/drivers/media/usb/gspca/gspca.c b/drivers/media/usb/gspca/gspca.c
-index 0566e00d6fea..07ec92617e6f 100644
+index c295f642d352..0d9873d0392a 100644
 --- a/drivers/media/usb/gspca/gspca.c
 +++ b/drivers/media/usb/gspca/gspca.c
 @@ -37,7 +37,7 @@
@@ -811,10 +848,10 @@ index 14519e5308b1..e1ebdc9b4d7a 100644
  #define ISO_BUFFER_SIZE		(ISO_FRAMES_PER_DESC * ISO_MAX_FRAME_SIZE)
  
 diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
-index 431d86e1c94b..d73afc6351dc 100644
+index ddb9eaa11be7..f35dfc8b1b49 100644
 --- a/drivers/media/usb/uvc/uvc_driver.c
 +++ b/drivers/media/usb/uvc/uvc_driver.c
-@@ -1947,8 +1947,6 @@ static void uvc_unregister_video(struct uvc_device *dev)
+@@ -2008,8 +2008,6 @@ static void uvc_unregister_video(struct uvc_device *dev)
  
  		video_unregister_device(&stream->vdev);
  		video_unregister_device(&stream->meta.vdev);
@@ -823,7 +860,7 @@ index 431d86e1c94b..d73afc6351dc 100644
  	}
  
  	uvc_status_unregister(dev);
-@@ -2044,8 +2042,6 @@ static int uvc_register_video(struct uvc_device *dev,
+@@ -2105,8 +2103,6 @@ static int uvc_register_video(struct uvc_device *dev,
  	else
  		stream->chain->caps |= V4L2_CAP_VIDEO_OUTPUT;
  
@@ -832,7 +869,7 @@ index 431d86e1c94b..d73afc6351dc 100644
  	/* Register the device with V4L. */
  	return uvc_register_video_device(dev, stream, &stream->vdev,
  					 &stream->queue, stream->type,
-@@ -2933,11 +2929,8 @@ static int __init uvc_init(void)
+@@ -2994,11 +2990,8 @@ static int __init uvc_init(void)
  {
  	int ret;
  
@@ -844,7 +881,7 @@ index 431d86e1c94b..d73afc6351dc 100644
  		return ret;
  	}
  
-@@ -2948,7 +2941,6 @@ static int __init uvc_init(void)
+@@ -3009,7 +3002,6 @@ static int __init uvc_init(void)
  static void __exit uvc_cleanup(void)
  {
  	usb_deregister(&uvc_driver.driver);
@@ -853,7 +890,7 @@ index 431d86e1c94b..d73afc6351dc 100644
  
  module_init(uvc_init);
 diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
-index 8fa77a81dd7f..7b31e570b95d 100644
+index a6a441d92b94..8cd3ea905550 100644
 --- a/drivers/media/usb/uvc/uvc_video.c
 +++ b/drivers/media/usb/uvc/uvc_video.c
 @@ -1601,9 +1601,7 @@ static int uvc_alloc_urb_buffers(struct uvc_streaming *stream,
@@ -893,10 +930,10 @@ index 8fa77a81dd7f..7b31e570b95d 100644
  	npackets = uvc_alloc_urb_buffers(stream, size, psize, gfp_flags);
  	if (npackets == 0)
 diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
-index 6ab972c643e3..30e073eb63f7 100644
+index a3dfacf069c4..f75aae32f4a1 100644
 --- a/drivers/media/usb/uvc/uvcvideo.h
 +++ b/drivers/media/usb/uvc/uvcvideo.h
-@@ -173,9 +173,9 @@
+@@ -177,9 +177,9 @@
  #define DRIVER_VERSION		"1.1.1"
  
  /* Number of isochronous URBs. */
@@ -909,10 +946,28 @@ index 6ab972c643e3..30e073eb63f7 100644
  #define UVC_MAX_STATUS_SIZE	16
  
 diff --git a/drivers/media/v4l2-core/v4l2-async.c b/drivers/media/v4l2-core/v4l2-async.c
-index 8bde33c21ce4..ab81cc38c244 100644
+index e3ab003a6c85..12c8a1b06d0f 100644
 --- a/drivers/media/v4l2-core/v4l2-async.c
 +++ b/drivers/media/v4l2-core/v4l2-async.c
-@@ -520,6 +520,7 @@ __v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
+@@ -73,6 +73,7 @@ static bool match_devname(struct v4l2_async_notifier *notifier,
+ static bool match_fwnode(struct v4l2_async_notifier *notifier,
+ 			 struct v4l2_subdev *sd, struct v4l2_async_subdev *asd)
+ {
++#if IS_ENABLED(CONFIG_OF)
+ 	struct fwnode_handle *other_fwnode;
+ 	struct fwnode_handle *dev_fwnode;
+ 	bool asd_fwnode_is_ep;
+@@ -137,6 +138,9 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
+ 	}
+ 
+ 	return true;
++#else
++	return false;
++#endif
+ }
+ 
+ static bool match_custom(struct v4l2_async_notifier *notifier,
+@@ -587,6 +591,7 @@ __v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
  	list_del(&notifier->list);
  }
  
@@ -920,7 +975,7 @@ index 8bde33c21ce4..ab81cc38c244 100644
  void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
  {
  	mutex_lock(&list_lock);
-@@ -529,6 +530,7 @@ void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
+@@ -596,6 +601,7 @@ void v4l2_async_notifier_unregister(struct v4l2_async_notifier *notifier)
  	mutex_unlock(&list_lock);
  }
  EXPORT_SYMBOL(v4l2_async_notifier_unregister);
@@ -929,7 +984,7 @@ index 8bde33c21ce4..ab81cc38c244 100644
  static void __v4l2_async_notifier_cleanup(struct v4l2_async_notifier *notifier)
  {
 diff --git a/drivers/media/v4l2-core/v4l2-dev.c b/drivers/media/v4l2-core/v4l2-dev.c
-index 97b6a3af1361..bcedbd471d59 100644
+index a593ea0598b5..3d166bc279b6 100644
 --- a/drivers/media/v4l2-core/v4l2-dev.c
 +++ b/drivers/media/v4l2-core/v4l2-dev.c
 @@ -38,6 +38,16 @@
@@ -993,10 +1048,10 @@ index 97b6a3af1361..bcedbd471d59 100644
  
  	if (vdev->dev_debug & V4L2_DEV_DEBUG_FOP)
 diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
-index b2ef8e60ea7d..0c091fc73185 100644
+index eeff398fbdcc..6f1a742ec0fa 100644
 --- a/drivers/media/v4l2-core/v4l2-ioctl.c
 +++ b/drivers/media/v4l2-core/v4l2-ioctl.c
-@@ -2885,6 +2885,7 @@ static long __video_do_ioctl(struct file *file,
+@@ -2945,6 +2945,7 @@ static long __video_do_ioctl(struct file *file,
  	 * operation, and that should not be mixed with queueing a new
  	 * request at the same time.
  	 */
@@ -1004,7 +1059,7 @@ index b2ef8e60ea7d..0c091fc73185 100644
  	if (v4l2_device_supports_requests(vfd->v4l2_dev) &&
  	    (cmd == VIDIOC_STREAMON || cmd == VIDIOC_STREAMOFF)) {
  		req_queue_lock = &vfd->v4l2_dev->mdev->req_queue_mutex;
-@@ -2892,6 +2893,7 @@ static long __video_do_ioctl(struct file *file,
+@@ -2952,6 +2953,7 @@ static long __video_do_ioctl(struct file *file,
  		if (mutex_lock_interruptible(req_queue_lock))
  			return -ERESTARTSYS;
  	}
@@ -1013,10 +1068,10 @@ index b2ef8e60ea7d..0c091fc73185 100644
  	lock = v4l2_ioctl_get_lock(vfd, vfh, cmd, arg);
  
 diff --git a/drivers/media/v4l2-core/v4l2-subdev.c b/drivers/media/v4l2-core/v4l2-subdev.c
-index a376b351135f..76a7ebbb1967 100644
+index a7d508e74d6b..c787cd84b4d0 100644
 --- a/drivers/media/v4l2-core/v4l2-subdev.c
 +++ b/drivers/media/v4l2-core/v4l2-subdev.c
-@@ -392,6 +392,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
+@@ -428,6 +428,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
  
  		return v4l2_event_dequeue(vfh, arg, file->f_flags & O_NONBLOCK);
  
@@ -1024,7 +1079,7 @@ index a376b351135f..76a7ebbb1967 100644
  	case VIDIOC_DQEVENT_TIME32: {
  		struct v4l2_event_time32 *ev32 = arg;
  		struct v4l2_event ev = { };
-@@ -415,7 +416,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
+@@ -451,7 +452,7 @@ static long subdev_do_ioctl(struct file *file, unsigned int cmd, void *arg)
  
  		return rval;
  	}
@@ -1034,10 +1089,10 @@ index a376b351135f..76a7ebbb1967 100644
  		return v4l2_subdev_call(sd, core, subscribe_event, vfh, arg);
  
 diff --git a/include/media/v4l2-device.h b/include/media/v4l2-device.h
-index 7c912b7d2870..0bc0c4930e42 100644
+index 64ec4de948e9..39b02fcfa538 100644
 --- a/include/media/v4l2-device.h
 +++ b/include/media/v4l2-device.h
-@@ -204,11 +204,13 @@ static inline void v4l2_subdev_notify(struct v4l2_subdev *sd,
+@@ -246,11 +246,13 @@ static inline void v4l2_subdev_notify(struct v4l2_subdev *sd,
   *
   * @v4l2_dev: pointer to struct v4l2_device
   */
@@ -1152,5 +1207,5 @@ index 9a61c28ed3ae..94cc0a7cb0a5 100644
  /**
   * EVIOCSMASK - Set event mask
 -- 
-2.26.0
+2.29.2
 

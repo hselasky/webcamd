@@ -26,6 +26,7 @@
 #ifndef _LINUX_TASK_H_
 #define	_LINUX_TASK_H_
 
+struct tasklet_struct;
 struct work_struct;
 struct workqueue_struct;
 
@@ -41,6 +42,7 @@ typedef struct work_struct {
 #define	system_freezable_wq ((struct workqueue_struct *)0)
 
 typedef void (tasklet_func_t)(unsigned long);
+typedef void (tasklet_callback_t)(struct tasklet_struct *);
 
 struct tasklet_struct {
 	struct work_struct work;	/* must be first */
@@ -56,6 +58,9 @@ typedef struct delayed_work {
 typedef struct execute_work {
 	struct work_struct work;
 } execute_work_t;
+
+#define	from_tasklet(a, b, c) \
+	container_of(b, typeof(*(a)), c)
 
 struct rcu_head;
 typedef void rcu_func_t (struct rcu_head *);
@@ -86,6 +91,7 @@ void	cancel_work(struct work_struct *);
 void	cancel_work_sync(struct work_struct *);
 void	tasklet_schedule(struct tasklet_struct *t);
 void	tasklet_init(struct tasklet_struct *t, tasklet_func_t *, unsigned long data);
+void	tasklet_setup(struct tasklet_struct *t, tasklet_callback_t *);
 void	tasklet_kill(struct tasklet_struct *t);
 void	call_rcu(struct rcu_head *, rcu_func_t *);
 
