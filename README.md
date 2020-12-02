@@ -1,4 +1,4 @@
-<CENTER><IMG SRC="https://raw.githubusercontent.com/hselasky/webcamd/main/www/webcamd_logo.png"></IMG></CENTER>
+<IMG SRC="https://raw.githubusercontent.com/hselasky/webcamd/main/www/webcamd_logo.png"></IMG>
 
 # Introduction
 
