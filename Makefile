@@ -261,6 +261,10 @@ configure: tools/linux_make/linux_make
 	@echo " * VirtualTuner server"
 	@(cat config_vtuner_server.in ; echo "") >> config
 .endif
+.if defined(HAVE_MLX5)
+	@echo " * Connect-X 4/5/6"
+	@(cat config_mlx5.in ; echo "") >> config
+.endif
 	tools/linux_make/linux_make -c config \
 		-x v4l2-clk.o \
 		-x uvc_debugfs.o \
@@ -274,5 +278,6 @@ configure: tools/linux_make/linux_make
 		-i media_tree/drivers/staging/media \
 		-i media_tree/sound/i2c/other \
 		-i media_tree/lib/lzo \
+		-i media_tree/drivers/net/ethernet/mellanox/mlx5/core \
 		-i contrib/dvb-usb \
 		-o build/

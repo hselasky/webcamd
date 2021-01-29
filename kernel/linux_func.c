@@ -1310,6 +1310,15 @@ IS_ERR(const void *ptr)
 }
 
 int
+PTR_ERR_OR_ZERO(const void *ptr)
+{
+	if (IS_ERR(ptr))
+		return PTR_ERR(ptr);
+	else
+		return 0;
+}
+
+int
 __ffs(int x)
 {
 	return (~(x - 1) & x);

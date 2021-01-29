@@ -51,6 +51,10 @@
         (quot * (numer)) + ((rem * (numer)) / (denom)); \
 })
 
+#ifndef howmany
+#define	howmany(x, y)   (((x)+((y)-1))/(y))
+#endif
+
 #define	is_power_of_2(x) (((-(x)) & (x)) == (x))
 #define	__nop do {} while (0)
 #define	__user
@@ -467,6 +471,7 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	atomic_inc_return(...) atomic_inc(__VA_ARGS__)
 #define	atomic_dec_return(...) atomic_dec(__VA_ARGS__)
 #define	assert_spin_locked(...) __nop
+#define	ASSERT_EXCLUSIVE_ACCESS(...) __nop
 #define	IS_ERR_VALUE(x) ((unsigned long)(x) >= (unsigned long)-(1<<14))
 #define	IS_ERR_OR_NULL(x) ((unsigned long)(x) == 0 || IS_ERR_VALUE(x))
 #define	ERR_CAST(x) ((void *)(long)(const void *)(x))
@@ -586,6 +591,9 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 ((cast)((((cast)(x)) < ((cast)(y))) ? ((cast)(y)) : \
 	(((cast)(x)) > ((cast)(z))) ? ((cast)(z)) : ((cast)(x))))
 #define	try_then_request_module(x,...) (x)
+#ifndef __cold
+#define	__cold __attribute__((__cold__))
+#endif
 #ifndef __packed
 #define	__packed __attribute__((__packed__))
 #endif
@@ -645,11 +653,10 @@ extern unsigned long clear_user(void *uptr, unsigned long n);
 #define	rcu_dereference_protected(p,c) rcu_dereference(p)
 #define	rcu_dereference_raw(p) rcu_dereference(p)
 #define	rcu_assign_pointer(a,b) do { atomic_lock(); (a) = (b); atomic_unlock(); } while (0)
-#define	list_for_each_entry_rcu(a,b,c) list_for_each_entry(a,b,c)
-#define	list_add_rcu(a,b) list_add(a,b)
-#define	list_add_tail_rcu(a,b) list_add_tail(a,b)
-#define	list_del_rcu(a) list_del(a)
-#define	synchronize_rcu() __nop
+#define	synchronize_rcu() do {	\
+	atomic_lock();		\
+	atomic_unlock();	\
+} while (0)
 
 #define	add_input_randomness(...) __nop
 

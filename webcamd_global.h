@@ -71,9 +71,15 @@
 #include <kernel/linux_firmware.h>
 #include <kernel/linux_mod_param.h>
 #include <kernel/linux_compat32.h>
+#include <kernel/linux_radix.h>
+#include <kernel/linux_xarray.h>
 
 #include <media_tree/include/linux/mod_devicetable.h>
 #include <media_tree/include/linux/videodev2.h>
+
+#include <media_tree/include/linux/poison.h>
+#include <media_tree/include/linux/llist.h>
+#include <media_tree/include/linux/rculist.h>
 
 extern const char *webcamd_devnames[F_V4B_MAX];
 extern int webcamd_hal_register;

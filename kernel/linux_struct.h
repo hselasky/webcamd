@@ -315,6 +315,10 @@ struct device {
 	char	bus_id[32];
 };
 
+struct pci_dev {
+	struct device dev;
+};
+
 struct platform_device {
 	struct device dev;
 };
