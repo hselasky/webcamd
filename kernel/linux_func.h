@@ -111,6 +111,18 @@ int	atomic_read(const atomic_t *);
 int	atomic_dec_and_test(atomic_t *);
 int	atomic_cmpxchg(atomic_t *, int, int);
 
+#define	xchg(ptr, new) ({			\
+	union {					\
+		__typeof(*(ptr)) val;		\
+	} __ret, __new = { .val = (new) };	\
+						\
+	atomic_lock();				\
+	__ret.val = READ_ONCE(*ptr);		\
+	WRITE_ONCE(*ptr, __new.val);		\
+	atomic_unlock();			\
+	__ret.val;				\
+})
+
 uint64_t atomic64_read(atomic64_t *);
 void atomic64_or(uint64_t, atomic64_t *);
 void atomic64_xor(uint64_t, atomic64_t *);
@@ -178,9 +190,10 @@ int	try_module_get(struct module *module);
 
 #define	__module_get module_get
 void	module_get(struct module *module);
-void   *ERR_PTR(long error);
-long	PTR_ERR(const void *ptr);
-long	IS_ERR(const void *ptr);
+void   *ERR_PTR(long);
+long	PTR_ERR(const void *);
+long	IS_ERR(const void *);
+int	PTR_ERR_OR_ZERO(const void *);
 
 #define	TK_OFFS_REAL 0
 #define	TK_OFFS_BOOT 1
