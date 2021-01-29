@@ -41,11 +41,31 @@ list_add_tail(struct list_head *new, struct list_head *head)
 	__list_add(new, head->prev, head);
 }
 
+static inline bool
+__list_add_valid(struct list_head *new,
+		 struct list_head *prev,
+		 struct list_head *next)
+{
+	return true;
+}
+
+static inline bool
+__list_del_entry_valid(struct list_head *entry)
+{
+	return true;
+}
+
 static inline void
 __list_del(struct list_head *prev, struct list_head *next)
 {
 	next->prev = prev;
 	prev->next = next;
+}
+
+static inline void
+__list_del_entry(struct list_head *entry)
+{
+	__list_del(entry->prev, entry->next);
 }
 
 static inline void
