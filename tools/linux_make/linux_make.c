@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011-2012 Hans Petter Selasky <hselasky@freebsd.org>
+ * Copyright (c) 2011-2021 Hans Petter Selasky <hselasky@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -952,19 +952,23 @@ parse_makefile(char *path)
 }
 
 static void
-build_id(struct node *ptr, const char *name)
+filter_objname(char *pch)
 {
-	char *pch;
-	ptr->objprefix = strdup(ptr->path);
-	if (ptr->objprefix == NULL)
-		errx(EX_SOFTWARE, "Out of memory.");
-
-	pch = ptr->objprefix;
 	while (*pch) {
 		if (*pch == '.' || *pch == '/' || *pch == '\\' || !isprint(*pch))
 			*pch = '-';
 		pch++;
 	}
+}
+
+static void
+build_id(struct node *ptr, const char *name)
+{
+	ptr->objprefix = strdup(ptr->path);
+	if (ptr->objprefix == NULL)
+		errx(EX_SOFTWARE, "Out of memory.");
+
+	filter_objname(ptr->objprefix);
 
 	if (obj_has_children(&rootNode, name, strlen(name))) {
 		if (opt_verbose > 1) {
@@ -979,21 +983,35 @@ build_id(struct node *ptr, const char *name)
 static void
 build_source(struct node *ptr, const char *name)
 {
+	char *objname;
+
 	if (ptr->has_children)
 		return;
 
-	printf("obj-%s%s.o: %s%s.c\n", ptr->objprefix, name, ptr->path, name);
+	objname = strdup(name);
+	filter_objname(objname);
+
+	printf("obj-%s%s.o: %s%s.c\n", ptr->objprefix, objname, ptr->path, name);
 	printf("\t" "${CC} -c -DCURR_FILE_NAME=\\\"%s\\\" ${CFLAGS} -o obj-%s%s.o %s%s.c\n",
-	    name, ptr->objprefix, name, ptr->path, name);
+	    name, ptr->objprefix, objname, ptr->path, name);
+
+	free(objname);
 }
 
 static void
 build_objects(struct node *ptr, const char *name)
 {
+	char *objname;
+
 	if (ptr->has_children)
 		return;
 
-	printf("\t" "obj-%s%s.o \\\n", ptr->objprefix, name);
+	objname = strdup(name);
+	filter_objname(objname);
+
+	printf("\t" "obj-%s%s.o \\\n", ptr->objprefix, objname);
+
+	free(objname);
 }
 
 static void
