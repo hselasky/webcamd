@@ -1886,7 +1886,7 @@ class_destroy(struct class *class)
 int
 alloc_chrdev_region(dev_t *pdev, unsigned basemin, unsigned count, const char *name)
 {
-	if (strcmp(name, "BaseRemoteCtl") == 0) {
+	if (strcmp(name, "lirc") == 0) {
 		*pdev = MKDEV(LIRC_MAJOR, basemin);
 		return (0);
 	} else if (strcmp(name, "roccat") == 0) {
