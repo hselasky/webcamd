@@ -3570,13 +3570,13 @@ dma_free_noncontiguous(struct device *dev, size_t len, struct sg_table *sgt, enu
 {
 	if (sgt == NULL)
 		return;
-	free((void *)sgt->sgl->dma_address);
+	free((void *)(long)sgt->sgl->dma_address);
 	free(sgt);
 }
 
 void *
 dma_vmap_noncontiguous(struct device *dev, size_t len, struct sg_table *sgt)
 {
-	return ((void *)sgt->sgl->dma_address);
+	return ((void *)(long)sgt->sgl->dma_address);
 }
 
