@@ -2842,7 +2842,7 @@ usb_sg_init(struct usb_sg_request *io, struct usb_device *dev,
 		urb->transfer_flags = urb_flags;
 		urb->complete = sg_complete;
 		urb->context = io;
-		urb->transfer_buffer = (void *)sg->dma_address;
+		urb->transfer_buffer = (void *)(long)sg->dma_address;
 
 		len = sg->length;
 		if (length) {
