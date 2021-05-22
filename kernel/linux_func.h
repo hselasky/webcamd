@@ -12,8 +12,8 @@ int	zero_nop(void);
 #define	device_set_wakeup_enable(...) zero_nop()
 #define	device_set_wakeup_capable(...) zero_nop()
 #define	device_set_wakeup_disable(...) zero_nop()
-#define	device_property_read_u32(...) -EOPNOTSUPP
-#define	device_property_read_bool(...) -EOPNOTSUPP
+#define	device_property_read_u32(a,b,c) ({ *(c) = 0; -EOPNOTSUPP; })
+#define	device_property_read_bool(a,b) ({ false; })
 
 #define	driver_create_file(...) zero_nop()
 #define	driver_remove_file(...) zero_nop()
