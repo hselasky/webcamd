@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2019 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2021 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -2772,6 +2772,44 @@ kstrtoul(const char *nptr, unsigned int base, unsigned long *res)
 	return (0);
 }
 
+int
+kstrtobool(const char *nptr, bool *res)
+{
+	if (nptr == NULL)
+		return (-EINVAL);
+
+	switch (nptr[0]) {
+	case 'y':
+	case 'Y':
+	case '1':
+		*res = true;
+		return (0);
+	case 'n':
+	case 'N':
+	case '0':
+		*res = false;
+		return (0);
+	case 'o':
+	case 'O':
+		switch (nptr[1]) {
+		case 'n':
+		case 'N':
+			*res = true;
+			return (0);
+		case 'f':
+		case 'F':
+			*res = false;
+			return (0);
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+	return (-EINVAL);
+}
+
 /* The following function was copied from the Linux Kernel sources, fs/libfs.c */
 
 ssize_t
@@ -3237,16 +3275,15 @@ dma_buf_put(struct dma_buf *dmabuf)
 
 }
 
-void   *
-dma_buf_vmap(struct dma_buf *buf)
+int
+dma_buf_vmap(struct dma_buf *a, struct dma_buf_map *b)
 {
-	return (NULL);
+	return (-EOPNOTSUPP);
 }
 
 void
-dma_buf_vunmap(struct dma_buf *buf, void *vaddr)
+dma_buf_vunmap(struct dma_buf *a, struct dma_buf_map *b)
 {
-
 }
 
 uint32_t
@@ -3502,5 +3539,44 @@ memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
 	*ppos = pos + count;
 
         return count;
+}
+
+struct sg_table *
+dma_alloc_noncontiguous(struct device *dev, size_t len, enum dma_data_direction dir, gfp_t gfp, unsigned long attr)
+{
+	struct sg_table *sgt = malloc(sizeof(*sgt));
+
+	if (sgt == NULL)
+		return (NULL);
+
+	memset(sgt, 0, sizeof(*sgt));
+
+	sgt->sgl = sgt->dummy;
+	sgt->nents = 1;
+	sgt->orig_nents = 1;
+
+	sgt->sgl->length = len;
+	sgt->sgl->dma_length = len;
+	sgt->sgl->dma_address = (long) malloc(len);
+	if (sgt->sgl->dma_address == 0) {
+		free(sgt);
+		return (NULL);
+	}
+	return (sgt);
+}
+
+void
+dma_free_noncontiguous(struct device *dev, size_t len, struct sg_table *sgt, enum dma_data_direction dir)
+{
+	if (sgt == NULL)
+		return;
+	free((void *)sgt->sgl->dma_address);
+	free(sgt);
+}
+
+void *
+dma_vmap_noncontiguous(struct device *dev, size_t len, struct sg_table *sgt)
+{
+	return ((void *)sgt->sgl->dma_address);
 }
 

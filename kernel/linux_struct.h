@@ -207,16 +207,18 @@ struct device_type {
 
 #define	DEVICE_ATTR(_name,_mode,_show,_store)	\
 struct device_attribute				\
-	device_attr_##_name =			\
+	dev_attr_##_name =			\
         __ATTR(_name,_mode,_show,_store)
 
 #define	DEVICE_ATTR_RO(_name)				\
 struct device_attribute					\
-	device_attr_##_name = __ATTR_RO(_name)
+	dev_attr_##_name = __ATTR_RO(_name)
 
 #define	DEVICE_ATTR_RW(_name)				\
 struct device_attribute					\
-	device_attr_##_name = __ATTR_RW(_name)
+	dev_attr_##_name = __ATTR_RW(_name)
+
+extern struct device_attribute dev_attr_protocols;
 
 #define	DRIVER_ATTR(_name,_mode,_show,_store)	\
 struct driver_attribute				\
@@ -312,6 +314,7 @@ struct device {
 	struct bus_type *bus;
 	struct cdev *cdev;
 	struct class *class;
+	void *sysdev;
 	struct device_driver driver_static;
 	dev_t	devt;
 	char	name[64];
@@ -467,6 +470,17 @@ struct usb_class_driver {
 };
 
 struct scatterlist {
+        unsigned int    offset;
+        unsigned int    length;
+        dma_addr_t      dma_address;
+        unsigned int    dma_length;
+};
+
+struct sg_table {
+        struct scatterlist *sgl;        /* the list */
+        unsigned int nents;             /* number of mapped entries */
+        unsigned int orig_nents;        /* original size of list */
+        struct scatterlist dummy[1];
 };
 
 struct va_format {
@@ -483,97 +497,5 @@ struct old_timeval32 {
 	int32_t tv_sec;
 	int32_t tv_usec;
 };
-
-extern struct device_attribute dev_attr_abs;
-extern struct device_attribute dev_attr_activate_slack;
-extern struct device_attribute dev_attr_activation_height;
-extern struct device_attribute dev_attr_activation_width;
-extern struct device_attribute dev_attr_actual_cpi;
-extern struct device_attribute dev_attr_actual_dpi;
-extern struct device_attribute dev_attr_actual_profile;
-extern struct device_attribute dev_attr_actual_sensitivity_x;
-extern struct device_attribute dev_attr_actual_sensitivity_y;
-extern struct device_attribute dev_attr_associate_remote;
-extern struct device_attribute dev_attr_builtin_power_supply;
-extern struct device_attribute dev_attr_bustype;
-extern struct device_attribute dev_attr_button0_rawimg;
-extern struct device_attribute dev_attr_button1_rawimg;
-extern struct device_attribute dev_attr_button2_rawimg;
-extern struct device_attribute dev_attr_button3_rawimg;
-extern struct device_attribute dev_attr_button4_rawimg;
-extern struct device_attribute dev_attr_button5_rawimg;
-extern struct device_attribute dev_attr_button6_rawimg;
-extern struct device_attribute dev_attr_button7_rawimg;
-extern struct device_attribute dev_attr_buttons_luminance;
-extern struct device_attribute dev_attr_color;
-extern struct device_attribute dev_attr_coordinate_mode;
-extern struct device_attribute dev_attr_deactivate_slack;
-extern struct device_attribute dev_attr_debug;
-extern struct device_attribute dev_attr_dev_debug;
-extern struct device_attribute dev_attr_delay;
-extern struct device_attribute dev_attr_diagnostic;
-extern struct device_attribute dev_attr_ev;
-extern struct device_attribute dev_attr_event_count;
-extern struct device_attribute dev_attr_execute;
-extern struct device_attribute dev_attr_ff;
-extern struct device_attribute dev_attr_firmware_code;
-extern struct device_attribute dev_attr_firmware_version;
-extern struct device_attribute dev_attr_imon_clock;
-extern struct device_attribute dev_attr_index;
-extern struct device_attribute dev_attr_jitter;
-extern struct device_attribute dev_attr_key;
-extern struct device_attribute dev_attr_key_mask;
-extern struct device_attribute dev_attr_led;
-extern struct device_attribute dev_attr_max;
-extern struct device_attribute dev_attr_max_power;
-extern struct device_attribute dev_attr_min;
-extern struct device_attribute dev_attr_min_height;
-extern struct device_attribute dev_attr_min_width;
-extern struct device_attribute dev_attr_modalias;
-extern struct device_attribute dev_attr_mode;
-extern struct device_attribute dev_attr_mode_key;
-extern struct device_attribute dev_attr_model_code;
-extern struct device_attribute dev_attr_mouse_left;
-extern struct device_attribute dev_attr_mouse_middle;
-extern struct device_attribute dev_attr_mouse_right;
-extern struct device_attribute dev_attr_msc;
-extern struct device_attribute dev_attr_name;
-extern struct device_attribute dev_attr_odm_code;
-extern struct device_attribute dev_attr_phys;
-extern struct device_attribute dev_attr_pointer_mode;
-extern struct device_attribute dev_attr_poll;
-extern struct device_attribute dev_attr_power_mode;
-extern struct device_attribute dev_attr_product;
-extern struct device_attribute dev_attr_product_id;
-extern struct device_attribute dev_attr_properties;
-extern struct device_attribute dev_attr_protocols;
-extern struct device_attribute dev_attr_quirks;
-extern struct device_attribute dev_attr_rel;
-extern struct device_attribute dev_attr_release_version;
-extern struct device_attribute dev_attr_sensor_logical_height;
-extern struct device_attribute dev_attr_sensor_logical_width;
-extern struct device_attribute dev_attr_sensor_physical_height;
-extern struct device_attribute dev_attr_sensor_physical_width;
-extern struct device_attribute dev_attr_size;
-extern struct device_attribute dev_attr_snd;
-extern struct device_attribute dev_attr_startup_profile;
-extern struct device_attribute dev_attr_status0_luminance;
-extern struct device_attribute dev_attr_status1_luminance;
-extern struct device_attribute dev_attr_status_led0_select;
-extern struct device_attribute dev_attr_status_led1_select;
-extern struct device_attribute dev_attr_stylus_lower;
-extern struct device_attribute dev_attr_stylus_upper;
-extern struct device_attribute dev_attr_sw;
-extern struct device_attribute dev_attr_tcu;
-extern struct device_attribute dev_attr_tool_mode;
-extern struct device_attribute dev_attr_uniq;
-extern struct device_attribute dev_attr_vendor;
-extern struct device_attribute dev_attr_vendor_id;
-extern struct device_attribute dev_attr_version;
-extern struct device_attribute dev_attr_wakeup_protocols;
-extern struct device_attribute dev_attr_weight;
-extern struct device_attribute dev_attr_wheel;
-extern struct device_attribute dev_attr_xtilt;
-extern struct device_attribute dev_attr_ytilt;
 
 #endif					/* _LINUX_STRUCT_H_ */

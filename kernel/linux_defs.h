@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2020 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2021 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -195,6 +195,7 @@
 #define	pr_warn_once(...) printk_nop()
 #define	dev_warn_once(...) printk_nop()
 #endif
+#define	no_printk(...) printk_nop()
 #define	print_hex_dump_bytes(...) printk_nop()
 #define	printk_ratelimit(...) printk_nop()
 #define	printk_timed_ratelimit(...) printk_nop()
@@ -456,6 +457,8 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	rwlock_init(l) __nop
 #define	write_lock_irqsave(l, f) do { (f) = 1; atomic_lock(); } while (0)
 #define	write_unlock_irqrestore(l, f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
+#define	read_lock_irqsave(l, f) do { (f) = 1; atomic_lock(); } while (0)
+#define	read_unlock_irqrestore(l, f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
 #define	read_lock(l) atomic_lock()
 #define	read_unlock(l) atomic_unlock()
 #define	spin_lock_init(lock) __nop
@@ -833,5 +836,7 @@ linux_abs(int a)
 #define	abs(a) linux_abs(a)
 
 typedef int (*cmp_func_t)(const void *a, const void *b);
+
+#define	DEFINE_SHOW_ATTRIBUTE(...)
 
 #endif					/* _LINUX_DEFS_H_ */

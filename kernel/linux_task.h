@@ -71,6 +71,7 @@ struct rcu_head {
 };
 
 void	INIT_WORK(struct work_struct *work, work_func_t func);
+#define	INIT_DEFERRABLE_WORK(...) INIT_WORK(__VA_ARGS__)
 void	INIT_DELAYED_WORK(struct delayed_work *work, work_func_t func);
 int	schedule_work(struct work_struct *work);
 int	queue_delayed_work(struct workqueue_struct *, struct delayed_work *, unsigned long);

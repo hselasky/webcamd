@@ -12,6 +12,8 @@ int	zero_nop(void);
 #define	device_set_wakeup_enable(...) zero_nop()
 #define	device_set_wakeup_capable(...) zero_nop()
 #define	device_set_wakeup_disable(...) zero_nop()
+#define	device_property_read_u32(...) -EOPNOTSUPP
+#define	device_property_read_bool(...) -EOPNOTSUPP
 
 #define	driver_create_file(...) zero_nop()
 #define	driver_remove_file(...) zero_nop()
@@ -300,6 +302,7 @@ int	scnprintf(char *buf, size_t size, const char *fmt,...);
 #define	vscnprintf(...) \
 	scnprintf(__VA_ARGS__)
 char   *devm_kasprintf(struct device *, gfp_t, const char *,...);
+#define	seq_printf(...) __nop
 struct timespec current_kernel_time(void);
 int64_t	timespec_to_ns(const struct timespec *);
 struct timespec ns_to_timespec(const int64_t);
@@ -319,6 +322,7 @@ int	sysfs_create_group(struct kobject *, const struct attribute_group *);
 void	sysfs_remove_group(struct kobject *, const struct attribute_group *);
 int	sysfs_create_bin_file(struct kobject *, struct bin_attribute *);
 int	sysfs_remove_bin_file(struct kobject *, struct bin_attribute *);
+#define	sysfs_emit(...) 0
 void   *pci_alloc_consistent(struct pci_dev *hwdev, size_t size, dma_addr_t *dma_addr);
 void   *pci_zalloc_consistent(struct pci_dev *hwdev, size_t size, dma_addr_t *dma_addr);
 void	pci_free_consistent(struct pci_dev *hwdev, size_t size, void *vaddr, dma_addr_t dma_handle);
@@ -355,6 +359,12 @@ int	kstrtou8(const char *, unsigned int, uint8_t *);
 int	kstrtoul(const char *, unsigned int, unsigned long *);
 int	kstrtouint(const char *, unsigned int, unsigned int *);
 int	kstrtoint(const char *, unsigned int, int *);
+int	kstrtobool(const char *, bool *);
+
+static inline int strtobool(const char *str, bool *ret)
+{
+        return (kstrtobool(str, ret));
+}
 
 ssize_t	simple_write_to_buffer(void *, size_t, loff_t *, const void __user *, size_t);
 ssize_t	simple_read_from_buffer(void __user *, size_t, loff_t *, const void *, size_t);
@@ -372,8 +382,15 @@ int	devres_release_group(struct device *, void *);
 int	dma_buf_fd(struct dma_buf *, int);
 struct dma_buf *dma_buf_get(int);
 void	dma_buf_put(struct dma_buf *);
-void   *dma_buf_vmap(struct dma_buf *);
-void	dma_buf_vunmap(struct dma_buf *, void *);
+
+struct dma_buf_map {
+	void *vaddr;
+};
+
+#define	DMA_BUF_MAP_INIT_VADDR(x) { x }
+
+int	dma_buf_vmap(struct dma_buf *, struct dma_buf_map *);
+void	dma_buf_vunmap(struct dma_buf *, struct dma_buf_map *);
 
 uint32_t ror32(uint32_t, uint8_t);
 unsigned long gcd(unsigned long, unsigned long);
@@ -407,5 +424,18 @@ ssize_t	memory_read_from_buffer(void *, size_t, loff_t *, const void *, size_t);
 
 #define	mmap_read_lock(...) __nop
 #define	mmap_read_unlock(...) __nop
+
+#define	debugfs_create_file(...) __nop
+#define	debugfs_create_dir(...) NULL
+#define	debugfs_remove_recursive(...) __nop
+
+#define	dma_sync_sgtable_for_device(...) __nop
+#define	dma_sync_sgtable_for_cpu(...) __nop
+#define	invalidate_kernel_vmap_range(...) __nop
+
+void *dma_vmap_noncontiguous(struct device *, size_t, struct sg_table *);
+#define	dma_vunmap_noncontiguous(...) __nop
+struct sg_table *dma_alloc_noncontiguous(struct device *, size_t, enum dma_data_direction, gfp_t, unsigned long);
+void dma_free_noncontiguous(struct device *, size_t, struct sg_table *, enum dma_data_direction);
 
 #endif					/* _LINUX_FUNC_H_ */
