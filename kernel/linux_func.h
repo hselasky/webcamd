@@ -91,6 +91,7 @@ void   *devm_kmemdup(struct device *, const void *, size_t, gfp_t);
 void	devm_kfree(struct device *dev, void *ptr);
 int	devm_add_action(struct device *, void (*)(void *), void *);
 int	devm_add_action_or_reset(struct device *, void (*action)(void *), void *);
+#define	devm_request_threaded_irq(...) -EOPNOTSUPP
 struct clk *devm_clk_get(struct device *, const char *);
 void   *dev_get_drvdata(const struct device *dev);
 void	dev_set_drvdata(struct device *dev, void *data);

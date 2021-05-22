@@ -37,6 +37,10 @@ struct vfsmount;
 #define	LINUX_VMA_MAX 128
 
 #define	SET_SYSTEM_SLEEP_PM_OPS(...)
+#define	SET_RUNTIME_PM_OPS(...)
+#define	SIMPLE_DEV_PM_OPS(name, ...) \
+const struct dev_pm_ops __maybe_unused name = { }
+
 struct dev_pm_ops {
 };
 

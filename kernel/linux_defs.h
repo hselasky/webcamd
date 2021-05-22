@@ -680,7 +680,6 @@ extern unsigned long clear_user(void *uptr, unsigned long n);
 
 #define	RPM_ACTIVE 0
 #define	RPM_SUSPENDED 0
-#define	SET_RUNTIME_PM_OPS(...)
 
 #define	ilog2(n)				\
 (						\
