@@ -1,7 +1,7 @@
 /* $FreeBSD: src/sys/dev/usb/usb_compat_linux.h,v 1.3 2009/05/21 01:05:21 thompsa Exp $ */
 /*-
  * Copyright (c) 2007 Luigi Rizzo - Universita` di Pisa. All rights reserved.
- * Copyright (c) 2007-2019 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2007-2021 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -825,5 +825,34 @@ int	usb_wait_anchor_empty_timeout(struct usb_anchor *, unsigned int timeout);
 void	usb_kill_anchored_urbs(struct usb_anchor *);
 void	usb_poison_urb(struct urb *);
 void	usb_unpoison_urb(struct urb *);
+
+struct usb_sg_request {
+	int			status;
+	size_t			bytes;
+
+	spinlock_t		lock;
+
+	struct usb_device	*dev;
+	int			pipe;
+
+	int			entries;
+	struct urb		**urbs;
+
+	int			count;
+	struct completion	complete;
+};
+
+int usb_sg_init(
+	struct usb_sg_request	*,
+	struct usb_device	*,
+	unsigned		pipe,
+	unsigned		period,
+	struct scatterlist	*,
+	int			nents,
+	size_t			length,
+	gfp_t			mem_flags
+);
+void usb_sg_cancel(struct usb_sg_request *);
+void usb_sg_wait(struct usb_sg_request *);
 
 #endif					/* _LINUX_USB_H_ */

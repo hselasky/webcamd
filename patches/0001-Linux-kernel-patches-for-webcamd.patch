@@ -1236,3 +1236,17 @@ index ee3127461ee0..047701d44a8c 100644
  
  /**
   * EVIOCSMASK - Set event mask
+diff --git a/drivers/input/touchscreen/sur40.c b/drivers/input/touchscreen/sur40.c
+index 12f2562b0141..a56a8349e8dd 100644
+--- a/drivers/input/touchscreen/sur40.c
++++ b/drivers/input/touchscreen/sur40.c
+@@ -1121,7 +1121,9 @@ static const struct vb2_queue sur40_queue = {
+ 	.io_modes = VB2_MMAP | VB2_READ | VB2_DMABUF,
+ 	.buf_struct_size = sizeof(struct sur40_buffer),
+ 	.ops = &sur40_queue_ops,
++#ifdef __linux__
+ 	.mem_ops = &vb2_dma_sg_memops,
++#endif
+ 	.timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC,
+ 	.min_buffers_needed = 3,
+ };
