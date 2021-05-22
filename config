@@ -533,12 +533,6 @@ CONFIG_RADIO_TEF6862=y
 CONFIG_RADIO_TEA575X=y
 
 #
-# HAL configuration
-#
-CONFIG_WEBCAMD_HAL=y
-
-
-#
 # VirtualTuner client configuration
 #
 CONFIG_WEBCAMD_VT=y

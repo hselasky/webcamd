@@ -82,7 +82,6 @@
 #include <media_tree/include/linux/rculist.h>
 
 extern const char *webcamd_devnames[F_V4B_MAX];
-extern int webcamd_hal_register;
 
 extern uid_t v4b_get_uid(void);
 extern gid_t v4b_get_gid(void);

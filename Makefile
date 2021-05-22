@@ -168,13 +168,6 @@ CFLAGS+= -I${LOCALBASE}/include
 
 CFLAGS+= -include webcamd_global.h
 
-.if defined(HAVE_HAL) || defined(HAVE_ALL_DRV)
-HAL_CFLAGS!= pkg-config --cflags hal
-HAL_LDFLAGS!= pkg-config --libs hal
-CFLAGS+= ${HAL_CFLAGS}
-LDFLAGS+= ${HAL_LDFLAGS}
-.endif
-
 .if defined(HAVE_DEBUG)
 CFLAGS+= -DCONFIG_DVB_USB_DEBUG
 CFLAGS+= -DHAVE_DEBUG
@@ -248,10 +241,6 @@ configure: tools/linux_make/linux_make
 .if defined(HAVE_RADIO_DRV) || defined(HAVE_ALL_DRV)
 	@echo " * Radio devices"
 	@(cat config_radio.in ; echo "") >> config
-.endif
-.if defined(HAVE_HAL) || defined(HAVE_ALL_DRV)
-	@echo " * HAL support"
-	@(cat config_hal.in ; echo "") >> config
 .endif
 .if defined(HAVE_VTUNER_CLIENT) || defined(HAVE_ALL_DRV)
 	@echo " * VirtualTuner client"

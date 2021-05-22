@@ -43,8 +43,6 @@
 
 #include <cuse.h>
 
-#include <kernel/linux_hal.h>
-
 #include <linux/idr.h>
 
 static cuse_open_t v4b_open;
@@ -115,7 +113,6 @@ static int vtuner_server;
 #define	CHR_MODE 0660
 
 char	global_fw_prefix[128] = {"/boot/modules"};
-int	webcamd_hal_register;
 
 #define	v4b_errx(code, fmt, ...) do {			\
     syslog(LOG_ERR, "webcamd: " fmt "\n",##		\
@@ -456,9 +453,6 @@ again:
 					v4b_errx(1, "Failed creating Cuse4BSD process");
 				}
 			}
-
-			if (webcamd_hal_register)
-				hal_add_device(buf);
 		}
 	}
 }
@@ -500,7 +494,6 @@ usage(void)
 	    "	-r Do not set realtime priority\n"
 	    "	-U <user> Set user for character devices\n"
 	    "	-G <group> Set group for character devices\n"
-	    "	-H Register device by HAL daemon\n"
 	    "	-D <host:port:ndev> Connect to remote host instead of USB\n"
 	    "	-L <host:port:ndev> Make DVB device available from TCP/IP\n"
 	    "	-h Print help\n"
@@ -815,7 +808,6 @@ main(int argc, char **argv)
 			break;
 
 		case 'H':
-			webcamd_hal_register = 1;
 			break;
 
 		case 'U':
@@ -986,9 +978,6 @@ main(int argc, char **argv)
 			v4b_errx(EX_USAGE, "Cannot find USB device");
 	}
 	if (vtuner_server == 0) {
-		if (webcamd_hal_register)
-			hal_init(u_unit, u_addr, u_index, d_desc);
-
 		v4b_create(u_videodev);
 
 		v4b_work(NULL);

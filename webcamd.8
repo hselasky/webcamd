@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd April 9, 2020
+.Dd May 22, 2021
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -38,7 +38,6 @@
 .Op Fl L Ar <host:port:ndev>
 .Op Fl U Ar <user>
 .Op Fl G Ar <group>
-.Op Fl H
 .Op Fl M Ar <matchindex>
 .Op Fl N Ar <devicename>
 .Op Fl S Ar <deviceserialnumber>
@@ -124,8 +123,6 @@ Default value: webcamd
 .It Fl G
 Set the group identification for all character devices created by webcamd.
 Default value: webcamd
-.It Fl H
-Register device by the HAL daemon.
 .It Fl D
 Enable vTuner client support.
 Connect to one or more remote DVB device instead of using USB.

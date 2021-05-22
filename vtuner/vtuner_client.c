@@ -45,8 +45,6 @@
 
 #include <cuse.h>
 
-#include <kernel/linux_hal.h>
-
 #define	VTUNER_MODULE_VERSION "1.0-hps"
 
 #define	VTUNER_LOCAL_MEMSET(a,b,c) \
@@ -948,9 +946,6 @@ vtunerc_init(void)
 		cuse_dev_create(&vtunerc_methods, vtunerc_make_config(0 + (8 * u)), NULL,
 		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
 
-		if (webcamd_hal_register)
-			hal_add_device(buf);
-
 		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DVR] + 1, unit, 0);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
@@ -958,18 +953,12 @@ vtunerc_init(void)
 		cuse_dev_create(&vtunerc_methods, vtunerc_make_config(2 + (8 * u)), NULL,
 		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
 
-		if (webcamd_hal_register)
-			hal_add_device(buf);
-
 		snprintf(buf, sizeof(buf), webcamd_devnames[F_V4B_DVB_DEMUX] + 1, unit, 0);
 
 		printf("Creating /dev/%s (vTuner client)\n", buf);
 
 		cuse_dev_create(&vtunerc_methods, vtunerc_make_config(4 + (8 * u)), NULL,
 		    v4b_get_uid(), v4b_get_gid(), v4b_get_perm(), "%s", buf);
-
-		if (webcamd_hal_register)
-			hal_add_device(buf);
 	}
 	return 0;
 }

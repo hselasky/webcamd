@@ -19,4 +19,3 @@ obj-y += linux_timer.o
 obj-y += linux_usb.o
 obj-y += linux_xarray.o
 
-obj-$(CONFIG_WEBCAMD_HAL) += linux_hal.o
