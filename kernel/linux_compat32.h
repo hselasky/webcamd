@@ -80,7 +80,11 @@ ptr_to_compat(void *uptr)
 	return (u32)(u64)uptr;
 }
 
+#ifdef CONFIG_COMPAT
 extern bool in_compat_syscall(void);
+#else
+#define	in_compat_syscall() 0
+#endif
 
 /*
  * Allocate zeroed memory which is automatically freed when the compat

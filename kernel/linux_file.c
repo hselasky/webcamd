@@ -108,6 +108,7 @@ linux_fix_f_flags(struct file *fp, int fflags)
 	}
 }
 
+#ifdef CONFIG_COMPAT
 #ifndef CUSE_FFLAG_COMPAT32
 #define	CUSE_FFLAG_COMPAT32 0
 #endif
@@ -118,6 +119,7 @@ bool in_compat_syscall(void)
 {
 	return in_compat32_call;
 }
+#endif
 
 int
 linux_ioctl(struct cdev_handle *handle, int fflags,
@@ -142,6 +144,7 @@ linux_ioctl(struct cdev_handle *handle, int fflags,
 	}
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
+#ifdef CONFIG_COMPAT
 	if ((fflags & CUSE_FFLAG_COMPAT32) &&
 	    (handle->fixed_file.f_op->compat_ioctl != NULL)) {
 		in_compat32_call = 1;
@@ -149,7 +152,9 @@ linux_ioctl(struct cdev_handle *handle, int fflags,
 		    &handle->fixed_file, cmd, (long)arg);
 		in_compat32_call = 0;
 		compat_free_all_user_space();
-	} else if (handle->fixed_file.f_op->unlocked_ioctl != NULL) {
+	} else
+#endif
+	if (handle->fixed_file.f_op->unlocked_ioctl != NULL) {
 		retval = handle->fixed_file.f_op->unlocked_ioctl(&handle->fixed_file,
 		    cmd, (long)arg);
 	} else if (handle->fixed_file.f_op->ioctl != NULL) {
@@ -190,12 +195,15 @@ linux_read(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
+#ifdef CONFIG_COMPAT
 	if (fflags & CUSE_FFLAG_COMPAT32) {
 		in_compat32_call = 1;
 		error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
 		in_compat32_call = 0;
 		compat_free_all_user_space();
-	} else {
+	} else
+#endif
+	{
 		error = handle->fixed_file.f_op->read(&handle->fixed_file, ptr, len, &off);
 	}
 
@@ -216,12 +224,15 @@ linux_write(struct cdev_handle *handle, int fflags, char *ptr, size_t len)
 
 	linux_fix_f_flags(&handle->fixed_file, fflags);
 
+#ifdef CONFIG_COMPAT
 	if (fflags & CUSE_FFLAG_COMPAT32) {
 		in_compat32_call = 1;
 		error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
 		in_compat32_call = 0;
 		compat_free_all_user_space();
-        } else {
+        } else
+#endif
+	{
 		error = handle->fixed_file.f_op->write(&handle->fixed_file, ptr, len, &off);
 	}
 
