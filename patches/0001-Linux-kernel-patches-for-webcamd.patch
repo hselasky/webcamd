@@ -1196,3 +1196,22 @@ index 12f2562b0141..a56a8349e8dd 100644
  	.timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC,
  	.min_buffers_needed = 3,
  };
+diff --git a/drivers/media/usb/uvc/uvc_ctrl.c b/drivers/media/usb/uvc/uvc_ctrl.c
+index b3dde98499f4..0d7137eca331 100644
+--- a/drivers/media/usb/uvc/uvc_ctrl.c
++++ b/drivers/media/usb/uvc/uvc_ctrl.c
+@@ -1697,7 +1697,13 @@ int uvc_ctrl_set(struct uvc_fh *handle,
+ 	if (ctrl->info.flags & UVC_CTRL_FLAG_ASYNCHRONOUS)
+ 		ctrl->handle = handle;
+ 
+-	ctrl->dirty = 1;
++	/* Avoid setting the current value. */
++	if (!ctrl->dirty &&
++	    memcmp(uvc_ctrl_data(ctrl, UVC_CTRL_DATA_BACKUP),
++		   uvc_ctrl_data(ctrl, UVC_CTRL_DATA_CURRENT),
++		   ctrl->info.size) != 0)
++		ctrl->dirty = 1;
++
+ 	ctrl->modified = 1;
+ 	return 0;
+ }
