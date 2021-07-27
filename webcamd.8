@@ -44,6 +44,7 @@
 .Op Fl d Ar [ugen]<unit>.<addr>
 .Op Fl i Ar <interface or client number>
 .Op Fl v Ar <video device number>
+.Op Fl c Ar <devname>
 .Op Fl m Ar <parameter>=<value>
 .Op Fl r
 .Op Fl l
@@ -117,6 +118,12 @@ to the given device.
 Show available parameters.
 .It Fl v
 Specify the video device number.
+.It Fl c
+Create device of specified type. Valid values: v4l2loopback
+For multiple v4l2loopback devices, specify
+.Bd -literal -offset indent
+-m v4l2loopback.devices=2
+.Ed
 .It Fl U
 Set the user identification for all character devices created by webcamd.
 Default value: webcamd
