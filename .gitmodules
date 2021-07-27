@@ -2,3 +2,7 @@
 [submodule "media_tree"]
 	path = media_tree
 	url = https://github.com/torvalds/linux.git
+[submodule "contrib/v4l2loopback"]
+	path = contrib/v4l2loopback
+	url = https://github.com/swills/v4l2loopback.git
+	branch = my-build

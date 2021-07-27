@@ -222,6 +222,10 @@ configure: tools/linux_make/linux_make
 	@echo " * DVB devices"
 	@(cat config_dvb.in ; echo "") >> config
 .endif
+.if defined(HAVE_V4L2LOOPBACK_DRV) || defined(HAVE_ALL_DRV)
+	@echo " * V4L2LOOPBACK devices"
+	@(cat config_loopback.in ; echo "") >> config
+.endif
 .if defined(HAVE_WEBCAM_DRV) || defined(HAVE_ALL_DRV)
 	@echo " * Webcam devices"
 	@(cat config_webcam.in ; echo "") >> config
@@ -269,4 +273,5 @@ configure: tools/linux_make/linux_make
 		-i media_tree/lib/lzo \
 		-i media_tree/drivers/net/ethernet/mellanox/mlx5/core \
 		-i contrib/dvb-usb \
+		-i contrib/v4l2loopback \
 		-o build/

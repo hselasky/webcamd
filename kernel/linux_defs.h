@@ -468,6 +468,8 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	spin_unlock(...) atomic_unlock()
 #define	spin_lock_irq(...)  atomic_lock()
 #define	spin_unlock_irq(...) atomic_unlock()
+#define	spin_lock_bh(...) atomic_lock()
+#define	spin_unlock_bh(...) atomic_unlock()
 #define	raw_spin_lock_init(lock) __nop
 #define	raw_spin_lock(...)  atomic_lock()
 #define	raw_spin_unlock(...) atomic_unlock()

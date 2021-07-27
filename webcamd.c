@@ -101,6 +101,7 @@ static int u_match_index;
 static int do_list;
 static int do_fork;
 static int do_realtime = 1;
+static int do_v4l2loopback;
 static struct pidfh *local_pid = NULL;
 static const char *d_desc;
 static gid_t gid;
@@ -489,6 +490,7 @@ usage(void)
 {
 	fprintf(stderr,
 	    "usage: webcamd -d [ugen]<unit>.<addr> -i 0 -v -1 -B\n"
+	    "	-c <devname> Create device by given devicename\n"
 	    "	-d <USB device>\n"
 	    "	-i <interface or client number>\n"
 	    "	-m <parameter>=<value>\n"
@@ -698,8 +700,14 @@ pidfile_create(int bus, int addr, int index)
 	if (local_pid != NULL)
 		return (0);
 
-	snprintf(buf, sizeof(buf), "/var/run/webcamd."
-	    "%d.%d.%d.pid", bus, addr, index);
+	if (do_v4l2loopback == 0) {
+		snprintf(buf, sizeof(buf), "/var/run/webcamd."
+		    "%d.%d.%d.pid", bus, addr, index);
+	} else {
+		snprintf(buf, sizeof(buf), "/var/run/webcamd."
+		    "v4l2loopback.pid");
+	}
+
 
 	local_pid = pidfile_open(buf, 0600, NULL);
 	if (local_pid == NULL) {
@@ -751,7 +759,7 @@ a_uid(const char *s)
 int
 main(int argc, char **argv)
 {
-	const char *params = "N:Bd:f:i:M:m:S:sv:hHrU:G:D:lL:";
+	const char *params = "N:Bd:f:i:M:m:S:sv:hHrU:G:D:lL:c:";
 	char *ptr;
 	int opt;
 	int opt_valid = 0;
@@ -759,6 +767,20 @@ main(int argc, char **argv)
 	openlog("webcamd", LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_DAEMON);
 	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
+		case 'c':
+			ptr = optarg;
+			if (strcmp("v4l2loopback", ptr) == 0) {
+#ifdef CONFIG_V4L2LOOPBACK
+				opt_valid = 1;
+				do_v4l2loopback = 1;
+				do_list = 0;
+#else
+				usage();
+#endif
+			} else {
+				usage();
+			}
+			break;
 		case 'd':
 			ptr = optarg;
 
@@ -840,12 +862,14 @@ main(int argc, char **argv)
 	if (!gid_found)
 		a_gid("webcamd");
 
-	if (u_devicename != NULL || u_serialname != NULL || do_list != 0) {
-		find_devices();
-	} else if (u_addr == 0 && opt_valid == 0) {
-		/* list devices by default if no option was specified */
-		do_list = 1;
-		find_devices();
+	if (do_v4l2loopback == 0) {
+		if (u_devicename != NULL || u_serialname != NULL || do_list != 0) {
+			find_devices();
+		} else if (u_addr == 0 && opt_valid == 0) {
+			/* list devices by default if no option was specified */
+			do_list = 1;
+			find_devices();
+		}
 	}
 	if (do_fork) {
 		/* need to daemonise before creating any threads */
@@ -883,6 +907,15 @@ main(int argc, char **argv)
 
 	optreset = 1;
 	optind = 1;
+
+#ifdef CONFIG_V4L2LOOPBACK
+	if (do_v4l2loopback == 0) {
+		if (mod_set_param("v4l2loopback.devices", "0") < 0) {
+			syslog(LOG_WARNING, "cannot set module "
+			    "parameter '%s'='%s'\n", "v4l2loopback.devices", ptr);
+		}
+	}
+#endif
 
 	while ((opt = getopt(argc, argv, params)) != -1) {
 		switch (opt) {
@@ -984,7 +1017,7 @@ main(int argc, char **argv)
 	linux_init();
 	linux_late();
 
-	if (vtuner_client == 0) {
+	if (vtuner_client == 0 && do_v4l2loopback == 0) {
 		if (usb_linux_probe_p(&u_unit, &u_addr, &u_index, &d_desc) < 0)
 			v4b_errx(EX_USAGE, "Cannot find USB device");
 	}
