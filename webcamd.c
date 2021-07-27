@@ -109,6 +109,7 @@ static int gid_found;
 static int uid_found;
 static int vtuner_client;
 static int vtuner_server;
+static void v4b_exit(void);
 
 #define	CHR_MODE 0660
 
@@ -123,13 +124,21 @@ char	global_fw_prefix[128] = {"/boot/modules"};
 static void
 v4b_work_exec_hup(int dummy)
 {
+}
 
+static void
+v4b_work_sig(int dummy)
+{
+	v4b_exit();
+	_exit(0);
 }
 
 static void *
 v4b_work(void *arg)
 {
 	signal(SIGHUP, v4b_work_exec_hup);
+	signal(SIGINT, v4b_work_sig);
+	signal(SIGTERM, v4b_work_sig);
 
 	while (1) {
 		if (cuse_wait_and_process() != 0)
