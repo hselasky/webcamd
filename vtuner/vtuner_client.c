@@ -669,7 +669,7 @@ vtunerc_process_ioctl(struct vtunerc_ctx *ctx, unsigned int cmd, union vtuner_dv
 }
 
 /*------------------------------------------------------------------------*
- * vTuner client Cuse4BSD interface
+ * vTuner client cuse(3) interface
  *------------------------------------------------------------------------*/
 static void
 vtunerc_cuse_thread_hup(int dummy)
