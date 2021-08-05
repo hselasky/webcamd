@@ -2300,6 +2300,22 @@ timespec_sub(struct timespec vvp, struct timespec uvp)
 }
 
 void
+fsleep(unsigned long us)
+{
+	uint32_t drops;
+
+	atomic_lock();
+	drops = atomic_drop();
+	atomic_unlock();
+
+	usleep(us);
+
+	atomic_lock();
+	atomic_pickup(drops);
+	atomic_unlock();
+}
+
+void
 msleep(uint32_t ms)
 {
 	uint32_t drops;

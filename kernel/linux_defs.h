@@ -280,7 +280,6 @@
 #define	kstrdup_const(a,b) strdup(a)
 #define	might_sleep(x) __nop
 #define	might_sleep_if(x) __nop
-#define	fsleep(d) usleep(d)
 #define	ndelay(d) usleep(((d) + 1000ULL - 1ULL)/1000UL)
 #define	udelay(d) usleep(d)
 #define	mdelay(d) usleep((d) * 1000)
