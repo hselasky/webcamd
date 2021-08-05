@@ -71,6 +71,7 @@ void	interruptible_sleep_on(wait_queue_head_t *q);
 uint64_t interruptible_sleep_on_timeout(wait_queue_head_t *q, uint64_t timeout);
 int	waitqueue_active(wait_queue_head_t *q);
 
+void	wake_up_inhibit(bool);
 void	wake_up(wait_queue_head_t *q);
 void	wake_up_all(wait_queue_head_t *q);
 void	wake_up_nr(wait_queue_head_t *q, uint32_t nr);

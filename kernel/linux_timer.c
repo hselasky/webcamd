@@ -118,6 +118,9 @@ timer_exec(void *arg)
 		/* update last_jiffies */
 		last_jiffies = get_jiffies_64();
 
+		/* optimise number of external wakeup requests */
+		wake_up_inhibit(true);
+
 		atomic_lock();
 
 		delta = last_jiffies - last_check;
@@ -149,6 +152,9 @@ restart:
 		}
 
 		atomic_unlock();
+
+		/* optimise number of external wakeup requests */
+		wake_up_inhibit(false);
 
 		usleep(ms_delay * 1000);
 	}

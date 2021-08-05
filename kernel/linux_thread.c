@@ -30,6 +30,7 @@ static pthread_cond_t sema_cond;
 static pthread_mutex_t atomic_mutex;
 static volatile uint32_t atomic_recurse;
 static pthread_key_t wrapper_key;
+static __thread uint32_t wakeup_inhibit;
 
 struct task_struct linux_task = {
 	.comm = "WEBCAMD",
@@ -123,6 +124,15 @@ wake_up_all_internal(void)
 }
 
 void
+wake_up_inhibit(bool value)
+{
+	const uint32_t old = wakeup_inhibit;
+	wakeup_inhibit = value;
+	if (value == false && old == 2)
+		poll_wakeup_internal();
+}
+
+void
 wake_up(wait_queue_head_t *q)
 {
 	int do_poll;
@@ -133,8 +143,12 @@ wake_up(wait_queue_head_t *q)
 	pthread_cond_broadcast(&sema_cond);
 	atomic_unlock();
 
-	if (do_poll)
-		poll_wakeup_internal();
+	if (do_poll) {
+		if (wakeup_inhibit == 0)
+			poll_wakeup_internal();
+		else
+			wakeup_inhibit = 2;
+	}
 }
 
 void

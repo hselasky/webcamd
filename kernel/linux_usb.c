@@ -173,10 +173,14 @@ usb_exec(void *arg)
 	sc->thread_started = 1;
 
 	while (1) {
+		/* optimise number of external wakeup requests */
+		wake_up_inhibit(true);
 
 		atomic_lock();
 		err = libusb20_dev_process(dev);
 		atomic_unlock();
+
+		wake_up_inhibit(false);
 
 		/* check for USB events */
 		if (err != 0) {
