@@ -223,7 +223,7 @@ configure: tools/linux_make/linux_make
 	@(cat config_dvb.in ; echo "") >> config
 .endif
 .if defined(HAVE_V4L2LOOPBACK_DRV) || defined(HAVE_ALL_DRV)
-	@echo " * V4L2LOOPBACK devices"
+	@echo " * V4L2 loopback devices"
 	@(cat config_loopback.in ; echo "") >> config
 .endif
 .if defined(HAVE_WEBCAM_DRV) || defined(HAVE_ALL_DRV)
