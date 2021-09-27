@@ -460,7 +460,7 @@ again:
 
 			for (p = 0; p != 4; p++) {
 				if (pthread_create(&dummy, NULL, v4b_work, NULL)) {
-					v4b_errx(1, "Failed creating Cuse4BSD process");
+					v4b_errx(1, "Failed creating Cuse process");
 				}
 			}
 		}
@@ -886,7 +886,7 @@ main(int argc, char **argv)
 
 	if (cuse_init() != 0) {
 		v4b_errx(EX_USAGE, "Could not open /dev/cuse. "
-		    "Did you kldload cuse4bsd?");
+		    "Did you kldload cuse?");
 	}
 	if (do_realtime != 0) {
 		struct rtprio rtp;
