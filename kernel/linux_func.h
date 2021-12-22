@@ -215,9 +215,10 @@ u32	crc32_le(u32 crc, unsigned char const *p, size_t len);
 u32	crc32_be(u32 crc, unsigned char const *p, size_t len);
 void   *vmalloc(size_t size);
 void   *vzalloc(size_t size);
-void   *kcalloc(size_t n, size_t size, int flags);
+void   *kcalloc(size_t, size_t, gfp_t);
+void   *kmalloc(size_t, gfp_t);
+void   *kmalloc_array(size_t, size_t, gfp_t);
 
-#define	kmalloc_array(...) kcalloc(__VA_ARGS__)
 long	__get_free_page(int);
 void	free_page(long);
 struct class *class_get(struct class *class);

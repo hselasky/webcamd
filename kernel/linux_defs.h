@@ -233,16 +233,15 @@
 #define	kmem_cache_create(desc,size,align,arg,fn) ((struct kmem_cache *)(size))
 #define	kmem_cache_destroy(...) __nop
 #define	kmem_cache_free(ref,ptr) free(GP_DECONST(ptr))
-#define	kmem_cache_alloc(ref,g) malloc((long)(ref))
+#define	kmem_cache_alloc(ref,g) kmalloc((long)(ref), g)
 #define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
-#define	kvmalloc(size,flags) malloc(size)
-#define	kvmalloc_array(n,s,flags) malloc((n) * (s))
+#define	kvmalloc(size,flags) kmalloc(size, flags)
+#define	kvmalloc_array(n,s,flags) kmalloc_array(n,s,flags)
 #define	kvzalloc(s,flags) calloc(1, s)
 #define	kvfree(ptr) free(ptr)
-#define	kmalloc(s,opt) malloc(s)
 #define	kzalloc(s,opt) calloc(1, (s))
-#define	krealloc(p,s,opt) realloc(p,(s))
-#define	dma_alloc_coherent(d,s,h,g) calloc(1,(s))
+#define	krealloc(p,s,opt) realloc(p, (s))
+#define	dma_alloc_coherent(d,s,h,g) calloc(1, (s))
 #define	dma_free_coherent(d,s,v,h) free(GP_DECONST(v))
 #define	dma_map_single(...) 0
 #define	dma_unmap_single(...) __nop
@@ -297,11 +296,11 @@
 #define	__GFP_NORETRY 0
 #define	__GFP_NO_GROW 0
 #define	__GFP_COMP 0
-#define	__GFP_ZERO 0
+#define	__GFP_ZERO 1
 #define	__GFP_NOMEMALLOC 0
 #define	__GFP_HARDWALL 0
 #define	__GFP_DMA32 0
-#define	__GFP_BITS_SHIFT 1
+#define	__GFP_BITS_SHIFT 4
 #define	GFP_NOWAIT 0
 #define	GFP_ATOMIC 0
 #define	GFP_NOIO 0

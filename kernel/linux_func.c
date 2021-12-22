@@ -358,7 +358,7 @@ get_unaligned_le16(const void *_ptr)
 void   *
 devm_kcalloc(struct device *dev, size_t n, size_t size, gfp_t gfp)
 {
-	return (calloc(n, size));
+	return (kmalloc_array(n, size, gfp | __GFP_ZERO));
 }
 
 void   *
@@ -379,7 +379,7 @@ devm_kzalloc(struct device *dev, size_t size, gfp_t gfp)
 void   *
 devm_kmalloc(struct device *dev, size_t size, gfp_t gfp)
 {
-	return (malloc(size));
+	return (kmalloc(size, gfp));
 }
 
 void   *
@@ -397,11 +397,7 @@ void   *
 devm_kmalloc_array(struct device *dev,
     size_t n, size_t size, gfp_t flags)
 {
-	size_t total = n * size;
-
-	if (size != 0 && total / size != n)
-		return (NULL);		/* overflow */
-	return (malloc(total));
+	return (kmalloc_array(n, size, flags));
 }
 
 void
@@ -1441,7 +1437,7 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 unsigned long *
 bitmap_alloc(unsigned int nbits, gfp_t flags)
 {
-	return (malloc(BITS_TO_LONGS(nbits) * sizeof(long)));
+	return (kmalloc(BITS_TO_LONGS(nbits) * sizeof(long), flags));
 }
 
 unsigned long *
@@ -1800,15 +1796,32 @@ crc32_be(u32 crc, unsigned char const *p, size_t len)
 }
 
 void   *
-kcalloc(size_t n, size_t size, int flags)
+kcalloc(size_t n, size_t size, gfp_t flags)
 {
+	return (kmalloc_array(n, size, flags | __GFP_ZERO));
+}
+
+void   *
+kmalloc(size_t n, gfp_t flags)
+{
+	void *ptr = malloc(n);
+	if (ptr == NULL)
+		return (NULL);
+	if (flags & __GFP_ZERO)
+		memset(ptr, 0, n);
+	return (ptr);
+}
+
+void   *
+kmalloc_array(size_t n, size_t s, gfp_t flags)
+{
+	size_t total = n * s;
 	void *ptr;
 
-	ptr = malloc(size * n);
-	if (ptr != NULL)
-		memset(ptr, 0, size * n);
-
-	return (ptr);
+	if (total != 0 && (total / n) != s)
+		return (NULL);
+	else
+		return (kmalloc(total, flags));
 }
 
 void   *
@@ -3573,7 +3586,7 @@ dma_alloc_noncontiguous(struct device *dev, size_t len, enum dma_data_direction 
 
 	sgt->sgl->length = len;
 	sgt->sgl->dma_length = len;
-	sgt->sgl->dma_address = (long) malloc(len);
+	sgt->sgl->dma_address = (long) kmalloc(len, gfp);
 	if (sgt->sgl->dma_address == 0) {
 		free(sgt);
 		return (NULL);
