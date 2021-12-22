@@ -1215,3 +1215,20 @@ index b3dde98499f4..0d7137eca331 100644
  	ctrl->modified = 1;
  	return 0;
  }
+diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
+index 9f37eaf28ce7..6233703f9a50 100644
+--- a/drivers/media/usb/uvc/uvc_video.c
++++ b/drivers/media/usb/uvc/uvc_video.c
+@@ -258,7 +258,11 @@ static int uvc_get_video_ctrl(struct uvc_streaming *stream,
+ 			query == UVC_GET_DEF)
+ 		return -EIO;
+ 
+-	data = kmalloc(size, GFP_KERNEL);
++	/*
++	 * Make sure we parse really received data
++	 * by allocating a zeroed buffer.
++	 */
++	data = kzalloc(size, GFP_KERNEL);
+ 	if (data == NULL)
+ 		return -ENOMEM;
+ 
