@@ -234,14 +234,14 @@
 #define	kmem_cache_destroy(...) __nop
 #define	kmem_cache_free(ref,ptr) free(GP_DECONST(ptr))
 #define	kmem_cache_alloc(ref,g) kmalloc((long)(ref), g)
-#define	kmem_cache_zalloc(ref,g) calloc(1, (long)(ref))
+#define	kmem_cache_zalloc(ref,g) kmalloc((long)(ref), (g) | __GFP_ZERO)
 #define	kvmalloc(size,flags) kmalloc(size, flags)
 #define	kvmalloc_array(n,s,flags) kmalloc_array(n,s,flags)
-#define	kvzalloc(s,flags) calloc(1, s)
+#define	kvzalloc(s,flags) kmalloc(s, (flags) | __GFP_ZERO)
 #define	kvfree(ptr) free(ptr)
-#define	kzalloc(s,opt) calloc(1, (s))
+#define	kzalloc(s,opt) kmalloc(s, (opt) | __GFP_ZERO)
 #define	krealloc(p,s,opt) realloc(p, (s))
-#define	dma_alloc_coherent(d,s,h,g) calloc(1, (s))
+#define	dma_alloc_coherent(d,s,h,g) kmalloc(s, (g) | __GFP_ZERO)
 #define	dma_free_coherent(d,s,v,h) free(GP_DECONST(v))
 #define	dma_map_single(...) 0
 #define	dma_unmap_single(...) __nop
@@ -303,6 +303,7 @@
 #define	__GFP_BITS_SHIFT 4
 #define	GFP_NOWAIT 0
 #define	GFP_ATOMIC 0
+#define	GFP_DMA 0
 #define	GFP_NOIO 0
 #define	GFP_NOFS 0
 #define	GFP_KERNEL 0

@@ -1437,13 +1437,13 @@ find_next_zero_bit(const unsigned long *addr, unsigned long size,
 unsigned long *
 bitmap_alloc(unsigned int nbits, gfp_t flags)
 {
-	return (kmalloc(BITS_TO_LONGS(nbits) * sizeof(long), flags));
+	return (kmalloc_array(BITS_TO_LONGS(nbits), sizeof(long), flags));
 }
 
 unsigned long *
 bitmap_zalloc(unsigned int nbits, gfp_t flags)
 {
-	return (calloc(BITS_TO_LONGS(nbits), sizeof(long)));
+	return (kmalloc_array(BITS_TO_LONGS(nbits), sizeof(long), flags | __GFP_ZERO));
 }
 
 void
@@ -1804,12 +1804,10 @@ kcalloc(size_t n, size_t size, gfp_t flags)
 void   *
 kmalloc(size_t n, gfp_t flags)
 {
-	void *ptr = malloc(n);
-	if (ptr == NULL)
-		return (NULL);
 	if (flags & __GFP_ZERO)
-		memset(ptr, 0, n);
-	return (ptr);
+		return (calloc(1, n));	/* memory must be zeroed */
+	else
+		return (malloc(n));
 }
 
 void   *
