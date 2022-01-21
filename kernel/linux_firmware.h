@@ -36,5 +36,6 @@ typedef void (firmware_cb_t)(const struct firmware *, void *);
 int	request_firmware_nowait(struct module *, bool, const char *, struct device *, gfp_t, void *, firmware_cb_t *);
 int	request_firmware(const struct firmware **, const char *, struct device *);
 void	release_firmware(const struct firmware *);
+#define	firmware_request_nowarn(...) request_firmware(__VA_ARGS__)
 
 #endif					/* _LINUX_FIRMWARE_H_ */

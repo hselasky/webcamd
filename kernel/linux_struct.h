@@ -8,6 +8,7 @@ struct cpumask;
 struct device;
 struct device_driver;
 struct device_node;
+struct device_link;
 struct dmi_system_id;
 struct fb_videomode;
 struct file;
@@ -285,7 +286,7 @@ struct bus_type {
 	int     (*match) (struct device *dev, struct device_driver *drv);
 	int     (*uevent) (struct device *dev, struct kobj_uevent_env *env);
 	int     (*probe) (struct device *dev);
-	int     (*remove) (struct device *dev);
+	void	(*remove) (struct device *dev);
 	void    (*shutdown) (struct device *dev);
 
 	int     (*suspend) (struct device *dev, pm_message_t state);

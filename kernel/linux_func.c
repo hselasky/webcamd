@@ -2367,10 +2367,16 @@ request_module_nowait(const char *ptr,...)
 	return (0);
 }
 
-int
+bool
 device_can_wakeup(struct device *dev)
 {
-	return (-EINVAL);
+	return (true);
+}
+
+bool
+device_may_wakeup(struct device *dev)
+{
+	return (true);
 }
 
 void

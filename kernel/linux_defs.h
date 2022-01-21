@@ -66,6 +66,7 @@
 #define	__iomem
 #define	__read_mostly
 #define	__maybe_unused
+#define	__always_unused
 #define	__must_check
 #define	__must_hold(...)
 #define	__chk_user_ptr(x) __nop
@@ -143,6 +144,7 @@
 #define	MODULE_ALIAS_CHARDEV_MAJOR(...)
 #define	MODULE_SUPPORTED_DEVICE(...)
 #define	MODULE_FIRMWARE(...)
+#define	MODULE_IMPORT_NS(...)
 #define	IS_MODULE(x) x##_IS_MODULE
 #define	IS_BUILTIN(x) IS_ENABLED(x)
 #define	IS_ENABLED(x) x##_IS_ENABLED
@@ -341,7 +343,7 @@
 #define	BIT(n) (1UL << (n))
 #define	BIT_ULL(n) (1ULL << (n))
 #define	KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#define	LINUX_VERSION_CODE KERNEL_VERSION(2, 6, 38)
+#define	LINUX_VERSION_CODE KERNEL_VERSION(5, 17, 0)
 #define	BUS_ID_SIZE 32
 #define	DECLARE_BITMAP(n, max) unsigned long n[((max)+BITS_PER_LONG-1)/BITS_PER_LONG]
 #define	MKDEV(maj,min) ((dev_t)(uint32_t)((((maj) & 0xFFFFUL) << 16)|((min) & 0xFFFFUL)))
@@ -472,6 +474,8 @@ do { volatile typeof(x) __val = (val); (x) = __val; } while (0)
 #define	raw_spin_lock_init(lock) __nop
 #define	raw_spin_lock(...)  atomic_lock()
 #define	raw_spin_unlock(...) atomic_unlock()
+#define	raw_spin_lock_irqsave(l,f) do { (f) = 1; atomic_lock(); } while (0)
+#define	raw_spin_unlock_irqrestore(l,f) do { if (f) { (f) = 0; atomic_unlock(); } } while (0)
 #define	atomic_inc_return(...) atomic_inc(__VA_ARGS__)
 #define	atomic_dec_return(...) atomic_dec(__VA_ARGS__)
 #define	assert_spin_locked(...) __nop
@@ -809,6 +813,7 @@ typedef unsigned long phys_addr_t;
 typedef unsigned int __poll_t;
 #define	__kernel_timespec timespec
 
+#define	fwnode_property_read_string(...) -EINVAL
 #define	fwnode_graph_get_remote_port_parent(...) NULL
 #define	fwnode_handle_get(x) x
 #define	fwnode_handle_put(...) __nop
@@ -839,5 +844,14 @@ linux_abs(int a)
 typedef int (*cmp_func_t)(const void *a, const void *b);
 
 #define	DEFINE_SHOW_ATTRIBUTE(...)
+
+#define	__struct_group(TAG, NAME, ATTRS, ...) \
+        union { \
+                struct { __VA_ARGS__ } ATTRS; \
+                struct TAG { __VA_ARGS__ } ATTRS NAME; \
+        }
+
+#define	struct_group(NAME, ...) \
+	__struct_group(, NAME,, __VA_ARGS__)
 
 #endif					/* _LINUX_DEFS_H_ */

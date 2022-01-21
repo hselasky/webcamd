@@ -368,6 +368,27 @@ struct i2c_algorithm {
 	u32 (*functionality) (struct i2c_adapter *);
 };
 
+struct i2c_adapter_quirks {
+        u64 flags;
+        int max_num_msgs;
+        u16 max_write_len;
+        u16 max_read_len;
+        u16 max_comb_1st_msg_len;
+        u16 max_comb_2nd_msg_len;
+};
+
+#define I2C_AQ_COMB                     BIT(0)
+#define I2C_AQ_COMB_WRITE_FIRST         BIT(1)
+#define I2C_AQ_COMB_READ_SECOND         BIT(2)
+#define I2C_AQ_COMB_SAME_ADDR           BIT(3)
+#define I2C_AQ_COMB_WRITE_THEN_READ     (I2C_AQ_COMB | I2C_AQ_COMB_WRITE_FIRST | \
+                                         I2C_AQ_COMB_READ_SECOND | I2C_AQ_COMB_SAME_ADDR)
+#define I2C_AQ_NO_CLK_STRETCH           BIT(4)
+#define I2C_AQ_NO_ZERO_LEN_READ         BIT(5)
+#define I2C_AQ_NO_ZERO_LEN_WRITE        BIT(6)
+#define I2C_AQ_NO_ZERO_LEN              (I2C_AQ_NO_ZERO_LEN_READ | I2C_AQ_NO_ZERO_LEN_WRITE)
+#define I2C_AQ_NO_REP_START             BIT(7)
+
 /*
  * i2c_adapter is the structure used to identify a physical i2c bus along
  * with the access algorithms necessary to access it.
@@ -393,6 +414,8 @@ struct i2c_adapter {
 	void (*lock_bus)(struct i2c_adapter *, unsigned int flags);
 	int (*trylock_bus)(struct i2c_adapter *, unsigned int flags);
 	void (*unlock_bus)(struct i2c_adapter *, unsigned int flags);
+
+	const struct i2c_adapter_quirks *quirks;
 };
 #define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
 
