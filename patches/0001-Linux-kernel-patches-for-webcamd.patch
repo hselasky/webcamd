@@ -1178,3 +1178,18 @@ index ee3127461ee0..047701d44a8c 100644
  
  /**
   * EVIOCSMASK - Set event mask
+diff --git a/drivers/media/dvb-core/dvb_ringbuffer.c b/drivers/media/dvb-core/dvb_ringbuffer.c
+index d1d471af0636..7d4558de8e83 100644
+--- a/drivers/media/dvb-core/dvb_ringbuffer.c
++++ b/drivers/media/dvb-core/dvb_ringbuffer.c
+@@ -335,7 +335,9 @@ ssize_t dvb_ringbuffer_pkt_next(struct dvb_ringbuffer *rbuf, size_t idx, size_t*
+ 		idx = (idx + curpktlen + DVB_RINGBUFFER_PKTHDRSIZE) % rbuf->size;
+ 	}
+ 
+-	consumed = (idx - rbuf->pread) % rbuf->size;
++	consumed = (idx - rbuf->pread);
++	if (consumed < 0)
++		consumed += rbuf->size;
+ 
+ 	while((dvb_ringbuffer_avail(rbuf) - consumed) > DVB_RINGBUFFER_PKTHDRSIZE) {
+ 
