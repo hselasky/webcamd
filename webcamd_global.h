@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2010-2022 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,6 +57,19 @@
 
 #include <libusb20.h>
 #include <libusb20_desc.h>
+
+#undef PAGE_SIZE
+#define	PAGE_SIZE PAGE_SIZE
+
+#undef PAGE_MASK
+#define	PAGE_MASK PAGE_MASK
+
+#undef PAGE_SHIFT
+#define	PAGE_SHIFT PAGE_SHIFT
+
+extern unsigned long PAGE_SIZE;
+extern unsigned long PAGE_MASK;
+extern unsigned char PAGE_SHIFT;
 
 #include <kernel/linux_defs.h>
 #include <kernel/linux_section.h>

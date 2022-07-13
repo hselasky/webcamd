@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010-2020 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2010-2022 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -756,6 +756,10 @@ a_uid(const char *s)
 	uid_found = 1;
 }
 
+unsigned long PAGE_SIZE;
+unsigned long PAGE_MASK;
+unsigned char PAGE_SHIFT;
+
 int
 main(int argc, char **argv)
 {
@@ -763,6 +767,16 @@ main(int argc, char **argv)
 	char *ptr;
 	int opt;
 	int opt_valid = 0;
+
+	/* setup proper PAGE_SIZE */
+	PAGE_SIZE = getpagesize();
+
+	/* setup proper PAGE_MASK (not the same like in FreeBSD) */
+	PAGE_MASK = ~(PAGE_SIZE - 1);
+
+	/* setup proper PAGE_SHIFT */
+	for (PAGE_SHIFT = 0; (1UL << PAGE_SHIFT) != PAGE_SIZE; PAGE_SHIFT++)
+		;
 
 	openlog("webcamd", LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_DAEMON);
 	while ((opt = getopt(argc, argv, params)) != -1) {

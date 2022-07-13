@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2020 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2022 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -262,7 +262,7 @@ linux_mmap(struct cdev_handle *handle, int fflags,
 	/* round up length */
 	if (len & (PAGE_SIZE - 1)) {
 		len += PAGE_SIZE;
-		len &= ~(size_t)(PAGE_SIZE - 1);
+		len &= PAGE_MASK;
 	}
 	/* check if the entry is already mapped */
 	for (i = 0; i != LINUX_VMA_MAX; i++) {

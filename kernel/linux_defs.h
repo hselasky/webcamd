@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2009-2021 Hans Petter Selasky. All rights reserved.
+ * Copyright (c) 2009-2022 Hans Petter Selasky. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -256,7 +256,7 @@
 #define	vmalloc_to_pfn(x) ((unsigned long)(x))	/* HACK */
 #define	alloc_page(...) malloc_vm(PAGE_SIZE)
 #define	page_address(x) ((void *)(x))	/* HACK */
-#define	virt_to_page(x) ((struct page *)(((uintptr_t)(x)) & ~(PAGE_SIZE-1)))	/* HACK */
+#define	virt_to_page(x) ((struct page *)(((uintptr_t)(x)) & PAGE_MASK))	/* HACK */
 #define	offset_in_page(x) (((uintptr_t)(x)) & (PAGE_SIZE - 1))
 #define	page_to_phys(x) ((uintptr_t)(x))
 #define	page_cache_release(...) __nop
