@@ -1118,7 +1118,8 @@ malloc_vm(size_t size)
 {
 	if (size == 0)
 		return (zero_alloc);
-
+	else if (size > 0x7FFFFFFFUL)
+		return (NULL);	/* too big */
 	return (cuse_vmalloc(size));
 }
 
