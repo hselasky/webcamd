@@ -25,7 +25,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd July 28, 2021
+.Dd April 4, 2023
 .Dt WEBCAMD 8 
 .Os FreeBSD
 .Sh NAME
@@ -167,6 +167,11 @@ webcamd -D 127.0.0.1:5100:1:2
 Create a vTuner server:
 .Bd -literal -offset indent
 webcamd -L 127.0.0.1:5100:-1
+.Ed
+.Pp
+Create two V4L2 loopback devices:
+.Bd -literal -offset indent
+webcamd -c v4l2loopback -m v4l2loopback.devices=2
 .Ed
 .Pp
 .Sh NOTES
